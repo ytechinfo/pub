@@ -60,7 +60,6 @@ _defaultOption ={
 		     'SSO'
       	]
 	} 
-	,
 	,defaultPopupPosition : {
 		align : 'top'
 		,topMargin : 20
