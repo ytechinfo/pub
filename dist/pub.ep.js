@@ -308,8 +308,6 @@ _$base.logWrite = function (url, type, options){
 _$base.page ={
 	popupPostMsg : ''	
 	,view : function(url, type, options){
-		// yshan 2015-11-30
-		
 		var tmpIfno = (typeof pubEPortalConfig === 'undefined' ? {link : {}} : pubEPortalConfig); 
 		
 		if(tmpIfno.link){
