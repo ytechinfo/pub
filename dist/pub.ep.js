@@ -23,8 +23,8 @@ var _$base = {},
 _defaultOption ={
 	version:'0.1'
 	,author:'ytkim'
-	,contextPath: (typeof global_page_context_path === 'undefined' ? '/epptl' : global_page_context_path)
-	,projectNm:'WOORIFG'
+	,contextPath: (typeof global_page_context_path === 'undefined' ? '/pub' : global_page_context_path)
+	,projectNm:'pubep'
 }
 ,_defaultAjaxOption ={
 	method :'post'
@@ -66,14 +66,16 @@ _defaultOption ={
 			,safari : 70
 		}
 	}
-	,globalStyle : {
-		'mainmenu.default' : 'WooriStyle'
-		,'mainmenu.wooriwork' : 'WooriStyle'
-		,'mainmenu.naenwoori' : 'WooriStyle_Orange'
-		,'mainmenu.wooripeople' : 'WooriStyle_Purple'
-	}
 };
 
+/**
+ * @method PubEP.getPojectName
+ * @description contextpath 가져오기.
+ */	
+_$base.init = function (option){
+	$.extend(globalOption,option)
+	return _$base; 
+}
 
 /**
  * @method PubEP.getPojectName
@@ -277,8 +279,8 @@ jQuery.fn.centerLoadingClose= function(options) {
 * url open 메소드
 * view 필수 항복  url, type , options{gubun:'menu , portlet, sso 등등', gubunkey:'구분키 값'}
 * ex : 
-* popup ex : _$base.page.view("http://dev.woorifg.com/",'popup',{gubun:'menu', gubunkey:'menu_woori',name:'popup name', mehtod:'get or post',viewOption:'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400'});
-* location ex : _$base.page.view("http://dev.woorifg.com/",'location',{gubun:'menu', gubunkey:'menu_location'});
+* popup ex : _$base.page.view("http://dev.pub.com/",'popup',{gubun:'menu', gubunkey:'menu_pub',name:'popup name', mehtod:'get or post',viewOption:'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400'});
+* location ex : _$base.page.view("http://dev.pub.com/",'location',{gubun:'menu', gubunkey:'menu_location'});
 * 
 */
 _$base.logWrite = function (url, type, options){
