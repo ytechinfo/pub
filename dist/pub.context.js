@@ -1,5 +1,5 @@
 /*
- * pubContextMenu: 0.0.1
+ * pubContextMenu: v0.0.1
  * ========================================================================
  * Copyright 2015 ytkim
  * Licensed under MIT
