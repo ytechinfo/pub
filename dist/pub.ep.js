@@ -1266,51 +1266,6 @@ function getParameter(url, param){
 	var rtnval = param ? param : {};
 	var addStyleFlag = true; 
 
-	if(!rtnval['StyleName']){
-		var tmpStyleName = getParameterVal('StyleName');
-		
-		if(typeof pubEPortalConfig !== 'undefined'){
-			if(!String.prototype.endsWith){
-				String.prototype.endsWith= function (searchString, position){
-					
-					if(!searchString) return false; 
-					
-					var subjectStr = this.toString();
-					
-					if(typeof position !=='number' || !isFinite(position) || Math.floor(position) !== position || position > subjectStr.length  ){
-						position = subjectStr.length;
-					}
-					
-					position -= searchString.length;
-					
-					var lastIndex = subjectStr.indexOf(searchString , position)
-					
-					return lastIndex !== -1 && lastIndex ===position;
-				}
-			}
-			
-			if(url.indexOf('/'+pubEPortalConfig.virtualContext+'/home') > -1 || url.endsWith(pubEPortalConfig.virtualContext)){
-				addStyleFlag = false; 
-				tmpStyleName=globalOption.globalStyle['mainmenu.default'];
-			}else{
-				var tmpUrl = paramSplit[0],urlIncludeFlag = false;
-				for(var tmpKey in globalOption.globalStyle){
-					if(tmpUrl.indexOf(tmpKey) > -1){
-						urlIncludeFlag = true; 
-						tmpStyleName = globalOption.globalStyle[tmpKey];
-						break; 
-					}
-				}
-				
-				if(!urlIncludeFlag){
-					tmpStyleName =globalOption.globalStyle[pubEPortalConfig['currentPageOID']] ? globalOption.globalStyle[pubEPortalConfig['currentPageOID']] : tmpStyleName;
-				}
-			}
-		}
-		tmpStyleName= tmpStyleName?tmpStyleName : globalOption.globalStyle['mainmenu.default'];
-		rtnval['StyleName'] =tmpStyleName;
-	}
-	
 	if(paramLen < 2) return rtnval;
 	
 	var parameters = paramSplit[1].split('&');

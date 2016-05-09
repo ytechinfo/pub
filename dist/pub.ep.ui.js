@@ -81,9 +81,7 @@ _$base.dialog={
 			_opener.$('body').append('<div id="'+_targetId+'"></div>');
 		}
 				
-		if(options.directCall){
-			;
-		}else{	
+		if(options.directCall===false){
 			_url=PubEP.getContextPath(_url)
 		}
 		
@@ -104,6 +102,8 @@ _$base.dialog={
 			_opener.$('html').css('overflow','auto');
 			_opener.$('#'+_targetId).dialog("close");
 		});
+		
+		_opener.$(".ui-dialog-title .close").css('top',($('.ui-dialog .ui-dialog-title .tit').height()/2)+'px');
 		_opener.$('html').css('overflow','hidden');
 		_opener.$('.ui-widget-overlay.ui-front').css('height',$(document).height());
 	}
