@@ -103,9 +103,66 @@ _$base.dialog={
 			_opener.$('#'+_targetId).dialog("close");
 		});
 		
-		_opener.$(".ui-dialog-title .close").css('top',($('.ui-dialog .ui-dialog-title .tit').height()/2)+'px');
+		var closeBtnMarginTop = ($('.ui-dialog .ui-dialog-titlebar').height()-$('.ui-dialog .ui-dialog-titlebar .close').height())/2;
+		_opener.$(".ui-dialog-title .close").css('top',closeBtnMarginTop+'px');
 		_opener.$('html').css('overflow','hidden');
 		_opener.$('.ui-widget-overlay.ui-front').css('height',$(document).height());
+	}
+}
+
+/**
+ * @method _$base.toast
+ * @description toast
+ */	
+_$base.toast = {
+	options : {
+		info :  {
+			icon : 'info'
+			, bgColor: '#7399e6'
+		}
+		,error : {
+			icon : 'error'
+			, bgColor: '#ee8777'
+		}
+		,warning :{
+			icon : 'warning'
+			, bgColor: '#d9b36c'
+		}
+		,success:{
+			icon : 'success'
+			, bgColor: '#7399e6'
+		}
+		,alert : {
+			icon: 'warning'
+			, bgColor: '#7399e6'
+		}
+		,text :{
+			bgColor: '#7399e6'
+		}
+	}
+	/**
+	 * @method _$base.dialog.view
+	 * @param opt {Object} toast option
+	 * @description toast view
+	 */	
+	,view :function (option){
+		var opt = this.options[option.icon]; 
+		opt = opt?opt : this.options['info'];
+		
+		// 기본 옵션 셋팅
+		var setOpt = $.extend({}, {
+			 hideAfter: 3000
+			, position: {left:"50%",top:"50%"}
+			, textColor: '#fff'
+			, stack:false
+			, showHideTransition: 'fade'
+			, position: 'mid-center'
+			//, beforeShow : function(){$('.jq-toast-wrap').css("margin" , "0 0 0 -155px") }
+		},opt);
+		
+		var tmpP = parent ||window;
+						 
+		tmpP.$.toast($.extend(true,setOpt, option));
 	}
 }
 
