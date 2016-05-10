@@ -76,7 +76,7 @@ _defaultOption ={
 	}
 };
 
-_$base.init = function (option){
+_$base.jsload = function (js){
 	requirejs.config({
 	    baseUrl: './',
 	    paths: {
