@@ -20,7 +20,8 @@ var _initialized = false
 	,resizeCursor : 'e-resize'
 	,minWidth : 30
 	,headerOptions : {
-		view :true
+		view : true
+		,sort : false
 	}
 	,height: 200
 	,reiszeable:true
@@ -100,9 +101,10 @@ Plugin.prototype ={
 		_this.config.gridWidth = _this.config.gridElementWidth+_this.options.scrollWidth;
 		_this.config.gridXScrollFlag = false;
 		_this._setThead();
-		_this.drag; 
+		_this.drag;
 		
-		_this.drawGrid();
+		_this.setData(_this.options.tbodyItem);
+
 		return this;
 	}
 	/**
@@ -142,24 +144,15 @@ Plugin.prototype ={
 		var tci = opt.tColItem
 			,thg = opt.theadGroup
 			,gridElementWidth =_this.config.gridElementWidth
-			,thiItem,thgItem, rowItem, headItem
+			,tciItem,thgItem, rowItem, headItem
 			,headGroupInfo = [],groupInfo = [], rowSpanNum = {};
 		
 		if(thg.length < 1){
 			thg.push(tci);
 		}
 		
-		var headerItemMap = {};
-		
-		for(var i=0,j=0;i <thg.length; i++) {
-			thgItem = thg[i];
-			
-			for(j=0 ; j < thgItem.length; j++){
-				headerItemMap[i+''+(thgItem[j].key||j)] = thgItem[j];
-			}
-		}
-		
 		var tmpThgIdx=0,tmpColIdx=0,tmpThgItem;
+		var sortHeaderInfo = {};
 		for(var i=0,j=0 ;i <thg.length; i++ ){
 			thgItem = thg[i];
 			groupInfo = [];
@@ -167,27 +160,25 @@ Plugin.prototype ={
 			tmpThgIdx = 0;
 
 			for(j=0; j<tci.length; j++) {
-				thiItem = tci[j];
+				tciItem = tci[j];
 				if(tmpColIdx > j || tmpThgIdx >= thgItem.length){
 					headItem = {r:i,c:j,view:false};
 				}else{
 					headItem=thgItem[tmpThgIdx];
 
-					console.log(i,rowSpanNum[j],tmpThgIdx,'headItem : ', headItem ,thgItem);
-
 					tmpColIdx +=(headItem['colspan'] || 0);
 					headItem['r'] = i;
 					headItem['c'] = j;
 					headItem['view'] = true;
+					headItem['sort'] = tciItem.sort===true?true:false;
 					headItem['colSpanIdx'] = j;
 					headItem['span'] = 'scope="col"';
-					headItem['label'] = headItem.label ? headItem.label : thiItem.label;
+					headItem['label'] = headItem.label ? headItem.label : tciItem.label;
 					
 					if(headItem.colspan){
 						headItem['colSpanIdx'] = j+headItem.colspan-1;
 						headItem['span'] = ' scope="colgroup" colspan="'+headItem.colspan+'" ';
 					}
-
 
 					if(rowSpanNum[j] && rowSpanNum[j] >= i){
 						headItem['view'] = false;
@@ -200,13 +191,19 @@ Plugin.prototype ={
 					
 					tmpThgIdx +=1;
 				}
+				if(headItem.view==true){
+					sortHeaderInfo[j] = {r:i,key:tciItem.key}
+				}
 				groupInfo.push(headItem);
 			}
 			headGroupInfo.push(groupInfo);
 		}
 		
-		console.log(rowSpanNum);
-		console.log(headGroupInfo);
+		for(var _ikey in sortHeaderInfo){
+			var tmpHgi = headGroupInfo[sortHeaderInfo[_ikey].r][_ikey]; 
+			tmpHgi['isSort'] =(tmpHgi.sort===true?true:false); 
+			headGroupInfo[sortHeaderInfo[_ikey].r][_ikey] = tmpHgi;
+		}
 
 		_this.config.headerInfo = headGroupInfo;
 
@@ -263,15 +260,45 @@ Plugin.prototype ={
 			thiItem = tci[i];
 			var tmpStyle = [];
 			tmpStyle.push('width:'+thiItem.width+'px;');
-			if(thiItem.viewFlag===false){
+			if(thiItem.hidden===true){
 				tmpStyle.push('display:none;');
 			}
-			strHtm.push('	<col id="'+type+i+'" style="'+tmpStyle.join('')+'" />');
+			strHtm.push('<col id="'+type+i+'" style="'+tmpStyle.join('')+'" />');
 		}
 		strHtm.push('</colgroup>');
 
-		return strHtm.join('');
+		return strHtm.join('');	
+	}
+	,setData :function (data){
+		var _this = this
+			,opt = _this.options
+			,tci = opt.tColItem;
+
+		if(data){
+			_this.options.tbodyItem = data
+		}
+
+		// sort 값이 있으면 초기 데이타 정렬
+		if(opt.headerOptions.sort !==false){
+			var _key ='', _sortType='asc', _idx = -1;
+			if(typeof opt.headerOptions.sort ==='object'){
+				_key = opt.headerOptions.sort.key;
+				_sortType = opt.headerOptions.sort.type=='desc'?'desc':'asc';
+			}else{
+				_key = opt.headerOptions.sort;
+			}
+
+			for(var i=0 ;i < tci.length ; i++){
+				if(tci[i].key == _key){
+					_idx = i; 
+					break; 
+				}
+			}
+			
+			if(_idx != -1) _this.getSortList(_idx, _sortType);
+		}
 		
+		_this.drawGrid();
 	}
 	/**
      * @method drawGrid
@@ -284,6 +311,7 @@ Plugin.prototype ={
 			,ci = _this.config
 			,tci = opt.tColItem
 			,tbi = opt.tbodyItem
+			,hederOpt=opt.headerOptions
 			,thiItem;
 
 		type = type ? type :'all';
@@ -295,7 +323,7 @@ Plugin.prototype ={
 			strHtm.push(_this._getColGroup(_this.prefix+'colHeader'));
 
 			strHtm.push('<thead>');
-			if(ci.headerInfo.length > 0 && opt.headerOptions.view){
+			if(ci.headerInfo.length > 0 && hederOpt.view){
 				var ghArr, ghItem;
 			
 				for(var i =0,j=0 ; i <ci.headerInfo.length; i++){
@@ -305,7 +333,7 @@ Plugin.prototype ={
 						ghItem = ghArr[j];
 						if(ghItem.view){
 							strHtm.push('	<th '+ghItem.span+' class="'+(_this.prefix+'-htd-'+ghItem.key)+'" '+(ghItem.style?' style="'+ghItem.style+'" ':'')+'>');
-							strHtm.push('		<div class="labelWrapper">');
+							strHtm.push('		<div class="label-wrapper '+(ghItem.isSort===true?'sort-header':'')+'">');
 							strHtm.push('			<div class="pub-header-cont">'+ghItem.label+'</div>');
 							if(opt.headerResize){
 								strHtm.push('			<div class="pub-header-resizer" colspanidx="'+ghItem.colSpanIdx+'"></div>');
@@ -328,6 +356,7 @@ Plugin.prototype ={
 			strHtm.push('<tbody>');
 			if(tbi.length > 0){
 				var tbiItem, clickFlag = false;
+				
 				for(var i =0 ; i <tbi.length ; i++){
 					tbiItem = tbi[i];
 					strHtm.push('<tr class="pub-body-tr" rowinfo="'+i+'">');
@@ -336,7 +365,7 @@ Plugin.prototype ={
 						thiItem = tci[j];
 						clickFlag = thiItem.colClick;
 						
-						strHtm.push('<td class="pub-body-td '+(_this.prefix+'-btd-'+thiItem.key)+' '+(thiItem.viewFlag===false ? 'pubGrid-disoff':'')+'"><div class="pub-content"><a href="javascript:;" class="'+ (clickFlag?'pub-body-td-click':'') +'" colinfo="'+i+','+j+'">'+tbiItem[thiItem.key]+'</a></div></td>');
+						strHtm.push('<td class="pub-body-td '+(_this.prefix+'-btd-'+thiItem.key)+' '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'"><div class="pub-content"><a href="javascript:;" class="'+ (clickFlag?'pub-body-td-click':'') +'" colinfo="'+i+','+j+'">'+tbiItem[thiItem.key]+'</a></div></td>');
 					}
 				}
 			}else{
@@ -412,7 +441,7 @@ Plugin.prototype ={
 	}
 	/**
      * @method getItems
-	 * @param  idx {String} item index
+	 * @param  idx {Integer} item index
      * @description item 값 얻기.
      */
 	,getItems:function (idx){
@@ -423,9 +452,8 @@ Plugin.prototype ={
 		}
 	}
 	/**
-     * @method getItems
-	 * @param  idx {String} item index
-     * @description item 값 얻기.
+     * @method _initBodyEvent
+     * @description 바디 이벤트 초기화.
      */
 	,_initBodyEvent : function (){
 		var _this = this
@@ -463,6 +491,46 @@ Plugin.prototype ={
 				
 			});
 		}
+	}
+	/**
+     * @method getSortList
+	 * @param  idx {Integer} item index
+	 * @param  sortType {String} 정렬 타입 ex(asc,desc)
+     * @description header resize 처리.
+     */
+	,getSortList :function (idx, sortType){
+		var _this = this
+			,opt = _this.options
+			,tbi = opt.tbodyItem;
+
+
+		console.log(idx, sortType, tbi.length)
+
+		if(idx < 0 || tbi.length < 1 || idx >= tbi.length){
+			return [];
+		}
+			
+		var _key = opt.tColItem[idx].key;
+
+		function getItemVal(itemObj){
+			return itemObj[_key];
+		}
+		
+		if(sortType=='asc'){  // 오름차순
+			tbi.sort(function (a,b){
+				var v1 = getItemVal(a)
+					,v2 = getItemVal(b);
+				return v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
+			});
+		}else{
+			tbi.sort(function (a,b){ // 내림차순
+				var v1 = getItemVal(a)
+					,v2 = getItemVal(b);
+				return v1 > v2 ? -1 : v1 < v2 ? 1 : 0;
+			});
+		}
+
+		return tbi; 
 	}
 	/**
      * @method initHeaderResize
@@ -559,7 +627,7 @@ Plugin.prototype ={
 	}
 };
 
-$.pubGrid = function (selector,options) {
+$.pubGrid = function (selector,options, args) {
 	if(!selector){
 		return ; 
 	}
@@ -575,9 +643,17 @@ $.pubGrid = function (selector,options) {
 		_datastore[selector] = _cacheObject;
 	}
 
+
 	if(options){
-		if(options === 'string'){
-			_cacheObject[options].call();
+		if(typeof options === 'string'){
+			var callObj =_cacheObject[options]; 
+			if(typeof callObj ==='undefined'){
+				return options+' not found';
+			}else if(typeof callObj==='function'){
+				return _cacheObject[options].apply(_cacheObject,args);
+			}else {
+				return typeof callObj==='function'; 
+			}
 		}else{
 			_cacheObject.setOptions(options);
 		}
