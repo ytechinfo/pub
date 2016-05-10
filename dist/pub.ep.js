@@ -76,12 +76,24 @@ _defaultOption ={
 	}
 };
 
+_$base.init = function (option){
+	requirejs.config({
+	    baseUrl: './',
+	    paths: {
+	    	jquery: 'jquery-1.10.2.min'
+	    	,jqueryUI: 'jquery-ui-1.10.3.custom.min'
+	    	,toast: 'jquery.toast.min'
+	    	,sortable: 'jquery.ui.sortable'
+	    }
+	}); 
+}
+
 /**
  * @method init
  * @description 설정 초기화.
  */	
 _$base.init = function (option){
-	$.extend(globalOption,option)
+	$.extend(globalOption,option);
 	return _$base; 
 }
 
