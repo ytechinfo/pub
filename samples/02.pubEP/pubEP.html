@@ -4,7 +4,7 @@
 <TITLE>pub EP-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-<link href="../../theme/default/pubGrid.css" rel="stylesheet">
+<link href="../../theme/default/pub.ep.css" rel="stylesheet">
 
 <script src="../../plugins/jquery-1.10.2.min.js"></script>
 <script src="../../plugins/jquery-ui-1.10.3.custom.min.js"></script>
@@ -18,7 +18,7 @@
     a { text-decoration: none;}
     .container { display: block; width: 1200px; margin: auto; }
     strong { padding-bottom: 1px; border-bottom: 1px dotted; }
-    code { font-family: monospace; color: #2d2d2d; background: whitesmoke; display: block; padding: 10px; border: 1px solid #ccc; overflow: scroll;}
+    code { word-break:break-all;font-family: monospace; color: #2d2d2d; background: whitesmoke; display: block; padding: 10px; border: 1px solid #ccc; overflow: scroll;}
     a.eval-js { color: whitesmoke; padding: 5px 10px; display: inline-block; background: #2d2d2d; border-radius: 2px; }
     a.copy-btn { margin-left:10px;color: whitesmoke; padding: 5px 10px; display: inline-block; background: #2d2d2d; border-radius: 2px; }
     span.muted { font-size: 17px; color: #8B7373; }
@@ -37,16 +37,16 @@
     	text-align:right;
     }
     .text-left{
-    	text-align:left;
+		text-align:left;
     }
     .exampleTbl {  border: 1px solid;}
     .exampleTbl td {vertical-align:top;  border-top: 1px solid;}
     .exampleTbl td:last-child {padding-top:27px;}
 </style>
-<table width="100%" border="1" class="exampleTbl">
+<table width="100%" border="1" class="exampleTbl" >
 	<colgroup>
-		<col width="500px">
-		<col width="500px">
+		<col width="50%">
+		<col width="50%">
 	</colgroup>
 	<tr>
 		<th colspan="2">
@@ -57,22 +57,76 @@
 		<th>사용법 </th>
 		<th>설명 </th>
 	</tr>
+
 	<tr>
 		<td>
 <div class="code-runner text-right">
 	<a href="#" class="copy-btn">copy</a>
-	<a href="#" class="eval-js">demo dialog</a>
-<pre class="text-left"><code class="text-to-copy">PubEPUI.dialog.mgmtDialog('./pubEPUI.html', {
-					title : 'pubjs'
-					,width : '480'
-					,height : '355'
-					,directCall :true
-				});</code></pre>
+	<a href="#" class="eval-js">demo</a>
+<div class="text-left"><code class="text-to-copy">PubEP.req.ajax({
+	url: 'http://jsfiddle.net/echo/jsonp/?text=%27asdf%27',
+	loadSelector : '#ajaxtest',
+	cache: false,
+	dataType: "jsonp",
+	data:{
+		aaa:'test'
+	},
+	success: function(resData) {
+		$('#ajaxtest').html('result');
+	},
+	error: function(xhr, status, e) {
+		
+	}
+});</code></div>
 </div>
 		</td>
 		<td>
 <code>
-옵션은 jquery-ui-1.10.3.custom.min.js dialog 동일합니다.  
+ajax jquery ajax 옵션과 동일.
+</code>
+<div id="ajaxtest" style="height:40px;border:1px solid #000;">결과</div>
+		</td>
+	</tr>
+
+	<tr>
+		<td>
+<div class="code-runner text-right">
+	<a href="#" class="copy-btn">copy</a>
+	<a href="#" class="eval-js">demo</a>
+<div class="text-left"><code class="text-to-copy">PubEP.cookie('cookieName')</code></div>
+</div>
+		</td>
+		<td>
+<code>
+cookie 보기 PubEP.cookie('cookieName')
+cookie 셋팅 PubEP.cookie('쿠키명', '쿠키값', {expires:1, path:'/', domain:'zpubjs.com'})
+
+</code>
+		</td>
+	</tr>
+
+	<tr>
+		<td>
+<div class="code-runner text-right">
+	<a href="#" class="copy-btn">copy</a>
+	<a href="#" class="eval-js">demo</a>
+<div class="text-left"><code class="text-to-copy">
+PubEP.page.view('https://github.com/young-tae/pub', "popup", {gubun:'popup',method:"get", position:{align:'top' ,topMargin:50,leftMargin:200},gubunkey:"test", viewOption:'width=500,height=500'});
+</code></div>
+</div>
+		</td>
+		<td>
+<code>
+팝업보기<br/>
+PubEP.page.view('https://github.com/young-tae/pub', "popup", {gubun:'popup',method:"get", gubunkey:"test", viewOption:'width=500,height=500'});
+<br/>
+<br/>
+페이지 보기.<br/>
+PubEP.page.view('https://github.com/young-tae/pub', "location", '');
+<br/>
+<br/>
+iframe 보기<br/>
+PubEP.page.view('https://github.com/young-tae/pub', "iframe", {target:'#iframeView'});
 </code>
 		</td>
 	</tr>
@@ -80,6 +134,7 @@
 </table>
 
 
+<iframe id="iframeView" width="400px" height="500px"></iframe>
 <div id="copyArea" style="width:3px;height:3px;overflow:hidden;"></div>
 <script>
 $(document).ready(function() {
@@ -87,7 +142,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         if ( !$(this).hasClass('generate-toast') ) {
-            var code = $(this).siblings('pre').find('code').text();
+            var code = $(this).siblings('div').find('code').text();
             code.replace("<span class='hidden'>", '');
             code.replace("</span");
 
@@ -101,7 +156,7 @@ $(document).ready(function() {
         var code = $(this).siblings('pre').find('code').text();
 		var tmpid = 'text-copy-areaid'+GAINEP.generateUUID(); 
 		tmpCopyArea.empty();
-		tmpCopyArea.html('<pre><code id="'+tmpid+'">'+code+'</code></pre>');
+		tmpCopyArea.html('<div><code id="'+tmpid+'">'+code+'</code></div>');
         
         // select the text
         var copyItem = document.querySelector('#'+tmpid);
@@ -111,7 +166,6 @@ $(document).ready(function() {
         try {
             // now that we've selected the text, execute the copy command
             var successful = document.execCommand('copy');
-           
         } catch (err) {
             console.log(err)
         }

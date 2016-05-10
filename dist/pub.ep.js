@@ -76,18 +76,6 @@ _defaultOption ={
 	}
 };
 
-_$base.jsload = function (js){
-	requirejs.config({
-	    baseUrl: './',
-	    paths: {
-	    	jquery: 'jquery-1.10.2.min'
-	    	,jqueryUI: 'jquery-ui-1.10.3.custom.min'
-	    	,toast: 'jquery.toast.min'
-	    	,sortable: 'jquery.ui.sortable'
-	    }
-	}); 
-}
-
 /**
  * @method init
  * @description 설정 초기화.
@@ -120,7 +108,6 @@ _$base.getPojectName=function (){
  * @param options 
  * @description cookie 처리를 위한 메소드
  */
-
 _$base.cookie = function(name, val, options) {
 	if (typeof val != 'undefined') { 
 		options = options || {};
@@ -237,7 +224,7 @@ jQuery.fn.centerLoading = function(options) {
 		left :'0',
 		centerYn:'Y',
 		bgColor : '#ffffff',
-		loadingImg : '/images/loading.gif',
+		loadingImg : '../../theme/default/images/loading.gif',
 		cursor:	'wait',
 		contentClear : false
 	}
@@ -386,8 +373,6 @@ _$base.page ={
 		
 		tmpPopOption = tmpPopOption.replace(/\s/gi,'');
 		
-		//console.log(tmpPopOption)
-
 		if(tmpPopOption != ''){
 		
 			var popupOptArr = tmpPopOption.split(',');
@@ -421,52 +406,59 @@ _$base.page ={
 				//console.log("111:"+tmpPosition.browser[$.browser.name]);
 				tmpOpt += (addFlag ? ( (tmpOpt==''?'':',') + tmpItem ) : '');
 			}
+
 			tmpOpt += addScrollbarOpt?'scrollbars=yes':'';
 
 			if(typeof options.position=='undefined' && _h !=0 ){
 				tmpPosition.align='center';
 			}
-			
+			var tmpTopMargin = tmpPosition.topMargin
+				,tmpLeftMargin = tmpPosition.leftMargin;
+
 			var heightMargin = tmpPosition.browser[$.browser.name]||tmpPosition.browser['default'];
-			_h= ( _h==0 ? (screen.availHeight-heightMargin- tmpPosition.topMargin) :_h) ;
-			
+			_h= ( _h==0 ? (screen.availHeight-heightMargin- tmpTopMargin) :_h);
+						
 			_h =addStatusOpt?_h-23:_h; // status바 체크.
 			//console.log(addStatusOpt, _h)
 			//console.log('111height : '+_h,'topMargin : '+ heightMargin,'heightMargin : '+heightMargin,'availHeight : '+ screen.availHeight);
-
+			var _viewPosition = {};
 			if(tmpPosition.align=='top'){
-				var tmpTopMargin = tmpPosition.topMargin;
-				var aaa = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
 				
-				var ua = window.navigator.userAgent; 
-				var old_ie= ua.indexOf('MSIE');
-				var new_ie= ua.indexOf('Trident/');
-				var _top = 0 , _left = 0 ; 
+				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
+								
+				var _top = 0 , _left = 0;
 				
-				if(old_ie >-1 || new_ie >-1){
+				if($.browser.name=='msie'){
 					if(_t!=0){
-						aaa.top = _t;
+						_viewPosition.top = _t;
 					}else{
-						aaa.top = tmpTopMargin;
+						_viewPosition.top = tmpTopMargin;
 					}
 				}else{
-					aaa.top = typeof screen['availTop']!=='undefined' ?screen['availTop'] : (window.screenTop || screen.top);
+					_viewPosition.top = typeof screen['availTop']!=='undefined' ?screen['availTop'] : (window.screenTop || screen.top);
 					if(_t!=0){
-						aaa.top = (aaa.top > 0? aaa.top- _t : aaa.top+_t); 
+						_viewPosition.top = (_viewPosition.top > 0? _viewPosition.top- _t : _viewPosition.top+_t); 
 					}else{
-						aaa.top = (aaa.top > 0? aaa.top- tmpTopMargin : aaa.top+tmpTopMargin); 
+						_viewPosition.top = (_viewPosition.top > 0? _viewPosition.top- tmpTopMargin : _viewPosition.top+tmpTopMargin); 
 					}
 				}
-				tmpPopOption = tmpOpt+', width=' + _w + 'px, height=' + _h + 'px, top=' + aaa.top + 'px, left=' + aaa.left+'px';
-				
-			}else if(tmpPosition.align=='center'){
-				
-				var aaa = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
-				
-				tmpPopOption = tmpOpt+', width=' + _w + 'px, height=' + _h + 'px, top=' + aaa.top + 'px, left=' + aaa.left+'px';
+			}else if(tmpPosition.align=='left'){
+				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
+				_viewPosition.left =0;
+			}else if(tmpPosition.align=='right'){
+				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter);
+				_viewPosition.left = window.screen.availWidth-_w;
+			}else if(tmpPosition.align=='bottom'){
+				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter);
+				_viewPosition.top = window.screen.availHeight-_h;
+			}else{
+				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
 			}
+			
+			_viewPosition.top = isNaN(tmpTopMargin)?_viewPosition.top:_viewPosition.top+tmpTopMargin;
+			_viewPosition.left = isNaN(tmpLeftMargin)?_viewPosition.left:_viewPosition.left+tmpLeftMargin
 
-			//console.log('tmpPopOption : '+tmpPopOption);
+			tmpPopOption = tmpOpt+', width=' + _w + 'px, height=' + _h + 'px, top=' + _viewPosition.top + 'px, left=' + _viewPosition.left+'px';
 		}
 
 		// get method
@@ -496,14 +488,10 @@ _$base.page ={
 				}else{
 					inputStr.push('<input type="hidden" name="'+key+'" value=\''+((typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal))+'\'/>');
 				}
-				
-				
 			}
 			inputStr.push('</form>');
 			inputStr.push('<script type="text/javascript">try{document.charset="utf-8";}catch(e){}document.'+targetId+'.submit();</'+'script>');
 			
-			//_this.popupPostMsg = inputStr.join();
-			//console.log(inputStr.join());
 			
 			var tmpPopupObj=window.open('about:blank', tmpName, tmpPopOption);
 			
@@ -523,110 +511,6 @@ _$base.page ={
 				*/
 				//console.log('parent',e);
 			}
-		}
-	}
-	,_addrHidePopup : function (url,options){
-		var targetId = 'PubEP_'+_$base.util.generateUUID().replace(/-/g,'')
-			, tmpParam = options.param?options.param:{}
-			, tmpMethod = options.method?options.method:globalOption.defaultPopupMethod
-			, tmpPopOption = options.viewOption?options.viewOption:''
-			, tmpPosition = (options.position ? $.extend(true,globalOption.defaultPopupPosition,( $.isPlainObject(options.position)?options.position:{align:options.position} )) : globalOption.defaultPopupPosition)
-			, tmpName ='PubEP_'+(options.name?( options.name.replace(/[ \{\}\[\]\/?.,;:|\)*~`!^\-+┼<>@\#$%&\'\"\\(\=]/gi,'') ):targetId.replace(/-/g,''));
-		
-		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > 0 ?url.substring(0,urlIdx):url;
-		
-		tmpPopOption = tmpPopOption.replace(/\s/gi,'');
-		
-		if(tmpPosition.align=='center'){
-			var popupOptArr = tmpPopOption.split(',');
-			var tmpItem ,_t , _l ,_w, _h, addFlag ,tmpOpt=''; 
-				
-			for(var i = 0 ;i < popupOptArr.length; i++){
-				tmpItem = popupOptArr[i];
-				addFlag = true; 
-				if(tmpItem.toLowerCase().indexOf('width=')==0){
-					_w= tmpItem.replace(/[^0-9]/g,'');
-					addFlag = false; 
-				}
-				if(tmpItem.toLowerCase().indexOf('height=')==0){
-					_h= tmpItem.replace(/[^0-9]/g,'');
-					addFlag = false;
-				}
-				if(tmpItem.toLowerCase().indexOf('top=')==0){
-					_t= tmpItem.replace(/[^0-9]/g,'');
-					addFlag = false;
-				}
-				if(tmpItem.toLowerCase().indexOf('left=')==0){
-					_l= tmpItem.replace(/[^0-9]/g,'');
-					addFlag = false;
-				} 
-		
-				tmpOpt += (addFlag ? ( (tmpOpt==''?'':',') + tmpItem ) : '');
-			}
-			
-			var aaa = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName,  tmpPosition.ieDualCenter); 
-			tmpPopOption = tmpOpt+', width=' + _w + ', height=' + _h + ', top=' + aaa.top + ', left=' + aaa.left;
-		}
-		
-		tmpParam=getParameter(url , tmpParam);
-		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > 0 ?url.substring(0,urlIdx):url;
-		var strHtm = [];
-		strHtm.push("<HTML>");
-		strHtm.push("<meta charset=\"UTF-8\">");
-		strHtm.push("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">");
-		strHtm.push("  <style>");
-		strHtm.push("  html,body{");
-		strHtm.push("	height:100%;");
-		strHtm.push("	margin:0;");
-		strHtm.push("  }");
-		strHtm.push("  iframe{");
-		strHtm.push("	display:block;");
-		strHtm.push("	background:#000;");
-		strHtm.push("	border:0;");
-		strHtm.push("	width:100%;");
-		strHtm.push("	height:100%;");
-		strHtm.push("  }");
-		strHtm.push("  </style>");
-		strHtm.push(" </HEAD>");
-		strHtm.push(" <BODY>");
-
-		// get method
-		if(globalOption.httpMethod.get ==tmpMethod){
-			tmpParam=getParameter(url , tmpParam);
-			tmpParam=paramToArray(tmpParam);
-			
-			openUrl =openUrl+'?'+tmpParam.join('&');
-
-			strHtm.push("  <iframe name=\"iframe_target\" src=\""+openUrl+"\"></iframe>");
-		}else{  // post method
-			tmpParam=getParameter(url , tmpParam);
-			strHtm.push('<form action="'+openUrl+'" method="post" target="iframe_target" id="'+targetId+'" name="'+targetId+'">');
-			
-			var tmpVal;
-			for(var key in tmpParam){
-				tmpVal = tmpParam[key];
-				strHtm.push('<input type="hidden" name="'+key+'" value=\''+((typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal))+'\'/>');
-			}
-			strHtm.push('</form>');
-
-			strHtm.push("  <iframe name=\"iframe_target\" src=\"\"></iframe>");
-
-			strHtm.push('<script type="text/javascript">try{document.charset="utf-8";}catch(e){}document.'+targetId+'.submit();</'+'script>');
-		}
-
-		strHtm.push(" </BODY>");
-		strHtm.push("</HTML>");
-
-		var tmpPopupObj=window.open('about:blank', tmpName, tmpPopOption);
-
-		try{
-			tmpPopupObj.document.write(strHtm.join(''));
-			tmpPopupObj.focus();
-		}catch(e){
-			//console.log(strHtm.join(''))
-			//console.log(e);
 		}
 	}
 	,_iframe:function (url,options){
