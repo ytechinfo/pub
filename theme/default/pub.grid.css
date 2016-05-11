@@ -136,13 +136,12 @@
 	position: relative;
 	min-height: 20px;
 	margin-right:5px;
-	text-align: center;
+	padding-left:2px;
 	color: #3b3b3b;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-
 .pubGrid-header .label-wrapper > .pub-header-resizer {
 	position: absolute;
 	right: 0;
@@ -152,6 +151,11 @@
 	cursor: col-resize;
 	z-index: 1;
 }
+/* --/header end */
+
+.pubGrid-body .al{text-align:left;}
+.pubGrid-body .ar{text-align:right;}
+.pubGrid-body .ac{text-align:center;}
 
 /**
 *************************************************************************************

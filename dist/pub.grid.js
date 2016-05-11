@@ -213,11 +213,13 @@ Plugin.prototype ={
 			,_w = 0;
 		
 		for(var j=0; j<tci.length; j++){
-			if(!opt.tColItem[j].width){
-				opt.tColItem[j].width =colWidth;
+			var tciItem = opt.tColItem[j];
+			if(!tciItem.width){
+				tciItem.width =colWidth;
 			}
-
-			_w +=opt.tColItem[j].width;
+			tciItem['_alignClass'] = tciItem.align=='right' ? 'ar' : (tciItem.align=='center'?'ac':'al');
+			opt.tColItem[j] = tciItem;
+			_w +=tciItem.width;
 		}
 		
 		if(_w > gridElementWidth ){
@@ -367,7 +369,7 @@ Plugin.prototype ={
 						thiItem = tci[j];
 						clickFlag = thiItem.colClick;
 						
-						strHtm.push('<td class="pub-body-td '+(_this.prefix+'-btd-'+thiItem.key)+' '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'"><div class="pub-content"><a href="javascript:;" class="'+ (clickFlag?'pub-body-td-click':'') +'" colinfo="'+i+','+j+'">'+tbiItem[thiItem.key]+'</a></div></td>');
+						strHtm.push('<td class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'"><div class="pub-content '+thiItem._alignClass+'"><a href="javascript:;" class="'+ (clickFlag?'pub-body-td-click':'') +'" colinfo="'+i+','+j+'">'+tbiItem[thiItem.key]+'</a></div></td>');
 					}
 				}
 			}else{
@@ -584,9 +586,6 @@ Plugin.prototype ={
 		var _this = this
 			,opt = _this.options
 			,tbi = opt.tbodyItem;
-
-
-		console.log(idx, sortType, tbi.length)
 
 		if(idx < 0 || tbi.length < 1 || idx >= tbi.length){
 			return [];
