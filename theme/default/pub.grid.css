@@ -11,7 +11,7 @@
 }
 
 .pubGrid-wrapper {
-	
+	font-family: Ubuntu, Arial, "Apple SD Gothic Neo", "¾ÖÇÃ SD °íµñ Neo", "NanumBarunGothic", "NanumBarunGothicOTF", "³ª´®¹Ù¸¥°íµñ", "³ª´®¹Ù¸¥°íµñOTF", "Malgun Gothic", "¸¼Àº °íµñ", "NanumGothic", "NanumGothicOTF", "³ª´®°íµñ", "³ª´®°íµñOTF", sans-serif; font-size: 14px;  font-weight: light; 
 }
 
 .pubGrid-container {
@@ -23,7 +23,7 @@
 	background-color: #EFEFEF;
 	overflow-x: hidden;
 }
-
+/* header ¿µ¿ª*/
 .pubGrid-header {
 	border-collapse: collapse;
 	table-layout: fixed;
@@ -32,11 +32,57 @@
 	font-size:10pt;
 }
 
+.pubGrid-header .label-wrapper {
+	position: relative;
+    padding:0;	
+	width:100%;
+    padding-right: 4px;
+	font-size:12pt;
+}
 
+.pubGrid-header .label-wrapper > .pub-header-label {
+	position: relative;
+	color: #5e5e5e;
+	text-shadow: 0 1px 0 #fff;
+	width:100%;
+	padding: 0px 0px;
+}
+.pubGrid-header .pub-header-tr .pub-header-cont {
+	width: 100%;
+	height: 100%;
+}
+.pubGrid-header .pub-header-tr .pub-header-cont .inner {
+  vertical-align: middle;
+  text-align: center;
+}
+.pubGrid-header .pub-header-tr .pub-header-cont .inner .centered {
+  position: relative;
+  padding: 6px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size:11pt;
+  font-weight:normal;
+}
+
+.pubGrid-header .pub-header-tr .pub-header-cont.sort-header {
+    cursor: pointer;
+}
+
+.pubGrid-header .pub-header-tr .label-wrapper.sortasc {
+    background: url(./images/sort-asc.png) center 0 no-repeat;
+    background-position: 50% -3px;
+}
+
+.pubGrid-header .pub-header-tr .label-wrapper.sortdesc {
+    background: url(./images/sort-desc.png) center 0 no-repeat;
+    background-position: 50% -3px;
+}
 .pubGrid-header th, .pubGrid td {
 	border: 1px solid #ddd;
 }
 
+/* body ¿µ¿ª.*/
 .pubGrid-body-wrapper{
 	position: relative;
 	margin-top :-1px;
@@ -86,34 +132,11 @@
 .pubGrid-body tbody .pub-body-tr:hover {
 	background: #ddd;
 }
-
-.pubGrid-header .label-wrapper {
-	position: relative;
-    margin:0;
-    padding:0;	
-	width:100%;
-}
-
-.pubGrid-header .label-wrapper > .pub-header-label {
-	position: relative;
-	display: table;
-	color: #5e5e5e;
-	text-shadow: 0 1px 0 #fff;
-	width:100%;
-	padding: 2px 2px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.pubGrid-header .label-wrapper > .pub-header-label > div{
-	display: table-cell;vertical-align: middle;
-}
-
-.pubGrid-body .pub-body-tr > td > .pub-content ,.pub-header-cont{
+.pubGrid-body .pub-body-tr > td > .pub-content {
 	position: relative;
 	min-height: 20px;
-	padding: 2px 2px;
+	margin-right:5px;
+	text-align: center;
 	color: #3b3b3b;
 	white-space: nowrap;
 	overflow: hidden;
@@ -130,19 +153,6 @@
 	z-index: 1;
 }
 
-.pubGrid-header .pub-header-tr .label-wrapper.sort-header {
-    cursor: pointer;
-}
-
-.pubGrid-header .pub-header-tr .label-wrapper.sortasc {
-    background: url(./images/sort-asc.png) center 0 no-repeat;
-    background-position: 50% -3px;
-}
-
-.pubGrid-header .pub-header-tr .label-wrapper.sortdesc {
-    background: url(./images/sort-desc.png) center 0 no-repeat;
-    background-position: 50% -3px;
-}
 /**
 *************************************************************************************
  * ContextJS Styles

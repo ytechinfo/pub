@@ -14,7 +14,6 @@ var _initialized = false
 ,_defaults = {
 	fixed:false
 	,colWidthFixed:false 
-	,headerResize :true // header resize 여부
 	,drag:[]
 	,scrollWidth : 18
 	,resizeCursor : 'e-resize'
@@ -22,6 +21,9 @@ var _initialized = false
 	,headerOptions : {
 		view : true
 		,sort : false
+		,resize:{
+			enabled : true
+		}
 	}
 	,height: 200
 	,reiszeable:true
@@ -103,7 +105,7 @@ Plugin.prototype ={
 		_this._setThead();
 		_this.drag;
 		
-		_this.setData(_this.options.tbodyItem);
+		_this.setData(_this.options.tbodyItem , true);
 
 		return this;
 	}
@@ -269,7 +271,7 @@ Plugin.prototype ={
 
 		return strHtm.join('');	
 	}
-	,setData :function (data){
+	,setData :function (data, initFlag){
 		var _this = this
 			,opt = _this.options
 			,tci = opt.tColItem;
@@ -297,8 +299,11 @@ Plugin.prototype ={
 			
 			if(_idx != -1) _this.getSortList(_idx, _sortType);
 		}
-		
-		_this.drawGrid();
+		if(initFlag){
+			_this.drawGrid();
+		}else{
+			_this.drawGrid('tbody');
+		}
 	}
 	/**
      * @method drawGrid
@@ -332,12 +337,10 @@ Plugin.prototype ={
 					for(j=0 ; j <ghArr.length; j++){
 						ghItem = ghArr[j];
 						if(ghItem.view){
-							strHtm.push('	<th '+ghItem.span+' class="'+(_this.prefix+'-htd-'+ghItem.key)+'" '+(ghItem.style?' style="'+ghItem.style+'" ':'')+'>');
-							strHtm.push('		<div class="label-wrapper '+(ghItem.isSort===true?'sort-header':'')+'">');
-							strHtm.push('			<div class="pub-header-cont">'+ghItem.label+'</div>');
-							if(opt.headerResize){
-								strHtm.push('			<div class="pub-header-resizer" colspanidx="'+ghItem.colSpanIdx+'"></div>');
-							}
+							strHtm.push('	<th '+ghItem.span+' class="'+(_this.prefix+'-htd-'+(i+'_'+j))+'" '+(ghItem.style?' style="'+ghItem.style+'" ':'')+'>');
+							strHtm.push('		<div class="label-wrapper">');
+							strHtm.push('			<div class="pub-header-cont outer '+(ghItem.isSort===true?'sort-header':'')+'" col_idx="'+j+'"><div class="inner"><div class="centered">'+ghItem.label+'</div></div></div>');
+							strHtm.push('			<div class="pub-header-resizer" colspanidx="'+ghItem.colSpanIdx+'"></div>');
 							strHtm.push('		</div>');
 							strHtm.push('	</th>');
 						}
@@ -352,8 +355,7 @@ Plugin.prototype ={
 		//body html  만들기
 		function tbodyHtml(){
 			var strHtm = [];
-			strHtm.push(_this._getColGroup(_this.prefix+'colbody'));
-			strHtm.push('<tbody>');
+			
 			if(tbi.length > 0){
 				var tbiItem, clickFlag = false;
 				
@@ -371,7 +373,7 @@ Plugin.prototype ={
 			}else{
 				strHtm.push('<tr><td colspan="'+tci.length+'"><div class="text-center">NO DATA</div></td></tr>');
 			}
-			strHtm.push('</tbody>');
+			
 			return strHtm.join('');
 		}
 		
@@ -405,6 +407,9 @@ Plugin.prototype ={
 			strHtm.push('		<div class="pubGrid-body-wrapper">');
 			strHtm.push('			<div id="'+_this.prefix+'pubGrid-body-container" class="pubGrid-body-container" style="height:'+opt.height+'px;">');
 			strHtm.push('				<table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body" style="width:'+_gw+'px;">');
+			strHtm.push(					_this._getColGroup(_this.prefix+'colbody'));
+			strHtm.push('					<tbody class="pub-cont-tbody">');
+			strHtm.push('					</tbody>');
 			strHtm.push('				</table>');	
 			strHtm.push('			</div>');
 			strHtm.push('		</div>');
@@ -427,17 +432,71 @@ Plugin.prototype ={
 				_this.config.headerWrapElement.scrollLeft($(this).scrollLeft());
 			});
 
-			_this.initHeaderResize();
-			
-			$(_this.selector +' .pubGrid-body').empty().html(tbodyHtml());
-
+			// resize 설정
+			_this._initHeaderEvent();
+			_this._headerResize(hederOpt.resize.enabled);
+						
+			$(_this.selector +' .pub-cont-tbody').empty().html(tbodyHtml());
 		}
 		
 		if(type =='tbody'){
-			$(_this.selector +' .pubGrid-body').empty().html(tbodyHtml());
+			$(_this.selector +' .pub-cont-tbody').empty().html(tbodyHtml());
+			_this._initBodyEvent();
 		}
+	}
+	/**
+     * @method resizeEnable
+     * @description resize 사용
+     */
+	,resizeEnable :function (){
+		this._headerResize(true);
+	}
+	/**
+     * @method resizeDisable
+     * @description risize 비활성.
+     */
+	,resizeDisable :function (){
+		this._headerResize(false);
+	}
+	/**
+     * @method colResize
+	 * @param  flag {Boolean} resize 여부
+     * @description header resize 설정
+     */
+	,_headerResize :function (flag){
+		var _this = this
+			,resizeEle = $('#'+_this.prefix+'pubGrid-header .pub-header-resizer');
+		if(flag===true){
+			resizeEle.css('cursor','col-resize');
+			
+			resizeEle.on('touchstart.pubresizer mousedown.pubresizer',function (e){
+				var oe = e.originalEvent.touches;
 
-		_this._initBodyEvent();
+				_this.drag = {};
+				_this.drag.pageX = oe ? oe[0].pageX : e.pageX;
+				_this.drag.ele = $(this);
+				_this.drag.colspanidx = _this.drag.ele.attr('colspanidx');
+				_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.colspanidx);
+				_this.drag.colBody= $('#'+_this.prefix+'colbody'+_this.drag.colspanidx);
+				_this.drag.colW = _this.drag.colHeader.attr('_width')?parseInt(_this.drag.colHeader.attr('_width'),10):_this.drag.colHeader.width();
+				_this.drag.gridW = _this.config.headerElement.width();
+				
+				// resize시 select안되게 처리 . cursor처리 
+				_doc.attr("onselectstart", "return false");
+				_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.resizeCursor + "!important}</style>");
+
+				_doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e){
+					_this.onGripDrag(e,_this);
+				}).on('touchend.colheaderresize mouseup.colheaderresize mouseleave.colheaderresize', function (e){
+					_this.onGripDragEnd(e,_this);
+				});
+
+				return false; 
+			})
+		}else{
+			resizeEle.css('cursor','auto');
+			resizeEle.off('touchstart.pubresizer mousedown.pubresizer');
+		}
 	}
 	/**
      * @method getItems
@@ -450,6 +509,29 @@ Plugin.prototype ={
 		}else{
 			return this.options.tbodyItem;
 		}
+	}
+	/**
+     * @method _initBodyEvent
+     * @description 바디 이벤트 초기화.
+     */
+	,_initHeaderEvent : function (){
+		var _this = this
+			 ,headerCol =$('#'+_this.prefix+'pubGrid-container .pub-header-cont.sort-header');
+
+		//headerCol.off('click.pubGridHeader.sort');
+		headerCol.on('click.pubGridHeader.sort',function (e){
+			var selEle = $(this)
+				,col_idx = selEle.attr('col_idx')
+				,sortType = selEle.attr('sort_type');
+				
+			sortType = sortType =='asc' ? 'desc' : (sortType =='desc'?'asc':'asc');
+			
+			selEle.attr('sort_type', sortType);
+			
+			selEle.closest('.label-wrapper').removeClass('sortasc sortdesc').addClass('sort'+sortType)
+		
+			_this.setData(_this.getSortList(col_idx, sortType));
+		});
 	}
 	/**
      * @method _initBodyEvent
@@ -496,7 +578,7 @@ Plugin.prototype ={
      * @method getSortList
 	 * @param  idx {Integer} item index
 	 * @param  sortType {String} 정렬 타입 ex(asc,desc)
-     * @description header resize 처리.
+     * @description data sorting 처리.
      */
 	,getSortList :function (idx, sortType){
 		var _this = this
@@ -531,38 +613,6 @@ Plugin.prototype ={
 		}
 
 		return tbi; 
-	}
-	/**
-     * @method initHeaderResize
-     * @description header resize 처리.
-     */
-	,initHeaderResize:function (){
-		var _this = this; 
-
-		$('#'+_this.prefix+'pubGrid-header .pub-header-resizer').on('touchstart.pubresizer mousedown.pubresizer',function (e){
-			var oe = e.originalEvent.touches;
-
-			_this.drag = {};
-            _this.drag.pageX = oe ? oe[0].pageX : e.pageX;
-			_this.drag.ele = $(this);
-			_this.drag.colspanidx = _this.drag.ele.attr('colspanidx');
-			_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.colspanidx);
-			_this.drag.colBody= $('#'+_this.prefix+'colbody'+_this.drag.colspanidx);
-			_this.drag.colW = _this.drag.colHeader.attr('_width')?parseInt(_this.drag.colHeader.attr('_width'),10):_this.drag.colHeader.width();
-			_this.drag.gridW = _this.config.headerElement.width();
-			
-			// resize시 select안되게 처리 . cursor처리 
-			_doc.attr("onselectstart", "return false");
-			_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.resizeCursor + "!important}</style>");
-
-			_doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e){
-				_this.onGripDrag(e,_this);
-			}).on('touchend.colheaderresize mouseup.colheaderresize mouseleave.colheaderresize', function (e){
-				_this.onGripDragEnd(e,_this);
-			});
-
-			return false; 
-		})
 	}
 	/**
      * @method onGripDrag
