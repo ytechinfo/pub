@@ -19,14 +19,14 @@ var _initialized = false
 	,resizeCursor : 'e-resize'
 	,minWidth : 30
 	,headerOptions : {
-		view : true
-		,sort : false
-		,resize:{
+		view : true	// header 보기 여부
+		,sort : false	// 초기에 정렬할 값
+		,redraw : false	// 초기에 옵션 들어오면 새로 그릴지 여부.
+		,resize:{	// resize 여부
 			enabled : true
 		}
 	}
 	,height: 200
-	,reiszeable:true
 	,tColItem : [] //head item
  	,theadGroup : [] // head group 
 	,tbodyItem : []  // body item
@@ -105,7 +105,7 @@ Plugin.prototype ={
 		_this._setThead();
 		_this.drag;
 		
-		_this.setData(_this.options.tbodyItem , true);
+		_this.setData(_this.options.tbodyItem , 'init');
 
 		return this;
 	}
@@ -273,7 +273,7 @@ Plugin.prototype ={
 
 		return strHtm.join('');	
 	}
-	,setData :function (data, initFlag){
+	,setData :function (data, gridMode){
 		var _this = this
 			,opt = _this.options
 			,tci = opt.tColItem;
@@ -301,10 +301,11 @@ Plugin.prototype ={
 			
 			if(_idx != -1) _this.getSortList(_idx, _sortType);
 		}
-		if(initFlag){
+
+		if(gridMode=='init'){
 			_this.drawGrid();
 		}else{
-			_this.drawGrid('tbody');
+			_this.drawGrid('tbody', gridMode);
 		}
 	}
 	/**
@@ -312,7 +313,7 @@ Plugin.prototype ={
 	 * @param  type {String} 그리드 타입.
      * @description foot 데이타 셋팅
      */
-	,drawGrid : function (type){
+	,drawGrid : function (type, gridMode){
 		var _this = this
 			,opt = _this.options
 			,ci = _this.config
@@ -323,6 +324,10 @@ Plugin.prototype ={
 
 		type = type ? type :'all';
 
+		if(gridMode != 'sort'){
+			$('.label-wrapper.sortasc,.label-wrapper.sortdesc').removeClass('sortasc sortdesc')
+		}
+		
 		// header html 만들기
 		function theadHtml(){
 			var strHtm = [];
@@ -532,7 +537,7 @@ Plugin.prototype ={
 			
 			selEle.closest('.label-wrapper').removeClass('sortasc sortdesc').addClass('sort'+sortType)
 		
-			_this.setData(_this.getSortList(col_idx, sortType));
+			_this.setData(_this.getSortList(col_idx, sortType) ,'sort');
 		});
 	}
 	/**
@@ -690,23 +695,29 @@ $.pubGrid = function (selector,options, args) {
 	if(!_cacheObject){
 		_cacheObject = new Plugin(selector, options);
 		_datastore[selector] = _cacheObject;
-	}
-
-
-	if(options){
-		if(typeof options === 'string'){
-			var callObj =_cacheObject[options]; 
-			if(typeof callObj ==='undefined'){
-				return options+' not found';
-			}else if(typeof callObj==='function'){
-				return _cacheObject[options].apply(_cacheObject,args);
-			}else {
-				return typeof callObj==='function'; 
-			}
+		return ; 
+	}else if(typeof options==='object'){
+		if(typeof options.headerOptions ==='object' && options.headerOptions.redraw===true){
+			_cacheObject = new Plugin(selector, options);
+			_datastore[selector] = _cacheObject;
 		}else{
 			_cacheObject.setOptions(options);
+			_cacheObject.drawGrid('tbody');
+		}
+		return ; 
+	}
+
+	if(typeof options === 'string'){
+		var callObj =_cacheObject[options]; 
+		if(typeof callObj ==='undefined'){
+			return options+' not found';
+		}else if(typeof callObj==='function'){
+			return _cacheObject[options].apply(_cacheObject,args);
+		}else {
+			return typeof callObj==='function'; 
 		}
 	}
+
 	return _cacheObject;	
 };
 
