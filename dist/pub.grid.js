@@ -21,7 +21,7 @@ var _initialized = false
 	,headerOptions : {
 		view : true	// header 보기 여부
 		,sort : false	// 초기에 정렬할 값
-		,redraw : false	// 초기에 옵션 들어오면 새로 그릴지 여부.
+		,redraw : true	// 초기에 옵션 들어오면 새로 그릴지 여부.
 		,resize:{	// resize 여부
 			enabled : true
 		}
@@ -442,11 +442,9 @@ Plugin.prototype ={
 			// resize 설정
 			_this._initHeaderEvent();
 			_this._headerResize(hederOpt.resize.enabled);
-						
-			$(_this.selector +' .pub-cont-tbody').empty().html(tbodyHtml());
 		}
 		
-		if(type =='tbody'){
+		if(type =='all' || type =='tbody'){
 			$(_this.selector +' .pub-cont-tbody').empty().html(tbodyHtml());
 			_this._initBodyEvent();
 		}
@@ -566,6 +564,7 @@ Plugin.prototype ={
 		}
 		
 		if(!rowClickFlag){
+			$('#'+_this.prefix+'pubGrid-container .pub-body-td-click').off('click.pub.gridcol');
 			$('#'+_this.prefix+'pubGrid-container .pub-body-td-click').on('click.pub.gridcol',function (e){
 				var selCol = $(this).attr('colinfo').split(',')
 					,selRow = selCol[0]
@@ -695,16 +694,19 @@ $.pubGrid = function (selector,options, args) {
 	if(!_cacheObject){
 		_cacheObject = new Plugin(selector, options);
 		_datastore[selector] = _cacheObject;
-		return ; 
+		return _cacheObject; 
 	}else if(typeof options==='object'){
-		if(typeof options.headerOptions ==='object' && options.headerOptions.redraw===true){
+		var headerOpt = options.headerOptions ?options.headerOptions :{}
+			,reDrawFlag = typeof headerOpt.redraw==='boolean' ? headerOpt.redraw : _cacheObject.options.headerOptions.redraw; 
+
+		if(reDrawFlag===true){
 			_cacheObject = new Plugin(selector, options);
 			_datastore[selector] = _cacheObject;
 		}else{
 			_cacheObject.setOptions(options);
 			_cacheObject.drawGrid('tbody');
 		}
-		return ; 
+		return _cacheObject; 
 	}
 
 	if(typeof options === 'string'){

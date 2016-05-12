@@ -10,11 +10,14 @@
     var pluginName = "pubContextMenu"
 		,initialized = false
 		,_datastore = {}
+		,pubContextElement= false
+		,isContextView = false
         ,defaults = {
 			fadeSpeed: 100			
 			,filter: function ($obj) {
 				// Modify $obj, Do not return
 			}
+			,bgiframe:true
 			,above: 'auto'
 			,preventDoubleContext: true
 			,compress: true
@@ -33,15 +36,20 @@
         this.options = $.extend({}, defaults, options);
 		this.contextData = {};
 		this.selectElement = $('');
+
+		if(pubContextElement ===false){
+			$('body').append('<div id="pub-context-area"></div>');
+			pubContextElement = $('#pub-context-area');
+
+		}
 		
 		if(initialized===false){
 			this.init(); 
-			initialized = true; 
+			//initialized = true; 
 		}
 		
 		this.addContext();
 		this.context = $('#'+this.contextId);
-
 		return element; 
     }
 
@@ -60,7 +68,7 @@
 			});
 
 			if(defaults.preventDoubleContext){
-				$(document).on('contextmenu.pubgridmenu', '#'+id+'_wrap .pub-context', function (e) {
+				$(document).on('contextmenu.pubcontext', '#'+id+'_wrap .pub-context', function (e) {
 					e.preventDefault();
 				});
 			}
@@ -80,7 +88,7 @@
 		}
 		,buildMenu : function (data, id, subMenu, depth){
 			var _self = this; 
-			var subClass = (subMenu) ? ' pub-context-sub' : '',
+			var subClass = (subMenu) ? ' pub-context-sub' : ' pub-context-top',
 				compressed = defaults.compress ? ' compressed-context' : '',
 				$menuHtm = [];
 			
@@ -125,10 +133,11 @@
 			return $menuHtm.join('');
 		}
 		,closeContextMenu : function (){
-			this.context.hide();
+			$('#pub-context-area .pub-context-top').hide();
+			isContextView= false; 
 		}
 		,destory:function (){
-			$(document).off('contextmenu.pubgridmenu', this.element).off('click', '.context-event');
+			$(document).off('contextmenu.pubcontext', this.element).off('click', '.context-event');
 		}
 		/**
 		*
@@ -166,19 +175,21 @@
 				,opt = _self.options
 				,$menu =_self.buildMenu(opt.items, id, false, 0)
 				,selector = _self.selector;
-				
+			
 			$menu = '<div id="'+id+'_wrap" onselectstart="return false" draggable="false">'+$menu+'</div>';
 			
-			$('body').append($menu);
+			pubContextElement.append($menu);
 			
 			_self.contextEvent();
 
-			$(document).off('contextmenu.pubgridmenu', _self.selector);
-
-			$(document).on('contextmenu.pubgridmenu', _self.selector, function (e) {
+			$(document).off('contextmenu.pubcontext', _self.selector);
+			$(document).on('contextmenu.pubcontext', _self.selector, function (e) {
 				e.preventDefault();
 				e.stopPropagation();
+				
+				_self.closeContextMenu();
 
+				isContextView = true;
 				//  이전 선택한 클래스 삭제 . 
 				_self.selectElement.removeClass(opt.selectCls);
 
@@ -215,16 +226,38 @@
 
     $[ pluginName ] = function (selector,options) {
 
-		var _cacheObject = _datastore[selector]; 
-	
-		if(!_cacheObject){
-			_cacheObject = new Plugin(selector, $.extend({},{
-				opt:(typeof options === 'string')?options:false
-				,bgiframe:true
-			}, options));
-			_datastore[selector] = _cacheObject;
+		if(!selector){
+			return ; 
 		}
-		return _cacheObject;
+
+		var _cacheObject = _datastore[selector];
+
+		if(typeof options === undefined){
+			return _cacheObject; 
+		}
+		
+		if(!_cacheObject){
+			_cacheObject = new Plugin(selector, options);
+			_datastore[selector] = _cacheObject;
+			return _cacheObject; 
+		}else if(typeof options==='object'){
+			_cacheObject = new Plugin(selector, options);
+			_datastore[selector] = _cacheObject;
+			return _cacheObject; 
+		}
+
+		if(typeof options === 'string'){
+			var callObj =_cacheObject[options]; 
+			if(typeof callObj ==='undefined'){
+				return options+' not found';
+			}else if(typeof callObj==='function'){
+				return _cacheObject[options].apply(_cacheObject,args);
+			}else {
+				return typeof callObj==='function'; 
+			}
+		}
+
+		return _cacheObject;	
     };
 
 })(jQuery, window, document);

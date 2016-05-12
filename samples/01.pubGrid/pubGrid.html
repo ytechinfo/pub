@@ -50,7 +50,6 @@ function fn_init(){
 	$.pubGrid('#asdfasdf',{
 		headerOptions:{
 			view:true
-			,redraw : true
 			,resize:{
 				enabled : true
 			}
@@ -82,16 +81,17 @@ function fn_init(){
 		]
 		,tbodyItem :aaa
 		,tfootItem :['asdf']
-		/*
 		,rowClick : function (idx, item){
 			console.log(idx, item);
 		}
-		*/
 		,rowContextMenu :{
-			callback: function(key,sObj) {
+			beforeSelect :function (){
+				$(this).trigger('click');
+			}
+			,callback: function(key,sObj) {
 				console.log(this,key,sObj);
-			},
-			items: [
+			}
+			,items: [
 				{key : "refresh" , "name": "새로고침"}
 				,{key : "sql_create", "name": "sql생성" 
 					,subMenu: [
