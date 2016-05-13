@@ -222,9 +222,9 @@ Plugin.prototype ={
 			_w +=tciItem.width;
 		}
 		_this.config.gridWidth = _w;
+
 		if( (_w+_this.options.scrollWidth) > gridElementWidth){
 			_this.config.gridXScrollFlag = true;
-			
 		}else{
 			if(opt.headerOptions.colWidthFixed !== true){
 				_this.config.gridWidth = gridElementWidth - _this.options.scrollWidth;
@@ -236,9 +236,7 @@ Plugin.prototype ={
 				for(var j=0; j<tci.length; j++){
 					opt.tColItem[j].width += remainderWidth;
 				}
-				opt.tColItem[tci.length-1].width +=( (gridElementWidth -_w)%tci.length );
-
-				//console.log( (gridElementWidth -_w),gridElementWidth,_w ,remainderWidth, (gridElementWidth -_w)%tci.length)
+				opt.tColItem[tci.length-1].width +=( (_gw -_w)%tci.length );
 			}
 		}
 	}
