@@ -13,6 +13,7 @@
 .pubGrid-wrapper {
 	font-family: Ubuntu, Arial, "Apple SD Gothic Neo", "¾ÖÇÃ SD °íµñ Neo", "NanumBarunGothic", "NanumBarunGothicOTF", "³ª´®¹Ù¸¥°íµñ", "³ª´®¹Ù¸¥°íµñOTF", "Malgun Gothic", "¸¼Àº °íµñ", "NanumGothic", "NanumGothicOTF", "³ª´®°íµñ", "³ª´®°íµñOTF", sans-serif; font-size: 14px;  font-weight: light; 
 	border : 1px solid #ddd;
+	font-size:12px;
 }
 
 .pubGrid-container {
@@ -30,7 +31,7 @@
 	table-layout: fixed;
 }
 .pubGrid-header th{
-	font-size:10pt;
+	
 }
 
 .pubGrid-header .label-wrapper {
@@ -38,7 +39,6 @@
     padding:0;	
 	width:100%;
     padding-right: 4px;
-	font-size:12pt;
 }
 
 .pubGrid-header .label-wrapper > .pub-header-label {
@@ -58,11 +58,10 @@
 }
 .pubGrid-header .pub-header-tr .pub-header-cont .inner .centered {
   position: relative;
-  padding: 6px 2px;
+  padding: 3px 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size:11pt;
   font-weight:normal;
 }
 
@@ -72,7 +71,7 @@
 
 .pubGrid-header .pub-header-tr .label-wrapper.sortasc {
     background: url(./images/sort-asc.png) center 0 no-repeat;
-    background-position: 50% -3px;
+    background-position: 50% -4px;
 }
 
 .pubGrid-header .pub-header-tr .label-wrapper.sortdesc {
@@ -135,7 +134,6 @@
 }
 .pubGrid-body .pub-body-tr > td > .pub-content {
 	position: relative;
-	min-height: 20px;
 	margin-right:5px;
 	padding-left:2px;
 	color: #3b3b3b;
