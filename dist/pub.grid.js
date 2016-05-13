@@ -13,7 +13,6 @@ var _initialized = false
 ,_datastore = {}
 ,_defaults = {
 	fixed:false
-	,colWidthFixed:false 
 	,drag:[]
 	,scrollWidth : 18
 	,resizeCursor : 'e-resize'
@@ -25,6 +24,7 @@ var _initialized = false
 		,resize:{	// resize 여부
 			enabled : true
 		}
+		,colWidthFixed:false  // 넓이 고정 여부.
 	}
 	,height: 200
 	,tColItem : [] //head item
@@ -69,7 +69,7 @@ var _initialized = false
 		return 8;
 	}
     if (!win.atob){
-		_defaults.scrollWidth = 17;
+		_defaults.scrollWidth = 18;
 		return 9;
 	}
 
@@ -99,8 +99,8 @@ Plugin.prototype ={
 		_this.config = {};
 		_this.options =$.extend(true, {}, _defaults);
 		_this.setOptions(options);
-		_this.config.gridElementWidth = _this.element.innerWidth()-3;
-		_this.config.gridWidth = _this.config.gridElementWidth+_this.options.scrollWidth;
+		_this.config.gridElementWidth = _this.element.innerWidth()-3; // border 값 빼주기.
+		_this.config.gridWidth = _this.config.gridElementWidth;
 		_this.config.gridXScrollFlag = false;
 		_this._setThead();
 		_this.drag;
@@ -221,10 +221,25 @@ Plugin.prototype ={
 			opt.tColItem[j] = tciItem;
 			_w +=tciItem.width;
 		}
-		
-		if(_w > gridElementWidth ){
+		_this.config.gridWidth = _w;
+		if( (_w+_this.options.scrollWidth) > gridElementWidth){
 			_this.config.gridXScrollFlag = true;
-			_this.config.gridWidth = _w;
+			
+		}else{
+			if(opt.headerOptions.colWidthFixed !== true){
+				_this.config.gridWidth = gridElementWidth - _this.options.scrollWidth;
+				
+				// 동적으로 width 계산할 경우 colwidth 처리.
+				var _gw = _this.config.gridWidth; 
+				var remainderWidth = Math.floor((_gw -_w)/tci.length);
+
+				for(var j=0; j<tci.length; j++){
+					opt.tColItem[j].width += remainderWidth;
+				}
+				opt.tColItem[tci.length-1].width +=( (gridElementWidth -_w)%tci.length );
+
+				//console.log( (gridElementWidth -_w),gridElementWidth,_w ,remainderWidth, (gridElementWidth -_w)%tci.length)
+			}
 		}
 	}
 	/**
@@ -401,19 +416,19 @@ Plugin.prototype ={
 
 		if(type =='all'){
 			
-			var strHtm = [],
-				_gw = _this.config.gridElementWidth -(_this.config.gridXScrollFlag ? 0: _this.options.scrollWidth);
+			var strHtm = [];
+				
 			strHtm.push('<div class="pubGrid-wrapper" style="width:'+_this.config.gridElementWidth+'px;">');
 			strHtm.push('	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container" style="width:'+_this.config.gridElementWidth+'px;">');
 			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper" style="width:'+(_this.config.gridElementWidth)+'px;">');
 			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container" style="width:'+(_this.config.gridWidth+_this.options.scrollWidth)+'px;">');
-			strHtm.push('			<table id="'+_this.prefix+'pubGrid-header" class="pubGrid-header" style="width:'+_gw+'px;" onselectstart="return false">');
+			strHtm.push('			<table id="'+_this.prefix+'pubGrid-header" class="pubGrid-header" style="width:'+_this.config.gridWidth+'px" onselectstart="return false">');
 			strHtm.push(theadHtml());
 			strHtm.push('			</table></div>');	
 			strHtm.push('		</div>');
 			strHtm.push('		<div class="pubGrid-body-wrapper">');
 			strHtm.push('			<div id="'+_this.prefix+'pubGrid-body-container" class="pubGrid-body-container" style="height:'+opt.height+'px;">');
-			strHtm.push('				<table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body" style="width:'+_gw+'px;">');
+			strHtm.push('				<table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body" style="width:'+_this.config.gridWidth+'px">');
 			strHtm.push(					_this._getColGroup(_this.prefix+'colbody'));
 			strHtm.push('					<tbody class="pub-cont-tbody">');
 			strHtm.push('					</tbody>');
