@@ -12,11 +12,11 @@
 
 .pubGrid-wrapper {
 	font-family: Ubuntu, Arial, "Apple SD Gothic Neo", "¾ÖÇÃ SD °íµñ Neo", "NanumBarunGothic", "NanumBarunGothicOTF", "³ª´®¹Ù¸¥°íµñ", "³ª´®¹Ù¸¥°íµñOTF", "Malgun Gothic", "¸¼Àº °íµñ", "NanumGothic", "NanumGothicOTF", "³ª´®°íµñ", "³ª´®°íµñOTF", sans-serif; font-size: 14px;  font-weight: light; 
+	border : 1px solid #ddd;
 }
 
 .pubGrid-container {
 	position: relative;
-	border: 1px solid #ddd;
 }
 
 .pubGrid-header-wrapper{

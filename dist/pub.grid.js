@@ -99,7 +99,7 @@ Plugin.prototype ={
 		_this.config = {};
 		_this.options =$.extend(true, {}, _defaults);
 		_this.setOptions(options);
-		_this.config.gridElementWidth = _this.element.innerWidth();
+		_this.config.gridElementWidth = _this.element.innerWidth()-3;
 		_this.config.gridWidth = _this.config.gridElementWidth+_this.options.scrollWidth;
 		_this.config.gridXScrollFlag = false;
 		_this._setThead();
@@ -403,7 +403,7 @@ Plugin.prototype ={
 			
 			var strHtm = [],
 				_gw = _this.config.gridElementWidth -(_this.config.gridXScrollFlag ? 0: _this.options.scrollWidth);
-			strHtm.push('<div class="pubGrid-wrapper">');
+			strHtm.push('<div class="pubGrid-wrapper" style="width:'+_this.config.gridElementWidth+'px;">');
 			strHtm.push('	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container" style="width:'+_this.config.gridElementWidth+'px;">');
 			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper" style="width:'+(_this.config.gridElementWidth)+'px;">');
 			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container" style="width:'+(_this.config.gridWidth+_this.options.scrollWidth)+'px;">');
