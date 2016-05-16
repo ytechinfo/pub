@@ -506,6 +506,93 @@ _$base.module={
 	}
 };
 
+/**
+ * @method editor
+ * @description 네이버 스마트 에디터 사용시 editor 모듈 사용
+ */
+_$base.editor ={
+	// 에디터 object
+	_cacheEditorObject:{}
+	// 에디터 element id
+	,elPlaceHolderID : 'epEditorArea'
+	// 에디터 옵션
+	,defalutOptions : {
+		oAppRef: [],
+		sSkinURI: "SmartEditor2Skin.html",	
+		htParams : {
+			bUseToolbar : true,				// 툴바 사용 여부 (true:사용/ false:사용하지 않음)
+			bUseVerticalResizer : true,		// 입력창 크기 조절바 사용 여부 (true:사용/ false:사용하지 않음)
+			bUseModeChanger : true,			// 모드 탭(Editor | HTML | TEXT) 사용 여부 (true:사용/ false:사용하지 않음)
+			//aAdditionalFontList : aAdditionalFontSet,		// 추가 글꼴 목록
+			fOnBeforeUnload : function(){
+				//alert("완료!");
+			}
+		}, //boolean
+		fOnAppLoad : function(){
+			//예제 코드
+			//oEditors.getById["ir1"].exec("PASTE_HTML", ["로딩이 완료된 후에 본문에 삽입되는 text입니다."]);
+		},
+		fCreator: "createSEditor2"
+	}
+	// 기본 아이디값.
+	,_getElPlaceHolderID :function (editID){
+		return editID||this.elPlaceHolderID; 
+	}
+	/**
+	 * @method __$base.editor.create
+	 * @param editorId {String} editor id
+	 * @param opt {String} 에디터 옵션.
+	 * @description 에디터 그리기.
+	 */	
+	,create :function (editorId,opt){
+		var _this = this;
+		
+		if(typeof opt ==='undefined'){
+			opt ={};
+		}
+		
+		var elId = _this._getElPlaceHolderID(editorId);
+		
+		_this._cacheEditorObject[elId] = [];
+		
+		opt['oAppRef']= _this._cacheEditorObject[elId];
+		opt['elPlaceHolder'] = elId;
+		nhn.husky.EZCreator.createInIFrame($.extend({} ,_this.defalutOptions ,opt));
+	}
+	/**
+	 * @method __$base.editor.setConent
+	 * @param content {String} set할 컨텐츠 내용.
+	 * @param editorId {String} 에디터 id
+	 * @description 에디터 content 추가.
+	 */	
+	,setConent :function (content,editorId){
+		var _this = this; 
+		
+		var elId = _this._getElPlaceHolderID(editorId);
+		
+		var addContArr = [];
+		if(!$.isArray(content)){
+			addContArr.push(content);
+		}else{
+			addContArr = content;
+		}
+		
+		_this._cacheEditorObject[elId].getById[elId].exec("PASTE_HTML", addContArr);
+	}
+	/**
+	 * @method __$base.editor.getConent
+	 * @param editorId {String} 에디터 id
+	 * @description 에디터 내용 보기.
+	 */	
+	,getConent :function (editorId){
+		var _this = this;
+		
+		var elId = _this._getElPlaceHolderID(editorId);
+		
+		return _this._cacheEditorObject[elId].getById[elId].getIR();
+	}
+}
+
 window.PubEPUI = _$base;
 })( window ,jQuery, PubEP);
 
