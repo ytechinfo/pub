@@ -74,6 +74,13 @@ _defaultOption ={
 			,safari : 70
 		}
 	}
+	// 에디터 옵션.
+	,editor : {
+		uploadUrl : '/ui/editor/file_uploader.jsp'
+		,uploadHtml5Url : '/ui/editor/file_uploader_html5.jsp'
+		,maxImageSize : 10*1024*1024
+		,maxTotalImageSize : 50*1024*1024
+	}
 };
 
 /**
@@ -83,6 +90,13 @@ _defaultOption ={
 _$base.init = function (option){
 	$.extend(globalOption,option);
 	return _$base; 
+}
+/**
+ * @method getOption
+ * @description 설정 보기.
+ */	
+_$base.getOption = function (option){
+	return globalOption; 
 }
 
 /**
