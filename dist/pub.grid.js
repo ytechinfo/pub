@@ -98,11 +98,11 @@ Plugin.prototype ={
 		_this.selector = element;
 		_this.prefix = 'pub'+new Date().getTime();
 		_this.element = $(element);
-		_this.config = {};
+		_this.config = {totGridWidth : 0};
 		_this.options =$.extend(true, {}, _defaults);
 		_this.setOptions(options);
 		_this.drag ={};
-		_this._calcElementWidth('init');
+		_this._setGridWidth('init');
 		
 		_this.config.gridXScrollFlag = false;
 		_this._setThead();
@@ -115,10 +115,10 @@ Plugin.prototype ={
 		return this;
 	}
 	/**
-     * @method _calcElementWidth
+     * @method _setGridWidth
      * @description grid 넓이 구하기
      */
-	,_calcElementWidth : function (mode){
+	,_setGridWidth : function (mode){
 		var _this = this,pubGridWrapper;
 		
 		if(mode != 'init'){
@@ -166,7 +166,7 @@ Plugin.prototype ={
 	 * @param drawFlag {Boolean} - 새로 그리기 여부.
      * @description 헤더 label 셋팅.
      */
-	,_setThead : function (mode){
+	,_setThead : function (){
 		var _this = this
 			,opt = _this.options;
 			
@@ -236,8 +236,7 @@ Plugin.prototype ={
 
 		_this.config.headerInfo = headGroupInfo;
 
-		var colWidth = Math.floor(gridElementWidth/tci.length)
-			,_w = 0, _sw=-1;
+		var colWidth = Math.floor(gridElementWidth/tci.length);
 		
 		for(var j=0; j<tci.length; j++){
 			var tciItem = opt.tColItem[j];
@@ -246,37 +245,56 @@ Plugin.prototype ={
 			}
 			tciItem['_alignClass'] = tciItem.align=='right' ? 'ar' : (tciItem.align=='center'?'ac':'al');
 			opt.tColItem[j] = tciItem;
-			_w +=tciItem.width;
+			_this.config.totGridWidth +=tciItem.width;
 		}
-		_this.config.gridWidth = _w;
-		_sw = _w+_this.options.scrollWidth; 
+		
+		_this._calcElementWidth();
+	}
+	/**
+     * @method _calcElementWidth
+	 * @description width 계산.
+     */
+	,_calcElementWidth : function (mode){
+
+		var _this = this
+			,_sw ,_w
+			,gridElementWidth = _this.config.gridElementWidth
+			,opt = _this.options
+			,tci = opt.tColItem
+			,tciLen = tci.length;
+
+		_w = _this.config.totGridWidth;
+		_sw = _w+_this.options.scrollWidth;
+		tciLen = tci.length;
 
 		if( _sw > gridElementWidth){
 			_this.config.gridXScrollFlag = true;
 
-			if(mode=='resize'){
-				_this.config.gridWidth = gridElementWidth- _this.options.scrollWidth;
- 				var remainderWidth = Math.floor((_sw-gridElementWidth)/tci.length);
+			if(mode=='resize'){				
+				_this.config.gridWidth = gridElementWidth - opt.scrollWidth;
+ 				var remainderWidth = Math.floor((_sw-gridElementWidth)/tciLen);
 
-				for(var j=0; j<tci.length; j++){
+				for(var j=0; j<tciLen; j++){
 					opt.tColItem[j].width -= remainderWidth;
 				}
-				opt.tColItem[tci.length-1].width +=( (_sw-gridElementWidth)%tci.length);
+				opt.tColItem[tciLen-1].width -=( (_sw-gridElementWidth)%tciLen);
 			}
 		}else{
 			if(opt.headerOptions.colWidthFixed !== true){
-				_this.config.gridWidth = gridElementWidth - _this.options.scrollWidth;
+				_this.config.gridWidth = gridElementWidth - opt.scrollWidth;
 				
 				// 동적으로 width 계산할 경우 colwidth 처리.
 				var _gw = _this.config.gridWidth; 
-				var remainderWidth = Math.floor((_gw -_w)/tci.length);
+				var remainderWidth = Math.floor((_gw -_w)/tciLen);
 
-				for(var j=0; j<tci.length; j++){
+				for(var j=0; j<tciLen; j++){
 					opt.tColItem[j].width += remainderWidth;
 				}
-				opt.tColItem[tci.length-1].width +=( (_gw -_w)%tci.length);
+				opt.tColItem[tciLen-1].width +=( (_gw -_w)%tciLen);
 			}
 		}
+		_this.config.totGridWidth = _this.config.gridWidth;
+		//console.log(_this.config.gridWidth, gridElementWidth, _w, _sw );
 	}
 	/**
      * @method _setTbody
@@ -461,7 +479,7 @@ Plugin.prototype ={
 			strHtm.push('<div class="pubGrid-wrapper" style="width:'+_this.config.gridElementWidth+'px;">');
 			strHtm.push('	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container">');
 			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper">');
-			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container" style="width:'+(_this.config.gridWidth+_this.options.scrollWidth)+'px;">');
+			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container">');
 			strHtm.push('			<table id="'+_this.prefix+'pubGrid-header" class="pubGrid-header" style="width:'+_this.config.gridWidth+'px" onselectstart="return false">');
 			strHtm.push(theadHtml());
 			strHtm.push('			</table></div>');	
@@ -484,8 +502,8 @@ Plugin.prototype ={
 			_this.element.html(strHtm.join(''));
 			
 			_this.config.headerWrapElement = $('#'+_this.prefix +'pubGrid-header-wrapper');
-			_this.config.headerElement = $('#'+_this.prefix +'pubGrid-header');
 			_this.config.headerContainerElement = $('#'+_this.prefix +'pubGrid-header-container');
+			_this.config.headerElement = $('#'+_this.prefix +'pubGrid-header');
 			_this.config.bodyElement = $('#'+_this.prefix +'pubGrid-body');
 			_this.config.bodyContainerElement = $('#'+_this.prefix +'pubGrid-body-container');
 			_this.config.hiddenArea = $('#'+_this.prefix +'hiddenArea');
@@ -510,13 +528,14 @@ Plugin.prototype ={
      */
 	,resizeDraw :function (){
 		var _this = this; 
-		_this._calcElementWidth();
+		_this._setGridWidth();
+		_this._calcElementWidth('resize');
 		
 		$(_this.selector+'>.pubGrid-wrapper').css('width',(_this.config.gridElementWidth)+'px');
-		_this.config.headerElement.css('width',(_this.config.gridWidth)+'px');
 		_this.config.headerContainerElement.css('width',(_this.config.gridWidth+_this.options.scrollWidth)+'px');
+		_this.config.headerElement.css('width',(_this.config.gridWidth)+'px');
 		_this.config.bodyElement.css('width',(_this.config.gridWidth)+'px');
-		_this._setThead('resize');
+		
 
 		$('#'+_this.prefix+"colgroup_head").empty().html(_this._getColGroup(_this.prefix+'colHeader'));
 		$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody'));
@@ -768,8 +787,8 @@ Plugin.prototype ={
 		if(w > _this.options.minWidth){
 			drag.changeColW = w;
 			_this.config.gridElementWidth = drag.gridW+(ox - drag.pageX);
-			_this.config.headerElement.css('width',(_this.config.gridElementWidth)+'px');
 			_this.config.headerContainerElement.css('width',(_this.config.gridElementWidth+_this.options.scrollWidth)+'px');
+			_this.config.headerElement.css('width',(_this.config.gridElementWidth)+'px');
 			_this.config.bodyElement.css('width',(_this.config.gridElementWidth)+'px');
 
 			drag.colHeader.css('width',w+'px');
