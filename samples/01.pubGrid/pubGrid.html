@@ -15,7 +15,7 @@
 <table width = "100%" border = "0" height="100%">
 <tr>
 	<td>
-		<div id="asdfasdf" style="width:700px;"></div>
+		<div id="asdfasdf"></div>
 	</td>
 </tr>
 
@@ -124,4 +124,40 @@ function fn_init(){
 		}
 	});
 }
+
+(function($) {
+
+var _evt = $.event,
+	_special,
+	resizeTimeout;
+
+_special = _evt.special.pubgridResize = {
+	setup: function() {
+		$( this ).on( "resize", _special.handler );
+	},
+	teardown: function() {
+		$( this ).off( "resize", _special.handler );
+	},
+	handler: function( event, execAsap ) {
+		// Save the context
+		var context = this,
+			args = arguments,
+			dispatch = function() {
+				// set correct event type
+				event.type = "pubgridResize";
+				_evt.dispatch.apply( context, args );
+			};
+
+		if ( resizeTimeout ) {
+			clearTimeout( resizeTimeout );
+		}
+
+		execAsap ?
+			dispatch() :
+			resizeTimeout = setTimeout( dispatch, $special.threshold );
+	},
+	threshold: 150
+};
+
+})(jQuery);
 </script>

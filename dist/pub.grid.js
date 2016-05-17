@@ -13,10 +13,10 @@ var _initialized = false
 ,_datastore = {}
 ,_defaults = {
 	fixed:false
-	,drag:[]
+	,drag:false
 	,scrollWidth : 18
-	,resizeCursor : 'e-resize'
 	,minWidth : 30
+	,autoResize : true
 	,headerOptions : {
 		view : true	// header 보기 여부
 		,sort : false	// 초기에 정렬할 값
@@ -26,6 +26,7 @@ var _initialized = false
 		}
 		,colWidthFixed:false  // 넓이 고정 여부.
 		,colMinWidth : 50  // 컬럼 최소 넓이
+		,resizeCursor : 'e-resize'
 	}
 	,height: 200
 	,tColItem : [] //head item
@@ -100,15 +101,35 @@ Plugin.prototype ={
 		_this.config = {};
 		_this.options =$.extend(true, {}, _defaults);
 		_this.setOptions(options);
-		_this.config.gridElementWidth = _this.element.innerWidth()-3; // border 값 빼주기.
-		_this.config.gridWidth = _this.config.gridElementWidth;
+		_this.drag ={};
+		_this._calcElementWidth('init');
+		
 		_this.config.gridXScrollFlag = false;
 		_this._setThead();
-		_this.drag;
+		
 		
 		_this.setData(_this.options.tbodyItem , 'init');
 
+		_this._windowResize();
+
 		return this;
+	}
+	/**
+     * @method _calcElementWidth
+     * @description grid 넓이 구하기
+     */
+	,_calcElementWidth : function (mode){
+		var _this = this,pubGridWrapper;
+		
+		if(mode != 'init'){
+			pubGridWrapper = $(_this.selector + '>.pubGrid-wrapper'); 
+			pubGridWrapper.hide();
+		}
+			
+		_this.config.gridElementWidth = _this.element.innerWidth()-3; // border 값 빼주기.
+		_this.config.gridWidth = _this.config.gridElementWidth;
+			
+		if(mode != 'init') pubGridWrapper.show();
 	}
 	/**
      * @method setOptions
@@ -145,7 +166,7 @@ Plugin.prototype ={
 	 * @param drawFlag {Boolean} - 새로 그리기 여부.
      * @description 헤더 label 셋팅.
      */
-	,_setThead : function (){
+	,_setThead : function (mode){
 		var _this = this
 			,opt = _this.options;
 			
@@ -216,7 +237,7 @@ Plugin.prototype ={
 		_this.config.headerInfo = headGroupInfo;
 
 		var colWidth = Math.floor(gridElementWidth/tci.length)
-			,_w = 0;
+			,_w = 0, _sw=-1;
 		
 		for(var j=0; j<tci.length; j++){
 			var tciItem = opt.tColItem[j];
@@ -228,9 +249,20 @@ Plugin.prototype ={
 			_w +=tciItem.width;
 		}
 		_this.config.gridWidth = _w;
+		_sw = _w+_this.options.scrollWidth; 
 
-		if( (_w+_this.options.scrollWidth) > gridElementWidth){
+		if( _sw > gridElementWidth){
 			_this.config.gridXScrollFlag = true;
+
+			if(mode=='resize'){
+				_this.config.gridWidth = gridElementWidth- _this.options.scrollWidth;
+ 				var remainderWidth = Math.floor((_sw-gridElementWidth)/tci.length);
+
+				for(var j=0; j<tci.length; j++){
+					opt.tColItem[j].width -= remainderWidth;
+				}
+				opt.tColItem[tci.length-1].width +=( (_sw-gridElementWidth)%tci.length);
+			}
 		}else{
 			if(opt.headerOptions.colWidthFixed !== true){
 				_this.config.gridWidth = gridElementWidth - _this.options.scrollWidth;
@@ -242,7 +274,7 @@ Plugin.prototype ={
 				for(var j=0; j<tci.length; j++){
 					opt.tColItem[j].width += remainderWidth;
 				}
-				opt.tColItem[tci.length-1].width +=( (_gw -_w)%tci.length );
+				opt.tColItem[tci.length-1].width +=( (_gw -_w)%tci.length);
 			}
 		}
 	}
@@ -278,7 +310,6 @@ Plugin.prototype ={
 			,tci = opt.tColItem
 			,thiItem;
 		var strHtm = [];
-		strHtm.push('<colgroup>');
 		for(var i=0 ;i <tci.length; i++){
 			thiItem = tci[i];
 			var tmpStyle = [];
@@ -288,10 +319,15 @@ Plugin.prototype ={
 			}
 			strHtm.push('<col id="'+type+i+'" style="'+tmpStyle.join('')+'" />');
 		}
-		strHtm.push('</colgroup>');
 
 		return strHtm.join('');	
 	}
+	/**
+     * @method setData
+	 * @param data {Array} - 데이타
+	 * @param gridMode {String} - 그리드 모드 
+     * @description 데이타 그리기
+     */
 	,setData :function (data, gridMode){
 		var _this = this
 			,opt = _this.options
@@ -351,7 +387,7 @@ Plugin.prototype ={
 		function theadHtml(){
 			var strHtm = [];
 
-			strHtm.push(_this._getColGroup(_this.prefix+'colHeader'));
+			strHtm.push('<colgroup id="'+_this.prefix+'colgroup_head">'+_this._getColGroup(_this.prefix+'colHeader')+'</colgroup>');
 
 			strHtm.push('<thead>');
 			if(ci.headerInfo.length > 0 && hederOpt.view){
@@ -421,10 +457,10 @@ Plugin.prototype ={
 		if(type =='all'){
 			
 			var strHtm = [];
-				
+			
 			strHtm.push('<div class="pubGrid-wrapper" style="width:'+_this.config.gridElementWidth+'px;">');
-			strHtm.push('	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container" style="width:'+_this.config.gridElementWidth+'px;">');
-			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper" style="width:'+(_this.config.gridElementWidth)+'px;">');
+			strHtm.push('	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container">');
+			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper">');
 			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container" style="width:'+(_this.config.gridWidth+_this.options.scrollWidth)+'px;">');
 			strHtm.push('			<table id="'+_this.prefix+'pubGrid-header" class="pubGrid-header" style="width:'+_this.config.gridWidth+'px" onselectstart="return false">');
 			strHtm.push(theadHtml());
@@ -433,7 +469,7 @@ Plugin.prototype ={
 			strHtm.push('		<div class="pubGrid-body-wrapper">');
 			strHtm.push('			<div id="'+_this.prefix+'pubGrid-body-container" class="pubGrid-body-container" style="height:'+opt.height+'px;">');
 			strHtm.push('				<table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body" style="width:'+_this.config.gridWidth+'px">');
-			strHtm.push(					_this._getColGroup(_this.prefix+'colbody'));
+			strHtm.push('					<colgroup id="'+_this.prefix+'colgroup_body">'+_this._getColGroup(_this.prefix+'colbody')+'</colgroup>');
 			strHtm.push('					<tbody class="pub-cont-tbody">');
 			strHtm.push('					</tbody>');
 			strHtm.push('				</table>');	
@@ -469,6 +505,25 @@ Plugin.prototype ={
 		}
 	}
 	/**
+     * @method resizeDraw
+     * @description resize 하기
+     */
+	,resizeDraw :function (){
+		var _this = this; 
+		_this._calcElementWidth();
+		
+		$(_this.selector+'>.pubGrid-wrapper').css('width',(_this.config.gridElementWidth)+'px');
+		_this.config.headerElement.css('width',(_this.config.gridWidth)+'px');
+		_this.config.headerContainerElement.css('width',(_this.config.gridWidth+_this.options.scrollWidth)+'px');
+		_this.config.bodyElement.css('width',(_this.config.gridWidth)+'px');
+		_this._setThead('resize');
+
+		$('#'+_this.prefix+"colgroup_head").empty().html(_this._getColGroup(_this.prefix+'colHeader'));
+		$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody'));
+		//_this._headerResize(_this.options.headerOptions.resize.enabled);
+
+	}
+	/**
      * @method resizeEnable
      * @description resize 사용
      */
@@ -481,6 +536,46 @@ Plugin.prototype ={
      */
 	,resizeDisable :function (){
 		this._headerResize(false);
+	}
+	,_windowResize :function (){
+		var _this = this; 
+		if(_this.options.autoResize !== true) return false; 
+
+		var _evt = $.event,
+			_special,
+			resizeTimeout;
+
+		_special = _evt.special.pubgridResize = {
+			setup: function() {
+				$( this ).on( "resize", _special.handler );
+			},
+			teardown: function() {
+				$( this ).off( "resize", _special.handler );
+			},
+			handler: function( event, execAsap ) {
+				// Save the context
+				var context = this,
+					args = arguments,
+					dispatch = function() {
+						// set correct event type
+						event.type = "pubgridResize";
+						_evt.dispatch.apply( context, args );
+					};
+
+				if ( resizeTimeout ) {
+					clearTimeout( resizeTimeout );
+				}
+
+				execAsap ?
+					dispatch() :
+					resizeTimeout = setTimeout( dispatch, _special.threshold );
+			},
+			threshold: 150
+		};
+
+		$(window).on("pubgridResize", function( event ) {
+			_this.resizeDraw();
+		});
 	}
 	/**
      * @method colResize
@@ -507,7 +602,7 @@ Plugin.prototype ={
 				
 				// resize시 select안되게 처리 . cursor처리 
 				_doc.attr("onselectstart", "return false");
-				_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.resizeCursor + "!important}</style>");
+				_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.headerOptions.resizeCursor + "!important}</style>");
 
 				_doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e){
 					_this.onGripDrag(e,_this);
