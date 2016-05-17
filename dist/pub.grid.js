@@ -117,8 +117,12 @@ Plugin.prototype ={
 	,setOptions : function(options){
 		var _this = this; 
 		
+		if($.isArray(options.tbodyItem)){
+			delete _this.options.tbodyItem;
+		}
+
 		$.extend(true, _this.options, options);
-		_this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
+		this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
 
 		var _cb = _this.options.rowContextMenu.callback; 
 
