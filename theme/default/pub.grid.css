@@ -129,8 +129,12 @@
 	color:#0000CD;
 }
 
+.pubGrid-body tbody .pub-body-tr.active {
+	background: #FEF1EC;
+}
+
 .pubGrid-body tbody .pub-body-tr:hover {
-	background: #ddd;
+	background: #F5F8F5;
 }
 .pubGrid-body .pub-body-tr > td > .pub-content {
 	position: relative;

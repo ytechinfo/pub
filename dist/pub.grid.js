@@ -573,14 +573,23 @@ Plugin.prototype ={
 			 ,rowClickFlag =false; 
 		if(_this.options.rowClick !== false && typeof _this.options.rowClick == 'function'){
 			rowClickFlag =true; 
+
+			var beforeRow; 
 			_rowTr.off('click.pubgridrow');
 			_rowTr.on('click.pubgridrow',function (e){
-				var selRow = $(this).attr('rowinfo')
-				,selItem = _this.options.tbodyItem[selRow];
+				var selRow = $(this)
+					,rowinfo=selRow.attr('rowinfo')
+					,selItem = _this.options.tbodyItem[rowinfo];
+				
+				if(beforeRow) beforeRow.removeClass('active');
+
+				selRow.addClass('active');
+				beforeRow = selRow; 
+				
 				_this.options.rowClick.call({
-					r:selRow
-					,item:selItem
-				},selRow,selItem);							
+					r : rowinfo
+					,item : selItem
+				},rowinfo , selItem);							
 			});
 		}
 
