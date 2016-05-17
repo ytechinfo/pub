@@ -25,6 +25,7 @@ var _initialized = false
 			enabled : true
 		}
 		,colWidthFixed:false  // 넓이 고정 여부.
+		,colMinWidth : 50  // 컬럼 최소 넓이
 	}
 	,height: 200
 	,tColItem : [] //head item
@@ -117,6 +118,7 @@ Plugin.prototype ={
 		var _this = this; 
 		
 		$.extend(true, _this.options, options);
+		_this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
 
 		var _cb = _this.options.rowContextMenu.callback; 
 
@@ -172,7 +174,7 @@ Plugin.prototype ={
 					headItem['r'] = i;
 					headItem['c'] = j;
 					headItem['view'] = true;
-					headItem['sort'] = tciItem.sort===true?true:false;
+					headItem['sort'] = tciItem.sort===false?false:true;
 					headItem['colSpanIdx'] = j;
 					headItem['span'] = 'scope="col"';
 					headItem['label'] = headItem.label ? headItem.label : tciItem.label;
@@ -215,7 +217,7 @@ Plugin.prototype ={
 		for(var j=0; j<tci.length; j++){
 			var tciItem = opt.tColItem[j];
 			if(!tciItem.width){
-				tciItem.width =colWidth;
+				tciItem.width =opt.headerOptions.colMinWidth;
 			}
 			tciItem['_alignClass'] = tciItem.align=='right' ? 'ar' : (tciItem.align=='center'?'ac':'al');
 			opt.tColItem[j] = tciItem;
@@ -535,18 +537,24 @@ Plugin.prototype ={
 	,_initHeaderEvent : function (){
 		var _this = this
 			 ,headerCol =$('#'+_this.prefix+'pubGrid-container .pub-header-cont.sort-header');
-
+		
+		var beforeClickObj; 
 		//headerCol.off('click.pubGridHeader.sort');
 		headerCol.on('click.pubGridHeader.sort',function (e){
 			var selEle = $(this)
 				,col_idx = selEle.attr('col_idx')
 				,sortType = selEle.attr('sort_type');
-				
+			
+			if(beforeClickObj) beforeClickObj.closest('.label-wrapper').removeClass('sortasc sortdesc');
+
+			//.removeClass('sortasc sortdesc');
 			sortType = sortType =='asc' ? 'desc' : (sortType =='desc'?'asc':'asc');
 			
 			selEle.attr('sort_type', sortType);
 			
-			selEle.closest('.label-wrapper').removeClass('sortasc sortdesc').addClass('sort'+sortType)
+			selEle.closest('.label-wrapper').removeClass('sortasc sortdesc').addClass('sort'+sortType);
+
+			beforeClickObj = selEle;
 		
 			_this.setData(_this.getSortList(col_idx, sortType) ,'sort');
 		});
@@ -694,8 +702,9 @@ Plugin.prototype ={
 };
 
 $.pubGrid = function (selector,options, args) {
-	if(!selector){
-		return ; 
+	
+	if(!selector || $(selector).length < 1){
+		return '['+selector + '] selector  not found '; 
 	}
 
 	if(typeof options === undefined){
