@@ -4,12 +4,10 @@
 <TITLE>pub GRID-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-<link href="../../theme/default/pub.grid.css" rel="stylesheet">
+<link href="D:/07.project Java/01.pub/pub/theme/default/pub.calenar.css" rel="stylesheet">
 
-<script src="../../plugins/jquery-1.10.2.min.js"></script>
-<script src="../../plugins/jquery-ui-1.10.3.custom.min.js"></script>
-<script src="../../dist/pub.context.js"></script>
-<script src="../../dist/pub.grid.js"></script>
+<script src="D:/07.project Java/01.pub/pub/plugins/jquery-1.10.2.min.js"></script>
+<script src="D:/07.project Java/01.pub/pub/plugins/jquery-ui-1.10.3.custom.min.js"></script>
 </HEAD>
 <BODY>
 <table width = "100%" border = "0" height="100%">
@@ -36,128 +34,8 @@ $(document).ready(function (){
 });
 
 function fn_init(){
-	var aaa = [];
-	for(var i =0 ;i <20; i++){
-		aaa.push({
-			a:'aaasdfasdfasdfasdfasdfasdfa'+i
-			,b:'ddd_'+i+'<br/>asdf'
-			,c:'ccc_'+i
-			,d:'ddd_'+i
-			,e:'eee_'+i
-		})
-	}
-
-	$.pubGrid('#asdfasdf',{
-		headerOptions:{
-			view:true
-			,resize:{
-				enabled : true
-			}
-			,colWidthFixed : false
-		}
-		,tColItem : [
-			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : false}
-			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)}}
-			,{key :'c', label:'씨',width:100, align:'center'}
-			,{key :'d', label:'디',width:100 }
-			,{key :'e', label:'이',width:100}
-			//,{key :'d', label:'디', hidden:true}
-		]
-		,theadGroup :[ 
-			[
-			{key :'a',label:'ac2<br/>asdf',colspan:4 , style:''}
-			,{key :'c',label:'rc2',rowspan: 3 }
-			]
-			,[
-				{label:'aaaa',colspan:2 , style:''}
-				,{label:'bbbb',colspan:2 , style:''}
-			]
-			,[
-				{key :'a'}
-				,{key :'b'}
-				,{key :'c'}
-				,{key :'d'}
-				,{label :'aaa'}
-			]
-		]
-		,tbodyItem :aaa
-		,tfootItem :['asdf']
-		,rowClick : function (idx, item){
-			console.log(idx, item);
-		}
-		,rowContextMenu :{
-			beforeSelect :function (){
-				$(this).trigger('click');
-			}
-			,callback: function(key,sObj) {
-				console.log(this,key,sObj);
-			}
-			,items: [
-				{key : "refresh" , "name": "새로고침"}
-				,{key : "sql_create", "name": "sql생성" 
-					,subMenu: [
-						{ key : "selectStar","name": "select *" , mode: "selectStar"}
-						,{ key : "select","name": "select column" ,mode:"select"}
-						,{ key : "insert","name": "insert" , mode:"insert"}
-						,{ key : "update","name": "update" ,mode:"update"}
-						,{ key : "delete","name": "delete" ,mode:"delete"}
-						,{ key : "drop","name": "drop" , mode:"drop"}
-					]
-				}
-				,{key : "create_ddl","name": "DDL 보기" 
-					
-				}
-				,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
-					,subMenu : [
-						{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
-						,{ key : "mybatis_update","name": "update" ,mode:"update" ,param_yn:'Y'}
-						,{ key : "mybatis_delete","name": "delete" ,mode:"delete",param_yn:'Y'}
-					]
-				}
-				,{key :'export', "name": "내보내기" 
-					,subMenu:[
-						{key : "export_data","name": "데이타 내보내기"}
-						,{key : "export_column","name": "컬럼정보 내보내기"}
-					]
-				}
-			]
-		}
-	});
+	
 }
 
-(function($) {
 
-var _evt = $.event,
-	_special,
-	resizeTimeout;
-
-_special = _evt.special.pubgridResize = {
-	setup: function() {
-		$( this ).on( "resize", _special.handler );
-	},
-	teardown: function() {
-		$( this ).off( "resize", _special.handler );
-	},
-	handler: function( event, execAsap ) {
-		// Save the context
-		var context = this,
-			args = arguments,
-			dispatch = function() {
-				// set correct event type
-				event.type = "pubgridResize";
-				_evt.dispatch.apply( context, args );
-			};
-
-		if ( resizeTimeout ) {
-			clearTimeout( resizeTimeout );
-		}
-
-		execAsap ?
-			dispatch() :
-			resizeTimeout = setTimeout( dispatch, $special.threshold );
-	},
-	threshold: 150
-};
-
-})(jQuery);
 </script>
