@@ -1,5 +1,5 @@
 /*
- * pubGrid v0.0.1
+ * pubCalendar v0.0.1
  * ========================================================================
  * Copyright 2016 ytkim
  * Licensed under MIT

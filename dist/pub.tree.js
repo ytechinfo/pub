@@ -1,6 +1,9 @@
-/*!
-* javascript tree 
-* Copyright 2011 , ytkim
+/*
+ * pubTree v0.0.1
+ * ========================================================================
+ * Copyright 2016 ytkim
+ * Licensed under MIT
+ * http://www.opensource.org/licenses/mit-license.php
 */
 
 function pubTree(divName, subMenuCall) {
