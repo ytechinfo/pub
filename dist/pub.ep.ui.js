@@ -1,10 +1,10 @@
-/*
+/**
  * PubEPUI v0.0.1
  * ========================================================================
  * Copyright 2016 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
- */
+ */ 
 if (typeof window != "undefined") {
     if (typeof window.PubEPUI == "undefined") {
         window.PubEPUI = {};

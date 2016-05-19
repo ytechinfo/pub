@@ -5,7 +5,6 @@
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
  */
-
 if (typeof window != "undefined") {
     if (typeof window.PubEP == "undefined") {
         window.PubEP = {};

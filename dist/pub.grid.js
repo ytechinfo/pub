@@ -1,10 +1,11 @@
-/*
+/**
  * pubGrid v0.0.1
  * ========================================================================
  * Copyright 2016 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
 */
+
 ;(function($, window, document) {
 "use strict";
 
