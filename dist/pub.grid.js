@@ -738,13 +738,14 @@ Plugin.prototype ={
 	,getSortList :function (idx, sortType){
 		var _this = this
 			,opt = _this.options
+			,tci = opt.tColItem
 			,tbi = opt.tbodyItem;
-
-		if(idx < 0 || tbi.length < 1 || idx >= tbi.length){
+		
+		if(idx < 0 || tbi.length < 1 || idx >= tci.length){
 			return [];
 		}
 			
-		var _key = opt.tColItem[idx].key;
+		var _key = tci[idx].key;
 
 		function getItemVal(itemObj){
 			return itemObj[_key];
