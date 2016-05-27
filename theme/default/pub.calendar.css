@@ -1,37 +1,154 @@
-.style2 {
-	color: #333;
-	background-color:#c0d2ec;
+/* mini calendar css end*/
+.pub-calendar-default .pub-calendar-red{
+	color : #FE0404
 }
 
-.pubTree{
-	font-family:Verdana, Geneva, Arial, Helvetica, sans-serif;
-	font-size: 11px;
-	color: #666;
-	white-space: nowrap;
-	line-height: 15px;
+.pub-calendar-default .pub-calendar-black{
+	color : #000
+}
+.pub-calendar-default .pub-calendar-blue{
+	color : #0099FF
 }
 
-.pubTree img {
-	border: 0px;
-	vertical-align: middle;
+.pub-calendar-default.mini-pubcalendar a {
+	text-decoration:none
 }
-.pubTree div a {
-	font-family:Verdana, Geneva, Arial, Helvetica, sans-serif;
+
+.pub-calendar-default.mini-pubcalendar .pc-grid-wrap{
+	color : #0099FF;
+	height : 20px;
+}
+.pub-calendar-default.mini-pubcalendar .pubcalendar-day-item {
 	font-size:11px;
-	color: #333;
-	text-decoration: none;
-	padding-left:0px;
+	cursor:pointer;
 }
-.pubTree a {
-	line-height: 20px;
+.pub-calendar-default.mini-pubcalendar .pubcalendar-day-item.font-bold {
+	text-align:center;
+	font-weight:bold;
+}
+.pub-calendar-default.mini-pubcalendar .mini-pubcalendar-tbl{
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
 }
 
-.pubTreeAtagblur {
-	color: #333 ;
-	background-color:#ffffff;
+.pub-calendar-default.mini-pubcalendar thead>tr>td {
+	text-align:center;
+	font-size:11px;
+    font-weight: bolder;
+}
+.pub-calendar-default.mini-pubcalendar tbody>tr>td {
+	text-align:center;
 }
 
-.pubTreeAtagfocus {
-	color: #ffffff ;
-	background-color:#c0d2ec;
+
+.pub-calendar-default.mini-pubcalendar .select{
+	background-color:#fff;
+	border:3px #2B9225 solid;
+	width: 20px;
+	height: 20px;
+    display: inline-block;
+	-webkit-border-radius:100px;
+	-moz-border-radius:100px;
+}
+/* --mini calendar css end*/
+
+/*full calendar*/
+.pub-calendar-default .pub-calendar-red{
+	color : #FE0404
+}
+
+.pub-calendar-default .pub-calendar-black{
+	color : #000
+}
+.pub-calendar-default .pub-calendar-blue{
+	color : #0099FF
+}
+
+.pub-calendar-default .prev_month_day, .pub-calendar-default .next_month_day{
+	zoom: 1; /* ie 5,6,7 bug fix */
+	filter: alpha(opacity=60);
+	opacity: 0.6;
+}
+
+.pub-calendar-default.full-pubcalendar a {
+	text-decoration:none
+}
+
+.pub-calendar-default.full-pubcalendar .pc-grid-wrap{
+	color : #0099FF;
+	height : 20px;
+}
+.pub-calendar-default.full-pubcalendar .pubcalendar-day-item {
+	font-size:11px;
+	cursor:pointer;
+}
+.pub-calendar-default.full-pubcalendar .pubcalendar-day-item.font-bold {
+	text-align:center;
+	font-weight:bold;
+}
+.pub-calendar-default.full-pubcalendar .full-pubcalendar-tbl{
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+.pub-calendar-default.full-pubcalendar thead>tr>td {
+	text-align:center;
+	font-size:1em;
+    font-weight: bold;
+    border: 1px solid #F1EAEA;
+}
+
+.pub-calendar-default.full-pubcalendar tbody>tr>td {
+	border: 1px solid #F1EAEA;
+}
+.pub-calendar-default.full-pubcalendar .day_area {
+	padding :3px 3px 3px 3px;
+}
+.pub-calendar-default.full-pubcalendar .day_area a{
+	font-family: Tahoma,'돋움',Dotum;
+    font-size: 11px;
+	font-weight: bold;
+	letter-spacing: -1px;
+    vertical-align: top;
+}
+.pub-calendar-default.full-pubcalendar .day_info {
+	float:right;
+	font-family: Tahoma,'돋움',Dotum;
+    font-size: 11px;
+	letter-spacing: -1px;
+    vertical-align: top;
+}
+
+.pub-calendar-default.full-pubcalendar .day_info {
+	float:right;
+	font-family: Tahoma,'돋움',Dotum;
+    font-size: 11px;
+	letter-spacing: -1px;
+    vertical-align: top;
+}
+
+.pub-calendar-default .pubcalendar_year_txt{
+	display:none;
+}
+
+.pub-calendar-default.full-pubcalendar .pubcalendar_year_view {
+	font-size: 21px;
+	font-weight: bold;
+    padding-right: 5px;
+}
+
+.pub-calendar-default.full-pubcalendar .pubcalendar_month_select{
+	font: 12pt 돋움;
+	font-weight: bold;
+}
+
+.pub-calendar-default.full-pubcalendar .select{
+	background-color:#fff;
+	border:3px #2B9225 solid;
+	width: 20px;
+	height: 20px;
+    display: inline-block;
+	-webkit-border-radius:100px;
+	-moz-border-radius:100px;
 }
