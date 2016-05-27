@@ -1,28 +1,118 @@
 <!doctype html>
 <HTML>
 <HEAD>
-<TITLE>pub GRID-예제</TITLE>
+<TITLE>pub Calendar-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-<link href="D:/07.project Java/01.pub/pub/theme/default/pub.calenar.css" rel="stylesheet">
+<link href="../../theme/default/pub.calendar.css" rel="stylesheet">
 
-<script src="D:/07.project Java/01.pub/pub/plugins/jquery-1.10.2.min.js"></script>
-<script src="D:/07.project Java/01.pub/pub/plugins/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="../../plugins/jquery-1.10.2.min.js"></script>
+<script src="../../plugins/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="../../dist/pub.calendar.js"></script>
+<script>
+function createMini(){
+	var todayDate ='2016-05-27';
+	$.pubCalendar('#minical',{
+		todayDate : todayDate
+		,type : 'mini'
+		,useLunar : false
+		,viewMode : 4
+		,eventDisplay : true
+		//,eventDisplayClass : 'select'
+		,eventDisplayHtm : false
+		,memorialDays :[
+			{date:'20160524',desc : 'efefefe' ,isLunar: false ,holiday : true}
+		]
+		,dayClick :function (aa){
+			console.log(aa);
+		}
+		,beforeCalendar :function (){
+			this.setEventData([
+				{
+					title: 'All Day Event',
+					start: '2016-05-01'
+				},
+				{
+					title: 'Long Event',
+					start: '2016-05-07',
+					end: '2016-05-10'
+				},
+				{
+					id: 999,
+					title: 'Repeating Event',
+					start: '2016-05-09T16:00:00'
+				},
+				{
+					id: 999,
+					title: 'Repeating Event',
+					start: '2016-05-16T16:00:00'
+				},
+				{
+					title: 'Conference',
+					start: '2016-05-11',
+					end: '2016-05-13'
+				},
+				{
+					title: 'Meeting',
+					start: '2016-05-12T10:30:00',
+					end: '2016-05-20T12:30:00'
+				},
+				{
+					title: 'Lunch',
+					start: '2016-05-12T12:00:00'
+				},
+				{
+					title: 'Meeting',
+					start: '2016-05-12T14:30:00'
+				},
+				{
+					title: 'Happy Hour',
+					start: '2016-05-12T17:30:00'
+				},
+				{
+					title: 'Dinner',
+					start: '2016-05-12T20:00:00'
+				},
+				{
+					title: 'Birthday Party',
+					start: '2016-05-13T07:00:00'
+				},
+				{
+					title: 'Click for Google',
+					url: 'http://google.com/',
+					start: '2016-05-28'
+				}
+			]);
+		}
+	});
+}
+</script>
+
 </HEAD>
+
 <BODY>
-<table width = "100%" border = "0" height="100%">
+<table width = "100%" border = "0" height="100%" border="1">
 <tr>
 	<td>
-		<div id="asdfasdf"></div>
+		<div id="full" style=""></div>
+	</td>
+</tr>
+<tr>
+	<td>
+		<div id="minical"></div>
 	</td>
 </tr>
 
 <tr>
 	<td>
-		<div id="asdfasdf1" style="width:700px;"></div>
+		<div id="diayContentDiv" ></div>
 	</td>
 </tr>
-
+<tr>
+	<td>
+		<div id="yearCalendar"></div>
+	</td>
+</tr>
 </table>
 
 	
@@ -32,9 +122,88 @@
 $(document).ready(function (){
 	fn_init();
 });
-
+var diaryInfoData ={items:[]};
+var todayDate ='2016-05-12';
+var firstLoadCheck = true;
 function fn_init(){
-	
+	var todayDateArr = todayDate.split("-"); // 오늘 날짜
+
+	createMini();
+
+	$.pubCalendar('#full',{
+		todayDate : todayDate
+		,type : 'full'
+		,useLunar : true
+		,viewMode : 2
+		,width: '100%'
+		,eventDisplay : true
+		//,eventDisplayClass : 'select'
+		,eventDisplayHtm : false
+		,memorialDays :[
+			{date:'20160524',desc : 'efefefe' ,isLunar: false ,holiday : true}
+		]
+		,dayClick :function (aa){
+			console.log(aa);
+		}
+		,beforeCalendar :function (){
+			this.setEventData([
+				{
+					title: 'All Day Event',
+					start: '2016-05-01'
+				},
+				{
+					title: 'Long Event',
+					start: '2016-05-07',
+					end: '2016-05-10'
+				},
+				{
+					id: 999,
+					title: 'Repeating Event',
+					start: '2016-05-09T16:00:00'
+				},
+				{
+					id: 999,
+					title: 'Repeating Event',
+					start: '2016-05-16T16:00:00'
+				},
+				{
+					title: 'Conference',
+					start: '2016-05-11',
+					end: '2016-05-13'
+				},
+				{
+					title: 'Meeting',
+					start: '2016-05-12T10:30:00',
+					end: '2016-05-20T12:30:00'
+				},
+				{
+					title: 'Lunch',
+					start: '2016-05-12T12:00:00'
+				},
+				{
+					title: 'Meeting',
+					start: '2016-05-12T14:30:00'
+				},
+				{
+					title: 'Happy Hour',
+					start: '2016-05-12T17:30:00'
+				},
+				{
+					title: 'Dinner',
+					start: '2016-05-12T20:00:00'
+				},
+				{
+					title: 'Birthday Party',
+					start: '2016-05-13T07:00:00'
+				},
+				{
+					title: 'Click for Google',
+					url: 'http://google.com/',
+					start: '2016-05-28'
+				}
+			]);
+		}
+	});
 }
 
 
