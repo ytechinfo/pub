@@ -11,7 +11,7 @@
 }
 
 .pubGrid-wrapper {
-	font-family: Ubuntu, Arial, "Apple SD Gothic Neo", "¾ÖÇÃ SD °íµñ Neo", "NanumBarunGothic", "NanumBarunGothicOTF", "³ª´®¹Ù¸¥°íµñ", "³ª´®¹Ù¸¥°íµñOTF", "Malgun Gothic", "¸¼Àº °íµñ", "NanumGothic", "NanumGothicOTF", "³ª´®°íµñ", "³ª´®°íµñOTF", sans-serif; font-size: 14px;  font-weight: light; 
+	font-family: Ubuntu, Arial, "Apple SD Gothic Neo", "ï¿½ï¿½ï¿½ï¿½ SD ï¿½ï¿½ï¿½ Neo", "NanumBarunGothic", "NanumBarunGothicOTF", "ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½ï¿½ï¿½ï¿½", "ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½ï¿½ï¿½ï¿½OTF", "Malgun Gothic", "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½", "NanumGothic", "NanumGothicOTF", "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½OTF", sans-serif; font-size: 14px;  font-weight: light; 
 	border : 1px solid #ddd;
 	font-size:12px;
 }
@@ -24,7 +24,7 @@
 	background-color: #EFEFEF;
 	overflow-x: hidden;
 }
-/* header ¿µ¿ª*/
+/* header ï¿½ï¿½ï¿½ï¿½*/
 .pubGrid-header {
 	width: 100%;
 	border-collapse: collapse;
@@ -82,7 +82,7 @@
 	border: 1px solid #ddd;
 }
 
-/* body ¿µ¿ª.*/
+/* body ï¿½ï¿½ï¿½ï¿½.*/
 .pubGrid-body-wrapper{
 	position: relative;
 	margin-top :-1px;
@@ -151,7 +151,7 @@
 	top: 0;
 	width: 5px;
 	height:100%;
-	cursor: col-resize;
+	cursor: e-resize;
 	z-index: 1;
 }
 /* --/header end */
