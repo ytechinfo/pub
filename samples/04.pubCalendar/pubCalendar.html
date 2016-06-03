@@ -15,8 +15,8 @@ function createMini(){
 	$.pubCalendar('#minical',{
 		todayDate : todayDate
 		,type : 'mini'
-		,useLunar : false
-		,viewMode : 4
+		,useLunar : true
+		,viewMode : 2
 		,eventDisplay : true
 		//,eventDisplayClass : 'select'
 		,eventDisplayHtm : false
@@ -29,6 +29,19 @@ function createMini(){
 		,beforeCalendar :function (){
 			this.setEventData([
 				{
+					evtId: 978,
+					title: 'All Day Event333',
+					start: '2016-05-01T16:00:00',
+					end: '2016-05-01T16:00:00'
+				},
+				{
+					evtId: 978,
+					title: 'All Day Event222',
+					start: '2016-04-28',
+					end: '2016-05-10'
+				},
+				{
+					evtId: 978,
 					title: 'All Day Event',
 					start: '2016-05-01'
 				},
@@ -38,7 +51,7 @@ function createMini(){
 					end: '2016-05-10'
 				},
 				{
-					id: 999,
+					evtId: 978,
 					title: 'Repeating Event',
 					start: '2016-05-09T16:00:00'
 				},
@@ -58,7 +71,7 @@ function createMini(){
 					end: '2016-05-20T12:30:00'
 				},
 				{
-					title: 'Lunch',
+					title: 'LunchLunchLunchLunchLunchLunchLunchLunch',
 					start: '2016-05-12T12:00:00'
 				},
 				{
@@ -122,20 +135,27 @@ function createMini(){
 $(document).ready(function (){
 	fn_init();
 });
-var diaryInfoData ={items:[]};
+
 var todayDate ='2016-05-12';
-var firstLoadCheck = true;
+var miniFlag =0
+
 function fn_init(){
 	var todayDateArr = todayDate.split("-"); // 오늘 날짜
+	
+	if(miniFlag > 0){
+		createMini();
+	}
 
-	createMini();
+	
 
 	$.pubCalendar('#full',{
 		todayDate : todayDate
 		,type : 'full'
 		,useLunar : true
 		,viewMode : 2
+		,maxEventRow : 4
 		,width: '100%'
+		,height:600
 		,eventDisplay : true
 		//,eventDisplayClass : 'select'
 		,eventDisplayHtm : false
@@ -145,10 +165,20 @@ function fn_init(){
 		,dayClick :function (aa){
 			console.log(aa);
 		}
-		,beforeCalendar :function (){
-			this.setEventData([
+		,beforeCalendar :function (aa){
+			console.log(aa);
+		}
+		,event : {
+			type :'local' //local or ajax
+			,url : 'http://www.naver.com'
+			,colModel : {
+				start : 'start'
+				,title : 'title'
+				,end : 'end'
+			}
+			,items : [
 				{
-					title: 'All Day Event',
+					title: 'All Day Event111',
 					start: '2016-05-01'
 				},
 				{
@@ -172,17 +202,18 @@ function fn_init(){
 					end: '2016-05-13'
 				},
 				{
-					title: 'Meeting',
+					title: 'Meeting222',
 					start: '2016-05-12T10:30:00',
-					end: '2016-05-20T12:30:00'
+					end: '2016-05-23T12:30:00'
 				},
 				{
-					title: 'Lunch',
+					title: 'LunchLunchLunchLunchLunchLunchLunchLunch',
 					start: '2016-05-12T12:00:00'
 				},
 				{
 					title: 'Meeting',
-					start: '2016-05-12T14:30:00'
+					start: '2016-05-12T14:30:00',
+					end: '2016-05-20T12:30:00'
 				},
 				{
 					title: 'Happy Hour',
@@ -193,16 +224,52 @@ function fn_init(){
 					start: '2016-05-12T20:00:00'
 				},
 				{
+					title: 'Dinner',
+					start: '2016-05-13 20:00:00',
+					end: '2016-05-18 12:30:00'
+				},
+				{
 					title: 'Birthday Party',
-					start: '2016-05-13T07:00:00'
+					start: '2016-05-14T07:00:00'
 				},
 				{
 					title: 'Click for Google',
 					url: 'http://google.com/',
 					start: '2016-05-28'
+				},
+				{
+					title: '111------',
+					start: '2016-05-26',
+					end: '2016-05-27'
+				},
+				{
+					title: '222------',
+					start: '2016-05-26',
+					end: '2016-05-27'
+				},
+				{
+					title: '333------',
+					start: '2016-05-26',
+					end: '2016-05-27'
+				},
+				{
+					title: '444------',
+					start: '2016-05-26',
+					end: '2016-05-29'
+				},
+				{
+					title: 'ppppwefwefwe--',
+					url: 'http://google.com/',
+					start: '2016-05-28'
+				},
+				{
+					title: '2016-04-28, 2016-05-05',
+					start: '2016-04-28',
+					end : '2016-05-05'
 				}
-			]);
+			]
 		}
+
 	});
 }
 
