@@ -118,6 +118,12 @@ var _initialized = false
 	,prefixId :'pubCID_' // 내부 적으로 관리 되는 id
 	,dayMoreClick : false	// 더보기 버튼 클릭 이벤트.
 	,dayEventClick : false // 일정 클릭.
+	,dayEventDelete : false // 일정 삭제.
+	,dayEventDetail : false // 일정 상세보기.
+	,dayEventSize : {	// 상세창 사이즈.
+		w : 350
+		,h : 170
+	}
 	,_date :{
 		yyyy:''
 		,mm:''
@@ -127,7 +133,8 @@ var _initialized = false
 			,year :'년'	,month :'월'
 		}
 		,full : {	sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat'
-			,year :''	,month :''
+			,year :''	,month :'' , event_date : '일시' ,delete_btn: '삭제',detail_btn : '상세'
+			,'delete.confirm.msg' : '삭제하시겠습니까?'
 		}
 	}
 	,event: {
@@ -156,13 +163,20 @@ Plugin.prototype ={
 	_initialize :function(element,options){
 		var _this = this ; 
 		_this.selector = element;
+		_this._position = $(element).offset(); 
 		_this.prefix = 'pubcalendar'+new Date().getTime();
 		_this.element = $(element);
 		
-		_defaultOption.dayMoreClick = _this.dayMoreClick; 
-		_defaultOption.dayEventClick = _this.dayEventClick; 
+		options=$.extend({}, {
+			dayMoreClick : _this.dayMoreClick
+			,dayEventClick : _this.dayEventClick
+			,dayEventDelete : _this.dayEventDelete
+			,dayEventDetail : _this.dayEventDetail
+
+		}, options);
 
 		_this.options=$.extend({}, _defaultOption, options);
+
 		_this.setMemorialDay(options.memorialDays);
 		_this.setLunarMonthTable();
 		
@@ -237,7 +251,12 @@ Plugin.prototype ={
 	}
 	// 달력 이벤트 초기화
 	,initEvt : function (){
-		var _this = this; 
+		var _this = this;
+
+		$(document).on('click.bs.pubc.data-api',_this._layerClose)
+			.on('click.bs.pubc.data-api', '.pub_calendar_layer', _this._layerActive)
+			.on('click.bs.pubc.data-api', '.pub_calendar_evt_more,.pub_calendar_evt_item', _this._layerActive);
+		
 
 		$('#'+_this.prefix+' .pubcalendar-move-btn').on('click',function (){
 			var sEle = $(this)
@@ -544,8 +563,6 @@ Plugin.prototype ={
 			}
 		}
 		
-		//console.log(dateRangeArrInfo);
-		
 		_this.config.dateRangeArrInfo=dateRangeArrInfo;
 		_this.config.eventSources=eventSources;
 		
@@ -630,6 +647,7 @@ Plugin.prototype ={
 			_this._setInputBoxEvent();
 		}
 	}
+	// 년도 입력 박스 
 	, _setInputBoxEvent : function (){
 		var _this = this; 
 
@@ -808,7 +826,7 @@ Plugin.prototype ={
 		for(var i =0 ;i < 7; i++){
 			if(_idx >= dateLen) break; 
 					
-			calHTML.push('<div class="month-row" style="top: '+(i*rowHeight)+'%; height: '+((i+1)*rowHeight)+'%">');
+			calHTML.push('<div class="month-row" style="top: '+(i*rowHeight)+'%; height: '+rowHeight+'%">');
 			calHTML.push(_this._renderBgTableHtml(i));
 			calHTML.push('<table cellpadding="0" cellspacing="0" class="pubc-row-grid-table"><thead><tr>');
 
@@ -904,11 +922,16 @@ Plugin.prototype ={
 		}
 
 		if(_this.options.initFlag !== true){
-			calHTML.push('</div><div class="pub_calendar_more_area_wrap"></div></div>');
+			calHTML.push('</div>'+_this._renderEtcHtml()+'</div>');
 			//calHTML.push("");
 		}
 
 		return calHTML;
+	}
+	// 상세, 더보기 레이어 html 
+	,_renderEtcHtml :function (){
+		return '<div class="pub_calendar_more_area_wrap pub_calendar_layer"></div>'
+			+'<div class="pub_calendar_detail_area_wrap pub_calendar_layer"></div>';
 	}
 	// mini 달력 header html 
 	,_renderMiniHeaderHtml : function (year, month , _lang , _w){
@@ -984,6 +1007,7 @@ Plugin.prototype ={
 			+ '	<td class="pubc-bg pubc-bg-lc" _idx="'+(i*7+6)+'">&nbsp;</td>'
 			+ '</tr></table>';
 	}
+	// 날짜 비교.
 	,_compareCalendarDate :function (sDt, eDt){
 		var startDt = new Date(sDt);
 		startDt.setHours(0, 0, 0, 0);
@@ -995,28 +1019,29 @@ Plugin.prototype ={
 		//return  (endDt.getTime() - startDt.getTime())/86400000;
 	}
 	// 더보기 클릭.
-	,dayMoreClick : function (obj){
+	,dayMoreClick : function (pObj){
 		var _this = this 
-			,items = obj.items;
+			,items = pObj.items;
+		
+		_this._layerClose(pObj.evt);
 
 		var moreEle = $('#'+_this.prefix+' .pub_calendar_more_area_wrap');
-
-		var sEle = $('#'+_this.prefix+' .pubc-bg[_idx="'+obj.idx+'"]'); 
+		moreEle.addClass('open');
+		
+		var sEle = $('#'+_this.prefix+' .pubc-bg[_idx="'+pObj.idx+'"]'); 
 
 		var moreHtm = [];
+		moreEle.css('top',sEle.offset().top-10).css('left', sEle.offset().left-_this._position.left).css('width',sEle.width()); 
 
-		moreEle.css('top',sEle.offset().top-10).css('left', sEle.offset().left-10).css('width',sEle.width()); 
-
-		moreHtm.push('<div class="more_header"><span>'+obj.date+'</span><a href="javascript:;"class="more_close">X</a></div><div class="morelist_wrap">');
+		moreHtm.push('<div class="more_header"><span>'+pObj.date+'</span><a href="javascript:;"class="more_close">X</a></div><div class="morelist_wrap">');
 		for (var i=0; i<items.length;i++ ){
-			moreHtm.push('<div class="moreitem"><a href="javascript:;" class="pubc_evt_item" idx="'+i+'">'+items[i][_this.options.event.colModel.title]+'</a></div>');
+			moreHtm.push('<div class="moreitem"><a href="javascript:;" class="pubc_evt_item pubc_more_evt"  idx="'+i+'" >'+items[i][_this.options.event.colModel.title]+'</a></div>');
 		}
 		moreHtm.push('</div>');
 		moreEle.html(moreHtm.join(''));
 		
-		moreEle.show();
-		moreEle.find('.more_close').on('click',function (){
-			moreEle.hide();
+		moreEle.find('.more_close').on('click',function (e){
+			$(document).trigger('click.bs.pubc.data-api');
 		});
 
 		moreEle.find('.pubc_evt_item').on('click',function (e){
@@ -1028,12 +1053,98 @@ Plugin.prototype ={
 		});
 	}
 	//일정 클릭.
-	,dayEventClick :function (sObj){
+	,dayEventClick :function (pSObj){
 		var _this = this 
-			,item = sObj.item;
+			,item = pSObj.item
+			,_w = _this.options.dayEventSize.w ,_h = _this.options.dayEventSize.h
+			,position = _this.getLayerPosition(pSObj.evt ,_w,_h , _this._position.left+20)
+			,evt = pSObj.evt; 
 		
-		console.log(sObj)
+		if(!$(evt.target).hasClass('pubc_more_evt')) _this._layerClose(evt);
+
+		var detailEle = $('#'+_this.prefix+' .pub_calendar_detail_area_wrap');
+		detailEle.addClass('open');
+
+		var detailHtm = [];
+	
+		detailEle.css('top',position.top).css('left', position.left).css('width',_w).css('height',_h); 
+
+		detailHtm.push('<div class="detail_header"><span>'+item[_this.options.event.colModel.title]+'</span><a href="javascript:;"class="detail_close">X</a></div><div class="detail_wrap">');
 		
+		detailHtm.push('<div class="detail_info">'+_this.getLang('full')['event_date']+'<br/> '+item[_this.options.event.colModel.start]+' '+item[_this.options.event.colModel.end]+'</div>');
+		
+		detailHtm.push('<div class="detail_btn_area"><span class="del_btn pub-button"><a href="javascript:;">'+_this.getLang('full')['delete_btn']+'</a></span><span class="detail_btn pub-button"><a href="javascript:;">'+_this.getLang('full')['detail_btn']+'</a></span></div>');
+		detailHtm.push('</div>');
+		detailEle.html(detailHtm.join(''));
+				
+		detailEle.find('.detail_close').on('click',function (){
+			detailEle.removeClass('open');
+		});
+
+		// 삭제
+		detailEle.find('.del_btn').on('click',function (e){
+			if(!confirm(_this.getLang('full')['delete.confirm.msg'])) return ; 
+			$(document).trigger('click.bs.pubc.data-api');
+
+			_this.options.dayEventDelete.call(_this,{evt :e, item:item});
+		});
+		// 상세
+		detailEle.find('.detail_btn').on('click',function (e){
+			$(document).trigger('click.bs.pubc.data-api');
+			_this.options.dayEventDetail({evt :e, item:item});
+		});
+	}
+	// 이벤트 삭제.
+	,dayEventDelete : function (pObj){
+		var _this = this
+			,delItem = pObj.item; 
+		
+		var _items  = _this.options.event.items; 
+		
+		for(var i=0 ;i <_items.length; i++){
+			if(delItem['_pubCID']==_items[i]['_pubCID']){
+				_this.options.event.items.splice(i, 1);
+				break; 
+			}
+		}
+		
+		_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
+
+	}
+	// 이벤트 상세
+	,dayEventDetail : function (pObj){
+		var val =[];
+		for(var key in pObj.item){
+			val.push(key+' : '+pObj.item[key]);
+		}
+		alert(val.join('\n'));
+	}
+	//상세 레이어  위치값 구하기.
+	,getLayerPosition :  function (evt,_w,_h,rightMargin){
+		
+		var evtY = evt.pageY
+			,evtX = evt.pageX;
+
+		var win_h = window.innerHeight
+			,win_w = window.innerWidth;
+		
+		var left = 0, top=0; 
+		if(evt.clientX+_w > win_w){
+			left = win_w - _w-rightMargin;
+		}else{
+			left = evtX-_w/2;
+		}
+		
+		if(evt.clientY+_h > win_h){
+			top = evtY-_h-20;
+		}else{
+			top=evtY;
+		}
+
+		left = left < 0 ? 0 :left; 
+		top  = top < 0 ? 0 : top;
+
+		return {top :top , left:left};
 	}
 	// 두 날짜간의 날짜 비교 . 
 	,compCalendarDate : function (firstDate, secondDate){
@@ -1379,6 +1490,23 @@ Plugin.prototype ={
 		if(tmpMdi &&  tmpMdi.holiday===true) return tmpMdi;
 				
 	}
+	//레이어 닫기
+	,_layerClose : function (e){
+		if (e && e.which === 3) return false;
+		if (e.isDefaultPrevented()) return false;
+
+		$('.pub_calendar_layer').each(function () {
+			var sEle = $(this);
+			
+			if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return ;
+			
+			sEle.removeClass('open');		
+		});
+	}
+	// 레이어 유지.
+	,_layerActive: function (e){
+		e.stopPropagation();
+	}
 	,destory:function (){
 		delete _datastore[this.selector];
 	}
@@ -1415,6 +1543,7 @@ $.pubCalendar = function (selector,options, args) {
 
 	return _cacheObject;	
 };
+
 
 }(jQuery, window, document));
 
