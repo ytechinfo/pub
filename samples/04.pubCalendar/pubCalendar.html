@@ -14,9 +14,9 @@ function createMini(){
 	var todayDate ='2016-05-27';
 	$.pubCalendar('#minical',{
 		todayDate : todayDate
-		,type : 'mini'
+		,viewMode : 'mini'
 		,useLunar : true
-		,viewMode : 2
+		,dayViewMode : 2
 		,eventDisplay : true
 		//,eventDisplayClass : 'select'
 		,eventDisplayHtm : false
@@ -27,7 +27,17 @@ function createMini(){
 			console.log(aa);
 		}
 		,beforeCalendar :function (){
-			this.setEventData([
+
+		}
+		,event : {
+			type :'local' //local or ajax
+			,url : 'http://www.naver.com'
+			,colModel : {
+				start : 'start'
+				,title : 'title'
+				,end : 'end'
+			}
+			,items : [
 				{
 					evtId: 978,
 					title: 'All Day Event333',
@@ -61,7 +71,7 @@ function createMini(){
 					start: '2016-05-16T16:00:00'
 				},
 				{
-					title: 'Conference',
+					title: 'ConferenceConferenceConferenceConferenceConference',
 					start: '2016-05-11',
 					end: '2016-05-13'
 				},
@@ -95,7 +105,7 @@ function createMini(){
 					url: 'http://google.com/',
 					start: '2016-05-28'
 				}
-			]);
+			]
 		}
 	});
 }
@@ -132,12 +142,24 @@ function createMini(){
 </BODY>
 </HTML>
 <script>
+function evtTest(){
+	$('.week-item-grid').on('click',function (e){
+		console.log( e , e.target );
+
+		//alert( e.target);
+		//console.log($(this), e.target)
+	});
+}
+
 $(document).ready(function (){
 	fn_init();
+	evtTest();
 });
 
+
+
 var todayDate ='2016-05-12';
-var miniFlag =0
+var miniFlag = 0 ;
 
 function fn_init(){
 	var todayDateArr = todayDate.split("-"); // 오늘 날짜
@@ -146,18 +168,15 @@ function fn_init(){
 		createMini();
 	}
 
-	
-
 	$.pubCalendar('#full',{
 		todayDate : todayDate
-		,type : 'full'
+		,viewMode : 'full-week'
 		,useLunar : true
-		,viewMode : 2
+		,dayViewMode : 2
 		,maxEventRow : 4
 		,width: '100%'
 		,height:600
 		,eventDisplay : true
-		//,eventDisplayClass : 'select'
 		,eventDisplayHtm : false
 		,memorialDays :[
 			{date:'20160524',desc : 'efefefe' ,isLunar: false ,holiday : true}
@@ -197,27 +216,28 @@ function fn_init(){
 					start: '2016-05-16T16:00:00'
 				},
 				{
-					title: 'Conference',
+					title: 'ConferenceConferenceConferenceConferenceConferenceConference',
 					start: '2016-05-11',
 					end: '2016-05-13'
 				},
 				{
 					title: 'Meeting222',
-					start: '2016-05-12T10:30:00',
-					end: '2016-05-23T12:30:00'
+					start: '2016-05-12 10:30:00',
+					end: '2016-05-23 12:30:00'
 				},
 				{
-					title: 'LunchLunchLunchLunchLunchLunchLunchLunch',
-					start: '2016-05-12T12:00:00'
+					title: 'LunchLunchLun...LunchLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLun',
+					start: '2016-05-12 12:00:00',
+					end: '2016-05-12 15:00:00'
 				},
 				{
 					title: 'Meeting',
-					start: '2016-05-12T14:30:00',
-					end: '2016-05-20T12:30:00'
+					start: '2016-05-12 14:30:00',
+					end: '2016-05-20 12:30:00'
 				},
 				{
 					title: 'Happy Hour',
-					start: '2016-05-12T17:30:00'
+					start: '2016-05-12 17:30:00'
 				},
 				{
 					title: 'Dinner',
@@ -230,7 +250,7 @@ function fn_init(){
 				},
 				{
 					title: 'Birthday Party',
-					start: '2016-05-14T07:00:00'
+					start: '2016-05-14 07:00:00'
 				},
 				{
 					title: 'Click for Google',
@@ -272,6 +292,5 @@ function fn_init(){
 
 	});
 }
-
 
 </script>
