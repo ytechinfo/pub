@@ -683,7 +683,7 @@ hr.pubc-divider {
 	z-index: 2;
 	font-size: .85em;
     border-radius: 3px;
-    border: 1px solid #fff;
+    border: 1px solid #0099ff;
     cursor:pointer; 
 	text-valign:top;
 	word-wrap: break-word; /* Internet Explorer 5.5+ */
@@ -692,7 +692,6 @@ hr.pubc-divider {
 	white-space: -o-pre-wrap; /* Opera 7 */
 	word-break:break-all;
 }
-
 
 .pub-calendar-default .pubc-full-week .allday-item{
 	margin:1px 2px 0px 2px;
