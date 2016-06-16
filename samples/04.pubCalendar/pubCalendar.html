@@ -8,6 +8,8 @@
 
 <script src="../../plugins/jquery-1.10.2.min.js"></script>
 <script src="../../plugins/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="../../plugins/moment.min.js"></script>
+
 <script src="../../dist/pub.calendar.js"></script>
 <script>
 function createMini(){
@@ -30,7 +32,7 @@ function createMini(){
 
 		}
 		,event : {
-			type :'local' //local or ajax
+			type :'local' //local or ajaxf
 			,url : 'http://www.naver.com'
 			,colModel : {
 				start : 'start'
@@ -144,7 +146,7 @@ function createMini(){
 <script>
 function evtTest(){
 	$('.week-item-grid').on('click',function (e){
-		console.log( e , e.target );
+		//console.log( e , e.target );
 
 		//alert( e.target);
 		//console.log($(this), e.target)
@@ -159,7 +161,7 @@ $(document).ready(function (){
 
 
 var todayDate ='2016-05-12';
-var miniFlag = 0 ;
+var miniFlag = 0;
 
 function fn_init(){
 	var todayDateArr = todayDate.split("-"); // 오늘 날짜
@@ -197,6 +199,10 @@ function fn_init(){
 			}
 			,items : [
 				{
+					title: 'All Day Event1asdfasdf11',
+					start: '2016-04-15'
+				},
+				{
 					title: 'All Day Event111',
 					start: '2016-05-01'
 				},
@@ -207,8 +213,9 @@ function fn_init(){
 				},
 				{
 					id: 999,
-					title: 'Repeating Event',
-					start: '2016-05-09T16:00:00'
+					title: 'Repeating Event22222',
+					start: '2016-05-09T16:00:00',
+					end: '2016-05-09T17:30:00'
 				},
 				{
 					id: 999,
@@ -216,7 +223,7 @@ function fn_init(){
 					start: '2016-05-16T16:00:00'
 				},
 				{
-					title: 'ConferenceConferenceConferenceConferenceConferenceConference',
+					title: '1111',
 					start: '2016-05-11',
 					end: '2016-05-13'
 				},
@@ -226,10 +233,62 @@ function fn_init(){
 					end: '2016-05-23 12:30:00'
 				},
 				{
-					title: 'LunchLunchLun...LunchLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLun',
+					title: '222...LunchLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLunLunchLunchLun',
+					start: '2016-05-12 12:00:00',
+					end: '2016-05-12 22:00:00'
+				},
+				{
+					title: '333',
 					start: '2016-05-12 12:00:00',
 					end: '2016-05-12 15:00:00'
 				},
+				{
+					title : '444',
+					start : '2016-05-12 12:00:00',
+					end : '2016-05-12 13:30:00'
+				},
+				{
+					title : '555',
+					start : '2016-05-12 11:00:00',
+					end : '2016-05-12 14:30:00'
+				},
+				{
+					title : '666',
+					start : '2016-05-12 12:30:00',
+					end : '2016-05-12 14:00:00'
+				},
+				{
+					title : '777',
+					start : '2016-05-12 13:30:00',
+					end : '2016-05-12 23:00:00'
+				},
+				{
+					title : '888',
+					start : '2016-05-12 14:00:00',
+					end : '2016-05-12 15:00:00'
+				},
+				{
+					title : '999',
+					start : '2016-05-12 14:00:00',
+					end : '2016-05-12 15:00:00'
+				},
+				{
+					title : '10',
+					start : '2016-05-12 14:00:00',
+					end : '2016-05-12 15:00:00'
+				},
+				{
+					title : 'lunch3',
+					start : '2016-05-12 12:00:00',
+					end : '2016-05-12 15:00:00'
+				},
+				{
+					title : 'lunch3',
+					start : '2016-05-12 12:00:00',
+					end : '2016-05-12 15:00:00'
+				},
+
+
 				{
 					title: 'Meeting',
 					start: '2016-05-12 14:30:00',
@@ -275,7 +334,7 @@ function fn_init(){
 				{
 					title: '444------',
 					start: '2016-05-26',
-					end: '2016-05-29'
+					end: '2016-06-03'
 				},
 				{
 					title: 'ppppwefwefwe--',
