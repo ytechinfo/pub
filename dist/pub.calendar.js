@@ -7,6 +7,51 @@
 */ 
 ;(function($, window, document) {
 "use strict";
+
+if (!Object.keys) {
+  Object.keys = function(obj) {
+    var keys = [];
+
+    for (var i in obj) {
+      if (obj.hasOwnProperty(i)) {
+        keys.push(i);
+      }
+    }
+
+    return keys;
+  };
+}
+
+if (!Array.prototype.filter) {
+  Array.prototype.filter = function(fun/*, thisArg*/) {
+    'use strict';
+
+    if (this === void 0 || this === null) {
+      throw new TypeError();
+    }
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== 'function') {
+      throw new TypeError();
+    }
+
+    var res = [];
+    var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+    for (var i = 0; i < len; i++) {
+      if (i in t) {
+        var val = t[i];
+
+        if (fun.call(thisArg, val, i, t)) {
+          res.push(val);
+        }
+      }
+    }
+
+    return res;
+  };
+}
+
 /*
 기념일 정보 셋팅.
 date : 기념일 날짜 (월일)
@@ -91,8 +136,21 @@ function day2(d) {																// 2자리 숫자료 변경
 	return (d < 10) ? "0"+d : d;
 }
 
+function makeMoment(day){
+	return moment(day);
+}
+
 function getYyyyMmDd(d) {
 	return d.year+'-' +day2(d.month)+'-'+day2(d.day);
+}
+
+function getAddEvt(pEvt, pYyyyMMdd, pItem){
+	if(!pEvt[pYyyyMMdd]){
+		pEvt[pYyyyMMdd] =[];
+	}
+	pEvt[pYyyyMMdd].push(pItem);
+
+	return pEvt; 
 }
 
 var _$d = new Date();
@@ -101,6 +159,7 @@ var _initialized = false
 ,_datastore ={}
 ,_defaultOption ={
 	viewMode : 'full-month'	// 달력 모드 (mini,full-month,full-week,full-day)
+	,viewDateFormat : 'YYYY-MM-DD'
 	,useLunar : true		// 음력 기념일 사용여부.
 	,useYearInput : true //year 변경시 더블클릭하면 input 박스 나타날지 여부.
 	,todayDate : _$d.getFullYear() +'-' +(_$d.getMonth() + 1)+'-'+ _$d.getDate()
@@ -141,9 +200,11 @@ var _initialized = false
 	,event: {
 		type :'local' //local or ajax
 		,colModel : {
-			start : 'start'
-			,title : 'title'
-			,end : 'end'
+			start : 'start'		// 일정 시작일자.
+			,end : 'end'		// 일정 종료일자
+			,title : 'title'	// 일정제목
+			,repeat : 'repeat'	// (반복일정) m(월) , w(주)
+			,repeatInfo : 'repeatInfo'	// (반복일정) 정보
 		}
 	}
 	,beforeCalendar :function (){} // 그리기 전 이벤트
@@ -184,8 +245,6 @@ Plugin.prototype ={
 		_this.config = {
 			beforeDate :{yyyy:'',mm:''}
 		};
-		_this.config.eventSources={};
-		_this.config.dateRangeArrInfo={};
 		
 		var todayDateArr = _this.options.todayDate.split("-"); // 오늘 날짜
 		
@@ -196,13 +255,14 @@ Plugin.prototype ={
 		};
 		
 		_this.options.todayDate =tdate;
-		_this._setMonthViewDayInfo(true);
 		_this._loadEventData(tdate.yyyy, tdate.mm, tdate.dd);
 	}
 	// 이벤트 데이타 로드.
 	,_loadEventData : function (pYear, pMonth, pDday){
 		var _this = this
-			,eventObj = _this.options.event; 
+			,eventObj = _this.options.event
+			,_viewMode = _this.options.viewMode
+			,pDday =pDday ? pDday : 1;
 		
 		//음력은 아래와 같이 체크 함
 		if(_this.options.useLunar && (pYear < 1901 || pYear > 2100) ){
@@ -210,16 +270,17 @@ Plugin.prototype ={
 			return ; 
 		}
 
-		function goDraw(evtData){
+		function goDraw(evtData , mode){
 			
 			_this.options._date = {
 				yyyy : pYear
 				,mm : pMonth
 				,dd :pDday
 			};
-			if(_this.options.initFlag === true) _this._setMonthViewDayInfo();
 
-			_this._setEventData(evtData);
+			_this._setViewDayInfo(); 
+			_this._initEventData(mode , evtData);
+
 			_this.drawCalendar(pYear, pMonth, pDday);
 			
 			if(_this.options.initFlag !==true){
@@ -227,26 +288,70 @@ Plugin.prototype ={
 			}
 			_this.options.initFlag = true; 
 		}
-		
+	
+		var reqDt = makeMoment(pYear+'-'+day2(pMonth)+'-'+day2(pDday))
+			,_mode = 'month'
+			,dateInfo ={};
+
+		if(_viewMode.indexOf('-week') > -1){
+			_mode = 'week';
+			dateInfo = {
+				start : reqDt.clone().startOf('week').format('YYYY-MM-DD')
+				,end : reqDt.clone().endOf('week').format('YYYY-MM-DD')
+				,mode : _mode
+				,viewRangeNum : 7
+			}
+			dateInfo.viewFirst = dateInfo.start;
+			dateInfo.viewLast = dateInfo.end;
+		}else if(_viewMode.indexOf('-day') > -1){
+			_mode = 'day';
+
+			dateInfo = {
+				start : reqDt.format('YYYY-MM-DD')
+				,end : reqDt.format('YYYY-MM-DD')
+				,mode : _mode
+				,viewRangeNum : 1
+			};
+			dateInfo.viewFirst = dateInfo.start;
+			dateInfo.viewLast = dateInfo.end;
+		}else if(_viewMode.indexOf('-custom') > -1){
+			_mode = 'custom';
+						
+			dateInfo = {
+				start : reqDt.format('YYYY-MM-DD')
+				,end : reqDt.add(5,'day').format('YYYY-MM-DD')
+				,mode : _mode
+				,viewRangeNum : 5
+			};
+			dateInfo.viewFirst = dateInfo.start;
+			dateInfo.viewLast = dateInfo.end;
+		}else{
+			_mode = 'month';
+
+			dateInfo = {
+				viewFirst : reqDt.clone().startOf('month').startOf('week').format('YYYY-MM-DD')
+				,viewLast : reqDt.clone().endOf('month').endOf('week').format('YYYY-MM-DD')
+				,start : reqDt.startOf('month').format('YYYY-MM-DD')
+				,end : reqDt.endOf('month').format('YYYY-MM-DD')
+				,mode : _mode
+				,viewRangeNum : 31
+			};
+		}
+		// 월 정보 셋팅.
+		_this.config.dateInfo = dateInfo;
+	
 		if(eventObj.type=='local'){
-			goDraw(_this.options.event.items);
+			goDraw(_this.options.event.items, _mode);
 		}else{
 			$.ajax({
-				data: {
-					start : pYear+'-'+pMonth+'-'+pDday
-					,end : ''
-					,mode : _this.options.viewMode
-				}
+				data: _this.config.dateInfo
 				,dataType: 'json'
 				,cache: false
 				,success: function(events) {
-					goDraw(_this.options.event.items);
+					goDraw(_this.options.event.items, _mode);
 				}
 				,error: function() {
 					goDraw([]);
-				}
-				,complete: function() {
-					
 				}
 			});
 		}
@@ -258,43 +363,24 @@ Plugin.prototype ={
 		$(document).on('click.bs.pubc.data-api',_this._layerClose)
 			.on('click.bs.pubc.data-api', '.pub_calendar_layer', _this._layerActive)
 			.on('click.bs.pubc.data-api', '.pub_calendar_evt_more,.pub_calendar_evt_item', _this._layerActive);
-		
 
 		$('#'+_this.prefix+' .pubcalendar-move-btn').on('click',function (){
 			var sEle = $(this)
-				,mode = sEle.attr('_mode');
-
-
-			var intPrevYear =0,	intPrevMonth = 0, intNextYear = 0,	intNextMonth = 0
-				,year = parseInt(_this.options._date.yyyy,10)
-				,month = parseInt(_this.options._date.mm,10);
-
-			switch(month) {
-				case 1:
-						intPrevYear = year -1;
-						intPrevMonth = 12;
-						intNextYear = year;
-						intNextMonth = 2;
-						break;
-				case 12:
-						intPrevYear = year;
-						intPrevMonth = 11;
-						intNextYear = year + 1;
-						intNextMonth = 1;
-						break;
-				default:
-						intPrevYear = year;
-						intPrevMonth = month - 1;
-						intNextYear = year;
-						intNextMonth = month + 1;
-						break;
-			}
+				,mode = sEle.attr('_mode')
+				,_vm =_this.config.dateInfo.mode;
+			var sdt = makeMoment(_this.config.dateInfo.start);
 			
-			if(mode =='p'){
-				_this._loadEventData(intPrevYear,intPrevMonth,1);
-			}else{
-				_this._loadEventData(intNextYear,intNextMonth,1);
+			var day = 1, month = 1 , year = 2016 , addMode='day'; 
+
+			
+			if(_vm =='month'){
+				addMode = 'month';
+			}else if(_vm =='week'){
+				addMode = 'week';
 			}
+
+			sdt.add((mode =='p'?-1:1), addMode);
+			_this._loadEventData(sdt.format('YYYY'),sdt.format('MM'),sdt.format('DD'));
 		});
 
 		$('#'+_this.prefix+' .pubcalendar_year_select').on('change',function (e){
@@ -307,134 +393,278 @@ Plugin.prototype ={
 			_this._loadEventData(_this.options._date.yyyy , sEle.val(),1);
 		});
 	}
-	// 일정 이벤트 정보 등록.
-	,_setEventData : function (evts){
-		
-		var _this = this;
+	// 일정 데이타 가공.
+	,_initEventData : function (mode , evtData){
 
-		if(evts.length < 1)  return ;
+		if(!evtData) evtData=[];
 
-		var viewDateArr = _this.options.viewDateArr
-			,viewMonthDayIdx= _this.options.viewMonthDayIdx
-			,dateLen = viewDateArr.length
+		var _this = this
 			,colModel = _this.options.event.colModel; 
+
+		var first = new Date(_this.config.dateInfo.viewFirst); 
+		first.setHours(0, 0, 0, 0);
+		var last = new Date(_this.config.dateInfo.viewLast); 
+		last.setHours(23, 59, 59, 59);
+		last = last.getTime();
 		
-		evts.sort(function (a,b){
-			var v1= new Date(a[colModel.start])
-				,v2 = new Date(b[colModel.start])
-				,v1time = v1.getTime()
-				,v2time = v2.getTime();
-			return v1time < v2time ? -1 : v1time > v2time ? 1 : 0;
+		evtData = evtData.filter(function (evtItem){
+			var _tmpSdt = evtItem[colModel.start];
+			if(!_tmpSdt) return false; 
+			var stime = makeMoment(_tmpSdt).toDate().getTime();
+			evtItem[colModel.end] = evtItem[colModel.end] || _tmpSdt;
+			var etime = makeMoment(evtItem[colModel.end]).toDate().getTime(); 
+
+			if(stime > last || etime < first || (stime <first && etime < first)){
+				return false; 
+			}
+			return true;
 		});
 
-		var monthFirstDay =getYyyyMmDd(viewDateArr[0])
-			,monthLastDay =getYyyyMmDd(viewDateArr[dateLen-1]) ;
-		
-		var monthFirstDayObj =  new Date(monthFirstDay)
-			,monthLastDayObj =  new Date(monthLastDay);
-		monthFirstDayObj.setHours(0, 0, 0, 0);
-		monthLastDayObj.setHours(23, 59, 59, 59);
-		
-		var monthFirstTime = monthFirstDayObj.getTime();
-		var monthLastTime = monthLastDayObj.getTime();
+		//이벤트 정보 정렬
+		evtData.sort(function (a,b){
+			var v1= makeMoment(a[colModel.start]).toDate()
+				,v2 = makeMoment(b[colModel.start]).toDate()
+				,e1= makeMoment(a[colModel.end]).toDate()
+				,e2 = makeMoment(b[colModel.end]).toDate()
+				,v1time = v1.getTime()
+				,v2time = v2.getTime();
 
-		var _sDt = new Date()
-			, _eDt = new Date()
-			,_sTime,_eTime;
+			return v1time == v2time ? (e1.getTime() < e2.getTime() ? 1 : -1 ): v1time < v2time ? -1 : v1time > v2time ? 1 : 0 ;
+		});
 		
-		var eventSources = {}
+		// 시간별 이벤트 담기위한 객체
+		_this.config.allDayEventInfo = {};
+		_this.config.dayEventInfo = {};
+
+		// 월별 이벤트 담기 위한 객체.
+		_this.config.eventSources = {};
+		_this.config.eventRangeArrInfo = {};
+
+		if(mode=='month'){
+			_this._setMonthEventData(evtData);
+		} else {
+			_this._setTimeEventData(evtData);
+		}
+	}
+	//시간별 이벤트정보 가공
+	,_setTimeEventData : function (evts){
+		var _this = this;
+
+		var viewMonthDayIdx= _this.options.viewMonthDayIdx
+			,dateInfo = _this.config.dateInfo
+			,colModel = _this.options.event.colModel; 
+				
+		var firstDayObj =  new Date(dateInfo.start)
+			,lastDayObj =  new Date(dateInfo.end);
+
+		firstDayObj.setHours(0, 0, 0, 0);
+		lastDayObj.setHours(23, 59, 59, 59);
+		
+		var monthFirstTime = firstDayObj.getTime()
+			, monthLastTime = lastDayObj.getTime();
+	
+		var _sDt, _eDt, _sTime, _eTime;
+		var dayEventInfo = {}
+			, allDayEvent ={}
+			, eventSources = {}
 			, item 
 			, events ={};
-
-		var _sDt = new Date()
-			, _eDt = new Date()
-			, _sTime,_eTime;
-
-		function getAddEvt(pEvt, pYyyyMMdd, pItem){
-			if(!pEvt[pYyyyMMdd]){
-				pEvt[pYyyyMMdd] =[];
-			}
-			pEvt[pYyyyMMdd].push(pItem);
-
-			return pEvt; 
-		}
-
-		var monthEventRangeInfo = {};
 
 		// 일정 데이타 계산
 		for (var i=0 ; i < evts.length ; i++){
 			item = evts[i];
 			
-			if(item[colModel.start]){
-				var yyyyMMdd, rangeNum , _monthDayIdx, _rangeItem;
-				
-				item[colModel.end] = item[colModel.end] || item[colModel.start];
-				_sDt = new Date(item[colModel.start]);
-				_sTime = _sDt.getTime();
-				_eDt = new Date(item[colModel.end]);
-				_eTime = _eDt.getTime();
-
-				yyyyMMdd = _sTime < monthFirstTime ? monthFirstDay : item[colModel.start].substring(0,10);
-				item._pubCID = _this.options.prefixId+i;
-				_rangeItem = {pubCID:item._pubCID};
-				
-				eventSources[item._pubCID] = item;
-				events = getAddEvt(events,yyyyMMdd, item);
-
-				if(_sTime > monthLastTime || _eTime < monthFirstTime){
-					continue; 
-				}
-
-				if(item[colModel.start] == item[colModel.end]){
-					monthEventRangeInfo = getAddEvt(monthEventRangeInfo,yyyyMMdd, _this._setColspanNum(_rangeItem,1));
-					continue; 
-				}
+			var tmpEventStart, rangeNum , _rangeItem,tmpStart, tmpEnd;
 			
-				rangeNum = _this._compareCalendarDate(_sTime < monthFirstTime?monthFirstDay:item[colModel.start], (_eTime > monthLastTime? monthLastDay :item[colModel.end]));
-				item.realRangeNum = _this._compareCalendarDate(item[colModel.start], item[colModel.end]);
-				item.rangeNum = rangeNum;
+			tmpStart = item[colModel.start];
+			tmpEnd = item[colModel.end];
 
-				if(rangeNum > 1){
-					_monthDayIdx = viewMonthDayIdx[yyyyMMdd];
+			_sDt = makeMoment(tmpStart);
+			_sTime = _sDt.toDate().getTime();
+			_eDt = makeMoment(tmpEnd);
+			_eTime = _eDt.toDate().getTime();
+
+			tmpEventStart = _sTime < monthFirstTime ? dateInfo.start : _sDt.format('YYYY-MM-DD');
+			item._pubCID = _this.options.prefixId+i;
+			_rangeItem = {pubCID:item._pubCID};
+			
+			eventSources[item._pubCID] = item;
+			events = getAddEvt(events,tmpEventStart, item);
 					
-					var _weekLastNum = ((Math.floor(_monthDayIdx/7)+1)*7); 
+			rangeNum = _this._compareCalendarDate(tmpEventStart, (_eTime > monthLastTime? dateInfo.end :tmpEnd));
+			item.realRangeNum = _this._compareCalendarDate(tmpStart, tmpEnd);
+			item.rangeNum = rangeNum;
+			
+			if(item.realRangeNum > 1){
+				allDayEvent = getAddEvt(allDayEvent, tmpEventStart, _this._setColspanNum(_rangeItem,rangeNum));
+			} else {
+				dayEventInfo = getAddEvt(dayEventInfo,tmpEventStart, _this._setColspanNum(_rangeItem,rangeNum));
+			}
+		}
+		_this._getTimeRangeEventInfo(dayEventInfo, eventSources, colModel);
 
-					if(_monthDayIdx+rangeNum < _weekLastNum) {
-						monthEventRangeInfo = getAddEvt(monthEventRangeInfo,yyyyMMdd, _this._setColspanNum(_rangeItem,rangeNum));
-						continue; 
+
+		_this.config.dayEventInfo=dayEventInfo;
+		_this.config.eventRangeArrInfo = _this._getRangeEventInfo(allDayEvent, 't');
+		_this.config.eventSources=eventSources;
+	}
+	// 일 일정 정보 구하기.
+	,_getTimeRangeEventInfo : function (dayEventInfo, eventSources, colModel){
+		var _this  = this
+			, eventRangeArrInfo = {};
+
+		if(Object.keys(dayEventInfo).length > 0){
+			
+			var viewDateArr = _this.options.viewDateArr
+				,dateLen = viewDateArr.length;
+
+			
+			var evtArr, _dItem, evtItem , _day
+				,dateRangeInfo=[],rangeItem;
+			
+			var dayRowIdx ={}, _prevDayInfo = {};
+			var isStartFlag = false; 
+			// 연속 일정 계산.
+			
+			for(var h=0; h< dateLen; h++){
+				_dItem = viewDateArr[h];
+				_day = getYyyyMmDd(_dItem); 
+				evtArr = dayEventInfo[_day];
+
+				if(!evtArr || evtArr.length < 1) continue; 
+
+				dateRangeInfo = {};
+				
+				var tmpStartDt,tmpEndDt, stdHhmm, endHhmm; 
+
+				var timeIdxObj ={}, _prevTimeInfo = {}, sequenceMap = {},evtItemArrPos = {};
+
+				for (var j=0; j<evtArr.length; j++){
+					evtItem = evtArr[j];
+					evtItemArrPos[evtItem.pubCID] = j; 
+					tmpStartDt = makeMoment(eventSources[evtItem.pubCID][colModel.start]);
+					tmpEndDt = makeMoment(eventSources[evtItem.pubCID][colModel.end]);
+
+					stdHhmm = parseInt(tmpStartDt.format('HHmm'),10); 
+					endHhmm = parseInt(tmpEndDt.format('HHmm'),10); 
+
+					var _rowIdx=timeIdxObj[stdHhmm]= typeof timeIdxObj[stdHhmm]==='undefined' ? 0 : timeIdxObj[stdHhmm]+1;
+
+					if(typeof sequenceMap[stdHhmm] === 'undefined'){
+						sequenceMap[stdHhmm] = [];
+					}
+					
+					var dayArr = sequenceMap[stdHhmm];
+
+					sequenceMap[stdHhmm].sort(function(a,b) { return a - b; });
+					for (var y =0; y < _rowIdx; y++){
+						if(dayArr[y] > y){
+							_rowIdx = y; 
+							break; 
+						}
 					}
 
-					var firstSpan = _weekLastNum-_monthDayIdx; 
-					monthEventRangeInfo = getAddEvt(monthEventRangeInfo,yyyyMMdd, _this._setColspanNum(_rangeItem,firstSpan));
-					rangeNum = rangeNum-firstSpan;
+					sequenceMap[stdHhmm].push(_rowIdx);
 					
-					if(rangeNum > 0){
-						var _dayIdx = _monthDayIdx+firstSpan;
-						var n = Math.floor(rangeNum/7);
+					if(!dateRangeInfo[stdHhmm]){
+						dateRangeInfo[stdHhmm]=[];
+					}
+					evtItem.viewFlag = true;
+					evtItem.colIdx = _rowIdx; 
+
+					dateRangeInfo[stdHhmm].push(evtItem);
+
+					var tmpEvtItem = $.extend(true, {}, evtItem);
+					tmpEvtItem.viewFlag = false; 
+
+					while(stdHhmm < endHhmm){
+
+						if( (stdHhmm-30)%100){
+							stdHhmm+=30;
+						}else{
+							stdHhmm+=70;
+						}
+						if(stdHhmm == endHhmm) break; 
+
+						if(!dateRangeInfo[stdHhmm]){
+							dateRangeInfo[stdHhmm]=[];
+						}
 						
-						if(n > 0){
-							for (var l =0; l < n ;l++){
-								monthEventRangeInfo = getAddEvt(monthEventRangeInfo,getYyyyMmDd(viewDateArr[_dayIdx]), _this._setColspanNum(_rangeItem,7));
-								_dayIdx+=7;
+						timeIdxObj[stdHhmm]= typeof timeIdxObj[stdHhmm]==='undefined' ? 0 : timeIdxObj[stdHhmm]+1;
+
+						if(typeof sequenceMap[stdHhmm] === 'undefined'){
+							sequenceMap[stdHhmm] = [];
+						}
+
+						sequenceMap[stdHhmm].push(tmpEvtItem.colIdx);
+						dateRangeInfo[stdHhmm].push(tmpEvtItem);
+					}
+				}
+
+				console.log('22222', dateRangeInfo,sequenceMap )
+
+				for(var key in dateRangeInfo){
+					var dri = dateRangeInfo[key]
+						,driLen = dri.length
+						,_w = driLen == 1 ? 100 : 100/driLen+ (100/driLen)/8;
+
+					var lastItem = dri[driLen-1]
+						,widthFlag = (lastItem.viewFlag && lastItem.colIdx+1 == driLen? true :false)
+						,tmpEvtItem;
+
+					for(var z=0; z < driLen; z++){
+						tmpEvtItem = dri[z];
+						var prevEvtItem ={left :0,width:_w};
+						if(tmpEvtItem.viewFlag){
+							if(z != 0){
+								prevEvtItem = evtArr[evtItemArrPos[dri[z-1].pubCID]]; 	
+							}
+
+							tmpEvtItem.width = _w;
+							tmpEvtItem.overNum = driLen-z-1;
+							tmpEvtItem.marginLeft = tmpEvtItem.colIdx*prevEvtItem.width; 
+							tmpEvtItem.left = tmpEvtItem.marginLeft  -(tmpEvtItem.colIdx*prevEvtItem.width/8);
+							tmpEvtItem.prevLeftObj = prevEvtItem;
+							tmpEvtItem.zindex = z;
+						}else if(widthFlag){
+
+							evtItem = evtArr[evtItemArrPos[tmpEvtItem.pubCID]]; 
+							if(evtItem.width > _w){
+								
+								if(z != 0){
+									prevEvtItem = evtArr[evtItemArrPos[dri[z-1].pubCID]]; 	
+								}
+
+								evtItem.width = _w;
+								evtItem.overNum = driLen-z-1;
+								evtItem.marginLeft = evtItem.colIdx*prevEvtItem.width; 
+								evtItem.left = evtItem.marginLeft -(evtItem.colIdx*prevEvtItem.width/8);
+								evtItem.prevLeftObj = prevEvtItem;
 							}
 						}
-
-						var mod = rangeNum % 7; 
-
-						if(mod > 0){
-							monthEventRangeInfo = getAddEvt(monthEventRangeInfo,getYyyyMmDd(viewDateArr[_dayIdx]), _this._setColspanNum(_rangeItem,mod));
-						}
 					}
-				}else{
-					monthEventRangeInfo = getAddEvt(monthEventRangeInfo,yyyyMMdd, _this._setColspanNum(_rangeItem,rangeNum));
+					
 				}
 			}
 		}
 
-		// 일정이 있을때 일정 정보 계산.
-		if(Object.keys(events).length > 0){
+		console.log('dayEventInfo', dayEventInfo)
+
+		return eventRangeArrInfo; 
+	}
+	// 연속 일정 정보 구하기. 
+	,_getRangeEventInfo :function (eventRangeInfo, type){
+		var _this  = this
+			, eventRangeArrInfo = {}
+			, maxEventCount = 0, maxEventDay;
+
+		if(Object.keys(eventRangeInfo).length > 0){
+			
+			var viewDateArr = _this.options.viewDateArr
+				,dateLen = viewDateArr.length;
+			
 			var evtArr, _dItem, evtItem , _day
-				,dateRangeInfo=[],dateRangeArrInfo={},rangeItem, rangeItem2;
+				,dateRangeInfo=[],rangeItem, rangeItem2;
 			
 			var dayRowIdx ={}, _prevDayInfo = {};
 			var isStartFlag = false; 
@@ -443,9 +673,9 @@ Plugin.prototype ={
 				// 로직 처리 할것 날짜의 대한것.
 				_dItem = viewDateArr[i];
 				_day = getYyyyMmDd(_dItem); 
-				evtArr = monthEventRangeInfo[_day];
+				evtArr = eventRangeInfo[_day];
 
-				if(i!=0 && i%7==0) {
+				if(type=='m' && (i!=0 && i%7==0)) {
 					dateRangeInfo = [];
 				}
 
@@ -501,26 +731,131 @@ Plugin.prototype ={
 						}						
 					}
 					
-					if(!dateRangeArrInfo[_day]){
-						dateRangeArrInfo[_day] = {};
+					if(!eventRangeArrInfo[_day]){
+						eventRangeArrInfo[_day] = {};
 					}
 					
-					dateRangeArrInfo[_day][_rowIdx]={
+					eventRangeArrInfo[_day][_rowIdx]={
 						pubCID :  rangeItem.pubCID
 						,range : rangeItem.range
 						,rowIdx : _rowIdx
 						,isStart : isStart
 					}
-
+					
+					if( _rowIdx > maxEventCount ){
+						maxEventCount = _rowIdx;
+						maxEventDay = _day;
+					}
+					
 					_prevDayInfo[rangeItem.pubCID] = _rowIdx;
-					rangeItem.isStart  = false; 
+					rangeItem.isStart  = false;
 					rangeItem.range = rangeItem.range == 1 ? -1 : rangeItem.range -1;
-					dateRangeInfo[z] = rangeItem; 
+					dateRangeInfo[z] = rangeItem;
 				}
 			}
 		}
+		// 일정 정보 많은날 정보 .
+		_this.config.eventDay = {
+			date : maxEventDay
+			,max : maxEventCount+1
+		};
 
-		_this.config.dateRangeArrInfo=dateRangeArrInfo;
+		return eventRangeArrInfo; 
+	}
+	// 일정 이벤트정보 가공
+	,_setMonthEventData : function (evts){
+
+		var _this = this;
+
+		var viewDateArr = _this.options.viewDateArr
+			,viewMonthDayIdx= _this.options.viewMonthDayIdx
+			,dateInfo = _this.config.dateInfo	
+			,dateLen = viewDateArr.length
+			,colModel = _this.options.event.colModel; 
+
+		var monthFirstDayObj =  new Date(dateInfo.viewFirst)
+			,monthLastDayObj =new Date(dateInfo.viewLast);
+
+		monthFirstDayObj.setHours(0, 0, 0, 0);
+		monthLastDayObj.setHours(23, 59, 59, 59);
+		
+		var monthFirstTime = monthFirstDayObj.getTime()
+			, monthLastTime = monthLastDayObj.getTime();
+
+		var _sDt , _eDt ,_sTime,_eTime;
+		var monthEventRangeInfo = {}
+			, eventSources = {}
+			, item 
+			, events ={};
+
+		// 일정 데이타 계산
+		for (var i=0 ; i < evts.length ; i++){
+			item = evts[i];
+			
+			var tmpEventStart, rangeNum , _monthDayIdx, _rangeItem
+				,tmpStart, tmpEnd;
+			
+			tmpStart = item[colModel.start]; 
+			tmpEnd = item[colModel.end];
+
+			_sDt = makeMoment(tmpStart);
+			_sTime = _sDt.toDate().getTime();
+			_eDt = makeMoment(tmpEnd);
+			_eTime = _eDt.toDate().getTime(); 
+
+			tmpEventStart = _sTime < monthFirstTime ? dateInfo.viewFirst : _sDt.format('YYYY-MM-DD');
+			item._pubCID = _this.options.prefixId+i;
+			_rangeItem = {pubCID:item._pubCID};
+			
+			eventSources[item._pubCID] = item;
+			events = getAddEvt(events,tmpEventStart, item);
+			
+			if(tmpStart == tmpEnd){
+				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(_rangeItem,1));
+				continue; 
+			}
+		
+			rangeNum = _this._compareCalendarDate(tmpEventStart, (_eTime > monthLastTime? dateInfo.viewLast :tmpEnd));
+			item.realRangeNum = _this._compareCalendarDate(tmpStart, tmpEnd);
+			item.rangeNum = rangeNum;
+
+			if(rangeNum > 1){
+				_monthDayIdx = viewMonthDayIdx[tmpEventStart];
+				
+				var _weekLastNum = ((Math.floor(_monthDayIdx/7)+1)*7); 
+
+				if(_monthDayIdx+rangeNum < _weekLastNum) {
+					monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(_rangeItem,rangeNum));
+					continue; 
+				}
+
+				var firstSpan = _weekLastNum-_monthDayIdx; 
+				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(_rangeItem,firstSpan));
+				rangeNum = rangeNum-firstSpan;
+				
+				if(rangeNum > 0){
+					var _dayIdx = _monthDayIdx+firstSpan;
+					var n = Math.floor(rangeNum/7);
+					
+					if(n > 0){
+						for (var l =0; l < n ;l++){
+							monthEventRangeInfo = getAddEvt(monthEventRangeInfo,getYyyyMmDd(viewDateArr[_dayIdx]), _this._setColspanNum(_rangeItem,7));
+							_dayIdx+=7;
+						}
+					}
+
+					var mod = rangeNum % 7; 
+
+					if(mod > 0){
+						monthEventRangeInfo = getAddEvt(monthEventRangeInfo,getYyyyMmDd(viewDateArr[_dayIdx]), _this._setColspanNum(_rangeItem,mod));
+					}
+				}
+			}else{
+				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(_rangeItem,rangeNum));
+			}
+		}
+
+		_this.config.eventRangeArrInfo= _this._getRangeEventInfo(monthEventRangeInfo, 'm');
 		_this.config.eventSources=eventSources;
 		
 	}
@@ -533,7 +868,7 @@ Plugin.prototype ={
 	// 캘린더 그리기.
 	,drawCalendar : function (year, month , day){
 		var _this = this;
-		
+
 		var _yyyy = _this.config.beforeDate.yyyy
 			,mode = _this.options.dayViewMode
 			,viewMode = _this.options.viewMode.split('-')[0];
@@ -569,19 +904,31 @@ Plugin.prototype ={
 				var sEle = $(this)
 					,_day = sEle.attr('_day')
 					,_idx = sEle.attr('_idx');
+								
+				$('#'+_this.prefix+' .pubc-state-active').removeClass('pubc-state-active');
+				$('#'+_this.prefix+' .pubc_view_mode_btn[_mode="d"]').addClass('pubc-state-active');
+					
+				_this.options.viewMode = 'full-day';
+
+				var dayArr = _day.split('-');
+				_this._loadEventData(dayArr[0],dayArr[1],dayArr[2]);
 				
-				var dayItem = _this.config.dateRangeArrInfo[_day]
+				/*
+				var dayItem = _this.config.eventRangeArrInfo[_day]
 					,itemArr = [];
 				if(dayItem){
 					for(var key in dayItem){
 						itemArr.push(_this.config.eventSources[dayItem[key].pubCID]);
 					}
 				}
+				
+				//dayClick
 
 				_this.options.dayClick({
 					day : _day
 					,items : itemArr
 				});
+				*/
 			})
 		}
 				
@@ -597,7 +944,7 @@ Plugin.prototype ={
 		if(_this.options.initFlag !== true){
 			$(_this.selector).empty().html(html);
 		}else{
-			$('#'+_this.prefix+' .pubcalendar_year_txt [type=text]').val(year);
+			$('#'+_this.prefix+' .pubcalendar_year_txt').val(year);
 			$('#'+_this.prefix+' .pubcalendar_year_view').html(year);
 			$('#'+_this.prefix+' .pubcalendar_month_select').val(parseInt(month,10));
 			$('#'+_this.prefix+'pc_body').empty().html(html);
@@ -607,19 +954,18 @@ Plugin.prototype ={
 	, _setInputBoxEvent : function (){
 		var _this = this; 
 
-		var _yearTxtSpanEle =$('#'+_this.prefix+' .pubcalendar_year_txt'); 
-		var _yearTxt = $('#'+_this.prefix+' .pubcalendar_year_txt [type=text]');
+		var _yearTxt = $('#'+_this.prefix+' .pubcalendar_year_txt');
 		var _yearView = $('#'+_this.prefix+' .pubcalendar_year_view');
 		
 		_yearView.on('dblclick',function(){
 			_yearView.hide();
-			_yearTxtSpanEle.show();
+			_yearTxt.show();
 			_yearTxt.focus();
 			_yearTxt.select();
 		});
 
 		function _drawCal(){
-			_yearTxtSpanEle.hide();
+			_yearTxt.hide();
 			_yearView.show();
 			var yVal = _yearTxt.val(); 
 			if(isNaN(yVal) || yVal.length >  4){
@@ -627,7 +973,7 @@ Plugin.prototype ={
 				return true; 
 			}
 
-			_this._loadEventData(yVal , $('#'+_this.prefix+' .pubcalendar_month_select').val() ,1,_this.options.dayViewMode);
+			_this._loadEventData(yVal , _this.options._date.mm ,1,_this.options.dayViewMode);
 		}
 
 		_yearTxt.on('keydown',function(e) { 
@@ -653,7 +999,7 @@ Plugin.prototype ={
 					var dayItem = _this.options.viewDateArr[_idx];
 						
 					var _day = getYyyyMmDd(dayItem);
-					var dayEvtItem = _this.config.dateRangeArrInfo[_day]
+					var dayEvtItem = _this.config.eventRangeArrInfo[_day]
 						,itemArr = [];
 					if(dayEvtItem){
 						for(var key in dayEvtItem){
@@ -687,7 +1033,6 @@ Plugin.prototype ={
 					_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
 				})
 
-				
 				$('#'+_this.prefix+' .pubc-today-btn').on('click',function (e){
 					var sEle = $(this);
 
@@ -696,98 +1041,11 @@ Plugin.prototype ={
 			}
 		}
 	}
-	// 상세, 더보기 레이어 html 
-	,_renderEtcHtml :function (){
-		return '<div class="pub_calendar_more_area_wrap pub_calendar_layer"></div>'
-			+'<div class="pub_calendar_detail_area_wrap pub_calendar_layer"></div>';
-	}
-	// mini 달력 header html 
-	,_renderMiniHeaderHtml : function (year, month , _lang , _w){
-		var calHTML =[]; 
-		calHTML.push('	<div style="text-align:center;">');
-		calHTML.push('		<a href="javascript:;" class="pubcalendar-move-btn" _mode="p"><span><</span></a>');
-		calHTML.push('			<span class="pubcalendar_year_wrap"><span class="pubcalendar_year_txt"><input type="text" size="4" value="'+year+'"></span><span class="pubcalendar_year_view">'+year+'</span>'+_lang.year);
-		calHTML.push('			<span class="pubcalendar_month_wrap">'+getMonthInfo(year, month) +'</span>'+_lang.month);
-		calHTML.push('		<a href="javascript:;"  class="pubcalendar-move-btn" _mode="n"><span>></span></a>');			
-		calHTML.push('	</div>');
-		calHTML.push('	<table class="mini-pubcalendar-tbl">');
-		calHTML.push('	  <colgroup>');
-		calHTML.push('		<col style="min-width:'+_w+'px;">');
-		calHTML.push('		<col style="min-width:'+_w+'px;">');
-		calHTML.push('		<col style="min-width:'+_w+'px;">');
-		calHTML.push('		<col style="min-width:'+_w+'px;">');
-		calHTML.push('		<col style="min-width:'+_w+'px;">');
-		calHTML.push('		<col style="min-width:'+_w+'px;">');
-		calHTML.push('		<col style="min-width:'+_w+'px;">');
-		calHTML.push('  </colgroup>');
-		calHTML.push('  <thead><tr>		');
-		calHTML.push('		<td valign="top" class="pub-calendar-red">'+_lang.sun+'</td>		');
-		calHTML.push('		<td valign="top" class="">'+_lang.mon+'</td>		');
-		calHTML.push('		<td valign="top" class="">'+_lang.tue+'</td>		');
-		calHTML.push('		<td valign="top" class="">'+_lang.wed+'</td>		');
-		calHTML.push('		<td valign="top" class="">'+_lang.thu+'</td>		');
-		calHTML.push('		<td valign="top" class="">'+_lang.fri+'</td>		');
-		calHTML.push('		<td valign="top" class="pub-calendar-blue">'+_lang.sat+'</td>		');
-		calHTML.push('	  </tr></thread>');
-		
-		return calHTML.join('');
-	}
-	// 달력 년월 요일 html 
-	,_renderFullCalHeaderHtml :function (year, month , _lang, viewMode){
-		var calHTML =[]; 
-		
-		calHTML.push('<div class="pubc_date_info_area"><div class="float_right">');
-		calHTML.push('		<div class="pubc-button-group">');
-		calHTML.push('			<span class="pubc_header_date_area">');
-		calHTML.push('				<span class="pubcalendar_year_wrap"><span class="pubcalendar_year_txt"><input type="text" size="4" value="'+year+'"></span><span class="pubcalendar_year_view">'+year+'</span>'+_lang.year);
-		calHTML.push('				<span class="pubcalendar_month_wrap">'+getMonthInfo(year, month) +'</span>'+_lang.month);
-		calHTML.push('			</span>');
-		calHTML.push('			<button type="button" style="margin:0px 15px 0px 0px" class="pubc-today-btn pubc-state-default pubc-corner-left pubc-corner-right">today</button>');
-		calHTML.push('			<button type="button" class="pubc-prev-button pubc-state-default pubc-corner-left pubcalendar-move-btn" _mode="p">');
-		calHTML.push('				<span class="pubc-icon pubc-icon-left-single-arrow"></span>');
-		calHTML.push('			</button>');
-		calHTML.push('			<button type="button" class="pubc-next-button pubc-state-default pubc-corner-right pubcalendar-move-btn" _mode="n">');
-		calHTML.push('				<span class="pubc-icon pubc-icon-right-single-arrow"></span>');
-		calHTML.push('			</button>');
-		calHTML.push('		</div>');
-		calHTML.push('		<div class="pubc-button-group">');
-		calHTML.push('			<button type="button" class="pubc_view_mode_btn pubc-state-default pubc-corner-left '+(viewMode=='month'?'pubc-state-active':'')+'" _mode="m">month</button>');
-		calHTML.push('			<button type="button" class="pubc_view_mode_btn pubc-state-default '+(viewMode=='week'?'pubc-state-active':'')+'" _mode="w">week</button>');
-		calHTML.push('			<button type="button" class="pubc_view_mode_btn pubc-state-default pubc-corner-right '+(viewMode=='day'?'pubc-state-active':'')+'" _mode="d">day</button>');
-		calHTML.push('		</div>');
-		calHTML.push('</div></div>');
-		
-		return calHTML.join('');
-	}
-	// full calendar 바탕 테이블 html
-	,_renderBgTableHtml :function (i){
-		return '<table cellpadding="0" cellspacing="0" class="pubc-row-bg-table"><tr>'
-			+ '	<td class="pubc-bg pubc-bg-fc" _idx="'+(i*7)+'">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="'+(i*7+1)+'">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="'+(i*7+2)+'">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="'+(i*7+3)+'">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="'+(i*7+4)+'">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="'+(i*7+5)+'">&nbsp;</td>'
-			+ '	<td class="pubc-bg pubc-bg-lc" _idx="'+(i*7+6)+'">&nbsp;</td>'
-			+ '</tr></table>';
-	}
-	//week 바탕 테이블 html
-	,_renderWeekBgTableHtml :function (){
-		return '<table cellpadding="0" cellspacing="0" class="pubc-row-bg-table"><tr>'
-			+ '	<td class="pubc-bg pubc-bg-fc" _idx="0">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="1">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="2">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="3">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="4">&nbsp;</td>'
-			+ '	<td class="pubc-bg" _idx="5">&nbsp;</td>'
-			+ '	<td class="pubc-bg pubc-bg-lc" _idx="6">&nbsp;</td>'
-			+ '</tr></table>';
-	}
 	// 날짜 비교.
 	,_compareCalendarDate :function (sDt, eDt){
-		var startDt = new Date(sDt);
+		var startDt = makeMoment(sDt).toDate();
 		startDt.setHours(0, 0, 0, 0);
-		var endDt = new Date(eDt);
+		var endDt = makeMoment(eDt).toDate();
 		endDt.setHours(23, 59, 59, 59);
 		
 		return Math.ceil((endDt.getTime() - startDt.getTime())/86400000);
@@ -872,7 +1130,7 @@ Plugin.prototype ={
 		var _this = this
 			,delItem = pObj.item; 
 		
-		var _items  = _this.options.event.items; 
+		var _items  = _this.options.event.items;
 		
 		for(var i=0 ;i <_items.length; i++){
 			if(delItem['_pubCID']==_items[i]['_pubCID']){
@@ -882,7 +1140,6 @@ Plugin.prototype ={
 		}
 		
 		_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
-
 	}
 	// 이벤트 상세
 	,dayEventDetail : function (pObj){
@@ -952,34 +1209,26 @@ Plugin.prototype ={
 		return tempYear+tmpMon+tmpDay;
 	}
 	// 달력에 보일 날짜 셋팅.
-	,_setMonthViewDayInfo :function (initFlag){
-		var _this =this; 
-				
-		var tdate = initFlag===true ? _this.options.todayDate : _this.options._date;
-		
-		var viewMonth = tdate.mm; 
+	,_setViewDayInfo :function (){
+		var _this =this
+			,tdate =  _this.options._date
+			,dateInfo = _this.config.dateInfo;
 
-		var solYear = tdate.yyyy
-			,solMonth= tdate.mm
-			,solDay = 1;
+		var first = makeMoment(dateInfo.viewFirst)
+			,last = makeMoment(dateInfo.viewLast);
+		
+		var viewMonth = tdate.mm;
+
+		var solYear = first.year()
+			,solMonth= first.month()+1
+			,solDay = first.date();
 			
 		var monthDayInfo = _this._getMonthDayArr(solYear, solMonth)
 			,monthArr = monthDayInfo.monthArr
 			,startWeekday = monthDayInfo.startWeekday;
-
-		var intLastDay =  monthArr[solMonth - 1]
-			,prevMonth = solMonth == 1?12:(solMonth - 1)
-			,prevLastDay = monthArr[prevMonth-1];
 		
-		// 선택한 달의 이전 날짜 구하기.
-		if(startWeekday > 0){
-			solYear = prevMonth==12 ? solYear-1 : solYear;
-			solMonth = prevMonth;
-			solDay= prevLastDay - (startWeekday-1);
-		}
+		var dateLen = last.diff(first,'days')+1;
 
-		var _sumMonthDay = startWeekday + intLastDay;
-		var dateLen = _sumMonthDay+(_sumMonthDay%7==0?0: 7-(_sumMonthDay%7));
 		var viewDateArr = [], tmpDayInfo;
 		var monthDayIdx = {};
 		for (var i=0; i < dateLen; i++){
@@ -1313,7 +1562,6 @@ Plugin.prototype ={
 		//음력일 기념일 추출
 		tmpMdi = mdi[day2(dayInfo.lunMonth)+''+day2(dayInfo.lunDay)+'L'];
 		if(tmpMdi &&  tmpMdi.holiday===true) return tmpMdi;
-				
 	}
 	//레이어 닫기
 	,_layerClose : function (e){
@@ -1353,12 +1601,12 @@ Plugin.prototype.miniCalendar = function(opt){
 	if(_this.options.initFlag !== true){
 		
 		calHTML.push('<div id="'+_this.prefix+'" class="mini-pubcalendar '+_this.options.theme+'" style="width:'+_this.options.width+'px;">');
-		calHTML.push(_this._renderMiniHeaderHtml(year ,month,_lang , _this.options.colWidth));
+		calHTML.push(_RenderHTML._renderMiniHeaderHtml(year ,month,_lang , _this.options.colWidth));
 		calHTML.push('	<tbody id="'+_this.prefix+'pc_body" class="pubcalendar_body">');
 	}
 
 	var _tdate = _this.options.todayDate
-		,dateRangeArrInfo = _this.config.dateRangeArrInfo
+		,eventRangeArrInfo = _this.config.eventRangeArrInfo
 		,thirdPrintDay=1;
 
 	var dayInfoArr=_this.getMonthDayInfo({year :year, month : month, day:1}); // 음력날짜 . 기념일 가져오기.
@@ -1376,7 +1624,7 @@ Plugin.prototype.miniCalendar = function(opt){
 		
 		var chkFlag=false;
 		if(_this.options.eventDisplay===true){
-			if(dateRangeArrInfo[tempTodayDate]){
+			if(eventRangeArrInfo[tempTodayDate]){
 				chkFlag = true; 
 			}
 		}
@@ -1418,8 +1666,7 @@ Plugin.prototype.miniCalendar = function(opt){
 Plugin.prototype.fullCalendar= function(opt){ 
 
 	var _this =this 
-		,viewMode = _this.options.viewMode.split('-')[1]
-		, mode=opt.mode // mode 1 default 양력, 2 title 음력, 3 양력 title 기념일. , 4 양력 title 음력/기념일. 
+		,viewMode = _this.config.dateInfo.mode
 		, year=opt.year, month=opt.month, day=opt.day;
 	var calHTML  = [];
 	
@@ -1429,23 +1676,35 @@ Plugin.prototype.fullCalendar= function(opt){
 	var _lang =_this.getLang('full');
 	if(_this.options.initFlag !== true){
 		calHTML.push('<div id="'+_this.prefix+'" class="full-pubcalendar '+_this.options.theme+'" style="width:'+_this.options.width+'px;height:'+_this.options.height+'px;">');
-		calHTML.push(_this._renderFullCalHeaderHtml(year ,month,_lang , viewMode));
+		calHTML.push(_RenderHTML._renderFullCalHeaderHtml(year ,month,_lang , viewMode));
 		calHTML.push('<div id="'+_this.prefix+'pc_body">');
 	}
 	
 	if(viewMode=='month'){
 		calHTML.push(_this._monthCalendar(opt));
-	}else if(viewMode=='week'){
-		calHTML.push(_this._weekCalendar(opt));
-	}else if(viewMode=='day'){
-		calHTML.push(_this._dayCalendar(opt));
+	}else{
+		calHTML.push(_this._timeCalendar(opt));
 	}
 	
 	if(_this.options.initFlag !== true){
-		calHTML.push('</div>'+_this._renderEtcHtml()+'</div>');
+		calHTML.push('</div>'+_RenderHTML._renderEtcHtml()+'</div>');
 	}
 
 	_this.drawCalendarHtml(year,month,calHTML.join(''));
+
+	if(viewMode=='month'){
+		$('#'+_this.prefix+' .view-mode-text').hide();
+		$('#'+_this.prefix+' .view-mode-month').show();
+	}else{
+		$('#'+_this.prefix+' .view-mode-month').hide()
+		$('#'+_this.prefix+' .view-mode-text').show();
+
+		if(viewMode=='day'){
+			$('#'+_this.prefix+' .view-mode-text').html(_this.config.dateInfo.start);
+		}else{
+			$('#'+_this.prefix+' .view-mode-text').html(_this.config.dateInfo.start+' ~ '+_this.config.dateInfo.end)
+		}
+	}
 }
 // 월 일정 달력.
 Plugin.prototype._monthCalendar= function(opt){ 
@@ -1461,8 +1720,10 @@ Plugin.prototype._monthCalendar= function(opt){
 	
 	var _tdate = _this.options.todayDate
 		,eventSources = _this.config.eventSources
-		,dateRangeArrInfo = _this.config.dateRangeArrInfo
+		,eventRangeArrInfo = _this.config.eventRangeArrInfo
 		,thirdPrintDay=1;
+
+	$('#'+_this.prefix+' .pubcalendar_year_wrap').html()
 
 	var dayInfoArr=_this.getMonthDayInfo({year :year, month : month, day:1}); // 음력날짜 . 기념일 가져오기.
 	
@@ -1473,16 +1734,8 @@ Plugin.prototype._monthCalendar= function(opt){
 	var _w = _this.options.colWidth;
 	var _lang =_this.getLang('full');
 
-	calHTML.push('	<table class="full-pubcalendar-tbl">');
-	calHTML.push('	  <colgroup>');
-	calHTML.push('		<col style="min-width:'+_w+'px;">');
-	calHTML.push('		<col style="min-width:'+_w+'px;">');
-	calHTML.push('		<col style="min-width:'+_w+'px;">');
-	calHTML.push('		<col style="min-width:'+_w+'px;">');
-	calHTML.push('		<col style="min-width:'+_w+'px;">');
-	calHTML.push('		<col style="min-width:'+_w+'px;">');
-	calHTML.push('		<col style="min-width:'+_w+'px;">');
-	calHTML.push('  </colgroup>');
+	calHTML.push('<table class="full-pubcalendar-tbl">');	
+	calHTML.push( _RenderHTML._renderColgroupHTML(7,_w));
 	calHTML.push('  <thead><tr>		');
 	calHTML.push('		<td valign="top" class="pub-calendar-red">'+_lang.sun+'</td>		');
 	calHTML.push('		<td valign="top" class="">'+_lang.mon+'</td>		');
@@ -1491,15 +1744,15 @@ Plugin.prototype._monthCalendar= function(opt){
 	calHTML.push('		<td valign="top" class="">'+_lang.thu+'</td>		');
 	calHTML.push('		<td valign="top" class="">'+_lang.fri+'</td>		');
 	calHTML.push('		<td valign="top" class="pub-calendar-blue">'+_lang.sat+'</td>		');
-	calHTML.push('	  </tr></thread></table>');
-	calHTML.push('<div class="pubcalendar_body">');
+	calHTML.push('	</tr></thread>');
+	calHTML.push('</table>');
 	
-
+	calHTML.push('<div class="pubcalendar_body">');
 	for(var i =0 ;i < 7; i++){
 		if(_idx >= dateLen) break; 
 				
 		calHTML.push('<div class="month-row" style="top: '+(i*rowHeight)+'%; height: '+rowHeight+'%">');
-		calHTML.push(_this._renderBgTableHtml(i));
+		calHTML.push(_RenderHTML._renderBgTableHtml(i, 7));
 		calHTML.push('<table cellpadding="0" cellspacing="0" class="pubc-row-grid-table"><thead><tr>');
 
 		var weekDayArr = []
@@ -1514,8 +1767,8 @@ Plugin.prototype._monthCalendar= function(opt){
 
 			weekDayArr.push(tempTodayDate);
 			
-			if(dateRangeArrInfo[tempTodayDate]){
-				var _draiLen = Object.keys(dateRangeArrInfo).length; 
+			if(eventRangeArrInfo[tempTodayDate]){
+				var _draiLen = Object.keys(eventRangeArrInfo).length; 
 				maxWeekRow = maxWeekRow > _draiLen? maxWeekRow : _draiLen;
 			}
 			
@@ -1553,7 +1806,7 @@ Plugin.prototype._monthCalendar= function(opt){
 			evtChkFlag = false; 
 			for(var k = 0 ;k < 7; k++){
 				
-				var evtInfo = dateRangeArrInfo[weekDayArr[k]];
+				var evtInfo = eventRangeArrInfo[weekDayArr[k]];
 				
 				if(evtInfo){
 					evtChkFlag = true; 
@@ -1578,7 +1831,7 @@ Plugin.prototype._monthCalendar= function(opt){
 
 			if(j+1 >= _this.options.maxEventRow){
 				for(var k = 0 ;k < 7; k++){
-					var evtInfo = dateRangeArrInfo[weekDayArr[k]];
+					var evtInfo = eventRangeArrInfo[weekDayArr[k]];
 					var evtLen = evtInfo?Object.keys(evtInfo).length:0; 
 					if((evtLen > _this.options.maxEventRow)) {	
 						calHTML.push('<td><div class="pub_calendar_evt_more"><a class="pc_more" _idx="'+(i*7+k)+'">+'+(evtLen - _this.options.maxEventRow)+' more</a></div></td>');
@@ -1598,25 +1851,37 @@ Plugin.prototype._monthCalendar= function(opt){
 }
 
 function renderWeeekItem(idx, evt , colInfo, evtSource){
+	
+	if(!evt) evt=[];
+
 	var hourHeightPixel = 21;
 	var calHTML = [];
-	calHTML.push('	<td class="week-item-grid" _idx="'+idx+'"><div class="week-item-wrapper"><div class="week-item-area">');
+	calHTML.push('	<td class="week-item-grid" _idx="'+idx+'">');
+	calHTML.push('		<div class="week-item-wrapper">');
+	calHTML.push('		<div class="week-item-area">');
+	
 	
 	var evtItem,esItem
-		,len = Object.keys(evt).length; ;
+		,len = Object.keys(evt).length;
+
 	for(var i=0 ;i <len;i++){
 		evtItem = evt[i];
 		esItem = evtSource[evtItem.pubCID];
-		var sdt = new Date(esItem[colInfo.start]);
-		var shh = sdt.getHours();
-		var smm = sdt.getMinutes();
-		shh += (smm > 30? 1:0);
-		var edt = new Date(esItem[colInfo.end]);
-		var ehh = edt.getHours();
-		var emm = edt.getMinutes();
-		ehh += (emm > 30? 1:0);
-		calHTML.push('<div class="week-item pub_calendar_evt_item" pubc_id="'+evtItem.pubCID+'" style="top:'+(shh*hourHeightPixel)+'px;left:'+(0)+'px;width:100%;height:'+(((ehh-shh)*hourHeightPixel>0?(ehh-shh)*hourHeightPixel :hourHeightPixel)-2)+'px;">');
-		calHTML.push(sdt.getHours()+':'+smm+'-'+edt.getHours()+':'+emm+' ');
+		var sdt = makeMoment(esItem[colInfo.start]);
+		var shh = sdt.toDate().getHours();
+		var smm = sdt.toDate().getMinutes();
+		
+		var edt = makeMoment(esItem[colInfo.end])
+		
+		var _top = (shh*2 + (smm >= 30? 1:0))*hourHeightPixel;	
+		var _height =(edt.diff(sdt,'minute')/30)*hourHeightPixel;
+		_height = _height > 0 ?_height:hourHeightPixel;
+		
+		//evtItem.width = evtItem.prevLeftObj.width;
+		var _left = evtItem.colIdx*evtItem.prevLeftObj.width  -(evtItem.colIdx * evtItem.prevLeftObj.width/8);
+
+		calHTML.push('<div class="week-item pub_calendar_evt_item" pubc_id="'+evtItem.pubCID+'" style="z-index:'+evtItem.colIdx+';top:'+_top+'px;left:'+(_left)+'%;width:'+evtItem.width+'%;height:'+(_height-6)+'px;">');
+		calHTML.push(sdt.format('HH:mm')+'-'+edt.format('HH:mm')+' ');
 		calHTML.push(esItem[colInfo.title]);
 		
 		calHTML.push('</div>');
@@ -1627,7 +1892,7 @@ function renderWeeekItem(idx, evt , colInfo, evtSource){
 }
 
 // week 일정 보기.
-Plugin.prototype._weekCalendar= function(opt){ 
+Plugin.prototype._timeCalendar= function(opt){ 
 	var _this = this
 		, mode=opt.mode // mode 1 default 양력, 2 title 음력, 3 양력 title 기념일. , 4 양력 title 음력/기념일. 
 		, year=opt.year, month=opt.month, day=opt.day;
@@ -1638,13 +1903,14 @@ Plugin.prototype._weekCalendar= function(opt){
 	
 	var _lang =_this.getLang('full');
 	
-	var _tdate = _this.options.todayDate
-		,eventSources = _this.config.eventSources
-		,dateRangeArrInfo = _this.config.dateRangeArrInfo
-		,thirdPrintDay=1;
+	var eventRangeArrInfo = _this.config.eventRangeArrInfo
+		,dateInfo = _this.config.dateInfo
+		,_rangeNum = dateInfo.viewRangeNum
+		,viewDateArr = _this.options.viewDateArr
+		,colInfo = _this.options.event.colModel
+		,eventSources = _this.config.eventSources; 
 
-	var dayInfoArr=_this.getMonthDayInfo({year :year, month : month, day:1}); // 음력날짜 . 기념일 가져오기.
-	
+	var weekStartDt = makeMoment(_this.config.dateInfo.start);
 	var dateItem, _desc='';
 	calHTML.push('<div class="pubc-full-week">');
 	calHTML.push('	<table cellpadding="0" cellspacing="0" class="pubc-full-week-header-tbl">');
@@ -1652,15 +1918,11 @@ Plugin.prototype._weekCalendar= function(opt){
 	// 헤더 start
 	calHTML.push('	  <tr class="header-tr">');
 	calHTML.push('		<td class="header-td-first"></td>');
-	calHTML.push('		<td colspan="7">');
+	calHTML.push('		<td colspan="'+_rangeNum+'">');
 	calHTML.push('			<div class="pubc-week-header-wrapper"><table cellpadding="0" cellspacing="0" style="width:100%;"><tr>');
-	calHTML.push('				<td valign="top" scope="col" class="pub-calendar-red">'+_lang.sun+'</td>');
-	calHTML.push('				<td valign="top" scope="col" class="">'+_lang.mon+'</td>');
-	calHTML.push('				<td valign="top" scope="col" class="">'+_lang.tue+'</td>');
-	calHTML.push('				<td valign="top" scope="col" class="">'+_lang.wed+'</td>');
-	calHTML.push('				<td valign="top" scope="col" class="">'+_lang.thu+'</td>');
-	calHTML.push('				<td valign="top" scope="col" class="">'+_lang.fri+'</td>');
-	calHTML.push('				<td valign="top" scope="col" class="pub-calendar-blue">'+_lang.sat+'</td>');
+	for(var i=0 ;i < _rangeNum ;i++){
+		calHTML.push('<td valign="top" scope="col">'+_Format.weekFormat(weekStartDt,i, _lang)+'</td>');
+	}
 	calHTML.push('			</tr></table></div>');
 	calHTML.push('		</td>');
 	calHTML.push('	  </tr>');
@@ -1669,16 +1931,40 @@ Plugin.prototype._weekCalendar= function(opt){
 	// 종일 일정 start
 	calHTML.push('	  <tr>');
 	calHTML.push('		<td valign="middle" style="width:60px;">allDay</td>');
-	calHTML.push('		<td colspan="7">');
+	calHTML.push('		<td colspan="'+_rangeNum+'">');
 	calHTML.push('			<div class="week-allday-row position-relative"><div class="week-row"><div class="week-day-bg">');
-	calHTML.push(_this._renderWeekBgTableHtml(0));
+	calHTML.push(_RenderHTML._renderWeekBgTableHtml(0, _rangeNum));
 	calHTML.push('			</div>');
-	
-		
-	calHTML.push('			<div style="pubc-all-day-info"><table cellpadding="0" cellspacing="0" class="pubc-row-grid-table">');				
-	for(var i =0 ;i <2; i++){
+	calHTML.push('			<div style="pubc-all-day-info">');
+
+	calHTML.push('				<table cellpadding="0" cellspacing="0" class="pubc-row-grid-table">');
+	var len  = _this.config.eventDay.max;
+	len = len < 1 ? 1 :len;
+
+	for (var j =0; j< len; j++){
 		calHTML.push('<tr>');
-		calHTML.push('	<td colspan="7"><div class="allday-item"><div class="pub_calendar_evt_item" pubc_id="">asdfasdf</div></div></td>');
+		var totColVal = 0 ; 
+		var evtChkFlag = false; 
+		for(var k = 0 ;k < _rangeNum; k++){
+			
+			var evtInfo = eventRangeArrInfo[getYyyyMmDd(viewDateArr[k])];
+			
+			if(evtInfo){
+				evtChkFlag = true; 
+				var evtItem = evtInfo[j];
+				
+				if(evtItem && evtItem.isStart) {
+					totColVal += evtItem.range;
+					var esItem = eventSources[evtItem.pubCID];
+					calHTML.push('	<td colspan="'+evtItem.range+'"><div class="allday-item"><div class="pub_calendar_evt_item" pubc_id="'+evtItem.pubCID+'">'+esItem[colInfo.title]+'</div></div></td>');
+				}
+			}
+
+			if(totColVal < k+1){
+				totColVal +=1;
+				calHTML.push('<td>&nbsp;</td>');
+			}
+		}
 		calHTML.push('</tr>');
 	}
 	calHTML.push('			</table></div>');
@@ -1686,7 +1972,6 @@ Plugin.prototype._weekCalendar= function(opt){
 	calHTML.push('	  </tbody>');
 	calHTML.push('	</table>');
 	calHTML.push('	<hr class="pubc-divider"/>');
-	
 	// 종일 일정 end.
 	
 
@@ -1701,11 +1986,11 @@ Plugin.prototype._weekCalendar= function(opt){
 		calHTML.push('<div class="pubc-time" _time_idx="'+i+'">'+i+'</div>');
 	}
 	calHTML.push('		</td>');
-	calHTML.push('		<td valign="top" colspan="7" height="1px;">');
+	calHTML.push('		<td valign="top" colspan="'+_rangeNum+'" height="1px;">');
 
 	calHTML.push('			<div class="position-relative"><div class="week-day-bg">');
 	calHTML.push('<table cellpadding="0" cellspacing="0" class="pubc-row-grid-table"><tr>');
-	calHTML.push('	<td colspan="7">');	
+	calHTML.push('	<td colspan="'+_rangeNum+'">');	
 	for (var i=0;i <24 ; i++){
 			calHTML.push('	<div class="pubc-time-row"><div class="puc-time-half-row"></div></div>	');
 	}
@@ -1717,8 +2002,9 @@ Plugin.prototype._weekCalendar= function(opt){
 	calHTML.push('				<table cellpadding="0" cellspacing="0" class="pubc-row-bg-table">');
 	calHTML.push('					<tr>');
 	
-	for(var i=0 ;i < 7 ;i++){
-		calHTML.push(renderWeeekItem(i , _this.config.dateRangeArrInfo['2016-05-12'] ,_this.options.event.colModel,_this.config.eventSources));
+	
+	for(var i=0 ;i < _rangeNum ;i++){
+		calHTML.push(renderWeeekItem(i , _this.config.dayEventInfo[getYyyyMmDd(viewDateArr[i])], colInfo, eventSources));
 	}
 	
 	calHTML.push('					</tr>');
@@ -1726,8 +2012,6 @@ Plugin.prototype._weekCalendar= function(opt){
 	calHTML.push('			</div></div>');
 
 	calHTML.push('		</td></tr>');
-
-
 
 	calHTML.push('	  </tbody>');
 	calHTML.push('	</table>');
@@ -1737,133 +2021,111 @@ Plugin.prototype._weekCalendar= function(opt){
 	return calHTML.join('');
 }
 
-
-
-// 일에 대한 일정보기.
-Plugin.prototype._dayCalendar= function(opt){ 
-	var _this = this
-		, mode=opt.mode // mode 1 default 양력, 2 title 음력, 3 양력 title 기념일. , 4 양력 title 음력/기념일. 
-		, year=opt.year, month=opt.month, day=opt.day;
-	var calHTML  = [];
-	
-	year = parseInt(year,10);
-	month = parseInt(month,10);
-	
-	var _lang =_this.getLang('full');
-	
-	var _tdate = _this.options.todayDate
-		,eventSources = _this.config.eventSources
-		,dateRangeArrInfo = _this.config.dateRangeArrInfo
-		,thirdPrintDay=1;
-
-	var dayInfoArr=_this.getMonthDayInfo({year :year, month : month, day:1}); // 음력날짜 . 기념일 가져오기.
-	
-	var dateItem, _desc='';
-	var dateLen = dayInfoArr.length, _idx = 0;
-	var rowHeight = 100/( dateLen/7);
-
-	for(var i =0 ;i < 7; i++){
-		if(_idx >= dateLen) break; 
-				
-		calHTML.push('<div class="month-row" style="top: '+(i*rowHeight)+'%; height: '+rowHeight+'%">');
-		calHTML.push(_this._renderBgTableHtml(i));
-		calHTML.push('<table cellpadding="0" cellspacing="0" class="pubc-row-grid-table"><thead><tr>');
-
-		var weekDayArr = []
-			,maxWeekRow = 0;
-
-		for(var j =0 ;j < 7; j++){
-			dateItem = dayInfoArr[_idx];
-
-			thirdPrintDay = dateItem.day;
-					
-			var tempTodayDate = dateItem.year+"-"+day2(dateItem.month)+"-"+day2(dateItem.day);
-
-			weekDayArr.push(tempTodayDate);
-			
-			if(dateRangeArrInfo[tempTodayDate]){
-				var _draiLen = Object.keys(dateRangeArrInfo).length; 
-				maxWeekRow = maxWeekRow > _draiLen? maxWeekRow : _draiLen;
-			}
-			
-			calHTML.push('<td>');
-			var boldClass='';
-			if (_tdate.yyyy == year && _tdate.mm == month && _tdate.dd == i + 1){
-				boldClass='font-bold';
-			}
-			
-			// 모드별 날짜 view
-			calHTML.push('<div class="day_area"><a href="javascript:;" class="pubcalendar-day-item '+boldClass+' '+dateItem.className+'" _day="'+tempTodayDate+'" ');
-			if(mode=="2"){
-				_desc = dateItem['desc'] ||'';
-				calHTML.push(' title="'+dateItem.desc+'">'+thirdPrintDay); //음력 날짜 , 메모명.
-			}else if(mode=="3" && useLunar){
-				_desc = dateItem['desc'] ||'';
-				calHTML.push(' title="'+dateItem.desc+'">'+thirdPrintDay); //음력 날짜 , 메모명.
-			}else if(mode=="4" && useLunar){
-				_desc = dateItem['lunday']+(dateItem['desc']!=""?"/"+dateItem.desc:"")
-				calHTML.push('>'+thirdPrintDay); //음력 날짜 , 메모명.
-			}else{
-				calHTML.push('>'+thirdPrintDay); //음력 날짜 , 메모명.
-			}
-			calHTML.push('</a><span class="day_info">'+_desc+'</span></div>'); //음력 날짜 , 메모명.
-
-			++_idx;
-			
-		}
-		calHTML.push('</tr></thead>');
-
-		var arrMaxRowColNum = {}, evtChkFlag = false;
-		for (var j =0; j< maxWeekRow; j++){
-			calHTML.push('<tr>');
-			var totColVal = 0 ; 
-			evtChkFlag = false; 
-			for(var k = 0 ;k < 7; k++){
-				
-				var evtInfo = dateRangeArrInfo[weekDayArr[k]];
-				
-				if(evtInfo){
-					evtChkFlag = true; 
-					var evtItem = evtInfo[j];
-					
-					if(evtItem && evtItem.isStart) {
-						totColVal += evtItem.range;
-						var esItem = eventSources[evtItem.pubCID];
-						
-						calHTML.push('<td colspan="'+evtItem.range +'"><div class="pub_calendar_evt_item" pubc_id="'+evtItem.pubCID+'">'+esItem[_this.options.event.colModel.title]+'</div></td>');
-					}
-				}
-
-				if(totColVal < k+1){
-					totColVal +=1;
-					calHTML.push('<td>&nbsp;</td>');
-				}
-			}
-			calHTML.push('</tr>');
-
-			if(!evtChkFlag) break; 
-
-			if(j+1 >= _this.options.maxEventRow){
-				for(var k = 0 ;k < 7; k++){
-					var evtInfo = dateRangeArrInfo[weekDayArr[k]];
-					var evtLen = evtInfo?Object.keys(evtInfo).length:0; 
-					if((evtLen > _this.options.maxEventRow)) {	
-						calHTML.push('<td><div class="pub_calendar_evt_more"><a class="pc_more" _idx="'+(i*7+k)+'">+'+(evtLen - _this.options.maxEventRow)+' more</a></div></td>');
-					}else{
-						totColVal +=1; 
-						calHTML.push('<td>&nbsp;</td>');
-					}
-				}
-				break; 
-			}
-		}
-		calHTML.push('</table></div>');		
+//날짜 포멧
+var _Format = {
+	// 주일 보기 날짜
+	weekFormat :function (dt, addDay){
+		return dt.clone().add(addDay,'day').format('M/D (ddd)');
 	}
-
-	return calHTML.join('');
 }
 
+// 달력 html 
+var _RenderHTML = {
+	// 상세, 더보기 레이어 html 
+	_renderEtcHtml :function (){
+		return '<div class="pub_calendar_more_area_wrap pub_calendar_layer"></div>'
+			+'<div class="pub_calendar_detail_area_wrap pub_calendar_layer"></div>';
+	}
+	// mini 달력 header html 
+	,_renderMiniHeaderHtml : function (year, month , _lang , _w){
+		var calHTML =[]; 
+		calHTML.push('	<div style="text-align:center;">');
+		calHTML.push('		<a href="javascript:;" class="pubcalendar-move-btn" _mode="p"><span><</span></a>');
+		calHTML.push('			<span class="pubcalendar_year_wrap"><input type="text" class="pubcalendar_year_txt" size="4" value="'+year+'"><span class="pubcalendar_year_view">'+year+'</span>'+_lang.year+'</span>');
+		calHTML.push('			<span class="pubcalendar_month_wrap">'+getMonthInfo(year, month) +'</span>'+_lang.month);
+		calHTML.push('		<a href="javascript:;"  class="pubcalendar-move-btn" _mode="n"><span>></span></a>');			
+		calHTML.push('	</div>');
+		calHTML.push('	<table class="mini-pubcalendar-tbl">');
+		calHTML.push(this._renderColgroupHTML(7,_w));	
+		calHTML.push('  <thead><tr>		');
+		calHTML.push('		<td valign="top" class="pub-calendar-red">'+_lang.sun+'</td>		');
+		calHTML.push('		<td valign="top" class="">'+_lang.mon+'</td>		');
+		calHTML.push('		<td valign="top" class="">'+_lang.tue+'</td>		');
+		calHTML.push('		<td valign="top" class="">'+_lang.wed+'</td>		');
+		calHTML.push('		<td valign="top" class="">'+_lang.thu+'</td>		');
+		calHTML.push('		<td valign="top" class="">'+_lang.fri+'</td>		');
+		calHTML.push('		<td valign="top" class="pub-calendar-blue">'+_lang.sat+'</td>		');
+		calHTML.push('	  </tr></thread>');
+		
+		return calHTML.join('');
+	}
+	// 달력 년월 요일 html 
+	,_renderFullCalHeaderHtml :function (year, month , _lang, viewMode){
+		var calHTML =[]; 
+		
+		calHTML.push('<div class="pubc_date_info_area pubc-view-'+viewMode+'"><div class="float_right">');
+		calHTML.push('		<div class="pubc-button-group">');
+		calHTML.push('			<span class="pubc_header_date_area">');
+		calHTML.push(_RenderHTML._renderMonthHeaderHtml(year, month, _lang));
+		calHTML.push('			</span>');
+		calHTML.push('			<button type="button" style="margin:0px 15px 0px 0px" class="pubc-today-btn pubc-state-default pubc-corner-left pubc-corner-right">today</button>');
+		calHTML.push('			<button type="button" class="pubc-prev-button pubc-state-default pubc-corner-left pubcalendar-move-btn" _mode="p">');
+		calHTML.push('				<span class="pubc-icon pubc-icon-left-single-arrow"></span>');
+		calHTML.push('			</button>');
+		calHTML.push('			<button type="button" class="pubc-next-button pubc-state-default pubc-corner-right pubcalendar-move-btn" _mode="n">');
+		calHTML.push('				<span class="pubc-icon pubc-icon-right-single-arrow"></span>');
+		calHTML.push('			</button>');
+		calHTML.push('		</div>');
+		calHTML.push('		<div class="pubc-button-group">');
+		calHTML.push('			<button type="button" class="pubc_view_mode_btn pubc-state-default pubc-corner-left '+(viewMode=='month'?'pubc-state-active':'')+'" _mode="m">month</button>');
+		calHTML.push('			<button type="button" class="pubc_view_mode_btn pubc-state-default '+(viewMode=='week'?'pubc-state-active':'')+'" _mode="w">week</button>');
+		calHTML.push('			<button type="button" class="pubc_view_mode_btn pubc-state-default pubc-corner-right '+(viewMode=='day'?'pubc-state-active':'')+'" _mode="d">day</button>');
+		calHTML.push('		</div>');
+		calHTML.push('</div></div>');
+		
+		return calHTML.join('');
+	}
+	// full calendar 바탕 테이블 html
+	,_renderBgTableHtml :function (i){
+		return '<table cellpadding="0" cellspacing="0" class="pubc-row-bg-table"><tr>'
+			+ '	<td class="pubc-bg pubc-bg-fc" _idx="'+(i*7)+'">&nbsp;</td>'
+			+ '	<td class="pubc-bg" _idx="'+(i*7+1)+'">&nbsp;</td>'
+			+ '	<td class="pubc-bg" _idx="'+(i*7+2)+'">&nbsp;</td>'
+			+ '	<td class="pubc-bg" _idx="'+(i*7+3)+'">&nbsp;</td>'
+			+ '	<td class="pubc-bg" _idx="'+(i*7+4)+'">&nbsp;</td>'
+			+ '	<td class="pubc-bg" _idx="'+(i*7+5)+'">&nbsp;</td>'
+			+ '	<td class="pubc-bg pubc-bg-lc" _idx="'+(i*7+6)+'">&nbsp;</td>'
+			+ '</tr></table>';
+	}
+	//time 바탕 테이블 html
+	,_renderWeekBgTableHtml :function (idx, pRangeNum){
+		var renderHTML = [];
+		renderHTML.push('<table cellpadding="0" cellspacing="0" class="pubc-row-bg-table"><tr>');
+		for (var i=0; i< pRangeNum; i++ ){
+			renderHTML.push('	<td class="pubc-bg '+(i==0?'pubc-bg-fc':'')+' '+(i==pRangeNum-1?'pubc-bg-lc':'')+'" _idx="'+idx+'">&nbsp;</td>');
+		}
+		renderHTML.push('</tr></table>');
+		return renderHTML.join('');
+	}
+	// get colgroup 
+	,_renderColgroupHTML :function (pRangeNum, _w){
+		var renderHTML = [];
 
+		renderHTML.push(' <colgroup>');
+		for (var i=0; i< pRangeNum; i++ ){
+			renderHTML.push('  <col style="min-width:'+_w+'px;">');
+		}
+		renderHTML.push('  </colgroup>');
+
+		return renderHTML.join('');
+	}
+	// 월 모드 일때 일자 표시
+	,_renderMonthHeaderHtml :function (year, month, _lang){
+		return '<span class="view-mode-month"><span class="pubcalendar_year_wrap"><input type="text" class="pubcalendar_year_txt" size="4" value="'+year+'"><span class="pubcalendar_year_view">'+year+'</span>'+_lang.year+'</span>'
+			+ '<span class="pubcalendar_month_wrap">'+getMonthInfo(year, month) +'</span></span>'
+			+ '<span class="view-mode-text"></span></span>'
+	}
+}
 
 $.pubCalendar = function (selector,options, args) {
 	
