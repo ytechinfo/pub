@@ -8,167 +8,24 @@
 ;(function($, window, document) {
 "use strict";
 
-if (!Object.keys) {
-  Object.keys = function(obj) {
-    var keys = [];
-
-    for (var i in obj) {
-      if (obj.hasOwnProperty(i)) {
-        keys.push(i);
-      }
-    }
-
-    return keys;
-  };
-}
-
-if (!Array.prototype.filter) {
-  Array.prototype.filter = function(fun/*, thisArg*/) {
-    'use strict';
-
-    if (this === void 0 || this === null) {
-      throw new TypeError();
-    }
-
-    var t = Object(this);
-    var len = t.length >>> 0;
-    if (typeof fun !== 'function') {
-      throw new TypeError();
-    }
-
-    var res = [];
-    var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
-    for (var i = 0; i < len; i++) {
-      if (i in t) {
-        var val = t[i];
-
-        if (fun.call(thisArg, val, i, t)) {
-          res.push(val);
-        }
-      }
-    }
-
-    return res;
-  };
-}
-
-/*
-기념일 정보 셋팅.
-date : 기념일 날짜 (월일)
-desc : 기념일 설명 (달력에 표시할 설명)
-isLunar : true : 음력 false : 양력
-holiday : true : 빨간날 false : 안빨간날 
-type : true : real time setting
-*/
-var _memorialDays = [
-	{date:'0101',desc : '신정' ,isLunar: false ,holiday :  true}
-	,{date:'_1231',desc : '설연휴' ,isLunar: true ,holiday :  true}
-	,{date:'0101',desc : '설날' ,isLunar: true ,holiday :  true}
-	,{date:'0102',desc : '설연휴' ,isLunar: true ,holiday :  true}
-	,{date:'0301',desc : '3·1절' ,isLunar: false ,holiday :  true}
-	,{date:'0405',desc : '식목일' ,isLunar: false ,holiday :  false}
-	,{date:'0408',desc : '석가탄신일' ,isLunar: true ,holiday :  true}
-	,{date:'0505',desc : '어린이날' ,isLunar: false ,holiday :  true}
-	,{date:'0606',desc : '현충일' ,isLunar: false ,holiday :  true}
-	,{date:'0717',desc : '제헌절' ,isLunar: false ,holiday :  false}
-	,{date:'0815',desc : '광복절' ,isLunar: false ,holiday :  true}
-	,{date:'0814',desc : '추석연휴' ,isLunar: true ,holiday :  true}
-	,{date:'0815',desc : '추석' ,isLunar: true ,holiday :  true}
-	,{date:'0816',desc : '추석연휴' ,isLunar: true ,holiday :  true}
-	,{date:'1003',desc : '개천절' ,isLunar: false ,holiday :  true}
-	,{date:'1225',desc : '성탄절' ,isLunar: false ,holiday :  true}
-	,{date:'0115',desc : '정월대보름' ,isLunar: true ,holiday :  false}
-	,{date:'0505',desc : '단오' ,isLunar: true ,holiday :  false}
-	,{date:'1001',desc : '국군의날' ,isLunar: false ,holiday :  false}
-	,{date:'1009',desc : '한글날' ,isLunar: false ,holiday :  false}
-	,{date:'0625',desc : '6·25전쟁일' ,isLunar: false ,holiday :  false}
-	,{date:'0214',desc : '발렌타인데이' ,isLunar: false ,holiday :  false}
-	,{date:'0322',desc : '물의날' ,isLunar: false ,holiday :  false}
-	,{date:'0401',desc : '만우절' ,isLunar: false ,holiday :  false}
-	,{date:'0413',desc : '임시정부수립일' ,isLunar: false ,holiday :  false}
-	,{date:'0419',desc : '4·19혁명기념일' ,isLunar: false ,holiday :  false}
-	,{date:'0420',desc : '장애인의날' ,isLunar: false ,holiday :  false}
-	,{date:'0421',desc : '과학의날' ,isLunar: false ,holiday :  false}
-	,{date:'0422',desc : '정보통신의날' ,isLunar: false ,holiday :  false}
-	,{date:'0425',desc : '법의날' ,isLunar: false ,holiday :  false}
-	,{date:'0428',desc : '충무공탄신일' ,isLunar: false ,holiday :  false}
-	,{date:'0501',desc : '근로자의날' ,isLunar: false ,holiday :  false}
-	,{date:'0508',desc : '어버이날' ,isLunar: false ,holiday :  false}
-	,{date:'0515',desc : '스승의날' ,isLunar: false ,holiday :  false}
-	,{date:'0518',desc : '5·18 민주화운동일' ,isLunar: false ,holiday :  false}
-	,{date:'0519',desc : '발명의날' ,isLunar: false ,holiday :  false}
-	,{date:'0531',desc : '바다의날' ,isLunar: false ,holiday :  false}
-	,{date:'0605',desc : '환경의날' ,isLunar: false ,holiday :  false}
-	,{date:'0707',desc : '칠월칠석' ,isLunar: false ,holiday :  false}
-	,{date:'1002',desc : '노인의날' ,isLunar: false ,holiday :  false}
-	,{date:'1015',desc : '체육의날' ,isLunar: false ,holiday :  false}
-	,{date:'1024',desc : '국제연합일' ,isLunar: false ,holiday :  false}
-	,{date:'1103',desc : '학생독립운동기념일' ,isLunar: false ,holiday :  false}
-	,{date:'0918',desc : '철도의날' ,isLunar: false ,holiday :  false}
-	,{date:'1109',desc : '소방의날' ,isLunar: false ,holiday :  false}
-];
-
-function getLunarMonthTable(year){
-	return lunarMonthTable[year];
-}
-
-// 미니 달력 월 ------------
-function getMonthInfo(year,month) {										// 월 정보를 콤보 박스로 표시
-	var i = new Number();
-	var strHtm =new Array();
-	strHtm.push('<select class="pubcalendar_month_select">');
-	for (i=1; i<=12; i++) {
-		if (i == parseInt(month)) {
-			strHtm.push("<option value="+i+" selected>"+i+"</option>");
-		} else {
-			strHtm.push("<option value="+i+">"+i+"</option>");
-		}
-	}
-	strHtm.push('</select>');
-
-	return strHtm.join("");
-}
-
-function day2(d) {																// 2자리 숫자료 변경
-	var str = new String();
-	d = parseInt(d,10); 
-
-	return (d < 10) ? "0"+d : d;
-}
-
-function makeMoment(day){
-	return moment(day);
-}
-
-function getYyyyMmDd(d) {
-	return d.year+'-' +day2(d.month)+'-'+day2(d.day);
-}
-
-function getAddEvt(pEvt, pYyyyMMdd, pItem){
-	if(!pEvt[pYyyyMMdd]){
-		pEvt[pYyyyMMdd] =[];
-	}
-	pEvt[pYyyyMMdd].push(pItem);
-
-	return pEvt; 
-}
-
 var _$d = new Date();
 var _initialized = false	
+,_doc = $(document)
 ,_lunarMonthTable = {}
 ,_datastore ={}
+,_TIME_HALF_HEIGHT=21
 ,_defaultOption ={
 	viewMode : 'full-month'	// 달력 모드 (mini,full-month,full-week,full-day)
-	,viewDateFormat : 'YYYY-MM-DD'
-	,useLunar : true		// 음력 기념일 사용여부.
+	,viewDateFormat : 'YYYY-MM-DD HH:mm'
+	,useLunar : false		// 음력 기념일 사용여부.
 	,useYearInput : true //year 변경시 더블클릭하면 input 박스 나타날지 여부.
 	,todayDate : _$d.getFullYear() +'-' +(_$d.getMonth() + 1)+'-'+ _$d.getDate()
 	,maxEventRow : 3
 	,useMemorialday : true // 기념일 보기 여부 
-	,width :200		// 달력 넓이
-	,height:300
+	,width :'100%'		// 달력 넓이
+	,height:570		// 높이
 	,colWidth : 25	// 달력 컬럼 넓이
-	,dayViewMode : 3	// mode 1 default 양력, 2 기념일설명, 3 음력. , 4 음력/기념일. 
+	,dayViewMode : 2	// mode 1 default 양력, 2 기념일설명, 3 음력. , 4 음력/기념일. 
 	,eventDisplay : true // 이벤트 표시 여부. // mini 달력일 경우만 해당
 	,eventDisplayHtm : '<span>O</span>' // 이벤트 표시 html // mini 달력일 경우만 해당
 	,memorialDayInfo : {}
@@ -176,12 +33,15 @@ var _initialized = false
 	,theme :'pub-calendar-default' // 달력 테마
 	,memorialDays:[]	// 기념일
 	,prefixId :'pubCID_' // 내부 적으로 관리 되는 id
-	,dayMoreClick : false	// 더보기 버튼 클릭 이벤트.
-	,dayEventClick : false // 일정 클릭.
-	,dayEventDelete : false // 일정 삭제.
-	,dayEventDetail : false // 일정 상세보기.
+	,eventMoreClick : false	// 더보기 버튼 클릭 이벤트.
+	,eventClick : false // 일정 클릭.
+	,eventDelete : false // 일정 삭제.
+	,eventDetail : false // 일정 상세보기.
+	,backgroundColor :'#A6C9F5'	// 일정 바탕색
+	,timeBackgroundColor : '#E4F7F8' // 시간별 일정 바탕색.
+	,autoResize :false // 창 자동 조절시 
 	,dayEventSize : {	// 상세창 사이즈.
-		w : 350
+		w : 300
 		,h : 170
 	}
 	,_date :{
@@ -193,7 +53,7 @@ var _initialized = false
 			,year :'년'	,month :'월'
 		}
 		,full : {	sun:'Sun',mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat'
-			,year :''	,month :'' , event_date : '일시' ,delete_btn: '삭제',detail_btn : '상세'
+			,year :''	,month :'' , event_date : '일시' ,delete_btn: '삭제',detail_btn : '상세', save_btn : '저장'
 			,'delete.confirm.msg' : '삭제하시겠습니까?'
 		}
 	}
@@ -203,19 +63,28 @@ var _initialized = false
 			start : 'start'		// 일정 시작일자.
 			,end : 'end'		// 일정 종료일자
 			,title : 'title'	// 일정제목
-			,repeat : 'repeat'	// (반복일정) m(월) , w(주)
+			,repeat : 'repeat'	// (반복일정) y(년),m(월) , w(주) ,d(일)
 			,repeatInfo : 'repeatInfo'	// (반복일정) 정보
+			,repeatException : 'repeatException'	// (반복일정) 예외
+			,startTime : 'startTime'	// (반복일정) 시작 시간
+			,endTime :'endTime'	// (반복일정) 종료시간
+			,days :'day'	// (반복일정) 반복일
+			,cycle :'cycle'	// (반복일정) 반복 범위
+			,color : 'color'	// 일정 색깔지정.
 		}
 	}
 	,beforeCalendar :function (){} // 그리기 전 이벤트
 	,afterCalendar :function (date){} // 달력 그린후 이벤트
-	,dayClick : function (date){} // 달력 클릭 이벤트
+	,dayClick : false // 달력 클릭 이벤트
+	,eventWrite : false		// 일정 쓰기
 }; 
 
 function Plugin(element, options) {
 	this._initialize(element, options);
 	return this; 
 }
+
+Plugin.VERSION = '0.0.1';
 
 Plugin.prototype ={
 	/**
@@ -225,37 +94,40 @@ Plugin.prototype ={
 	_initialize :function(element,options){
 		var _this = this ; 
 		_this.selector = element;
-		_this._position = $(element).offset(); 
-		_this.prefix = 'pubcalendar'+new Date().getTime();
 		_this.element = $(element);
+		_this._position = _this.element.offset(); 
+		_this.prefix = 'pubcalendar'+new Date().getTime();
 		
-		options=$.extend({}, {
-			dayMoreClick : _this.dayMoreClick
-			,dayEventClick : _this.dayEventClick
-			,dayEventDelete : _this.dayEventDelete
-			,dayEventDetail : _this.dayEventDetail
-
-		}, options);
-
-		_this.options=$.extend({}, _defaultOption, options);
+		_this.options=objectMerge({}, _defaultOption, options);
 
 		_this.setMemorialDay(options.memorialDays);
 		_this.setLunarMonthTable();
 		
-		_this.config = {
-			beforeDate :{yyyy:'',mm:''}
-		};
-		
-		var todayDateArr = _this.options.todayDate.split("-"); // 오늘 날짜
+		_this.config = {beforeDate :{yyyy:'',mm:''}};
+
+		var todayDate = makeMoment(_this.options.todayDate); // 오늘 날짜
 		
 		var tdate = { 
-			yyyy : todayDateArr[0]
-			,mm : todayDateArr[1]
-			,dd : todayDateArr[2]
+			yyyy : todayDate.format('YYYY')
+			,mm : todayDate.format('MM')
+			,dd : todayDate.format('DD')
+			,yyyy_mm_dd : todayDate.format('YYYY-MM-DD')
 		};
 		
 		_this.options.todayDate =tdate;
+
+		if(_this.options.viewMode == 'full-month' && _this.options.autoResize===true){
+			_this.config.monthWeekNum = todayDate.clone().endOf('month').startOf('week').diff(todayDate.clone().startOf('month').startOf('week') ,'week')+1;
+			_this._setMaxRow(); 
+			_this.options.height = _this.getCalendarMaxHeight();
+		}
+		
 		_this._loadEventData(tdate.yyyy, tdate.mm, tdate.dd);
+	}
+	// 일정 데이타 다시 읽기.
+	,reloadEvent :function (){
+		var tdate = this.options._date;
+		this._loadEventData(tdate.yyyy, tdate.mm, tdate.dd);
 	}
 	// 이벤트 데이타 로드.
 	,_loadEventData : function (pYear, pMonth, pDday){
@@ -318,8 +190,8 @@ Plugin.prototype ={
 			_mode = 'custom';
 						
 			dateInfo = {
-				start : reqDt.format('YYYY-MM-DD')
-				,end : reqDt.add(5,'day').format('YYYY-MM-DD')
+				start : reqDt.clone().format('YYYY-MM-DD')
+				,end : reqDt.clone().add(5,'day').format('YYYY-MM-DD')
 				,mode : _mode
 				,viewRangeNum : 5
 			};
@@ -330,30 +202,32 @@ Plugin.prototype ={
 
 			dateInfo = {
 				viewFirst : reqDt.clone().startOf('month').startOf('week').format('YYYY-MM-DD')
-				,viewLast : reqDt.clone().endOf('month').endOf('week').format('YYYY-MM-DD')
+				,viewLast : reqDt.clone().startOf('month').add(5,'week').endOf('week').format('YYYY-MM-DD')
 				,start : reqDt.startOf('month').format('YYYY-MM-DD')
 				,end : reqDt.endOf('month').format('YYYY-MM-DD')
 				,mode : _mode
 				,viewRangeNum : 31
 			};
 		}
+
 		// 월 정보 셋팅.
 		_this.config.dateInfo = dateInfo;
 	
 		if(eventObj.type=='local'){
 			goDraw(_this.options.event.items, _mode);
 		}else{
-			$.ajax({
-				data: _this.config.dateInfo
-				,dataType: 'json'
+			$.ajax($.extend({}, {
+				type :'get'
 				,cache: false
+				,dataType: "json"
+				,data: _this.config.dateInfo
 				,success: function(events) {
-					goDraw(_this.options.event.items, _mode);
+					goDraw(events.items, _mode);
 				}
 				,error: function() {
 					goDraw([]);
 				}
-			});
+			},eventObj.read));
 		}
 	}
 	// 달력 이벤트 초기화
@@ -370,8 +244,7 @@ Plugin.prototype ={
 				,_vm =_this.config.dateInfo.mode;
 			var sdt = makeMoment(_this.config.dateInfo.start);
 			
-			var day = 1, month = 1 , year = 2016 , addMode='day'; 
-
+			var addMode='day'; 
 			
 			if(_vm =='month'){
 				addMode = 'month';
@@ -392,6 +265,95 @@ Plugin.prototype ={
 			var sEle = $(this);
 			_this._loadEventData(_this.options._date.yyyy , sEle.val(),1);
 		});
+
+		_this._windowResize();		
+	}
+	// 창 리사이즈
+	,_windowResize :function (){
+		var _this = this; 
+		if(_this.options.viewMode != 'full-month' || _this.options.autoResize !== true) return false; 
+
+		var _evt = $.event,
+			_special,
+			resizeTimeout;
+
+		_special = _evt.special.pubcalendarResize = {
+			setup: function() {
+				$( this ).on( "resize", _special.handler );
+			},
+			teardown: function() {
+				$( this ).off( "resize", _special.handler );
+			},
+			handler: function( event, execAsap ) {
+				// Save the context
+				var context = this,
+					args = arguments,
+					dispatch = function() {
+						// set correct event type
+						event.type = "pubcalendarResize";
+						_evt.dispatch.apply( context, args );
+					};
+
+				if ( resizeTimeout ) {
+					clearTimeout( resizeTimeout );
+				}
+
+				execAsap ?
+					dispatch() :
+					resizeTimeout = setTimeout( dispatch, _special.threshold );
+			},
+			threshold: 150
+		};
+
+		$(window).on("pubcalendarResize", function( event ) {
+			_this.resizeDraw();
+		});
+	}
+	// 달력 사이즈 조정.
+	,resizeDraw :function (){
+		var _this = this; 
+		
+		if(_this.options.viewMode != 'full-month') return ; 
+
+		var _date = _this.options._date;
+		
+		_this._setMaxRow();
+		_this.resizeMoreCountSetting(this.options.maxEventRow );
+		_this.drawCalendar(_date.yyyy, _date.mm, _date.dd);
+		_this.pubcElement.css('height',_this.getCalendarMaxHeight()); //TODO: 화면 상단 사이즈 사이즈 처리하게 처리.
+	}
+	// event max row setting
+	,_setMaxRow :function (){
+		var _h = this.getCalendarMaxHeight();
+
+		if(_h < 345){
+			this.options.maxEventRow = 1; 
+		}else{
+			this.options.maxEventRow = Math.floor(_h/this.config.monthWeekNum/19)-2; 
+		}
+	}
+	// 화면 최대 사이즈.
+	,getCalendarMaxHeight : function (){
+		var _h = (window.innerHeight || document.documentElement.clientHeight || screen.height) - this._position.top;
+		return ((_h < 345) ? 345 :_h) -62; 
+	}
+	// 사이즈 조정시 더보기 카운트 갱신.
+	,resizeMoreCountSetting : function (maxRow){
+		var _this  = this; 
+		var eventRangeArrInfo = _this.config.eventRangeArrInfo
+			,dayMoreCount ={};
+		
+		$.each(eventRangeArrInfo, function (key ,dayItem){
+			$.each(dayItem,function (key2 , evtItem){
+				if((parseInt(key2,10)+1) > maxRow) dayMoreCount[key]=(( dayMoreCount[key] || 0 )+1);
+			});
+		});
+		
+		_this.config.dayMoreCount =dayMoreCount;
+	}
+	// 일정 row , full height 구하기.
+	,getRowHeight :function ( type){
+		return 19* (this.options.maxEventRow+2);		
 	}
 	// 일정 데이타 가공.
 	,_initEventData : function (mode , evtData){
@@ -400,50 +362,232 @@ Plugin.prototype ={
 
 		var _this = this
 			,colModel = _this.options.event.colModel; 
+				
+		var first = makeMoment(_this.config.dateInfo.viewFirst+' 00:00')
+			,last = makeMoment(_this.config.dateInfo.viewLast+' 23:59')
+			,viewRangeFirst = makeMoment(_this.config.dateInfo.start)
+			,viewRangeLast= makeMoment(_this.config.dateInfo.end); 
 
-		var first = new Date(_this.config.dateInfo.viewFirst); 
-		first.setHours(0, 0, 0, 0);
-		var last = new Date(_this.config.dateInfo.viewLast); 
-		last.setHours(23, 59, 59, 59);
-		last = last.getTime();
+		var viewFirstTime = first.toDate().getTime();
+		var viewEndTime = last.toDate().getTime();
+
+		var repeatItem = [];
+
+		var pubcIDX = 0; 
 		
+		var eventSources ={}
+			,eventInfoArr = [];
 		evtData = evtData.filter(function (evtItem){
 			var _tmpSdt = evtItem[colModel.start];
 			if(!_tmpSdt) return false; 
-			var stime = makeMoment(_tmpSdt).toDate().getTime();
+					
 			evtItem[colModel.end] = evtItem[colModel.end] || _tmpSdt;
-			var etime = makeMoment(evtItem[colModel.end]).toDate().getTime(); 
-
-			if(stime > last || etime < first || (stime <first && etime < first)){
+	
+			if(!isBetweenDate(makeMoment(_tmpSdt).toDate().getTime()
+				,makeMoment(evtItem[colModel.end]).toDate().getTime()
+				,viewFirstTime
+				,viewEndTime)
+				){
 				return false; 
 			}
+			
+			evtItem._pubCID = _this.options.prefixId+pubcIDX;
+			eventSources[evtItem._pubCID] = evtItem;
+			++pubcIDX;
+			
+			if(evtItem[colModel.repeat]){
+				evtItem._repeatStart = evtItem[colModel.start];
+				evtItem._repeatEnd = evtItem[colModel.end];
+
+				repeatItem.push(evtItem);
+				return false; 
+			}
+			
+			eventInfoArr.push({
+				pubCID	:evtItem._pubCID
+				,start : evtItem[colModel.start]+(evtItem[colModel.startTime]?' '+evtItem[colModel.startTime]:'')
+				,end : evtItem[colModel.end]+(evtItem[colModel.endTime]?' '+evtItem[colModel.endTime]:'')
+			})
+
 			return true;
 		});
 
-		//이벤트 정보 정렬
-		evtData.sort(function (a,b){
-			var v1= makeMoment(a[colModel.start]).toDate()
-				,v2 = makeMoment(b[colModel.start]).toDate()
-				,e1= makeMoment(a[colModel.end]).toDate()
-				,e2 = makeMoment(b[colModel.end]).toDate()
-				,v1time = v1.getTime()
-				,v2time = v2.getTime();
+		_this.config.eventSources=eventSources;
+				
+		$.each(repeatItem, function (i ,item){
+			var type = item[colModel.repeat]
+				,repeatInfo = item[colModel.repeatInfo] ||{}
+				,startDt = makeMoment(item['_repeatStart'])
+				,exceptionArr= item[colModel.repeatException]
+				,exceptionInfo = {};
+			
+			if( exceptionArr && $.isArray(exceptionArr)){
+				$.each(exceptionArr, function (j,jItem){
+					exceptionInfo[jItem] = true; 
+				})
+			}
 
-			return v1time == v2time ? (e1.getTime() < e2.getTime() ? 1 : -1 ): v1time < v2time ? -1 : v1time > v2time ? 1 : 0 ;
-		});
+			if(typeof repeatInfo==='string'){
+				repeatInfo = $.parseJSON(repeatInfo);
+			}
+
+			if($.isArray(repeatInfo)){
+				$.each(repeatInfo,function (j , jItem){
+					addRepeatItem(eventInfoArr,exceptionInfo,item, makeMoment(jItem.start), makeMoment(jItem.end),viewFirstTime, viewEndTime);
+				});
+				return true;
+			}
 		
-		// 시간별 이벤트 담기위한 객체
-		_this.config.allDayEventInfo = {};
-		_this.config.dayEventInfo = {};
+			var cycle = parseInt((repeatInfo[colModel.cycle] || 1),10)
+				,days = parseInt(repeatInfo[colModel.days],10)
+				,tmpStartTime = repeatInfo[colModel.startTime]
+				,tmpEndTime = repeatInfo[colModel.endTime];
+				
+			
+			if(type=='year'){ // 년 반복일정 처리.
+				var startMMDD = startDt.format('MM-DD'); 
+				startDt = makeMoment((viewRangeLast.year()+(startDt.month()==11 && viewRangeLast.month()==0?-1:0))+'-'+startMMDD);
+			
+				addRepeatItem(eventInfoArr,exceptionInfo,item, startDt, startDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+			}else{
+				var repeatStart , repeatFirst = first.clone().add((days*-1),'day')
+					,len =1, flag = true;
 
+				if(startDt.diff(first ,'day') > -1 || startDt.diff( repeatFirst,'day') > -1){
+					repeatStart =startDt;
+					flag = false; 
+				}
+
+				if(type=='month'){ // 월 반복일정 처리.
+					var startDD= startDt.format('DD');
+					
+					if(flag){
+						var num = repeatFirst.startOf(type).diff(startDt.clone().startOf(type) ,type);
+						num += (num%cycle > 0 ? cycle -num%cycle : 0);
+						repeatStart = startDt.clone().startOf(type).add(num,type);
+					}
+
+					len = last.clone().startOf(type).diff(repeatStart.startOf('month'),type);
+					len = Math.ceil(len/cycle)+1;
+															
+					for (var j=0; j < len ;j++){
+						var tmpStartDt = makeMoment(repeatStart.clone().add(j,'month').format('YYYY-MM')+'-'+startDD); 
+						if(tmpStartDt.isValid()){ 
+							var monthDiff = tmpStartDt.diff(startDt,'month');
+							if(monthDiff % cycle==0){
+								addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+							}
+						}
+					}
+					
+				}else if(type=='week'){ // 주 반복일정 처리.
+
+					if(flag){
+						var num = repeatFirst.diff(startDt.clone().startOf('week') ,'week');
+						num += (num%cycle > 0 ? cycle -num%cycle : 0);
+						repeatStart = startDt.clone().startOf('week').add(num,'week');
+					}
+
+					len = last.diff(repeatStart,'week');
+					len = Math.ceil(len/cycle)+1;
+					len = len  < 1 ? 1 :len;
+	
+					for (var j=0;j <len ;j++){
+						var weekDayNum = repeatStart.weekday();
+
+						var tmpStartDt;
+						if(weekDayNum < 1 && repeatInfo.sun>0){
+							tmpStartDt = repeatStart;
+							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+						}
+						
+						if(weekDayNum < 2 && repeatInfo.mon>0){
+							tmpStartDt = repeatStart.clone().add(1-weekDayNum,'day'); 
+							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+						}
+
+						if(weekDayNum < 3 && repeatInfo.tue>0){
+							tmpStartDt = repeatStart.clone().add(2-weekDayNum,'day'); 
+							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+						}
+
+						if(weekDayNum < 4 && repeatInfo.wed>0){
+							tmpStartDt = repeatStart.clone().add(3-weekDayNum,'day'); 
+							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+						}
+
+						if(weekDayNum < 5 && repeatInfo.thu>0){
+							tmpStartDt = repeatStart.clone().add(4-weekDayNum,'day');
+							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+						}
+
+						if(weekDayNum < 6 && repeatInfo.fri>0){
+							tmpStartDt = repeatStart.clone().add(5-weekDayNum,'day');
+							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+						}
+						if(weekDayNum < 7 && repeatInfo.sat >0){
+							tmpStartDt = repeatStart.clone().add(6-weekDayNum,'day');
+							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+						}
+
+						if(weekDayNum != 0){
+							repeatStart.startOf('week');
+						}
+						repeatStart.add(cycle,'week');
+					}
+					
+				}else if(type=='day'){ // 일 반복일정 처리.
+					if(flag){
+						var num = repeatFirst.diff(startDt,type);
+						num += (num%cycle > 0 ? cycle -num%cycle : 0);
+						repeatStart = startDt.clone().add(num,'day');
+					}
+
+					len = last.clone().diff(repeatStart,type);
+					len = Math.ceil(len/cycle);
+										
+					for (var j=0; j < len ;j++){
+						addRepeatItem(eventInfoArr,exceptionInfo,item, repeatStart, repeatStart.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
+						repeatStart.add(cycle,'day');
+					}
+				}
+			}
+		});
+
+		//이벤트 정보 정렬
+		eventInfoArr.sort(function (a,b){
+			var f1= makeMoment(a.start)
+				,f2 = makeMoment(b.start)
+				,e1= makeMoment(a.end)
+				,e2 = makeMoment(b.end)
+				,f1Ymd = f1.format('YYYYMMDD'), f2Ymd = f2.format('YYYYMMDD')
+				,e1Ymd = e1.format('YYYYMMDD'), e2Ymd = e2.format('YYYYMMDD')
+				,f1Hm = f1.format('HHmm') , f2Hm = f2.format('HHmm')
+				,e1Hm = e1.format('HHmm') , e2Hm = e2.format('HHmm');
+			
+			return f1Ymd == f2Ymd 
+					?(
+						e1Ymd== e2Ymd 
+						?(
+							f1Hm==f2Hm ? (e1Hm==e2Hm ? 0 :(e1Hm > e2Hm ? -1: 1 ) ) :(f1Hm > f2Hm ? 1 : -1)
+						):(
+							e1Ymd > e2Ymd ? -1 : 1
+						)
+					):(
+						f1Ymd > f2Ymd ? 1 : -1
+					);
+			
+		});
+
+		// 시간별 이벤트 담기위한 객체
+		_this.config.dayEventInfo = {};
 		// 월별 이벤트 담기 위한 객체.
-		_this.config.eventSources = {};
 		_this.config.eventRangeArrInfo = {};
 
 		if(mode=='month'){
-			_this._setMonthEventData(evtData);
+			_this._setMonthEventData(eventInfoArr);
 		} else {
-			_this._setTimeEventData(evtData);
+			_this._setTimeEventData(eventInfoArr);
 		}
 	}
 	//시간별 이벤트정보 가공
@@ -466,7 +610,6 @@ Plugin.prototype ={
 		var _sDt, _eDt, _sTime, _eTime;
 		var dayEventInfo = {}
 			, allDayEvent ={}
-			, eventSources = {}
 			, item 
 			, events ={};
 
@@ -476,8 +619,8 @@ Plugin.prototype ={
 			
 			var tmpEventStart, rangeNum , _rangeItem,tmpStart, tmpEnd;
 			
-			tmpStart = item[colModel.start];
-			tmpEnd = item[colModel.end];
+			tmpStart = item.start;
+			tmpEnd = item.end;
 
 			_sDt = makeMoment(tmpStart);
 			_sTime = _sDt.toDate().getTime();
@@ -485,10 +628,7 @@ Plugin.prototype ={
 			_eTime = _eDt.toDate().getTime();
 
 			tmpEventStart = _sTime < monthFirstTime ? dateInfo.start : _sDt.format('YYYY-MM-DD');
-			item._pubCID = _this.options.prefixId+i;
-			_rangeItem = {pubCID:item._pubCID};
-			
-			eventSources[item._pubCID] = item;
+						
 			events = getAddEvt(events,tmpEventStart, item);
 					
 			rangeNum = _this._compareCalendarDate(tmpEventStart, (_eTime > monthLastTime? dateInfo.end :tmpEnd));
@@ -496,86 +636,86 @@ Plugin.prototype ={
 			item.rangeNum = rangeNum;
 			
 			if(item.realRangeNum > 1){
-				allDayEvent = getAddEvt(allDayEvent, tmpEventStart, _this._setColspanNum(_rangeItem,rangeNum));
+				allDayEvent = getAddEvt(allDayEvent, tmpEventStart, _this._setColspanNum(item,rangeNum));
 			} else {
-				dayEventInfo = getAddEvt(dayEventInfo,tmpEventStart, _this._setColspanNum(_rangeItem,rangeNum));
+				dayEventInfo = getAddEvt(dayEventInfo,tmpEventStart, _this._setColspanNum(item,rangeNum));
 			}
 		}
-		_this._getTimeRangeEventInfo(dayEventInfo, eventSources, colModel);
 
-
+		_this._getTimeRangeEventInfo(dayEventInfo, _this.config.eventSources, colModel);
 		_this.config.dayEventInfo=dayEventInfo;
 		_this.config.eventRangeArrInfo = _this._getRangeEventInfo(allDayEvent, 't');
-		_this.config.eventSources=eventSources;
 	}
 	// 일 일정 정보 구하기.
 	,_getTimeRangeEventInfo : function (dayEventInfo, eventSources, colModel){
-		var _this  = this
-			, eventRangeArrInfo = {};
+		var _this  = this;
 
 		if(Object.keys(dayEventInfo).length > 0){
 			
 			var viewDateArr = _this.options.viewDateArr
 				,dateLen = viewDateArr.length;
 
-			
-			var evtArr, _dItem, evtItem , _day
+			var evtArr, _dItem, evtItem
 				,dateRangeInfo=[],rangeItem;
-			
-			var dayRowIdx ={}, _prevDayInfo = {};
-			var isStartFlag = false; 
+				
 			// 연속 일정 계산.
-			
 			for(var h=0; h< dateLen; h++){
 				_dItem = viewDateArr[h];
-				_day = getYyyyMmDd(_dItem); 
-				evtArr = dayEventInfo[_day];
+				evtArr = dayEventInfo[_dItem.yyyy_mm_dd];
 
 				if(!evtArr || evtArr.length < 1) continue; 
 
 				dateRangeInfo = {};
 				
-				var tmpStartDt,tmpEndDt, stdHhmm, endHhmm; 
+				var tmpStartDt,tmpEndDt, stdHhmm, endHhmm;
 
-				var timeIdxObj ={}, _prevTimeInfo = {}, sequenceMap = {},evtItemArrPos = {};
+				var timeIdxObj ={}, sequenceMap = {},evtItemArrPos = {},beforeSequenceMap = {};
 
 				for (var j=0; j<evtArr.length; j++){
 					evtItem = evtArr[j];
+					
 					evtItemArrPos[evtItem.pubCID] = j; 
-					tmpStartDt = makeMoment(eventSources[evtItem.pubCID][colModel.start]);
-					tmpEndDt = makeMoment(eventSources[evtItem.pubCID][colModel.end]);
+					tmpStartDt = makeMoment(evtItem.start);
+					tmpEndDt = makeMoment(evtItem.end);
 
 					stdHhmm = parseInt(tmpStartDt.format('HHmm'),10); 
-					endHhmm = parseInt(tmpEndDt.format('HHmm'),10); 
+					endHhmm = parseInt(tmpEndDt.format('HHmm'),10);
 
-					var _rowIdx=timeIdxObj[stdHhmm]= typeof timeIdxObj[stdHhmm]==='undefined' ? 0 : timeIdxObj[stdHhmm]+1;
-
-					if(typeof sequenceMap[stdHhmm] === 'undefined'){
-						sequenceMap[stdHhmm] = [];
-					}
+					if(typeof sequenceMap[stdHhmm] === 'undefined')	sequenceMap[stdHhmm] = [];
+					if(!dateRangeInfo[stdHhmm]) dateRangeInfo[stdHhmm]=[];
 					
-					var dayArr = sequenceMap[stdHhmm];
-
+					var _rowIdx=timeIdxObj[stdHhmm]= typeof timeIdxObj[stdHhmm]==='undefined' ? 0 : timeIdxObj[stdHhmm]+1
+						,dayArr = sequenceMap[stdHhmm]
+						,sortFlag = false,_prevIdx =-1,_nextIdx=-1;
+					
 					sequenceMap[stdHhmm].sort(function(a,b) { return a - b; });
+
 					for (var y =0; y < _rowIdx; y++){
 						if(dayArr[y] > y){
-							_rowIdx = y; 
+							_prevIdx = y-1;
+							_nextIdx = dayArr[y];
+							_rowIdx = y;
+							sortFlag = true; 
 							break; 
 						}
 					}
-
+					
 					sequenceMap[stdHhmm].push(_rowIdx);
 					
-					if(!dateRangeInfo[stdHhmm]){
-						dateRangeInfo[stdHhmm]=[];
+					//일정 중간에 사이에 들어간 데이터 처리.
+					if(sortFlag){
+						evtItem.isBetween = true;
+						sequenceMap[stdHhmm].sort(function(a,b) { return a - b; });
+
+						evtItem.betweenNextColIdx = beforeSequenceMap[stdHhmm+''+_nextIdx];
+						(eventSources[beforeSequenceMap[stdHhmm+''+_prevIdx]]||{}).betweenNextColIdx= _rowIdx
 					}
+					
 					evtItem.viewFlag = true;
 					evtItem.colIdx = _rowIdx; 
 
 					dateRangeInfo[stdHhmm].push(evtItem);
-
-					var tmpEvtItem = $.extend(true, {}, evtItem);
-					tmpEvtItem.viewFlag = false; 
+					beforeSequenceMap[stdHhmm+''+_rowIdx] = evtItem.pubCID;
 
 					while(stdHhmm < endHhmm){
 
@@ -596,67 +736,65 @@ Plugin.prototype ={
 							sequenceMap[stdHhmm] = [];
 						}
 
-						sequenceMap[stdHhmm].push(tmpEvtItem.colIdx);
-						dateRangeInfo[stdHhmm].push(tmpEvtItem);
+						beforeSequenceMap[stdHhmm+''+evtItem.colIdx] = evtItem.pubCID;
+
+						sequenceMap[stdHhmm].push(evtItem.colIdx);
+						dateRangeInfo[stdHhmm].push({pubCID: evtItem.pubCID ,colIdx :evtItem.colIdx});
 					}
 				}
-
-				console.log('22222', dateRangeInfo,sequenceMap )
 
 				for(var key in dateRangeInfo){
 					var dri = dateRangeInfo[key]
 						,driLen = dri.length
 						,_w = driLen == 1 ? 100 : 100/driLen+ (100/driLen)/8;
+					
 
 					var lastItem = dri[driLen-1]
 						,widthFlag = (lastItem.viewFlag && lastItem.colIdx+1 == driLen? true :false)
 						,tmpEvtItem;
-
+				
+					var colIdxPubMap={};
 					for(var z=0; z < driLen; z++){
 						tmpEvtItem = dri[z];
 						var prevEvtItem ={left :0,width:_w};
-						if(tmpEvtItem.viewFlag){
-							if(z != 0){
-								prevEvtItem = evtArr[evtItemArrPos[dri[z-1].pubCID]]; 	
+
+						colIdxPubMap[tmpEvtItem.colIdx] = tmpEvtItem.pubCID;
+						
+						if(tmpEvtItem.viewFlag===true){
+							if(tmpEvtItem.colIdx != 0){
+								prevEvtItem = evtArr[evtItemArrPos[colIdxPubMap[tmpEvtItem.colIdx-1]]] ||{}; 	
 							}
 
 							tmpEvtItem.width = _w;
 							tmpEvtItem.overNum = driLen-z-1;
-							tmpEvtItem.marginLeft = tmpEvtItem.colIdx*prevEvtItem.width; 
-							tmpEvtItem.left = tmpEvtItem.marginLeft  -(tmpEvtItem.colIdx*prevEvtItem.width/8);
+							tmpEvtItem.left = tmpEvtItem.colIdx*prevEvtItem.width -(tmpEvtItem.colIdx*prevEvtItem.width/8);
 							tmpEvtItem.prevLeftObj = prevEvtItem;
 							tmpEvtItem.zindex = z;
-						}else if(widthFlag){
-
-							evtItem = evtArr[evtItemArrPos[tmpEvtItem.pubCID]]; 
-							if(evtItem.width > _w){
-								
-								if(z != 0){
-									prevEvtItem = evtArr[evtItemArrPos[dri[z-1].pubCID]]; 	
-								}
-
-								evtItem.width = _w;
-								evtItem.overNum = driLen-z-1;
-								evtItem.marginLeft = evtItem.colIdx*prevEvtItem.width; 
-								evtItem.left = evtItem.marginLeft -(evtItem.colIdx*prevEvtItem.width/8);
-								evtItem.prevLeftObj = prevEvtItem;
-							}
+							prevEvtItem.nextColIdx = tmpEvtItem.colIdx;
+							prevEvtItem.overNum = tmpEvtItem.overNum+1;
 						}
 					}
 					
+					var prevObj = lastItem.prevLeftObj; 
+					var idx = driLen-1; 
+					// 위치값 잡기.
+					while(widthFlag && prevObj){ 
+						prevObj.width = _w;
+						prevObj.overNum = driLen-idx;
+						prevObj.left = prevObj.left == 0 ? 0 : prevObj.colIdx*prevObj.prevLeftObj.width -(prevObj.colIdx*prevObj.prevLeftObj.width/8);
+						prevObj = prevObj.prevLeftObj;
+						--idx;
+					}
 				}
 			}
 		}
-
-		console.log('dayEventInfo', dayEventInfo)
-
-		return eventRangeArrInfo; 
+		return dayEventInfo; 
 	}
 	// 연속 일정 정보 구하기. 
 	,_getRangeEventInfo :function (eventRangeInfo, type){
 		var _this  = this
 			, eventRangeArrInfo = {}
-			, maxEventCount = 0, maxEventDay;
+			, maxEventCount = 0, dayMoreCount = {};
 
 		if(Object.keys(eventRangeInfo).length > 0){
 			
@@ -664,30 +802,33 @@ Plugin.prototype ={
 				,dateLen = viewDateArr.length;
 			
 			var evtArr, _dItem, evtItem , _day
-				,dateRangeInfo=[],rangeItem, rangeItem2;
+				,dateRangeInfo=[],rangeItem;
 			
-			var dayRowIdx ={}, _prevDayInfo = {};
-			var isStartFlag = false; 
+			var dayRowIdx ={}, _prevDayInfo = {}, evtArrIdx = 0 , evtArrItemMap = {};
 			// 연속 일정 계산.
 			for (var i=0; i < dateLen ;i++){
 				// 로직 처리 할것 날짜의 대한것.
 				_dItem = viewDateArr[i];
-				_day = getYyyyMmDd(_dItem); 
+				_day = _dItem.yyyy_mm_dd; 
 				evtArr = eventRangeInfo[_day];
 
 				if(type=='m' && (i!=0 && i%7==0)) {
 					dateRangeInfo = [];
+					_prevDayInfo = {};
+					evtArrIdx = 0; 
 				}
 
 				if(evtArr){
 					for (var j=0; j<evtArr.length; j++){
 						evtItem = evtArr[j];
-						rangeItem2 = {
-							pubCID :  evtItem.pubCID	// 일 날짜.
+
+						dateRangeInfo.push({
+							evtIdx : evtArrIdx
 							,range : evtItem.spanNum	//이벤트 연속 기간
 							,isStart :true			// 일정 시작 여부
-						};
-						dateRangeInfo.push(rangeItem2);
+						});
+						evtArrItemMap[evtArrIdx] = evtItem; 
+						++evtArrIdx;
 					}
 				}
 
@@ -703,7 +844,8 @@ Plugin.prototype ={
 					
 					_rowIdx=dayRowIdx[_day]= typeof dayRowIdx[_day]==='undefined' ? 0 : dayRowIdx[_day]+1;
 					if(!isStart){
-						_rowIdx = _prevDayInfo[rangeItem.pubCID];
+						
+						_rowIdx = _prevDayInfo[rangeItem.evtIdx];
 						
 						if(typeof sequenceMap[_day] === 'undefined'){
 							sequenceMap[_day] = [];
@@ -728,43 +870,39 @@ Plugin.prototype ={
 							}else{
 								sequenceMap[_day].push(_rowIdx); // 맨 나중에 들어간 값 추가. 	
 							}
-						}						
+						}
 					}
 					
 					if(!eventRangeArrInfo[_day]){
 						eventRangeArrInfo[_day] = {};
 					}
-					
+					evtItem = evtArrItemMap[rangeItem.evtIdx];
+
 					eventRangeArrInfo[_day][_rowIdx]={
-						pubCID :  rangeItem.pubCID
-						,range : rangeItem.range
-						,rowIdx : _rowIdx
+						pubCID : evtItem.pubCID
+						,range : evtItem.spanNum
+						,realRangeNum : evtItem.realRangeNum
+						,start : evtItem.start
+						,end : evtItem.end
 						,isStart : isStart
 					}
-					
-					if( _rowIdx > maxEventCount ){
-						maxEventCount = _rowIdx;
-						maxEventDay = _day;
-					}
-					
-					_prevDayInfo[rangeItem.pubCID] = _rowIdx;
+
+					if(_rowIdx+1> _this.options.maxEventRow) dayMoreCount[_day]=(( dayMoreCount[_day] || 0 )+1);
+									
+					_prevDayInfo[rangeItem.evtIdx] = _rowIdx;
 					rangeItem.isStart  = false;
 					rangeItem.range = rangeItem.range == 1 ? -1 : rangeItem.range -1;
 					dateRangeInfo[z] = rangeItem;
 				}
 			}
 		}
-		// 일정 정보 많은날 정보 .
-		_this.config.eventDay = {
-			date : maxEventDay
-			,max : maxEventCount+1
-		};
 
+		_this.config.dayMoreCount =dayMoreCount;
+	
 		return eventRangeArrInfo; 
 	}
 	// 일정 이벤트정보 가공
 	,_setMonthEventData : function (evts){
-
 		var _this = this;
 
 		var viewDateArr = _this.options.viewDateArr
@@ -784,7 +922,6 @@ Plugin.prototype ={
 
 		var _sDt , _eDt ,_sTime,_eTime;
 		var monthEventRangeInfo = {}
-			, eventSources = {}
 			, item 
 			, events ={};
 
@@ -795,23 +932,20 @@ Plugin.prototype ={
 			var tmpEventStart, rangeNum , _monthDayIdx, _rangeItem
 				,tmpStart, tmpEnd;
 			
-			tmpStart = item[colModel.start]; 
-			tmpEnd = item[colModel.end];
+			tmpStart = item.start; 
+			tmpEnd = item.end;
 
 			_sDt = makeMoment(tmpStart);
 			_sTime = _sDt.toDate().getTime();
 			_eDt = makeMoment(tmpEnd);
 			_eTime = _eDt.toDate().getTime(); 
-
-			tmpEventStart = _sTime < monthFirstTime ? dateInfo.viewFirst : _sDt.format('YYYY-MM-DD');
-			item._pubCID = _this.options.prefixId+i;
-			_rangeItem = {pubCID:item._pubCID};
 			
-			eventSources[item._pubCID] = item;
+			tmpEventStart = _sTime < monthFirstTime ? dateInfo.viewFirst : _sDt.format('YYYY-MM-DD');
+					
 			events = getAddEvt(events,tmpEventStart, item);
 			
 			if(tmpStart == tmpEnd){
-				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(_rangeItem,1));
+				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(item,1));
 				continue; 
 			}
 		
@@ -825,12 +959,12 @@ Plugin.prototype ={
 				var _weekLastNum = ((Math.floor(_monthDayIdx/7)+1)*7); 
 
 				if(_monthDayIdx+rangeNum < _weekLastNum) {
-					monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(_rangeItem,rangeNum));
+					monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(item,rangeNum));
 					continue; 
 				}
 
 				var firstSpan = _weekLastNum-_monthDayIdx; 
-				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(_rangeItem,firstSpan));
+				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(item,firstSpan));
 				rangeNum = rangeNum-firstSpan;
 				
 				if(rangeNum > 0){
@@ -839,7 +973,7 @@ Plugin.prototype ={
 					
 					if(n > 0){
 						for (var l =0; l < n ;l++){
-							monthEventRangeInfo = getAddEvt(monthEventRangeInfo,getYyyyMmDd(viewDateArr[_dayIdx]), _this._setColspanNum(_rangeItem,7));
+							monthEventRangeInfo = getAddEvt(monthEventRangeInfo,viewDateArr[_dayIdx].yyyy_mm_dd, _this._setColspanNum(item,7));
 							_dayIdx+=7;
 						}
 					}
@@ -847,17 +981,15 @@ Plugin.prototype ={
 					var mod = rangeNum % 7; 
 
 					if(mod > 0){
-						monthEventRangeInfo = getAddEvt(monthEventRangeInfo,getYyyyMmDd(viewDateArr[_dayIdx]), _this._setColspanNum(_rangeItem,mod));
+						monthEventRangeInfo = getAddEvt(monthEventRangeInfo,viewDateArr[_dayIdx].yyyy_mm_dd, _this._setColspanNum(item,mod));
 					}
 				}
 			}else{
-				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(_rangeItem,rangeNum));
+				monthEventRangeInfo = getAddEvt(monthEventRangeInfo,tmpEventStart, _this._setColspanNum(item,rangeNum));
 			}
 		}
 
-		_this.config.eventRangeArrInfo= _this._getRangeEventInfo(monthEventRangeInfo, 'm');
-		_this.config.eventSources=eventSources;
-		
+		_this.config.eventRangeArrInfo= _this._getRangeEventInfo(monthEventRangeInfo, 'm');	
 	}
 	// colspan 셋팅.
 	,_setColspanNum : function (pRangeItem, pNum){
@@ -866,7 +998,7 @@ Plugin.prototype ={
 		return _addObj; 
 	}
 	// 캘린더 그리기.
-	,drawCalendar : function (year, month , day){
+	,drawCalendar : function (year, month , day, resizeFlag){
 		var _this = this;
 
 		var _yyyy = _this.config.beforeDate.yyyy
@@ -874,17 +1006,20 @@ Plugin.prototype ={
 			,viewMode = _this.options.viewMode.split('-')[0];
 						
 		var redrawYear = false; // select 년이 변경 되었을경우.
-		if(year != _yyyy){
-			redrawYear = true; 
-			_this._setMemorialDayInfo();
-		}
 
-		_this.config.beforeDate ={
-			yyyy :year
-		}
+		if(resizeFlag !== true){
+			if(year != _yyyy){
+				redrawYear = true; 
+				_this._setMemorialDayInfo();
+			}
 
-		if($.isFunction(_this.options.beforeCalendar)){
-			_this.options.beforeCalendar.call(_this, {year:year, month:month});
+			_this.config.beforeDate ={
+				yyyy :year
+			}
+
+			if($.isFunction(_this.options.beforeCalendar)){
+				_this.options.beforeCalendar.call(_this, {year:year, month:month});
+			}
 		}
 		
 		if(viewMode=='mini'){
@@ -898,41 +1033,14 @@ Plugin.prototype ={
 		if($.isFunction(_this.options.afterCalendar)){
 			_this.options.afterCalendar.call(_this, {year:year, month:month});
 		}
+	
+		$('#'+_this.prefix+' .pubcalendar-day-item').on('click',function(e){
+			var sEle = $(this)
+				,_day = sEle.attr('_day');
+			_this.dayClick({evt:e, day:_day});
+		});
 		
-		if($.isFunction(_this.options.dayClick)){
-			$('#'+_this.prefix+' .pubcalendar-day-item').on('click',function(){
-				var sEle = $(this)
-					,_day = sEle.attr('_day')
-					,_idx = sEle.attr('_idx');
-								
-				$('#'+_this.prefix+' .pubc-state-active').removeClass('pubc-state-active');
-				$('#'+_this.prefix+' .pubc_view_mode_btn[_mode="d"]').addClass('pubc-state-active');
-					
-				_this.options.viewMode = 'full-day';
-
-				var dayArr = _day.split('-');
-				_this._loadEventData(dayArr[0],dayArr[1],dayArr[2]);
-				
-				/*
-				var dayItem = _this.config.eventRangeArrInfo[_day]
-					,itemArr = [];
-				if(dayItem){
-					for(var key in dayItem){
-						itemArr.push(_this.config.eventSources[dayItem[key].pubCID]);
-					}
-				}
-				
-				//dayClick
-
-				_this.options.dayClick({
-					day : _day
-					,items : itemArr
-				});
-				*/
-			})
-		}
-				
-		_this.setCalendarEvent(viewMode);
+		_this.setCalendarEvent();
 				
 		if(_this.options.useYearInput ===true && _this.options.initFlag !== true){
 			_this._setInputBoxEvent();
@@ -942,7 +1050,7 @@ Plugin.prototype ={
 	,drawCalendarHtml : function (year , month, html){
 		var _this  = this; 
 		if(_this.options.initFlag !== true){
-			$(_this.selector).empty().html(html);
+			_this.pubcElement.empty().html(html);
 		}else{
 			$('#'+_this.prefix+' .pubcalendar_year_txt').val(year);
 			$('#'+_this.prefix+' .pubcalendar_year_view').html(year);
@@ -986,58 +1094,39 @@ Plugin.prototype ={
 		})
 	}
 	// calendar 이벤트 처리.
-	,setCalendarEvent : function(viewMode){
-		var _this  = this;
+	,setCalendarEvent : function(viewMode, mode){
+		var _this  = this
+			,viewModeArr = _this.options.viewMode.split('-')
+			,viewMode = viewModeArr[0]
+			,timeMode = viewModeArr[1];
 
-		
 		if(viewMode == 'full'){
-			if($.isFunction(_this.options.dayMoreClick)){
-				$('#'+_this.prefix+' .pub_calendar_evt_more>.pc_more').on('click',function(e){
-					var sEle = $(this)
-						,_idx = sEle.attr('_idx');
+			_this.setViewModeBtnEvent();
 
-					var dayItem = _this.options.viewDateArr[_idx];
-						
-					var _day = getYyyyMmDd(dayItem);
-					var dayEvtItem = _this.config.eventRangeArrInfo[_day]
-						,itemArr = [];
-					if(dayEvtItem){
-						for(var key in dayEvtItem){
-							itemArr.push(_this.config.eventSources[dayEvtItem[key].pubCID]);
-						}
-					}
-					
-					_this.options.dayMoreClick.call(_this,{evt :e, idx:_idx, dayInfo:dayItem, date:_day, items:itemArr});
-				})
-			}
+			$('#'+_this.prefix+' .pub_calendar_evt_item').on('click',function(e){
+				
+				
+				var pubc_key = $(this).attr('pubc_key').split(',');
+				
+				var clickItem = _this.config.eventSources[pubc_key[0]];
 
-			if($.isFunction(_this.options.dayEventClick)){
-				$('#'+_this.prefix+' .pub_calendar_evt_item').on('click',function(e){
-					var clickItem = _this.config.eventSources[$(this).attr('pubc_id')];
-					_this.options.dayEventClick.call(_this,{evt :e, item:clickItem});
-				})
-			}
+				if('t'==pubc_key[3]){
+					clickItem._range = _this.config.dayEventInfo[pubc_key[1]][pubc_key[2]];
+				}else{
+					clickItem._range =_this.config.eventRangeArrInfo[pubc_key[1]][pubc_key[2]];
+				}
+				
+				_this.eventClick({evt :e, item:clickItem});
+				
+				return false; 
+			}).on('touchstart.pubc.item mousedown.pubc.item',function (e){
+				e.stopPropagation();
+			});
 
-			if(_this.options.initFlag !== true){
-				$('#'+_this.prefix+' .pubc_view_mode_btn').on('click',function (e){
-					var sEle = $(this)
-						,_mode = sEle.attr('_mode');
-
-					if(sEle.hasClass('pubc-state-active')) return ; 
-					
-					$('#'+_this.prefix+' .pubc-state-active').removeClass('pubc-state-active');
-					sEle.addClass('pubc-state-active');
-					
-					_this.options.viewMode = _mode=='m' ? 'full-month' : (_mode=='w'?'full-week':'full-day');
-
-					_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
-				})
-
-				$('#'+_this.prefix+' .pubc-today-btn').on('click',function (e){
-					var sEle = $(this);
-
-					_this._loadEventData(_this.options.todayDate.yyyy,_this.options.todayDate.mm,_this.options.todayDate.dd);
-				})
+			if(timeMode =='month'){
+				_this.setMonthCalendarEvent();
+			}else{
+				_this.setTimeCalendarEvent();
 			}
 		}
 	}
@@ -1050,44 +1139,245 @@ Plugin.prototype ={
 		
 		return Math.ceil((endDt.getTime() - startDt.getTime())/86400000);
 	}
-	// 더보기 클릭.
-	,dayMoreClick : function (pObj){
-		var _this = this 
-			,items = pObj.items;
-		
-		_this._layerClose(pObj.evt);
+	,setMonthCalendarEvent :function (){
+		var _this =this;
 
-		var moreEle = $('#'+_this.prefix+' .pub_calendar_more_area_wrap');
-		moreEle.addClass('open');
-		
-		var sEle = $('#'+_this.prefix+' .pubc-bg[_idx="'+pObj.idx+'"]'); 
+		$('#'+_this.prefix +' .pubc-write-btn').on('click',function (e){
+			var sObj = $(this);
 
-		var moreHtm = [];
-		moreEle.css('top',sEle.offset().top-10).css('left', sEle.offset().left-_this._position.left).css('width',sEle.width()); 
+			var _day = sObj.closest('[_day]').attr('_day');
+			e.stopPropagation();
 
-		moreHtm.push('<div class="more_header"><span>'+pObj.date+'</span><a href="javascript:;"class="more_close">X</a></div><div class="morelist_wrap">');
-		for (var i=0; i<items.length;i++ ){
-			moreHtm.push('<div class="moreitem"><a href="javascript:;" class="pubc_evt_item pubc_more_evt"  idx="'+i+'" >'+items[i][_this.options.event.colModel.title]+'</a></div>');
-		}
-		moreHtm.push('</div>');
-		moreEle.html(moreHtm.join(''));
-		
-		moreEle.find('.more_close').on('click',function (e){
-			$(document).trigger('click.bs.pubc.data-api');
+			_this.eventWrite({date:_day,mode:'m',start:'0900' , end :'1800'});
+			
 		});
 
-		moreEle.find('.pubc_evt_item').on('click',function (e){
-			var clickItem = items[$(this).attr('idx')];
+		_this.eventMoreClick();
+	}
+	// 시간별 일정 드래그 이벤트 처리.
+	,setTimeCalendarEvent :function (){
+		var _this = this;
 
-			if($.isFunction(_this.options.dayEventClick)){
-				_this.options.dayEventClick.call(_this,{evt :e, item:clickItem});
-			}
+		function getPostionTime(val){
+			val = val> 48 ?48 : val;
+			var _h = Math.floor(val/2);
+			_h = _h==0?12:_h;
+			return (_h < 10 ?'0'+_h:_h)+ (val%2 > 0?'30':'00');
+		}
+
+		$('#'+_this.prefix+' .time-item-wrapper').on('touchstart.pubc.drag mousedown.pubc.drag',function (e){
+
+			var sObj = $(this)
+				,_idx = sObj.attr('_idx')
+				,_date = sObj.attr('date');
+
+			var  startY = e.offsetY;
+			var startEvt = e.originalEvent.touches
+				,startPageY = startEvt ? startEvt[0].pageY : e.pageY;
+			
+			var  startH = Math.floor(startY/_TIME_HALF_HEIGHT);
+			//select안되게 처리 . cursor처리 
+			_doc.attr("onselectstart", "return false");
+			
+			var overHtm = $('<div class="time-over-holder"><div class="time-txt-area"></div></div>');
+			$('#'+_this.prefix+' .time-over'+_idx).html(overHtm);
+			var timeTxtArea = overHtm.find('.time-txt-area');
+			
+			var bodyContent = $('#'+_this.prefix+' .time-body-content');
+
+			var selectTime = {mode:'t',date :_date,start:getPostionTime(startH),end:getPostionTime(startH+2)} , beforeFirst=-1, beforeEnd = -1
+				,startScrollY = bodyContent.scrollTop();
+		
+			_doc.on('touchmove.pubcmove mousemove.pubcmove',function (e1){
+
+				var oe = e1.originalEvent.touches
+					,oy = oe ? oe[0].pageY : e1.pageY
+					,scrollTop = bodyContent.scrollTop();
+
+				var endY = oy-startPageY+startY+(scrollTop - startScrollY)
+					,endH = Math.ceil(endY/_TIME_HALF_HEIGHT)
+					,_sh = startH > endH ? startH+1 :startH;
+
+				var first = Math.min(_sh, endH)
+					,end =  Math.max(_sh , endH);
+
+				if(beforeFirst==first && beforeEnd== end) return ;  // end  처리.
+
+				beforeFirst = first; 
+				beforeEnd=end;
+
+				first = first < 0 ? 0 : first;
+				end = end > 48 ? 48 : end;
+				
+				var _top = first*_TIME_HALF_HEIGHT;	
+				var _height =(end - first)*_TIME_HALF_HEIGHT ;
+				_height = _height > 0 ?_height:_TIME_HALF_HEIGHT;
+				overHtm.css('height',_height).css('top',_top).css('display','block');
+				selectTime.start = getPostionTime(first);
+				selectTime.end = getPostionTime(end);
+
+				timeTxtArea.html(selectTime.start+'~' +selectTime.end );
+			}).on('touchend.pubcmove mouseup.pubcmove mouseleave.pubcmove', function (e2){
+				e2.stopPropagation();
+				overHtm.remove();
+				_doc.off('touchend.pubcmove mouseup.pubcmove').off('touchmove.pubcmove mousemove.pubcmove mouseleave.pubcmove');
+				_doc.removeAttr("onselectstart");
+				
+				_this.eventWrite(selectTime);
+			});
+
+			return false; 
+		})
+	}
+	// 버튼 이벤트 처리.
+	,setViewModeBtnEvent : function (){
+		var _this =this; 
+		if(_this.options.initFlag !== true){
+			$('#'+_this.prefix+' .pubc_view_mode_btn').on('click',function (e){
+				var sEle = $(this)
+					,_mode = sEle.attr('_mode');
+
+				if(sEle.hasClass('pubc-state-active')) return ; 
+				
+				$('#'+_this.prefix+' .pubc-state-active').removeClass('pubc-state-active');
+				sEle.addClass('pubc-state-active');
+				
+				_this.options.viewMode = _mode=='m' ? 'full-month' : (_mode=='w'?'full-week':'full-day');
+
+				_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
+			})
+
+			$('#'+_this.prefix+' .pubc-today-btn').on('click',function (e){
+				var sEle = $(this);
+
+				_this._loadEventData(_this.options.todayDate.yyyy,_this.options.todayDate.mm,_this.options.todayDate.dd);
+			})
+		}
+	}
+	// 일정 작성.
+	,eventWrite : function (dayInfo){
+		var _this = this;
+		
+		if($.isFunction(_this.options.eventWrite)){
+			_this._layerClose();
+			_this.options.eventWrite(dayInfo);
+			return false;
+		}
+
+		var writeEle = $('#'+_this.prefix+' .pub_calendar_write_area_wrap');
+		writeEle.addClass('open');
+
+		var strHtm = [];
+
+		var iHeight = (document.body.clientHeight / 2) - 170 / 2 + document.body.scrollTop;
+		var iWidth = (document.body.clientWidth / 2) - 350 / 2 + document.body.scrollLeft;
+	
+		writeEle.css('top',iHeight).css('left', iWidth); 
+
+		strHtm.push('<div class="write_header"><div class="header-title">일정</div><a href="javascript:;"class="write_close">X</a></div>');
+		strHtm.push('<div class="write_wrap">');
+		
+		strHtm.push('<div class="write_info">');
+		strHtm.push('	<div><input type="text" name="title" value="" style="width:100%;"></div>');
+		strHtm.push(_this.getLang('full')['event_date']+'<br/> '+(dayInfo.date+' '+dayInfo.start)+'~'+(dayInfo.date+' '+dayInfo.end));
+		strHtm.push('</div>');
+		strHtm.push('<div class="write_btn_area"><span class="write_btn pub-button"><a href="javascript:;">'+_this.getLang('full')['save_btn']+'</a></span></div>');
+		strHtm.push('</div>');
+		writeEle.html(strHtm.join(''));
+				
+		writeEle.find('.write_close').on('click',function (){
+			writeEle.removeClass('open');
+		});
+		
+		// 저장
+		writeEle.find('.write_btn').on('click',function (e){
+			$(document).trigger('click.bs.pubc.data-api');
+			_this.eventDetail({evt :e, item:item});
 		});
 	}
+	// 달력 날짜 클릭.
+	,dayClick :function (obj){
+		var _this = this; 
+		if($.isFunction(_this.options.dayClick)){
+			_this.options.dayClick({evt:e, day:_day});
+			return false;
+		}
+					
+		$('#'+_this.prefix+' .pubc-state-active').removeClass('pubc-state-active');
+		$('#'+_this.prefix+' .pubc_view_mode_btn[_mode="d"]').addClass('pubc-state-active');
+			
+		_this.options.viewMode = 'full-day';
+
+		var dayArr = obj.day.split('-');
+		_this._loadEventData(dayArr[0],dayArr[1],dayArr[2]);
+	}
+	// 더보기 클릭.
+	,eventMoreClick : function (){
+		var _this = this;
+
+		$('#'+_this.prefix+' .pub_calendar_evt_more>.pc_more').on('click',function(e){
+			var sEle = $(this)
+				,_idx = sEle.attr('_idx');
+
+			var dayItem = _this.options.viewDateArr[_idx];
+				
+			var _day = dayItem.yyyy_mm_dd;
+			var dayEvtItem = _this.config.eventRangeArrInfo[_day]
+				,itemArr = [];
+			if(dayEvtItem){
+				for(var key in dayEvtItem){
+					var tmpItem = $.extend(true,{},_this.config.eventSources[dayEvtItem[key].pubCID]); 
+					tmpItem._range = dayEvtItem[key];
+					itemArr.push(tmpItem);
+				}
+			};
+
+			if($.isFunction(_this.options.eventMoreClick)){
+				_this.options.eventMoreClick.call(_this,itemArr);
+				return false; 
+			}
+			viewMoreItem({evt :e, idx:_idx, dayInfo:dayItem, date:_day, items:itemArr});
+		});
+
+		function viewMoreItem(pObj){
+			var items = pObj.items;
+			_this._layerClose(pObj.evt);
+
+			var moreEle = $('#'+_this.prefix+' .pub_calendar_more_area_wrap');
+			moreEle.addClass('open');
+			
+			var sEle = $('#'+_this.prefix+' .pubc-bg[_idx="'+pObj.idx+'"]'); 
+
+			var moreHtm = [];
+			moreEle.css('top',sEle.offset().top-10).css('left', sEle.offset().left-_this._position.left).css('width',sEle.width()); 
+
+			moreHtm.push('<div class="more_header"><span>'+pObj.date+'</span><a href="javascript:;"class="more_close">X</a></div><div class="morelist_wrap">');
+			for (var i=0; i<items.length;i++ ){
+				moreHtm.push('<div class="moreitem"><a href="javascript:;" class="pubc_evt_item pubc_more_evt"  idx="'+i+'" ><div class="pubc_more_evt">'+items[i][_this.options.event.colModel.title]+'</div></a></div>');
+			}
+			moreHtm.push('</div>');
+			moreEle.html(moreHtm.join(''));
+			
+			moreEle.find('.more_close').on('click',function (e){
+				$(document).trigger('click.bs.pubc.data-api');
+			});
+
+			moreEle.find('.pubc_evt_item').on('click',function (e){
+				var clickItem = items[ $(this).attr('idx')];
+				_this.eventClick({evt :e, item:clickItem});
+			});
+		}
+	}
 	//일정 클릭.
-	,dayEventClick :function (pSObj){
-		var _this = this 
-			,item = pSObj.item
+	,eventClick :function (pSObj){
+		var _this = this;
+
+		if($.isFunction(_this.options.eventClick)){
+			_this.options.eventClick.call(_this,pSObj);
+			return false;
+		}
+
+		var item = pSObj.item
 			,_w = _this.options.dayEventSize.w ,_h = _this.options.dayEventSize.h
 			,position = _this.getLayerPosition(pSObj.evt ,_w,_h , _this._position.left+20)
 			,evt = pSObj.evt; 
@@ -1103,7 +1393,7 @@ Plugin.prototype ={
 
 		detailHtm.push('<div class="detail_header"><div class="header-title">'+item[_this.options.event.colModel.title]+'</div><a href="javascript:;"class="detail_close">X</a></div>');
 		detailHtm.push('<div class="detail_wrap">');
-		detailHtm.push('<div class="detail_info">'+_this.getLang('full')['event_date']+'<br/> '+item[_this.options.event.colModel.start]+' '+item[_this.options.event.colModel.end]+'</div>');
+		detailHtm.push('<div class="detail_info">'+_this.getLang('full')['event_date']+'<br/> '+makeMoment(item._range.start).format(_this.options.viewDateFormat)+' ~ '+makeMoment(item._range.end).format(_this.options.viewDateFormat)+'</div>');
 		detailHtm.push('<div class="detail_btn_area"><span class="del_btn pub-button"><a href="javascript:;">'+_this.getLang('full')['delete_btn']+'</a></span><span class="detail_btn pub-button"><a href="javascript:;">'+_this.getLang('full')['detail_btn']+'</a></span></div>');
 		detailHtm.push('</div>');
 		detailEle.html(detailHtm.join(''));
@@ -1117,32 +1407,59 @@ Plugin.prototype ={
 			if(!confirm(_this.getLang('full')['delete.confirm.msg'])) return ; 
 			$(document).trigger('click.bs.pubc.data-api');
 
-			_this.options.dayEventDelete.call(_this,{evt :e, item:item});
+			_this.eventDelete({evt :e, item:item});
 		});
 		// 상세
 		detailEle.find('.detail_btn').on('click',function (e){
 			$(document).trigger('click.bs.pubc.data-api');
-			_this.options.dayEventDetail({evt :e, item:item});
+			_this.eventDetail({evt :e, item:item});
 		});
 	}
 	// 이벤트 삭제.
-	,dayEventDelete : function (pObj){
+	,eventDelete : function (pObj){
 		var _this = this
-			,delItem = pObj.item; 
-		
-		var _items  = _this.options.event.items;
-		
-		for(var i=0 ;i <_items.length; i++){
-			if(delItem['_pubCID']==_items[i]['_pubCID']){
-				_this.options.event.items.splice(i, 1);
-				break; 
-			}
+			,eventObj = _this.options.event
+			
+		if($.isFunction(_this.options.eventDelete)){
+			_this.options.eventDelete(pObj);
+			return false; 
 		}
 		
-		_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
+		if(eventObj.type=='local'){
+			var delItem = pObj.item
+			,_items  = _this.options.event.items;
+		
+			for(var i=0 ;i <_items.length; i++){
+				if(delItem['_pubCID']==_items[i]['_pubCID']){
+					_this.options.event.items.splice(i, 1);
+					break; 
+				}
+			}
+			_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
+		}else{
+			$.ajax($.extend({}, {
+				type :'get'
+				,cache: false
+				,dataType: "json"
+				,data: pObj.item
+				,success: function(events) {
+					_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
+				}
+				,error: function() {
+					_this._loadEventData(_this.options._date.yyyy,_this.options._date.mm,_this.options._date.dd);
+				}
+			},eventObj.del));
+		}
 	}
 	// 이벤트 상세
-	,dayEventDetail : function (pObj){
+	,eventDetail : function (pObj){
+		var _this = this; 
+
+		if($.isFunction(_this.options.eventDetail)){
+			_this.options.eventDetail(pObj);
+			return false; 
+		}
+
 		var val =[];
 		for(var key in pObj.item){
 			val.push(key+' : '+pObj.item[key]);
@@ -1176,38 +1493,6 @@ Plugin.prototype ={
 
 		return {top :top , left:left};
 	}
-	// 두 날짜간의 날짜 비교 . 
-	,compCalendarDate : function (firstDate, secondDate){
-			
-		var tmpYear=0, tmpMon=0, tmpDay=0;
-		var checkMon , fTmpMon, STmpMon;
-		var fDay = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
-		var sDay = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
-		var fTmpDate = firstDate.split("-");
-		var sTmpDate = secondDate.split("-");
-
-		var firstYear = parseInt(fTmpDate[0],10);
-		var secondYear =parseInt(sTmpDate[0],10);
-
-		fDay[1]=(((firstYear % 4 == 0) && (firstYear % 100 != 0)) || (firstYear % 400 == 0))?29:28;
-		sDay[1]=(((secondYear % 4 == 0) && (secondYear % 100 != 0)) || (secondYear % 400 == 0))?29:28;
-						
-		tempYear =(firstYear -secondYear )*365 ;
-		tmpDay = parseInt(fTmpDate[2],10) -parseInt(sTmpDate[2],10);
-		fTmpMon = parseInt(fTmpDate[1],10);
-		STmpMon = parseInt(sTmpDate[1],10);
-		checkMon =  fTmpMon>=STmpMon ?fTmpMon:STmpMon;
-		
-		for(var i =0 ; i <checkMon ; i++){
-			if(i < fTmpMon){
-				tmpMon = tmpMon+ fDay[i];
-			}
-			if(i < STmpMon){
-				tmpMon = tmpMon- sDay[i];
-			}
-		}
-		return tempYear+tmpMon+tmpDay;
-	}
 	// 달력에 보일 날짜 셋팅.
 	,_setViewDayInfo :function (){
 		var _this =this
@@ -1222,10 +1507,10 @@ Plugin.prototype ={
 		var solYear = first.year()
 			,solMonth= first.month()+1
 			,solDay = first.date();
-			
-		var monthDayInfo = _this._getMonthDayArr(solYear, solMonth)
-			,monthArr = monthDayInfo.monthArr
-			,startWeekday = monthDayInfo.startWeekday;
+
+		var date = new Date(solYear, solMonth - 1, 1);	
+		var monthArr = getMonthLastDayArr(solYear)
+			,startWeekday = date.getDay();
 		
 		var dateLen = last.diff(first,'days')+1;
 
@@ -1237,10 +1522,11 @@ Plugin.prototype ={
 				year : solYear 
 				, month : solMonth
 				, day : solDay
+				, yyyy_mm_dd : solYear+'-'+day2(solMonth)+'-'+day2(solDay)
 				, monthType: (viewMonth == solMonth ? 'current' : (viewMonth > solMonth ?'prev':'next') )
 			};
 
-			monthDayIdx[getYyyyMmDd(tmpDayInfo)]= i; 
+			monthDayIdx[tmpDayInfo.yyyy_mm_dd]= i; 
 			viewDateArr.push(tmpDayInfo);
 			
 			/* add a day of solar calendar */
@@ -1248,16 +1534,7 @@ Plugin.prototype ={
 				solYear++;
 				solMonth = 1;
 				solDay = 1;
-
-				/* set monthDay of Feb */
-				if (solYear % 400 == 0)
-					monthArr[1] = 29;
-				else if (solYear % 100 == 0)
-					solMonthDay[1] = 28;
-				else if (solYear % 4 == 0)
-					monthArr[1] = 29;
-				else
-					monthArr[1] = 28;
+				monthArr = getMonthLastDayArr(solYear);
 			}else if (monthArr[solMonth - 1] == solDay){
 				solMonth++;
 				solDay = 1; 
@@ -1266,28 +1543,9 @@ Plugin.prototype ={
 			}
 		}
 		_this.options.viewDateArr = viewDateArr;
+		_this.config.monthWeekNum = dateLen/7; 
 		_this.options.viewMonthDayIdx = monthDayIdx;
 		
-	}
-	// 양력 달 마지막날 & 요일 정보 구하기.
-	,_getMonthDayArr :function (year, month){
-		var monthDay = [31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-		/* set monthDay of Feb */
-		if (year % 400 == 0)
-			monthDay[1] = 29;
-		else if (year % 100 == 0)
-			monthDay[1] = 28;
-		else if (year % 4 == 0)
-			monthDay[1] = 29;
-		else
-			monthDay[1] = 28;
-
-		var date = new Date(year, month - 1, 1);
-		
-		return {
-			monthArr : monthDay
-			,startWeekday : date.getDay()
-		}
 	}
 	// 음력일 계산.
 	,getMonthDayInfo : function (dateInfoItem , type, leapmonth){
@@ -1340,11 +1598,7 @@ Plugin.prototype ={
 				lunYear++;
 				lunMonth = 1;
 				lunDay = 1;
-				
-				if (lunarMonthTable[lunYear][lunMonth - 1] == 1)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 2)
-					lunMonthDay = 30;
+				lunMonthDay = getLunMonthDay(lunYear, lunMonth);
 			}else if (lunDay == lunMonthDay){
 				if (lunarMonthTable[lunYear][lunMonth - 1] >= 3&& lunLeapMonth == 0){
 					lunDay = 1;
@@ -1355,22 +1609,7 @@ Plugin.prototype ={
 					lunLeapMonth = 0;
 				}
 
-				if (lunarMonthTable[lunYear][lunMonth - 1] == 1)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 2)
-					lunMonthDay = 30;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 3)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 4 && lunLeapMonth == 0)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 4 && lunLeapMonth == 1)
-					lunMonthDay = 30;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 5 && lunLeapMonth == 0)
-					lunMonthDay = 30;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 5 && lunLeapMonth == 1)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 6)
-					lunMonthDay = 30;
+				lunMonthDay = getLunMonthDay(lunYear, lunMonth, lunLeapMonth);
 			}else{
 				lunDay++;
 			}
@@ -1434,17 +1673,7 @@ Plugin.prototype ={
 	,_getLunElapseDay : function (solDate, lunDate){
 		var _lLeapMonth=0;
 		
-		var solMonthDay = [31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-		/* set monthDay of Feb */
-		if (solDate.year % 400 == 0)
-			solMonthDay[1] = 29;
-		else if (solDate.year % 100 == 0)
-			solMonthDay[1] = 28;
-		else if (solDate.year % 4 == 0)
-			solMonthDay[1] = 29;
-		else
-			solMonthDay[1] = 28;
+		var solMonthDay = getMonthLastDayArr(solDate.year);
 		
 		var _solElapseDay = solDate.day;
 
@@ -1460,16 +1689,11 @@ Plugin.prototype ={
 
 		var result = lunMonthDay-lunDay ; 
 		for (var i=0;i < 12; i++ ){
-			/* add a day of lunar calendar */
-
 			if (lunMonth == 12){
 				lunYear++;
 				lunMonth = 1;
 				
-				if (lunarMonthTable[lunYear][lunMonth - 1] == 1)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 2)
-					lunMonthDay = 30;
+				lunMonthDay = getLunMonthDay(lunYear, lunMonth);
 			}else{
 				if (lunarMonthTable[lunYear][lunMonth - 1] >= 3&& lunLeapMonth == 0){
 					lunLeapMonth = 1;
@@ -1478,22 +1702,7 @@ Plugin.prototype ={
 					lunLeapMonth = 0;
 				}
 
-				if (lunarMonthTable[lunYear][lunMonth - 1] == 1)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 2)
-					lunMonthDay = 30;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 3)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 4 && lunLeapMonth == 0)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 4 && lunLeapMonth == 1)
-					lunMonthDay = 30;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 5 && lunLeapMonth == 0)
-					lunMonthDay = 30;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 5 && lunLeapMonth == 1)
-					lunMonthDay = 29;
-				else if (lunarMonthTable[lunYear][lunMonth - 1] == 6)
-					lunMonthDay = 30;
+				lunMonthDay = getLunMonthDay(lunYear, lunMonth, lunLeapMonth)
 			}
 
 			if((result+lunMonthDay) <= _solElapseDay){
@@ -1540,9 +1749,8 @@ Plugin.prototype ={
 		dayInfo['className']= (dayInfo.monthType=='prev' ? 'prev_month_day ' :(dayInfo.monthType=='next'?'next_month_day ':'')) +tmpClass; // 색
 		dayInfo['lunday'] = dayInfo.lunMonth + "." + dayInfo.lunDay; // 음력
 		dayInfo['desc'] = tmpMemo; // 기념일 . 
-		dayInfo['sunday'] = index%7;
 		dayInfo['memorialday'] = memorialDay;
-		dayInfo['lunnaview'] = dayInfo.lunDay=="1" || dayInfo.lunDay=="15" ?  "inline" :"none";  // 음력 계산. 
+		dayInfo['lunnaview'] = dayInfo.lunDay=="1" || dayInfo.lunDay=="15" ? "inline" :"none";  // 음력 계산. 
 		
 		return dayInfo; 
 	}
@@ -1565,11 +1773,28 @@ Plugin.prototype ={
 	}
 	//레이어 닫기
 	,_layerClose : function (e){
-		if (e && e.which === 3) return false;
-		if (e.isDefaultPrevented()) return false;
+
+		if(e){
+			if (e && e.which === 3) return false;
+			if (e.isDefaultPrevented()) return false;
+		}
+
+		function getParent($this) {
+			var selector = $this.attr('data-target')
+
+			if (!selector) {
+			  selector = $this.attr('href')
+			  selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+			}
+
+			var $parent = selector && $(selector)
+
+			return $parent && $parent.length ? $parent : $this.parent()
+		}
 
 		$('.pub_calendar_layer').each(function () {
 			var sEle = $(this);
+			var $parent = getParent(sEle);
 			
 			if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return ;
 			
@@ -1599,8 +1824,9 @@ Plugin.prototype.miniCalendar = function(opt){
 	
 	var _lang =_this.getLang('mini');
 	if(_this.options.initFlag !== true){
+		_this.element.html('<div id="'+_this.prefix+'" class="mini-pubcalendar '+_this.options.theme+'" style="width:'+_this.options.width+'px;"></div>');
+		_this.pubcElement = $('#'+_this.prefix);
 		
-		calHTML.push('<div id="'+_this.prefix+'" class="mini-pubcalendar '+_this.options.theme+'" style="width:'+_this.options.width+'px;">');
 		calHTML.push(_RenderHTML._renderMiniHeaderHtml(year ,month,_lang , _this.options.colWidth));
 		calHTML.push('	<tbody id="'+_this.prefix+'pc_body" class="pubcalendar_body">');
 	}
@@ -1620,7 +1846,7 @@ Plugin.prototype.miniCalendar = function(opt){
 			calHTML.push((i==0?'':'</tr>')+'<tr>');
 		}
 		
-		var tempTodayDate = dateItem.year+"-"+day2(dateItem.month)+"-"+day2(dateItem.day);
+		var tempTodayDate = dateItem.yyyy_mm_dd;
 		
 		var chkFlag=false;
 		if(_this.options.eventDisplay===true){
@@ -1629,8 +1855,9 @@ Plugin.prototype.miniCalendar = function(opt){
 			}
 		}
 		calHTML.push('<td>');
+	
 		var boldClass='';
-		if (_tdate.yyyy == year && _tdate.mm == month && _tdate.dd == i + 1){
+		if (_tdate.yyyy_mm_dd == tempTodayDate){
 			boldClass='font-bold';
 		}
 		
@@ -1656,7 +1883,7 @@ Plugin.prototype.miniCalendar = function(opt){
 
 	if(_this.options.initFlag !== true){
 		calHTML.push("</tbody></table>");
-		calHTML.push("</div>");
+		
 	}
 	
 	_this.drawCalendarHtml(year,month,calHTML.join(''));
@@ -1675,7 +1902,9 @@ Plugin.prototype.fullCalendar= function(opt){
 	
 	var _lang =_this.getLang('full');
 	if(_this.options.initFlag !== true){
-		calHTML.push('<div id="'+_this.prefix+'" class="full-pubcalendar '+_this.options.theme+'" style="width:'+_this.options.width+'px;height:'+_this.options.height+'px;">');
+		_this.element.html('<div id="'+_this.prefix+'" class="full-pubcalendar '+_this.options.theme+'" style="width:'+_this.options.width+'px;height:'+_this.options.height+'px;"></div>');
+		_this.pubcElement = $('#'+_this.prefix);
+		
 		calHTML.push(_RenderHTML._renderFullCalHeaderHtml(year ,month,_lang , viewMode));
 		calHTML.push('<div id="'+_this.prefix+'pc_body">');
 	}
@@ -1687,10 +1916,12 @@ Plugin.prototype.fullCalendar= function(opt){
 	}
 	
 	if(_this.options.initFlag !== true){
-		calHTML.push('</div>'+_RenderHTML._renderEtcHtml()+'</div>');
+		calHTML.push('</div>'+_RenderHTML._renderEtcHtml());
 	}
 
 	_this.drawCalendarHtml(year,month,calHTML.join(''));
+	
+	var currentTime = makeMoment();
 
 	if(viewMode=='month'){
 		$('#'+_this.prefix+' .view-mode-text').hide();
@@ -1699,6 +1930,17 @@ Plugin.prototype.fullCalendar= function(opt){
 		$('#'+_this.prefix+' .view-mode-month').hide()
 		$('#'+_this.prefix+' .view-mode-text').show();
 
+
+		var hh = currentTime.format('HH')
+			,mm = currentTime.format('mm')
+			,_top = (parseInt(hh,10)*(_TIME_HALF_HEIGHT*2)+ (_TIME_HALF_HEIGHT*2)/60*parseInt(mm,10)); 
+		
+		$('#'+_this.prefix+' .current-time-line').css('top',_top);
+		
+		var timeBodyCont = $('#'+_this.prefix+' .time-body-content');
+		var scrollTop =  _top-(timeBodyCont.height()/2);
+		timeBodyCont.scrollTop(scrollTop > 0 ?scrollTop : 0);
+
 		if(viewMode=='day'){
 			$('#'+_this.prefix+' .view-mode-text').html(_this.config.dateInfo.start);
 		}else{
@@ -1706,11 +1948,13 @@ Plugin.prototype.fullCalendar= function(opt){
 		}
 	}
 }
+
 // 월 일정 달력.
 Plugin.prototype._monthCalendar= function(opt){ 
 	var _this = this
 		, mode=opt.mode // mode 1 default 양력, 2 title 음력, 3 양력 title 기념일. , 4 양력 title 음력/기념일. 
-		, year=opt.year, month=opt.month, day=opt.day;
+		, year=opt.year, month=opt.month, day=opt.day
+		, useLunar = _this.options.useLunar; 
 	var calHTML  = [];
 	
 	year = parseInt(year,10);
@@ -1728,30 +1972,29 @@ Plugin.prototype._monthCalendar= function(opt){
 	var dayInfoArr=_this.getMonthDayInfo({year :year, month : month, day:1}); // 음력날짜 . 기념일 가져오기.
 	
 	var dateItem, _desc='';
-	var dateLen = dayInfoArr.length, _idx = 0;
-	var rowHeight = 100/( dateLen/7);
-	
+	var dateLen = dayInfoArr.length, _idx = 0 , weekLoop = _this.config.monthWeekNum;
+	var rowHeight = 100/weekLoop, rowMinHeight = _this.getRowHeight('row');
+
 	var _w = _this.options.colWidth;
 	var _lang =_this.getLang('full');
 
-	calHTML.push('<table class="full-pubcalendar-tbl">');	
+	calHTML.push('<table class="full-pubcalendar-tbl" cellpadding="0" cellspacing="0">');	
 	calHTML.push( _RenderHTML._renderColgroupHTML(7,_w));
 	calHTML.push('  <thead><tr>		');
-	calHTML.push('		<td valign="top" class="pub-calendar-red">'+_lang.sun+'</td>		');
-	calHTML.push('		<td valign="top" class="">'+_lang.mon+'</td>		');
-	calHTML.push('		<td valign="top" class="">'+_lang.tue+'</td>		');
-	calHTML.push('		<td valign="top" class="">'+_lang.wed+'</td>		');
-	calHTML.push('		<td valign="top" class="">'+_lang.thu+'</td>		');
-	calHTML.push('		<td valign="top" class="">'+_lang.fri+'</td>		');
-	calHTML.push('		<td valign="top" class="pub-calendar-blue">'+_lang.sat+'</td>		');
+	calHTML.push('		<td valign="top" class="pubc-week pubc-week-fc pub-calendar-red">'+_lang.sun+'</td>		');
+	calHTML.push('		<td valign="top" class="pubc-week">'+_lang.mon+'</td>		');
+	calHTML.push('		<td valign="top" class="pubc-week">'+_lang.tue+'</td>		');
+	calHTML.push('		<td valign="top" class="pubc-week">'+_lang.wed+'</td>		');
+	calHTML.push('		<td valign="top" class="pubc-week">'+_lang.thu+'</td>		');
+	calHTML.push('		<td valign="top" class="pubc-week">'+_lang.fri+'</td>		');
+	calHTML.push('		<td valign="top" class="pubc-week pubc-week-lc pub-calendar-blue">'+_lang.sat+'</td>		');
 	calHTML.push('	</tr></thread>');
 	calHTML.push('</table>');
 	
 	calHTML.push('<div class="pubcalendar_body">');
-	for(var i =0 ;i < 7; i++){
-		if(_idx >= dateLen) break; 
+	for(var i =0 ;i < weekLoop; i++){
 				
-		calHTML.push('<div class="month-row" style="top: '+(i*rowHeight)+'%; height: '+rowHeight+'%">');
+		calHTML.push('<div class="month-row" style="top: '+(i*rowHeight)+'%;min-height:'+rowMinHeight+'px;height: '+rowHeight+'%">');
 		calHTML.push(_RenderHTML._renderBgTableHtml(i, 7));
 		calHTML.push('<table cellpadding="0" cellspacing="0" class="pubc-row-grid-table"><thead><tr>');
 
@@ -1763,60 +2006,56 @@ Plugin.prototype._monthCalendar= function(opt){
 
 			thirdPrintDay = dateItem.day;
 					
-			var tempTodayDate = dateItem.year+"-"+day2(dateItem.month)+"-"+day2(dateItem.day);
+			var tempTodayDate = dateItem.yyyy_mm_dd;
 
 			weekDayArr.push(tempTodayDate);
 			
 			if(eventRangeArrInfo[tempTodayDate]){
-				var _draiLen = Object.keys(eventRangeArrInfo).length; 
+				var _draiLen = Object.keys(eventRangeArrInfo[tempTodayDate]).length; 
 				maxWeekRow = maxWeekRow > _draiLen? maxWeekRow : _draiLen;
 			}
 			
 			calHTML.push('<td>');
 			var boldClass='';
-			if (_tdate.yyyy == year && _tdate.mm == month && _tdate.dd == i + 1){
+			if (_tdate.yyyy_mm_dd == tempTodayDate){
 				boldClass='font-bold';
 			}
 			
 			// 모드별 날짜 view
-			calHTML.push('<div class="day_area"><a href="javascript:;" class="pubcalendar-day-item '+boldClass+' '+dateItem.className+'" _day="'+tempTodayDate+'" ');
+			calHTML.push('<div class="day_area" _day="'+tempTodayDate+'"><div style="float:left;"><a href="javascript:;" class="pubcalendar-day-item '+boldClass+' '+dateItem.className+'" _day="'+tempTodayDate+'" ');
 			if(mode=="2"){
 				_desc = dateItem['desc'] ||'';
-				calHTML.push(' title="'+dateItem.desc+'">'+thirdPrintDay); //음력 날짜 , 메모명.
+				calHTML.push(' title="'+dateItem.desc+'">'+thirdPrintDay); // 메모명.
 			}else if(mode=="3" && useLunar){
-				_desc = dateItem['desc'] ||'';
-				calHTML.push(' title="'+dateItem.desc+'">'+thirdPrintDay); //음력 날짜 , 메모명.
+				_desc = dateItem['lunday'];
+				calHTML.push(' title="'+dateItem['lunday']+'">'+thirdPrintDay); //음력 날짜
 			}else if(mode=="4" && useLunar){
 				_desc = dateItem['lunday']+(dateItem['desc']!=""?"/"+dateItem.desc:"")
 				calHTML.push('>'+thirdPrintDay); //음력 날짜 , 메모명.
 			}else{
-				calHTML.push('>'+thirdPrintDay); //음력 날짜 , 메모명.
+				calHTML.push('>'+thirdPrintDay); //날짜.
 			}
-			calHTML.push('</a><span class="day_info">'+_desc+'</span></div>'); //음력 날짜 , 메모명.
+			calHTML.push('</a></div><div class="pubc-write-btn"><span class="glyphicon-plus"></span><span class="day_info">'+_desc+'</span></div></div>'); //음력 날짜 , 메모명.
 
 			++_idx;
-			
 		}
 		calHTML.push('</tr></thead>');
+		
 
-		var arrMaxRowColNum = {}, evtChkFlag = false;
 		for (var j =0; j< maxWeekRow; j++){
 			calHTML.push('<tr>');
-			var totColVal = 0 ; 
-			evtChkFlag = false; 
+			var totColVal=0; 
 			for(var k = 0 ;k < 7; k++){
-				
-				var evtInfo = eventRangeArrInfo[weekDayArr[k]];
+				var tmpDate = weekDayArr[k]; 
+				var evtInfo = eventRangeArrInfo[tmpDate];
 				
 				if(evtInfo){
-					evtChkFlag = true; 
 					var evtItem = evtInfo[j];
 					
 					if(evtItem && evtItem.isStart) {
 						totColVal += evtItem.range;
 						var esItem = eventSources[evtItem.pubCID];
-						
-						calHTML.push('<td colspan="'+evtItem.range +'"><div class="month-item"><div class="pub_calendar_evt_item" pubc_id="'+evtItem.pubCID+'">'+esItem[_this.options.event.colModel.title]+'</div><div></td>');
+						calHTML.push('<td colspan="'+evtItem.range +'"><div class="pubc-item-wrap '+(evtItem.realRangeNum > 1?'range-item':'')+'" style="background-color:'+(esItem[_this.options.event.colModel.color]||(evtItem.realRangeNum > 1?_this.options.backgroundColor:''))+';"><div class="pub_calendar_evt_item" pubc_key="'+evtItem.pubCID+','+tmpDate+','+j+',r">'+esItem[_this.options.event.colModel.title]+'</div><div></td>');
 					}
 				}
 
@@ -1827,66 +2066,26 @@ Plugin.prototype._monthCalendar= function(opt){
 			}
 			calHTML.push('</tr>');
 
-			if(!evtChkFlag) break; 
-
-			if(j+1 >= _this.options.maxEventRow){
-				for(var k = 0 ;k < 7; k++){
-					var evtInfo = eventRangeArrInfo[weekDayArr[k]];
-					var evtLen = evtInfo?Object.keys(evtInfo).length:0; 
-					if((evtLen > _this.options.maxEventRow)) {	
-						calHTML.push('<td><div class="pub_calendar_evt_more"><a class="pc_more" _idx="'+(i*7+k)+'">+'+(evtLen - _this.options.maxEventRow)+' more</a></div></td>');
-					}else{
-						totColVal +=1; 
-						calHTML.push('<td>&nbsp;</td>');
-					}
-				}
+			if(j+1 >= this.options.maxEventRow){
 				break; 
 			}
 		}
+
+		calHTML.push('<tr>');
+		for(var k = 0 ;k < 7; k++){
+			var moreCount = _this.config.dayMoreCount[weekDayArr[k]];
+
+			if((moreCount && moreCount > 0)) {	
+				calHTML.push('<td><div class="pub_calendar_evt_more"><a class="pc_more" _idx="'+(i*7+k)+'">+'+moreCount+' more</a></div></td>');
+			}else{
+				calHTML.push('<td>&nbsp;</td>');
+			}
+		}
+		calHTML.push('</tr>');
+		
 		calHTML.push('</table></div>');		
 	}
 	calHTML.push('</div>');
-
-	return calHTML.join('');
-}
-
-function renderWeeekItem(idx, evt , colInfo, evtSource){
-	
-	if(!evt) evt=[];
-
-	var hourHeightPixel = 21;
-	var calHTML = [];
-	calHTML.push('	<td class="week-item-grid" _idx="'+idx+'">');
-	calHTML.push('		<div class="week-item-wrapper">');
-	calHTML.push('		<div class="week-item-area">');
-	
-	
-	var evtItem,esItem
-		,len = Object.keys(evt).length;
-
-	for(var i=0 ;i <len;i++){
-		evtItem = evt[i];
-		esItem = evtSource[evtItem.pubCID];
-		var sdt = makeMoment(esItem[colInfo.start]);
-		var shh = sdt.toDate().getHours();
-		var smm = sdt.toDate().getMinutes();
-		
-		var edt = makeMoment(esItem[colInfo.end])
-		
-		var _top = (shh*2 + (smm >= 30? 1:0))*hourHeightPixel;	
-		var _height =(edt.diff(sdt,'minute')/30)*hourHeightPixel;
-		_height = _height > 0 ?_height:hourHeightPixel;
-		
-		//evtItem.width = evtItem.prevLeftObj.width;
-		var _left = evtItem.colIdx*evtItem.prevLeftObj.width  -(evtItem.colIdx * evtItem.prevLeftObj.width/8);
-
-		calHTML.push('<div class="week-item pub_calendar_evt_item" pubc_id="'+evtItem.pubCID+'" style="z-index:'+evtItem.colIdx+';top:'+_top+'px;left:'+(_left)+'%;width:'+evtItem.width+'%;height:'+(_height-6)+'px;">');
-		calHTML.push(sdt.format('HH:mm')+'-'+edt.format('HH:mm')+' ');
-		calHTML.push(esItem[colInfo.title]);
-		
-		calHTML.push('</div>');
-	}
-	calHTML.push('	</div></div></td>');
 
 	return calHTML.join('');
 }
@@ -1908,12 +2107,13 @@ Plugin.prototype._timeCalendar= function(opt){
 		,_rangeNum = dateInfo.viewRangeNum
 		,viewDateArr = _this.options.viewDateArr
 		,colInfo = _this.options.event.colModel
-		,eventSources = _this.config.eventSources; 
+		,eventSources = _this.config.eventSources
+		,allDayMaxLen = 1;
 
 	var weekStartDt = makeMoment(_this.config.dateInfo.start);
 	var dateItem, _desc='';
-	calHTML.push('<div class="pubc-full-week">');
-	calHTML.push('	<table cellpadding="0" cellspacing="0" class="pubc-full-week-header-tbl">');
+	calHTML.push('<div class="pubc-time-calendar">');
+	calHTML.push('	<table cellpadding="0" cellspacing="0" class="pubc-time-calendar-header-tbl">');
 	calHTML.push('	<tbody>');
 	// 헤더 start
 	calHTML.push('	  <tr class="header-tr">');
@@ -1921,7 +2121,13 @@ Plugin.prototype._timeCalendar= function(opt){
 	calHTML.push('		<td colspan="'+_rangeNum+'">');
 	calHTML.push('			<div class="pubc-week-header-wrapper"><table cellpadding="0" cellspacing="0" style="width:100%;"><tr>');
 	for(var i=0 ;i < _rangeNum ;i++){
-		calHTML.push('<td valign="top" scope="col">'+_Format.weekFormat(weekStartDt,i, _lang)+'</td>');
+		var tmpDate = viewDateArr[i].yyyy_mm_dd; 
+		if(eventRangeArrInfo[tmpDate]){
+			var _draiLen = Object.keys(eventRangeArrInfo[tmpDate]).length; 
+			allDayMaxLen = allDayMaxLen > _draiLen? allDayMaxLen : _draiLen;
+		}
+
+		calHTML.push('<td valign="top" scope="col"><a href="javascript:;" class="pubcalendar-day-item" _day="'+tmpDate+'" _idx="'+i+'">'+_Format.weekFormat(weekStartDt,i, _lang)+'</a></td>');
 	}
 	calHTML.push('			</tr></table></div>');
 	calHTML.push('		</td>');
@@ -1933,30 +2139,28 @@ Plugin.prototype._timeCalendar= function(opt){
 	calHTML.push('		<td valign="middle" style="width:60px;">allDay</td>');
 	calHTML.push('		<td colspan="'+_rangeNum+'">');
 	calHTML.push('			<div class="week-allday-row position-relative"><div class="week-row"><div class="week-day-bg">');
-	calHTML.push(_RenderHTML._renderWeekBgTableHtml(0, _rangeNum));
+	calHTML.push(_RenderHTML._renderTimeBgTableHtml(0, _rangeNum));
 	calHTML.push('			</div>');
-	calHTML.push('			<div style="pubc-all-day-info">');
+	calHTML.push('			<div class="pubc-time-all-day-info">');
 
 	calHTML.push('				<table cellpadding="0" cellspacing="0" class="pubc-row-grid-table">');
-	var len  = _this.config.eventDay.max;
-	len = len < 1 ? 1 :len;
 
-	for (var j =0; j< len; j++){
+	allDayMaxLen = allDayMaxLen < 1 ? 1 :allDayMaxLen;
+
+	for (var j =0; j< allDayMaxLen; j++){
 		calHTML.push('<tr>');
 		var totColVal = 0 ; 
-		var evtChkFlag = false; 
 		for(var k = 0 ;k < _rangeNum; k++){
-			
-			var evtInfo = eventRangeArrInfo[getYyyyMmDd(viewDateArr[k])];
+			var tmpDate = viewDateArr[k].yyyy_mm_dd; 
+			var evtInfo = eventRangeArrInfo[tmpDate];
 			
 			if(evtInfo){
-				evtChkFlag = true; 
 				var evtItem = evtInfo[j];
 				
-				if(evtItem && evtItem.isStart) {
+				if(evtItem  && evtItem.isStart) {
 					totColVal += evtItem.range;
 					var esItem = eventSources[evtItem.pubCID];
-					calHTML.push('	<td colspan="'+evtItem.range+'"><div class="allday-item"><div class="pub_calendar_evt_item" pubc_id="'+evtItem.pubCID+'">'+esItem[colInfo.title]+'</div></div></td>');
+					calHTML.push('	<td colspan="'+evtItem.range+'"><div class="allday-item"><div class="pub_calendar_evt_item" pubc_key="'+evtItem.pubCID+','+tmpDate+','+j+',r">'+esItem[colInfo.title]+'</div></div></td>');
 				}
 			}
 
@@ -1976,14 +2180,14 @@ Plugin.prototype._timeCalendar= function(opt){
 	
 
 	// 시간별 일정 시작. 
-	calHTML.push('<div class="week-body-content">');
+	calHTML.push('<div class="time-body-content">');
 	calHTML.push('	<table cellpadding="0" cellspacing="0" class="">');
 	calHTML.push('	<tbody>');
 	calHTML.push('	  <tr>');
 	calHTML.push('		<td valign="middle" style="width:60px;">');
-	calHTML.push('<div class="pubc-time" _time_idx="24">24</div>');
+	calHTML.push('<div class="pubc-time" _time_idx="24"><span>오전 12</span></div>');
 	for (var i=1;i <24 ; i++){
-		calHTML.push('<div class="pubc-time" _time_idx="'+i+'">'+i+'</div>');
+		calHTML.push('<div class="pubc-time" _time_idx="'+i+'"><span>'+(i-12 > 0?'오후 '+(i-12):'오전 '+i)+'</span></div>');
 	}
 	calHTML.push('		</td>');
 	calHTML.push('		<td valign="top" colspan="'+_rangeNum+'" height="1px;">');
@@ -1998,13 +2202,14 @@ Plugin.prototype._timeCalendar= function(opt){
 	calHTML.push('</tr></table>');
 	calHTML.push('			</div>');
 
-	calHTML.push('			<div class="position-relative"><div class="pubc-all-day-info" style="position:absolute;">');				
+	calHTML.push('			<div class="position-relative"><div class="pubc-time-event-area" style="position:absolute;">');	
+	calHTML.push('				<div class="current-time-line"></div>');
 	calHTML.push('				<table cellpadding="0" cellspacing="0" class="pubc-row-bg-table">');
 	calHTML.push('					<tr>');
 	
-	
 	for(var i=0 ;i < _rangeNum ;i++){
-		calHTML.push(renderWeeekItem(i , _this.config.dayEventInfo[getYyyyMmDd(viewDateArr[i])], colInfo, eventSources));
+		var _date = viewDateArr[i].yyyy_mm_dd; 
+		calHTML.push(_RenderHTML.renderTimeItem(_date, i , _this.config.dayEventInfo[_date], colInfo, eventSources , _this.options.timeBackgroundColor));
 	}
 	
 	calHTML.push('					</tr>');
@@ -2034,7 +2239,67 @@ var _RenderHTML = {
 	// 상세, 더보기 레이어 html 
 	_renderEtcHtml :function (){
 		return '<div class="pub_calendar_more_area_wrap pub_calendar_layer"></div>'
+			+'<div class="pub_calendar_write_area_wrap pub_calendar_layer"></div>'
 			+'<div class="pub_calendar_detail_area_wrap pub_calendar_layer"></div>';
+	}
+	// 일정 소스 만들기.
+	,renderTimeItem : function (_date, idx, evt , colInfo, evtSource, bgColor){
+	
+		if(!evt) evt=[];
+
+		var calHTML = [];
+		calHTML.push('	<td class="time-item-grid">');
+		calHTML.push('		<div class="time-item-wrapper" _idx="'+idx+'" date="'+_date+'">');
+		calHTML.push('		<div class="time-item-area">');
+
+		var evtItem,esItem
+			,len = Object.keys(evt).length;
+		var evtPubIdIdx = {};
+		for(var i=0 ;i <len;i++){
+			evtItem = evt[i];
+			evtPubIdIdx[evtItem.pubCID] = i; 
+			esItem = evtSource[evtItem.pubCID];
+			var sdt = makeMoment(evtItem.start);
+			var shh = sdt.toDate().getHours();
+			var smm = sdt.toDate().getMinutes();
+			
+			var edt = makeMoment(evtItem.end)
+			
+			var _top = (shh*2 + (smm >= 30? 1:0))*_TIME_HALF_HEIGHT;	
+			var _height =(edt.diff(sdt,'minute')/30)*_TIME_HALF_HEIGHT;
+			_height = _height > 0 ?_height:_TIME_HALF_HEIGHT;
+
+			if(evtItem.isBetween===true){
+				evtItem.left =evtItem.prevLeftObj.offsetX||0;
+				if(evtItem.overNum < 1){
+					evtItem.width = evt[evtPubIdIdx[evtItem.betweenNextColIdx]].left - evtItem.left; 
+				}else{
+					evtItem.width = evtItem.nextColIdx?(evtItem.nextColIdx - evtItem.colIdx) :1;
+					evtItem.width = evtItem.width * evtItem.prevLeftObj.width;
+				}
+				evtItem.offsetX = evtItem.left+evtItem.width;
+			}else{
+				var _left= evtItem.prevLeftObj.offsetX||0;
+				if(evtItem.left != _left){
+					evtItem.left = _left;
+					evtItem.width = (100-_left)/(evtItem.overNum+1);
+					evtItem.offsetX = _left+evtItem.width;
+				}else{
+					evtItem.offsetX = evtItem.left+evtItem.width;
+				}
+			}
+
+			calHTML.push('<div class="time-item pub_calendar_evt_item" pubc_key="'+evtItem.pubCID+','+_date+','+i+',t" style="z-index:'+evtItem.colIdx+';top:'+_top+'px;left:'+(evtItem.left)+'%;width:'+evtItem.width+'%;height:'+(_height-6)+'px;background-color:'+(esItem[colInfo.color]||bgColor)+';">');
+			calHTML.push(sdt.format('HH:mm')+'-'+edt.format('HH:mm')+' ');
+			calHTML.push(esItem[colInfo.title]);
+			
+			calHTML.push('</div>');
+		}
+		calHTML.push('		</div>');
+		calHTML.push('		<div class="time-over-wrapper time-over'+idx+'"></div>');
+		calHTML.push('	</div></td>');
+
+		return calHTML.join('');
 	}
 	// mini 달력 header html 
 	,_renderMiniHeaderHtml : function (year, month , _lang , _w){
@@ -2098,7 +2363,7 @@ var _RenderHTML = {
 			+ '</tr></table>';
 	}
 	//time 바탕 테이블 html
-	,_renderWeekBgTableHtml :function (idx, pRangeNum){
+	,_renderTimeBgTableHtml :function (idx, pRangeNum){
 		var renderHTML = [];
 		renderHTML.push('<table cellpadding="0" cellspacing="0" class="pubc-row-bg-table"><tr>');
 		for (var i=0; i< pRangeNum; i++ ){
@@ -2160,8 +2425,215 @@ $.pubCalendar = function (selector,options, args) {
 };
 
 
+if (!Object.keys) {
+  Object.keys = function(obj) {
+    var keys = [];
+
+    for (var i in obj) {
+      if (obj.hasOwnProperty(i)) {
+        keys.push(i);
+      }
+    }
+
+    return keys;
+  };
+}
+
+if (!Array.prototype.filter) {
+  Array.prototype.filter = function(fun/*, thisArg*/) {
+    'use strict';
+
+    if (this === void 0 || this === null) {
+      throw new TypeError();
+    }
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== 'function') {
+      throw new TypeError();
+    }
+
+    var res = [];
+    var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+    for (var i = 0; i < len; i++) {
+      if (i in t) {
+        var val = t[i];
+
+        if (fun.call(thisArg, val, i, t)) {
+          res.push(val);
+        }
+      }
+    }
+
+    return res;
+  };
+}
+
+ function objectMerge () {
+	var dst = {},src ,p ,args = [].splice.call(arguments, 0);
+	
+	while (args.length > 0) {
+		src = args.splice(0, 1)[0];
+		if (Object.prototype.toString.call(src) == '[object Object]') {
+			for (p in src) {
+				if (src.hasOwnProperty(p)) {
+					if (Object.prototype.toString.call(src[p]) == '[object Object]') {
+						dst[p] = objectMerge(dst[p] || {}, src[p]);
+					} else {
+						dst[p] = src[p];
+					}
+				}
+			}
+		}
+	}
+	return dst;
+}
+
+function getLunarMonthTable(year){
+	return lunarMonthTable[year];
+}
+
+// 미니 달력 월 ------------
+function getMonthInfo(year,month) {										// 월 정보를 콤보 박스로 표시
+	var i = new Number();
+	var strHtm =new Array();
+	strHtm.push('<select class="pubcalendar_month_select">');
+	for (i=1; i<=12; i++) {
+		if (i == parseInt(month)) {
+			strHtm.push("<option value="+i+" selected>"+i+"</option>");
+		} else {
+			strHtm.push("<option value="+i+">"+i+"</option>");
+		}
+	}
+	strHtm.push('</select>');
+
+	return strHtm.join("");
+}
+
+function day2(d) {	// 2자리 숫자료 변경
+	d = parseInt(d,10); 
+
+	return (d < 10) ? "0"+d : d;
+}
+
+function makeMoment(day){
+	return moment(day);
+}
+
+function getAddEvt(pEvt, pYyyyMMdd, pItem){
+	if(!pEvt[pYyyyMMdd]){
+		pEvt[pYyyyMMdd] =[];
+	}
+	pEvt[pYyyyMMdd].push(pItem);
+
+	return pEvt;
+}
+
+// 일정이 일정보기의 날짜 안에 있는지 체크.
+function isBetweenDate(stime , etime , viewFirstTime , viewEndTime){
+	if(stime > viewEndTime || etime < viewFirstTime || (stime < viewFirstTime && etime < viewFirstTime)){
+		return false; 
+	}
+	return true; 
+}
+// 반복일정 등록. 
+function addRepeatItem (eventInfoArr,exceptionInfo,item,startDt, endDt,viewFirstTime, viewEndTime ,repeatSTime , repeatETime){
+	if(exceptionInfo[startDt.format('YYYY-MM-DD')]===true) return ; 
+
+	if(isBetweenDate(startDt.toDate().getTime()
+		,endDt.toDate().getTime()
+		,viewFirstTime
+		,viewEndTime)
+	){
+		eventInfoArr.push({
+			pubCID	:item._pubCID
+			,start : repeatSTime ? startDt.format('YYYY-MM-DD')+' '+repeatSTime : startDt.format('YYYY-MM-DD HH:mm')
+			,end : repeatETime ? endDt.format('YYYY-MM-DD')+' '+repeatETime : endDt.format('YYYY-MM-DD HH:mm')
+		});
+	}
+	return eventInfoArr; 
+}
+
+// 년 마지막 날 구하기.
+function getMonthLastDayArr(year){
+	var monthDay = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+	if (year % 400 == 0) monthDay[1]=29;
+	else if (year % 100 == 0) monthDay[1]=28;
+	else if (year % 4 == 0) monthDay[1]=29;
+
+	return monthDay;
+}
+
+// 음력 월에 마지막날 구하기.
+function getLunMonthDay(lunYear, lunMonth, lunLeapMonth){
+	if (lunarMonthTable[lunYear][lunMonth - 1] == 1) return  29;
+	else if (lunarMonthTable[lunYear][lunMonth - 1] == 2) return  30;
+	else if (lunarMonthTable[lunYear][lunMonth - 1] == 3) return  29;
+	else if (lunarMonthTable[lunYear][lunMonth - 1] == 4 && lunLeapMonth == 0) return  29;
+	else if (lunarMonthTable[lunYear][lunMonth - 1] == 4 && lunLeapMonth == 1) return  30;
+	else if (lunarMonthTable[lunYear][lunMonth - 1] == 5 && lunLeapMonth == 0) return  30;
+	else if (lunarMonthTable[lunYear][lunMonth - 1] == 5 && lunLeapMonth == 1) return  29;
+	else if (lunarMonthTable[lunYear][lunMonth - 1] == 6) return  30;
+}
+
+
 }(jQuery, window, document));
 
+/*
+기념일 정보 셋팅.
+date : 기념일 날짜 (월일)
+desc : 기념일 설명 (달력에 표시할 설명)
+isLunar : true : 음력 false : 양력
+holiday : true : 빨간날 false : 안빨간날 
+type : true : real time setting
+*/
+var _memorialDays = [
+	{date:'0101',desc : '신정' ,isLunar: false ,holiday :  true}
+	,{date:'_1231',desc : '설연휴' ,isLunar: true ,holiday :  true}
+	,{date:'0101',desc : '설날' ,isLunar: true ,holiday :  true}
+	,{date:'0102',desc : '설연휴' ,isLunar: true ,holiday :  true}
+	,{date:'0301',desc : '3·1절' ,isLunar: false ,holiday :  true}
+	,{date:'0405',desc : '식목일' ,isLunar: false ,holiday :  false}
+	,{date:'0408',desc : '석가탄신일' ,isLunar: true ,holiday :  true}
+	,{date:'0505',desc : '어린이날' ,isLunar: false ,holiday :  true}
+	,{date:'0606',desc : '현충일' ,isLunar: false ,holiday :  true}
+	,{date:'0717',desc : '제헌절' ,isLunar: false ,holiday :  false}
+	,{date:'0815',desc : '광복절' ,isLunar: false ,holiday :  true}
+	,{date:'0814',desc : '추석연휴' ,isLunar: true ,holiday :  true}
+	,{date:'0815',desc : '추석' ,isLunar: true ,holiday :  true}
+	,{date:'0816',desc : '추석연휴' ,isLunar: true ,holiday :  true}
+	,{date:'1003',desc : '개천절' ,isLunar: false ,holiday :  true}
+	,{date:'1225',desc : '성탄절' ,isLunar: false ,holiday :  true}
+	,{date:'0115',desc : '정월대보름' ,isLunar: true ,holiday :  false}
+	,{date:'0505',desc : '단오' ,isLunar: true ,holiday :  false}
+	,{date:'1001',desc : '국군의날' ,isLunar: false ,holiday :  false}
+	,{date:'1009',desc : '한글날' ,isLunar: false ,holiday :  false}
+	,{date:'0625',desc : '6·25전쟁일' ,isLunar: false ,holiday :  false}
+	,{date:'0214',desc : '발렌타인데이' ,isLunar: false ,holiday :  false}
+	,{date:'0322',desc : '물의날' ,isLunar: false ,holiday :  false}
+	,{date:'0401',desc : '만우절' ,isLunar: false ,holiday :  false}
+	,{date:'0413',desc : '임시정부수립일' ,isLunar: false ,holiday :  false}
+	,{date:'0419',desc : '4·19혁명기념일' ,isLunar: false ,holiday :  false}
+	,{date:'0420',desc : '장애인의날' ,isLunar: false ,holiday :  false}
+	,{date:'0421',desc : '과학의날' ,isLunar: false ,holiday :  false}
+	,{date:'0422',desc : '정보통신의날' ,isLunar: false ,holiday :  false}
+	,{date:'0425',desc : '법의날' ,isLunar: false ,holiday :  false}
+	,{date:'0428',desc : '충무공탄신일' ,isLunar: false ,holiday :  false}
+	,{date:'0501',desc : '근로자의날' ,isLunar: false ,holiday :  false}
+	,{date:'0508',desc : '어버이날' ,isLunar: false ,holiday :  false}
+	,{date:'0515',desc : '스승의날' ,isLunar: false ,holiday :  false}
+	,{date:'0518',desc : '5·18 민주화운동일' ,isLunar: false ,holiday :  false}
+	,{date:'0519',desc : '발명의날' ,isLunar: false ,holiday :  false}
+	,{date:'0531',desc : '바다의날' ,isLunar: false ,holiday :  false}
+	,{date:'0605',desc : '환경의날' ,isLunar: false ,holiday :  false}
+	,{date:'0707',desc : '칠월칠석' ,isLunar: false ,holiday :  false}
+	,{date:'1002',desc : '노인의날' ,isLunar: false ,holiday :  false}
+	,{date:'1015',desc : '체육의날' ,isLunar: false ,holiday :  false}
+	,{date:'1024',desc : '국제연합일' ,isLunar: false ,holiday :  false}
+	,{date:'1103',desc : '학생독립운동기념일' ,isLunar: false ,holiday :  false}
+	,{date:'0918',desc : '철도의날' ,isLunar: false ,holiday :  false}
+	,{date:'1109',desc : '소방의날' ,isLunar: false ,holiday :  false}
+];
 
 // 음력 데이터 (평달 - 작은달 :1,  큰달:2 )
 // (윤달이 있는 달 - 평달이 작고 윤달도 작으면 :3 , 평달이 작고 윤달이 크면 : 4)
