@@ -626,7 +626,7 @@ _$base.util = {
 				for (p in src) {
 					if (src.hasOwnProperty(p)) {
 						if (Object.prototype.toString.call(src[p]) == '[object Object]') {
-							dst[p] = objectMerge(dst[p] || {}, src[p]);
+							dst[p] = _$base.util.objectMerge(dst[p] || {}, src[p]);
 						} else {
 							dst[p] = src[p];
 						}
