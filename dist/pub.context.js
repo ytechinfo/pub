@@ -94,17 +94,19 @@
 			
 			$menuHtm.push('<ul class="pub-context-menu pub-context' + subClass + compressed+'" id="' + id + '">');
 	 
-			var item ,linkTarget = '',itemKey;;
+			var item ,linkTarget = '',itemKey , styleClass;
 			for(var i = 0; i<data.length; i++) {
-				item = data[i]; 
+				item = data[i];
+				
+				styleClass = item.styleClass?item.styleClass:'';
 				
 				if (typeof item.divider !== 'undefined') {
-					$menuHtm.push('<li class="divider" context-key="divider"></li>');
+					$menuHtm.push('<li class="divider '+styleClass+'" context-key="divider"></li>');
 					continue;
 				}
 				
 				if (typeof item.header !== 'undefined') {
-					$menuHtm.push('<li class="pub-context-header" context-key="header">' + item.header + '</li>');
+					$menuHtm.push('<li class="pub-context-header '+styleClass+'" context-key="header">' + item.header + '</li>');
 					continue; 
 				}
 				
@@ -116,9 +118,9 @@
 				}
 
 				if (typeof item.subMenu !== 'undefined') {
-					$menuHtm.push('<li class="pub-context-submenu ui-context-item" context-key="'+itemKey+'"><a tabindex="-1">' + item.name + '</a>');
+					$menuHtm.push('<li class="pub-context-submenu ui-context-item '+styleClass+'" context-key="'+itemKey+'"><a tabindex="-1">' + item.name + '</a>');
 				} else {
-					$menuHtm.push('<li class="ui-context-item" context-key="'+itemKey+'"><a tabindex="-1">' + item.name + '</a>');
+					$menuHtm.push('<li class="ui-context-item '+styleClass+'" context-key="'+itemKey+'"><a tabindex="-1">' + item.name + '</a>');
 				}
 
 				if (typeof item.subMenu != 'undefined') {
