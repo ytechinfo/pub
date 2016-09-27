@@ -10,10 +10,14 @@
 	text-align:center;
 }
 
+/*bootstrap conflict 막기위해 넣은 코드. */
 .pubGrid-wrapper {
 	font-family: Ubuntu, Arial, "Apple SD Gothic Neo", "���� SD ��� Neo", "NanumBarunGothic", "NanumBarunGothicOTF", "�����ٸ����", "�����ٸ����OTF", "Malgun Gothic", "���� ���", "NanumGothic", "NanumGothicOTF", "�������", "�������OTF", sans-serif; font-size: 14px;  font-weight: light; 
 	border : 1px solid #ddd;
 	font-size:12px;
+	-webkit-box-sizing: content-box !important;
+	-moz-box-sizing: content-box !important;
+	box-sizing: content-box !important;
 }
 
 .pubGrid-container {
@@ -102,17 +106,26 @@
 	padding: 0;
 	overflow: auto;
 	text-align: left;
-
 }
 .pubGrid-body{
 	width: 100%;
 	border-collapse: collapse;
 	border: 1px solid #ddd;
+	border-left: 0px solid #ddd;
+	border-right: 0px solid #ddd;
 	table-layout: fixed;
 }
 
 .pubGrid-body th, .pubGrid-body td {
 	border: 1px solid #ddd;
+}
+/* first th td board 0 처리 */
+.pubGrid-header th:first-child, .pubGrid-body td:first-child {
+	border-left: 0px solid #ddd;
+}
+
+.pubGrid-header tr:first-child th{
+	border-top: 0px solid #ddd;
 }
 
 .pubGrid-body .pub-body-td a{
@@ -121,6 +134,8 @@
     cursor: default;
 	color:#3b3b3b;
 }
+
+
 
 .pubGrid-body .pub-body-td .pub-body-td-click{
 	text-decoration:underline;
