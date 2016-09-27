@@ -63,7 +63,7 @@ _$base.dialog={
 	 * @description 게시판 더보기
 	 */	
 	mgmtDialog :function (_url , opt){
-		var _opener = parent || window;
+		var _opener = opt.target=='top'? (parent || window) : window;
 		
 		var options = $.extend(true, {
 			targetID : '_main_top_div_id_'
@@ -160,7 +160,7 @@ _$base.toast = {
 			//, beforeShow : function(){$('.jq-toast-wrap').css("margin" , "0 0 0 -155px") }
 		},opt);
 		
-		var tmpP = parent ||window;
+		var tmpP = option.target=='top'? (parent || window) : window
 						 
 		tmpP.$.toast($.extend(true,setOpt, option));
 	}
