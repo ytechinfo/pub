@@ -122,7 +122,7 @@ _$base.pageCountList = function (selector ,opt){
 		,countArr = opt.count; 
 	
 	var strHtm = [];
-	strHtm.push("<select class=\"countPerPage\" name=\"countPerPage\">");
+	strHtm.push("<select class=\"countPerPage "+ (opt.styleClass?opt.styleClass:'') +"\" name=\"countPerPage\">");
 
 	for(var i = 0 ; i <countArr.length; i++){
 		strHtm.push("	<option value=\""+countArr[i]+"\" selected>"+countArr[i]+"</option>");
