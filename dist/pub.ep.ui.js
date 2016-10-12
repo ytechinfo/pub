@@ -238,6 +238,7 @@ _$base.module={
 		var actionObj ={
 			firstSelect : first
 			,secondSelect : second
+			,addItemId :{}
 			,options : {}
 			,init:function (){
 				var _this = this; 
@@ -256,48 +257,16 @@ _$base.module={
 			,_initItem : function (){
 				var _this = this
 					,_opts = _this.options 
-					, tmpFirstItem = _opts.firstItem
-					, tmpScondItem= _opts.secondItem;
-				var len = tmpFirstItem.items.length
-					,valKey = tmpFirstItem.optVal
-					,txtKey = tmpFirstItem.optTxt
-					,searchAttrName = tmpFirstItem.searchAttrName
-					,searchAttrKey = tmpFirstItem.searchAttrKey == '' ? txtKey : tmpFirstItem.searchAttrKey
-					,tmpItem
-					,strHtm = [];
+					, tmpFirstItem= _opts.firstItem
+					, tmpSecondItem= _opts.secondItem
+					,strHtm = []
+					,searchAttrName
+					,searchAttrKey
+					,tmpItem;
 				
-				if(_this.options.useSelectOption===true){
-					_this.options.firstItem.items=[];
-					$(_this.firstSelect +' option').each(function (i ,item){
-						var sObj = $(this);
-						var addItem = {};
-
-						addItem[valKey] = sObj.val();
-						addItem[txtKey] = sObj.text();
-						addItem[searchAttrName] = sObj.attr(searchAttrName);
-						addItem['class'] = sObj.attr('class')||'';
-						addItem['style'] = sObj.attr('style')||'';
-						addItem['class'] = ((addItem['class'].indexOf(_opts.addItemClass) > -1)?' '+ _opts.addItemClass : '');
-						
-						_this.options.firstItem.items.push(addItem);
-						_this.options.firstItem.itemKeyIdx[addItem[valKey]] = i;
-					});
-				}else{
-					for(var i=0 ;i < len; i++){
-						tmpItem = tmpFirstItem.items[i];
-						strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-option-item">'+tmpItem[txtKey]+'</option>');
-
-						_this.options.firstItem.itemKeyIdx[tmpItem[valKey]] = i;
-					}
-					
-					$(_this.firstSelect).removeClass('pub-select-box').addClass('pub-select-box');
-					$(_this.firstSelect).empty().html(strHtm.join(''));
-				}
-				
-				strHtm = [];
-				len = _opts.secondItem.items.length;
-				valKey = _opts.secondItem.optVal;
-				txtKey = _opts.secondItem.optTxt;
+				len = tmpSecondItem.items.length;
+				valKey = tmpSecondItem.optVal;
+				txtKey = tmpSecondItem.optTxt;
 				searchAttrName = tmpFirstItem.searchAttrName;
 				searchAttrKey = tmpFirstItem.searchAttrKey == '' ? txtKey : tmpFirstItem.searchAttrKey;
 						
@@ -312,16 +281,73 @@ _$base.module={
 						addItem[searchAttrName] = sObj.attr(searchAttrName);
 						addItem['class'] = sObj.attr('class');
 						addItem['style'] = sObj.attr('style');
-
+						
+						var _key = addItem[valKey]; 
+						_this.addItemId[_key] ='add';
 						_this.options.secondItem.items.push(addItem);
 					});
 				}else{
 					for(var i=0 ;i < len; i++){
-						tmpItem = _opts.secondItem.items[i];
-						strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-option-item">'+tmpItem[txtKey]+'</option>');
+						var _key = tmpItem[valKey]; 
+						_this.addItemId[_key] ='add';
+						tmpItem = tmpSecondItem.items[i];
+						strHtm.push('<option value="'+_key+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-option-item">'+tmpItem[txtKey]+'</option>');
 					}
 					$(_this.secondSelect).removeClass('pub-select-box').addClass('pub-select-box');
 					$(_this.secondSelect).empty().html(strHtm.join(''));
+				}
+				
+				_this.setItem(_opts.firstItem.items);
+			}
+			,setItem :  function (items){
+				var _this = this
+					,_opts = _this.options
+					,tmpConfigInfo = _opts.firstItem
+					,strHtm = [];
+				 
+				tmpConfigInfo.items = items; 
+				
+				var len = tmpConfigInfo.items.length
+					,valKey = tmpConfigInfo.optVal
+					,txtKey = tmpConfigInfo.optTxt
+					,searchAttrName = tmpConfigInfo.searchAttrName
+					,searchAttrKey = tmpConfigInfo.searchAttrKey == '' ? txtKey : tmpConfigInfo.searchAttrKey; 
+				
+				if(_this.options.useSelectOption===true){
+					_this.options.firstItem.items=[];
+					$(_this.firstSelect +' option').each(function (i ,item){
+						var sObj = $(this);
+						var addItem = {};
+
+						addItem[valKey] = sObj.val();
+						addItem[txtKey] = sObj.text();
+						addItem[searchAttrName] = sObj.attr(searchAttrName);
+						addItem['class'] = sObj.attr('class')||'';
+						addItem['style'] = sObj.attr('style')||'';
+						addItem['class'] = ((addItem['class'].indexOf(_opts.addItemClass) > -1)?' '+ _opts.addItemClass : '');
+						
+						if(_this.addItemId[addItem[valKey]]){
+							sObj.addClass(_this.options.addItemClass);
+						}
+						
+						_this.options.firstItem.items.push(addItem);
+						_this.options.firstItem.itemKeyIdx[addItem[valKey]] = i;
+					});
+				}else{
+					for(var i=0 ;i < len; i++){
+						tmpItem = tmpConfigInfo.items[i];
+						var tmpStyleClass = 'pub-option-item'; 
+						if(_this.addItemId[tmpItem[valKey]]){
+							tmpStyleClass += ' '+_this.options.addItemClass
+						}
+						
+						strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="'+tmpStyleClass+'">'+tmpItem[txtKey]+'</option>');
+
+						_this.options.firstItem.itemKeyIdx[tmpItem[valKey]] = i;
+					}
+					
+					$(_this.firstSelect).removeClass('pub-select-box').addClass('pub-select-box');
+					$(_this.firstSelect).empty().html(strHtm.join(''));
 				}
 			}
 			,initEvent:function (){
@@ -372,6 +398,7 @@ _$base.module={
 						}
 					
 						if($(actionObj.secondSelect+' option[value="'+tmpVal+'"]').length == 0){
+							_this.addItemId[tmpVal] ='add';
 							$(actionObj.secondSelect).append('<option value="'+tmpVal+'">'+tmpObj.html()+'</option>');
 							
 							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]['class'] = (tmpObj.hasClass(_this.options.addItemClass) ? _this.options.addItemClass :'') ;
@@ -400,17 +427,19 @@ _$base.module={
 						if($.isFunction(_this.options.beforeSecondMove)){
 							_this.options.beforeSecondMove($(item)); 
 						}
-						
-						removeItem = _this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[$(item).val()]];
+						var tmpKey = $(item).val(); 
+						removeItem = _this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpKey]];
 						if(removeItem){
 							removeItem['class']=(removeItem['class']+' ').split(' ').join('|').replace(_this.options.addItemClass+'|','');
-							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[$(item).val()]]['class'] = removeItem['class'].replace('|','');
-							$(actionObj.firstSelect+' option[value="'+$(item).val()+'"]').removeClass(_this.options.addItemClass);
+							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpKey]]['class'] = removeItem['class'].replace('|','');
+							$(actionObj.firstSelect+' option[value="'+tmpKey+'"]').removeClass(_this.options.addItemClass);
 						}
 						$(item).remove();
 						
+						delete _this.addItemId[tmpKey];
+						
 						if($.isFunction(_this.options.afterSecondMove)){
-							_this.options.afterSecondMove($(item)); 
+							_this.options.afterSecondMove(removeItem); 
 						}
 					});
 				}else{
