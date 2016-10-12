@@ -338,7 +338,7 @@ _$base.module={
 						tmpItem = tmpConfigInfo.items[i];
 						var tmpStyleClass = 'pub-option-item'; 
 						if(_this.addItemId[tmpItem[valKey]]){
-							tmpStyleClass += ' '+_this.options.addItemClass
+							tmpStyleClass += ' '+_this.options.addItemClass; 
 						}
 						
 						strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="'+tmpStyleClass+'">'+tmpItem[txtKey]+'</option>');
@@ -383,6 +383,9 @@ _$base.module={
 						if(tmpVal=='_no_data_'){
 							return true; 
 						}
+						if(_this.addItemId[tmpVal] == 'add'){
+							return ; 
+						}
 						
 						if($.isFunction(_this.options.beforeFirstMove)){
 							_this.options.beforeFirstMove(tmpObj); 
@@ -396,15 +399,12 @@ _$base.module={
 							
 							return false; 
 						}
+											
+						_this.addItemId[tmpVal] ='add';
+						$(actionObj.secondSelect).append('<option value="'+tmpVal+'">'+tmpObj.html()+'</option>');
+						_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]['class'] = (tmpObj.hasClass(_this.options.addItemClass) ? _this.options.addItemClass :'') ;
+						tmpObj.addClass(_this.options.addItemClass);
 					
-						if($(actionObj.secondSelect+' option[value="'+tmpVal+'"]').length == 0){
-							_this.addItemId[tmpVal] ='add';
-							$(actionObj.secondSelect).append('<option value="'+tmpVal+'">'+tmpObj.html()+'</option>');
-							
-							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]['class'] = (tmpObj.hasClass(_this.options.addItemClass) ? _this.options.addItemClass :'') ;
-							
-							tmpObj.addClass(_this.options.addItemClass);
-						}
 						
 						if($.isFunction(_this.options.afterFirstMove)){
 							_this.options.afterFirstMove(tmpObj); 
