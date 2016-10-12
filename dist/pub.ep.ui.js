@@ -205,7 +205,8 @@ _$base.module={
 	 */	
 	selectBoxMove : function (first,second,opt){
 		var defaultOpt = {
-			addClass:'select'
+			addItemClass:'select'
+			,useSelectOption : false
 			,firstItem : {
 				optVal : 'CODE_ID'
 				,optTxt : 'CODE_NM'
@@ -237,10 +238,10 @@ _$base.module={
 		var actionObj ={
 			firstSelect : first
 			,secondSelect : second
-			,options : $.extend(true,defaultOpt,opt)
+			,options : {}
 			,init:function (){
 				var _this = this; 
-				
+				_this.options = $.extend(true,defaultOpt,opt);
 				_this._initItem();
 				_this.initEvent();
 
@@ -253,23 +254,19 @@ _$base.module={
 			 * @description 그리드 클릭 이벤트 처리.
 			 */	
 			,_initItem : function (){
-				var _this = this,_opts = _this.options;  
-				var len = _opts.firstItem.items.length
-					,valKey = _opts.firstItem.optVal
-					,txtKey = _opts.firstItem.optTxt
-					,searchAttrName = _opts.firstItem.searchAttrName
-					,searchAttrKey = _opts.firstItem.searchAttrKey == '' ? txtKey : _opts.firstItem.searchAttrKey
+				var _this = this
+					,_opts = _this.options 
+					, tmpFirstItem = _opts.firstItem
+					, tmpScondItem= _opts.secondItem;
+				var len = tmpFirstItem.items.length
+					,valKey = tmpFirstItem.optVal
+					,txtKey = tmpFirstItem.optTxt
+					,searchAttrName = tmpFirstItem.searchAttrName
+					,searchAttrKey = tmpFirstItem.searchAttrKey == '' ? txtKey : tmpFirstItem.searchAttrKey
 					,tmpItem
 					,strHtm = [];
-				if( len> 0){
-					for(var i=0 ;i < len; i++){
-						tmpItem = _opts.firstItem.items[i];
-						strHtm.push('<option value="'+tmpItem[valKey]+'" class="'+tmpItem['class']+'" style="'+tmpItem['style']+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'">'+tmpItem[txtKey]+'</option>');
-
-						_this.options.firstItem.itemKeyIdx[tmpItem[valKey]] = i;
-					}
-					$(_this.firstSelect).empty().html(strHtm.join(''));
-				}else{
+				
+				if(_this.options.useSelectOption===true){
 					_this.options.firstItem.items=[];
 					$(_this.firstSelect +' option').each(function (i ,item){
 						var sObj = $(this);
@@ -280,27 +277,31 @@ _$base.module={
 						addItem[searchAttrName] = sObj.attr(searchAttrName);
 						addItem['class'] = sObj.attr('class')||'';
 						addItem['style'] = sObj.attr('style')||'';
-						addItem['class'] = ((addItem['class'].indexOf(_opts.addClass) > -1)?' '+ _opts.addClass : '');
+						addItem['class'] = ((addItem['class'].indexOf(_opts.addItemClass) > -1)?' '+ _opts.addItemClass : '');
 						
 						_this.options.firstItem.items.push(addItem);
 						_this.options.firstItem.itemKeyIdx[addItem[valKey]] = i;
 					});
-				}
+				}else{
+					for(var i=0 ;i < len; i++){
+						tmpItem = tmpFirstItem.items[i];
+						strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-option-item">'+tmpItem[txtKey]+'</option>');
 
+						_this.options.firstItem.itemKeyIdx[tmpItem[valKey]] = i;
+					}
+					
+					$(_this.firstSelect).removeClass('pub-select-box').addClass('pub-select-box');
+					$(_this.firstSelect).empty().html(strHtm.join(''));
+				}
+				
+				strHtm = [];
 				len = _opts.secondItem.items.length;
 				valKey = _opts.secondItem.optVal;
 				txtKey = _opts.secondItem.optTxt;
-				searchAttrName = _opts.firstItem.searchAttrName;
-				searchAttrKey = _opts.firstItem.searchAttrKey == '' ? txtKey : _opts.firstItem.searchAttrKey;
-
-				if( len> 0){
-
-					for(var i=0 ;i < len; i++){
-						tmpItem = _opts.secondItem.items[i];
-						strHtm.push('<option value="'+tmpItem[valKey]+'" class="'+tmpItem['class']+'" style="'+tmpItem['style']+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'">'+tmpItem[txtKey]+'</option>');
-					}
-					$(_this.secondSelect).empty().html(strHtm.join(''));
-				}else{
+				searchAttrName = tmpFirstItem.searchAttrName;
+				searchAttrKey = tmpFirstItem.searchAttrKey == '' ? txtKey : tmpFirstItem.searchAttrKey;
+						
+				if(_this.options.useSelectOption===true){
 					_this.options.secondItem.items=[];
 					$(_this.secondSelect +' option').each(function (i ,item){
 						var sObj = $(this);
@@ -314,6 +315,13 @@ _$base.module={
 
 						_this.options.secondItem.items.push(addItem);
 					});
+				}else{
+					for(var i=0 ;i < len; i++){
+						tmpItem = _opts.secondItem.items[i];
+						strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-option-item">'+tmpItem[txtKey]+'</option>');
+					}
+					$(_this.secondSelect).removeClass('pub-select-box').addClass('pub-select-box');
+					$(_this.secondSelect).empty().html(strHtm.join(''));
 				}
 			}
 			,initEvent:function (){
@@ -366,9 +374,9 @@ _$base.module={
 						if($(actionObj.secondSelect+' option[value="'+tmpVal+'"]').length == 0){
 							$(actionObj.secondSelect).append('<option value="'+tmpVal+'">'+tmpObj.html()+'</option>');
 							
-							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]['class'] = (tmpObj.hasClass(_this.options.addClass) ? _this.options.addClass :'') ;
+							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]['class'] = (tmpObj.hasClass(_this.options.addItemClass) ? _this.options.addItemClass :'') ;
 							
-							tmpObj.addClass(_this.options.addClass);
+							tmpObj.addClass(_this.options.addItemClass);
 						}
 						
 						if($.isFunction(_this.options.afterFirstMove)){
@@ -395,9 +403,9 @@ _$base.module={
 						
 						removeItem = _this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[$(item).val()]];
 						if(removeItem){
-							removeItem['class']=(removeItem['class']+' ').split(' ').join('|').replace(_this.options.addClass+'|','');
+							removeItem['class']=(removeItem['class']+' ').split(' ').join('|').replace(_this.options.addItemClass+'|','');
 							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[$(item).val()]]['class'] = removeItem['class'].replace('|','');
-							$(actionObj.firstSelect+' option[value="'+$(item).val()+'"]').removeClass(_this.options.addClass);
+							$(actionObj.firstSelect+' option[value="'+$(item).val()+'"]').removeClass(_this.options.addItemClass);
 						}
 						$(item).remove();
 						
