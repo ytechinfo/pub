@@ -110,6 +110,32 @@ _$base.dialog={
 	}
 }
 
+_$base.pageCountList = function (selector ,opt){
+	
+	if(typeof opt === 'undefined'){
+		return $(selector+' .countPerPage').val();
+	}
+	
+	var opt = $.extend({},{count:[10,50,100]},opt);
+	
+	var fnChange = opt.change
+		,countArr = opt.count; 
+	
+	var strHtm = [];
+	strHtm.push("<select class=\"countPerPage\" name=\"countPerPage\">");
+
+	for(var i = 0 ; i <countArr.length; i++){
+		strHtm.push("	<option value=\""+countArr[i]+"\" selected>"+countArr[i]+"</option>");
+	}
+	
+	strHtm.push("</select>");
+	$(selector).html(strHtm.join(''));
+	
+	if(opt.change){
+		$(selector+' .countPerPage').on('change',fnChange);
+	}
+}
+
 /**
  * @method _$base.toast
  * @description toast
