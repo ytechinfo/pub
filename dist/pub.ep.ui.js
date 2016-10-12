@@ -63,7 +63,7 @@ _$base.dialog={
 	 * @description 게시판 더보기
 	 */	
 	mgmtDialog :function (_url , opt){
-		var _opener = opt.target=='top'? (parent || window) : window;
+		var _opener = parent || window;
 		
 		var options = $.extend(true, {
 			targetID : '_main_top_div_id_'
@@ -160,7 +160,7 @@ _$base.toast = {
 			//, beforeShow : function(){$('.jq-toast-wrap').css("margin" , "0 0 0 -155px") }
 		},opt);
 		
-		var tmpP = option.target=='top'? (parent || window) : window
+		var tmpP = parent ||window;
 						 
 		tmpP.$.toast($.extend(true,setOpt, option));
 	}
@@ -212,18 +212,13 @@ _$base.module={
 			firstSelect : first
 			,secondSelect : second
 			,options : $.extend(true,defaultOpt,opt)
-			,init:function (initOpt){
+			,init:function (){
 				var _this = this; 
-				
-				if(initOpt){
-					_this.options = $.extend(true,defaultOpt,initOpt);
-				}else{
-					_this.options.firstItem.items =[]
-					_this.options.secondItem.items=[];
-				}
 				
 				_this._initItem();
 				_this.initEvent();
+
+				return _this; 
 			}
 			/**
 			 * @method _$base.clickEvent
@@ -247,7 +242,7 @@ _$base.module={
 
 						_this.options.firstItem.itemKeyIdx[tmpItem[valKey]] = i;
 					}
-					$(_this.firstSelect).html(strHtm.join(''));
+					$(_this.firstSelect).empty().html(strHtm.join(''));
 				}else{
 					_this.options.firstItem.items=[];
 					$(_this.firstSelect +' option').each(function (i ,item){
@@ -278,7 +273,7 @@ _$base.module={
 						tmpItem = _opts.secondItem.items[i];
 						strHtm.push('<option value="'+tmpItem[valKey]+'" class="'+tmpItem['class']+'" style="'+tmpItem['style']+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'">'+tmpItem[txtKey]+'</option>');
 					}
-					$(_this.secondSelect).html(strHtm.join(''));
+					$(_this.secondSelect).empty().html(strHtm.join(''));
 				}else{
 					_this.options.secondItem.items=[];
 					$(_this.secondSelect +' option').each(function (i ,item){
@@ -333,7 +328,6 @@ _$base.module={
 							_this.options.beforeFirstMove(tmpObj); 
 						}
 						
-						
 						if(_this.options.maxSize != -1  && $(actionObj.secondSelect+' option').length >= _this.options.maxSize){
 							
 							if($.isFunction(_this.options.maxSizeMsg)){
@@ -345,7 +339,7 @@ _$base.module={
 					
 						if($(actionObj.secondSelect+' option[value="'+tmpVal+'"]').length == 0){
 							$(actionObj.secondSelect).append('<option value="'+tmpVal+'">'+tmpObj.html()+'</option>');
-
+							
 							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]['class'] = (tmpObj.hasClass(_this.options.addClass) ? _this.options.addClass :'') ;
 							
 							tmpObj.addClass(_this.options.addClass);
@@ -444,7 +438,7 @@ _$base.module={
 							strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="'+tmpItem['class']+'" style="'+tmpItem['style']+'">'+tmpItem[txtKey]+'</option>');
 						}
 					}
-					$(_this.firstSelect).html(strHtm.join(''));
+					$(_this.firstSelect).empty().html(strHtm.join(''));
 				}
 			}
 			,rSearch : function (val){
@@ -452,7 +446,7 @@ _$base.module={
 			}
 		}
 		
-		return actionObj; 
+		return actionObj.init(); 
 	}
 	/**
 	 * @method _$base.module.getSelectItem
@@ -654,8 +648,8 @@ window.PubEPUI = _$base;
 		}
 		strHTML.push(' </ul>');
 		strHTML.push('</div>');
-		this.empty('');
-		this.html(strHTML.join(''));
+
+		this.empty().html(strHTML.join(''));
 		
 		$(this.selector+' .page-click').on('click', function() {
 			var sNo = $(this).attr('pageno');
