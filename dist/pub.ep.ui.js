@@ -261,7 +261,7 @@ _$base.module={
 			 */	
 			,_initItem : function (){
 				var _this = this
-					
+				
 				_this.setItem('second',_this.options.secondItem.items);
 				_this.setItem('first',_this.options.firstItem.items);
 			}
@@ -363,6 +363,13 @@ _$base.module={
 					}
 				}
 			}
+			/**
+			 * @method _$base.selectBoxMove().getItemHtml
+			 * @param type {String} selectbox 타입(first or second)
+			 * @param seletOptVal {String} 선택한 item 값
+			 * @param tmpItem {Object} item
+			 * @description item 그리기.
+			 */	
 			,getItemHtml: function (type  , seletOptVal , tmpItem){
 				var _this = this
 					, _opts = _this.options
@@ -381,7 +388,6 @@ _$base.module={
 				}else{
 					return '<option value="'+seletOptVal+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-option-item">'+tmpItem[txtKey]+'</option>'; 
 				}
-
 			}
 			/**
 			 * @method _$base.selectBoxMove().initEvent
@@ -389,15 +395,23 @@ _$base.module={
 			 */		
 			,initEvent:function (){
 				var _this = this; 
-				$(_this.firstSelect).unbind('dblclick');
-				$(_this.firstSelect).bind("dblclick", function(){
+				$(_this.firstSelect).off('dblclick');
+				$(_this.firstSelect).on("dblclick", 'option', function(){
 					actionObj.firstMove();
 				});
 				
-				$(_this.secondSelect).unbind('dblclick');
-				$(_this.secondSelect).bind("dblclick", function(){
+				$(_this.secondSelect).off('dblclick');
+				$(_this.secondSelect).on("dblclick", 'option',function(){
 					actionObj.secondMove();
 				});
+				
+				if($.isFunction(_this.options.secondItemClick)){
+					$(_this.secondSelect).on("click",'option' ,function(){
+						var selectElement = $(_this.secondSelect+' option:selected');
+						
+						_this.options.secondItemClick({item : _this.getAddItem(selectElement.val()) ,element: selectElement});
+					});
+				}
 			}
 			/**
 			 * @method _$base.selectBoxMove().allFirstMove
