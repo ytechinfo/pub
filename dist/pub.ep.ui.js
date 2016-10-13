@@ -225,7 +225,8 @@ _$base.module={
 				addEmpty : false
 				,delEmpty : false
 			}
-			,beforeFirstMove : false
+			,beforeMove : false
+			,beforeItemMove : false
 			,afterFirstMove : false
 			,beforeSecondMove : false
 			,afterSecondMove : false
@@ -322,9 +323,11 @@ _$base.module={
 					len = tmpSecondItem.items.length;
 					valKey = tmpSecondItem.optVal;
 					txtKey = tmpSecondItem.optTxt;
+					_this.addItemList={};
 					
 					if(_this.options.useSelectOption===true){
 						_this.options.secondItem.items=[];
+						var idx = 0; 
 						$(_this.secondSelect +' option').each(function (i ,item){
 							var sObj = $(this);
 							var addItem = {};
@@ -336,17 +339,27 @@ _$base.module={
 							var _key = addItem[valKey]; 
 							_this.addItemList[_key] =addItem; 
 							_this.options.secondItem.items.push(addItem);
+							
+							$(_this.firstSelect+' option[value="'+addItem[valKey] +'"]').addClass(_this.options.addItemClass);
+							++idx;
 						});
+						len = idx; 
 					}else{
 						for(var i=0 ;i < len; i++){
 							tmpItem = tmpSecondItem.items[i];
-
+							
 							var tmpSelctOptVal = tmpItem[valKey]; 
 							_this.addItemList[tmpSelctOptVal] =tmpItem;
 							strHtm.push(_this.getItemHtml(type,tmpSelctOptVal, tmpItem));
+							
+							$(_this.firstSelect+' option[value="'+tmpSelctOptVal+'"]').addClass(_this.options.addItemClass);
 						}
 
 						$(_this.secondSelect).empty().html(strHtm.join(''));
+					}
+					
+					if(len < 1){
+						$(_this.firstSelect+' option').removeClass(_this.options.addItemClass);
 					}
 				}
 			}
@@ -405,6 +418,12 @@ _$base.module={
 				var _this = this; 
 				var selectVal = $(_this.firstSelect +' option:selected');
 				
+				if($.isFunction(_this.options.beforeMove)){
+					if(_this.options.beforeMove('first') === false){
+						return ; 
+					};
+				}
+				
 				if(selectVal.length >0){
 					var tmpVal = '',tmpObj;
 					
@@ -419,8 +438,10 @@ _$base.module={
 							return ; 
 						}
 						
-						if($.isFunction(_this.options.beforeFirstMove)){
-							_this.options.beforeFirstMove(tmpObj); 
+						if($.isFunction(_this.options.beforeItemMove)){
+							if(_this.options.beforeItemMove(tmpObj) === false){
+								return ; 
+							}; 
 						}
 						
 						if(_this.options.maxSize != -1  && $(actionObj.secondSelect+' option').length >= _this.options.maxSize){
@@ -456,6 +477,12 @@ _$base.module={
 			,secondMove:function (){
 				var _this = this; 
 				var selectVal = $(_this.secondSelect +' option:selected');
+				
+				if($.isFunction(_this.options.beforeMove)){
+					if(_this.options.beforeMove('second') === false){
+						return ; 
+					};
+				}
 
 				if(selectVal.length >0){
 					var removeItem; 
