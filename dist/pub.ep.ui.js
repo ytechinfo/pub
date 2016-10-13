@@ -218,8 +218,6 @@ _$base.module={
 			,secondItem : {
 				optVal : 'CODE_ID'
 				,optTxt : 'CODE_NM'
-				,searchAttrName : '_name'
-				,searchAttrKey : ''
 				,items: []
 				,itemKeyIdx : {}
 			}
@@ -234,11 +232,19 @@ _$base.module={
 			,maxSize : -1
 			,maxSizeMsg : false
 		};
+
+		if(!$(first).hasClass('pub-select-box-first')){
+			$(first).addClass('pub-select-box-first');
+		}
+
+		if(!$(second).hasClass('pub-select-box-second')){
+			$(second).addClass('pub-select-box-second');
+		}
 		
 		var actionObj ={
 			firstSelect : first
 			,secondSelect : second
-			,addItemId :{}
+			,addItemList :{}
 			,options : {}
 			,init:function (){
 				var _this = this; 
@@ -249,107 +255,125 @@ _$base.module={
 				return _this; 
 			}
 			/**
-			 * @method _$base.clickEvent
-			 * @param openType 
-			 * @param gridOption 
-			 * @description 그리드 클릭 이벤트 처리.
+			 * @method _$base.selectBoxMove()._initItem
+			 * @description selectbox 정보 초기화 
 			 */	
 			,_initItem : function (){
 				var _this = this
-					,_opts = _this.options 
-					, tmpFirstItem= _opts.firstItem
-					, tmpSecondItem= _opts.secondItem
-					,strHtm = []
-					,searchAttrName
-					,searchAttrKey
-					,tmpItem;
-				
-				len = tmpSecondItem.items.length;
-				valKey = tmpSecondItem.optVal;
-				txtKey = tmpSecondItem.optTxt;
-				searchAttrName = tmpFirstItem.searchAttrName;
-				searchAttrKey = tmpFirstItem.searchAttrKey == '' ? txtKey : tmpFirstItem.searchAttrKey;
-						
-				if(_this.options.useSelectOption===true){
-					_this.options.secondItem.items=[];
-					$(_this.secondSelect +' option').each(function (i ,item){
-						var sObj = $(this);
-						var addItem = {};
-
-						addItem[valKey] = sObj.val();
-						addItem[txtKey] = sObj.text();
-						addItem[searchAttrName] = sObj.attr(searchAttrName);
-						addItem['class'] = sObj.attr('class');
-						addItem['style'] = sObj.attr('style');
-						
-						var _key = addItem[valKey]; 
-						_this.addItemId[_key] ='add';
-						_this.options.secondItem.items.push(addItem);
-					});
-				}else{
-					for(var i=0 ;i < len; i++){
-						var _key = tmpItem[valKey]; 
-						_this.addItemId[_key] ='add';
-						tmpItem = tmpSecondItem.items[i];
-						strHtm.push('<option value="'+_key+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-option-item">'+tmpItem[txtKey]+'</option>');
-					}
-					$(_this.secondSelect).removeClass('pub-select-box').addClass('pub-select-box');
-					$(_this.secondSelect).empty().html(strHtm.join(''));
-				}
-				
-				_this.setItem(_opts.firstItem.items);
+					
+				_this.setItem('second',_this.options.secondItem.items);
+				_this.setItem('first',_this.options.firstItem.items);
 			}
-			,setItem :  function (items){
+			/**
+			 * @method _$base.selectBoxMove().setItem
+			 * @param type {String} selectbox 타입(first or second)
+			 * @param items {Array} items array
+			 * @description item 그리기.
+			 */		
+			,setItem :  function (type , items){
 				var _this = this
 					,_opts = _this.options
-					,tmpConfigInfo = _opts.firstItem
-					,strHtm = [];
-				 
-				tmpConfigInfo.items = items; 
+					,tmpFirstItem = _opts.firstItem
+					,strHtm = []
+					,tmpItem;
 				
-				var len = tmpConfigInfo.items.length
-					,valKey = tmpConfigInfo.optVal
-					,txtKey = tmpConfigInfo.optTxt
-					,searchAttrName = tmpConfigInfo.searchAttrName
-					,searchAttrKey = tmpConfigInfo.searchAttrKey == '' ? txtKey : tmpConfigInfo.searchAttrKey; 
-				
-				if(_this.options.useSelectOption===true){
-					_this.options.firstItem.items=[];
-					$(_this.firstSelect +' option').each(function (i ,item){
-						var sObj = $(this);
-						var addItem = {};
+				var len ,valKey ,txtKey 
+					,searchAttrName = tmpFirstItem.searchAttrName
+					,searchAttrKey = tmpFirstItem.searchAttrKey == '' ? txtKey : tmpFirstItem.searchAttrKey;
 
-						addItem[valKey] = sObj.val();
-						addItem[txtKey] = sObj.text();
-						addItem[searchAttrName] = sObj.attr(searchAttrName);
-						addItem['class'] = sObj.attr('class')||'';
-						addItem['style'] = sObj.attr('style')||'';
-						addItem['class'] = ((addItem['class'].indexOf(_opts.addItemClass) > -1)?' '+ _opts.addItemClass : '');
+				if(type=='first'){
+					tmpFirstItem.items = items;
+					len = tmpFirstItem.items.length;
+					valKey = tmpFirstItem.optVal;
+					txtKey = tmpFirstItem.optTxt;
 						
-						if(_this.addItemId[addItem[valKey]]){
-							sObj.addClass(_this.options.addItemClass);
-						}
-						
-						_this.options.firstItem.items.push(addItem);
-						_this.options.firstItem.itemKeyIdx[addItem[valKey]] = i;
-					});
-				}else{
-					for(var i=0 ;i < len; i++){
-						tmpItem = tmpConfigInfo.items[i];
-						var tmpStyleClass = 'pub-option-item'; 
-						if(_this.addItemId[tmpItem[valKey]]){
-							tmpStyleClass += ' '+_this.options.addItemClass; 
-						}
-						
-						strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="'+tmpStyleClass+'">'+tmpItem[txtKey]+'</option>');
+					if(_this.options.useSelectOption===true){
+						_this.options.firstItem.items=[];
+						$(_this.firstSelect +' option').each(function (i ,item){
+							var sObj = $(this);
+							var addItem = {};
+	
+							addItem[valKey] = sObj.val();
+							addItem[txtKey] = sObj.text();
+							addItem[searchAttrName] = sObj.attr(searchAttrName);
+														
+							if(_this.addItemList[addItem[valKey]]){
+								sObj.addClass(_this.options.addItemClass);
+							}
+							
+							_this.options.firstItem.items.push(addItem);
+							_this.options.firstItem.itemKeyIdx[addItem[valKey]] = i;
+						});
+					}else{
+						for(var i=0 ;i < len; i++){
+							tmpItem = tmpFirstItem.items[i];
+							var tmpSelctOptVal = tmpItem[valKey]; 
 
-						_this.options.firstItem.itemKeyIdx[tmpItem[valKey]] = i;
+							strHtm.push(_this.getItemHtml(type,tmpSelctOptVal, tmpItem));
+	
+							_this.options.firstItem.itemKeyIdx[tmpSelctOptVal] = i;
+						}
+
+						$(_this.firstSelect).empty().html(strHtm.join(''));
 					}
+				}else{
+					var tmpSecondItem= _opts.secondItem
+					tmpSecondItem.items = items; 
+					len = tmpSecondItem.items.length;
+					valKey = tmpSecondItem.optVal;
+					txtKey = tmpSecondItem.optTxt;
 					
-					$(_this.firstSelect).removeClass('pub-select-box').addClass('pub-select-box');
-					$(_this.firstSelect).empty().html(strHtm.join(''));
+					if(_this.options.useSelectOption===true){
+						_this.options.secondItem.items=[];
+						$(_this.secondSelect +' option').each(function (i ,item){
+							var sObj = $(this);
+							var addItem = {};
+	
+							addItem[valKey] = sObj.val();
+							addItem[txtKey] = sObj.text();
+							addItem[searchAttrName] = sObj.attr(searchAttrName);
+														
+							var _key = addItem[valKey]; 
+							_this.addItemList[_key] =addItem; 
+							_this.options.secondItem.items.push(addItem);
+						});
+					}else{
+						for(var i=0 ;i < len; i++){
+							tmpItem = tmpSecondItem.items[i];
+
+							var tmpSelctOptVal = tmpItem[valKey]; 
+							_this.addItemList[tmpSelctOptVal] =tmpItem;
+							strHtm.push(_this.getItemHtml(type,tmpSelctOptVal, tmpItem));
+						}
+
+						$(_this.secondSelect).empty().html(strHtm.join(''));
+					}
 				}
 			}
+			,getItemHtml: function (type  , seletOptVal , tmpItem){
+				var _this = this
+					, _opts = _this.options
+					, firstItem = _opts.firstItem
+					, txtKey = firstItem.optTxt
+					, searchAttrName = firstItem.searchAttrName
+					, searchAttrKey = firstItem.searchAttrKey == '' ? txtKey : firstItem.searchAttrKey;
+			
+				if(type=='first'){
+					var styleClass = 'pub-option-item';
+					if(_this.addItemList[seletOptVal]){
+						styleClass += ' '+_this.options.addItemClass; 
+					}
+
+					return '<option value="'+seletOptVal+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="'+styleClass+'">'+tmpItem[txtKey]+'</option>'; 
+				}else{
+					return '<option value="'+seletOptVal+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-option-item">'+tmpItem[txtKey]+'</option>'; 
+				}
+
+			}
+			/**
+			 * @method _$base.selectBoxMove().initEvent
+			 * @description 이벤트 초기화.
+			 */		
 			,initEvent:function (){
 				var _this = this; 
 				$(_this.firstSelect).unbind('dblclick');
@@ -362,6 +386,10 @@ _$base.module={
 					actionObj.secondMove();
 				});
 			}
+			/**
+			 * @method _$base.selectBoxMove().allFirstMove
+			 * @description 첫번재 item 모두 이동
+			 */		
 			,allFirstMove:function (){
 				var _this = this; 
 				$(_this.firstSelect).children().each(function (i, item){
@@ -369,6 +397,10 @@ _$base.module={
 					$(item).remove();
 				});
 			}
+			/**
+			 * @method _$base.selectBoxMove().firstMove
+			 * @description 첫번재 item 이동
+			 */		
 			,firstMove:function (){
 				var _this = this; 
 				var selectVal = $(_this.firstSelect +' option:selected');
@@ -383,7 +415,7 @@ _$base.module={
 						if(tmpVal=='_no_data_'){
 							return true; 
 						}
-						if(_this.addItemId[tmpVal] == 'add'){
+						if(_this.addItemList[tmpVal]){
 							return ; 
 						}
 						
@@ -399,13 +431,13 @@ _$base.module={
 							
 							return false; 
 						}
+
+						var selectItem = _this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]; 
 											
-						_this.addItemId[tmpVal] ='add';
-						$(actionObj.secondSelect).append('<option value="'+tmpVal+'">'+tmpObj.html()+'</option>');
-						_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]['class'] = (tmpObj.hasClass(_this.options.addItemClass) ? _this.options.addItemClass :'') ;
+						_this.addItemList[tmpVal] =selectItem;
+						$(actionObj.secondSelect).append(_this.getItemHtml('second',tmpVal ,selectItem ));
 						tmpObj.addClass(_this.options.addItemClass);
-					
-						
+											
 						if($.isFunction(_this.options.afterFirstMove)){
 							_this.options.afterFirstMove(tmpObj); 
 						}
@@ -417,6 +449,10 @@ _$base.module={
 					return ;
 				}
 			}
+			/**
+			 * @method _$base.selectBoxMove().secondMove
+			 * @description 두번째 item 삭제
+			 */	
 			,secondMove:function (){
 				var _this = this; 
 				var selectVal = $(_this.secondSelect +' option:selected');
@@ -430,13 +466,11 @@ _$base.module={
 						var tmpKey = $(item).val(); 
 						removeItem = _this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpKey]];
 						if(removeItem){
-							removeItem['class']=(removeItem['class']+' ').split(' ').join('|').replace(_this.options.addItemClass+'|','');
-							_this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpKey]]['class'] = removeItem['class'].replace('|','');
 							$(actionObj.firstSelect+' option[value="'+tmpKey+'"]').removeClass(_this.options.addItemClass);
 						}
 						$(item).remove();
 						
-						delete _this.addItemId[tmpKey];
+						delete _this.addItemList[tmpKey];
 						
 						if($.isFunction(_this.options.afterSecondMove)){
 							_this.options.afterSecondMove(removeItem); 
@@ -449,14 +483,28 @@ _$base.module={
 					return ;
 				}
 			}
-			,getAddItem:function (){
-				var reInfo = new Array();
-				$(this.secondSelect).children().each(function (i, item){
-					reInfo.push($(item).val())
-				});
+			/**
+			 * @method _$base.selectBoxMove().getAddItem
+			 * @description 추가된 아이템 구하기.
+			 */	
+			,getAddItem:function (itemKey){
+				var  _this = this;
+				if(itemKey){
+					return _this.addItemList[itemKey]; 
+				}else{
+					var reInfo =[];
+					$(_this.secondSelect).children().each(function (i, item){
+						reInfo.push(_this.addItemList[$(item).val()]); 
+					});
+				}
 
 				return reInfo;
 			}
+			/**
+			 * @method _$base.selectBoxMove().getAddItem
+			 * @param type {String} up or down
+			 * @description 두번째 selectbox 아래위 이동. 
+			 */	
 			,move:function (type){
 				var _this = this; 
 				var selectElement = $(_this.secondSelect+' option:selected');
@@ -478,10 +526,15 @@ _$base.module={
 					$(selectElement[0]).before($(_this.secondSelect+' option').get(lastIdx+1));
 				}
 			}
+			/**
+			 * @method _$base.selectBoxMove().lSearch
+			 * @param type {String} 검색할 문자열
+			 * @description 왼쪽 아이템 조회. 
+			 */	
 			,lSearch : function (val){
 				var _this = this,_opts = _this.options;  
 				
-				var tmpVal = escape(val);
+				var tmpVal = val;
 				var searchAttr = _this.options.firstItem.searchAttrName;
 
 				var len = _opts.firstItem.items.length
@@ -496,9 +549,8 @@ _$base.module={
 					for(var i=0 ;i < len; i++){
 						tmpItem = _opts.firstItem.items[i];
 
-						//console.log(tmpItem, tmpVal, searchAttrKey, txtKey ,_opts.firstItem.searchAttrKey, escape(tmpItem[searchAttrKey]));
-						if(tmpVal=='' || escape(tmpItem[searchAttrKey]).indexOf(tmpVal) > -1){
-							strHtm.push('<option value="'+tmpItem[valKey]+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="'+tmpItem['class']+'" style="'+tmpItem['style']+'">'+tmpItem[txtKey]+'</option>');
+						if(tmpVal=='' || tmpItem[searchAttrKey].indexOf(tmpVal) > -1){
+							strHtm.push(_this.getItemHtml('first', tmpItem[valKey],tmpItem));
 						}
 					}
 					$(_this.firstSelect).empty().html(strHtm.join(''));
@@ -506,6 +558,11 @@ _$base.module={
 			}
 			,rSearch : function (val){
 				
+				$(this.secondSelect).children().each(function (i, item){
+					reInfo.push($(item).val())
+				});
+
+				return reInfo;
 			}
 		}
 		
