@@ -328,6 +328,8 @@ _$base.page ={
 			})
 		}
 		
+		options  = options ||{};
+		
 		if(options.logwrite !== false){
 			_$base.logWrite(url, type, options);
 		}
