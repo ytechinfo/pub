@@ -712,10 +712,7 @@ Plugin.prototype ={
 				selRow.addClass('active');
 				beforeRow = selRow; 
 				
-				_this.options.rowClick.call({
-					r : rowinfo
-					,item : selItem
-				},rowinfo , selItem);							
+				_this.options.rowClick.call(selRow,rowinfo , selItem);							
 			});
 		}
 
