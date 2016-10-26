@@ -186,8 +186,14 @@ _$base.toast = {
 			//, beforeShow : function(){$('.jq-toast-wrap').css("margin" , "0 0 0 -155px") }
 		},opt);
 		
-		var tmpP = parent ||window;
-						 
+		var tmpP = window ; 
+		
+		if(parent){
+			if(typeof tmpP.$ === 'undefined' && typeof tmpP.$.toast === 'undefined' ){
+				tmpP = parent;
+			}
+		}
+		
 		tmpP.$.toast($.extend(true,setOpt, option));
 	}
 }
