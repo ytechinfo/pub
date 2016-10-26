@@ -767,7 +767,19 @@ _$base.util = {
 		
 		if(urlArr){
 			for(var i= 0 ; i < urlArr.length; i ++){
-				url = url.replace(urlArr[i], param[urlArr[i].replace(/#/g,'')]);
+				var paramKey = urlArr[i]; 
+				
+				var val =param[paramKey.replace(/#/g,'')];
+				
+				if(undefinedFlag==true){
+					url = url.replace(paramKey, val);
+				}else{
+					if(typeof val  !=='undefined'){
+						url = url.replace(paramKey, val);
+					}else{
+						url = url.replace(paramKey, '');
+					}
+				}
 			}
 		}
 		return url ; 
