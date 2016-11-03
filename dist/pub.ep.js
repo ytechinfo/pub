@@ -281,7 +281,9 @@ jQuery.fn.centerLoadingClose= function(options) {
 	this.find('.centerLoading').remove();
 };
 
-
+_$base.log=function (){
+	console.log(arguments)
+};
 
 /**
 * url open 메소드
@@ -328,8 +330,7 @@ _$base.page ={
 			})
 		}
 		
-		options  = options ||{};
-		
+		options = options ||[];
 		if(options.logwrite !== false){
 			_$base.logWrite(url, type, options);
 		}
@@ -767,19 +768,7 @@ _$base.util = {
 		
 		if(urlArr){
 			for(var i= 0 ; i < urlArr.length; i ++){
-				var paramKey = urlArr[i]; 
-				
-				var val =param[paramKey.replace(/#/g,'')];
-				
-				if(undefinedFlag==true){
-					url = url.replace(paramKey, val);
-				}else{
-					if(typeof val  !=='undefined'){
-						url = url.replace(paramKey, val);
-					}else{
-						url = url.replace(paramKey, '');
-					}
-				}
+				url = url.replace(urlArr[i], param[urlArr[i].replace(/#/g,'')]);
 			}
 		}
 		return url ; 
@@ -884,6 +873,23 @@ _$base.util = {
 	 */
 	,getParameter : function (url, param){
 		return getParameter(url, param); 
+	}
+	/**
+	 * @method PubEP.util.getQueryParameter
+	 * @param url string
+	 * @description url 파라미터를 object로 처리.
+	 */
+	,getQueryParameter : function (url){
+		return getQueryParameter(url);
+	}
+	/**
+	 * @method PubEP.util.setQueryParameter
+	 * @param url string
+	 * @param param object
+	 * @description url에 파라미터를 add, update
+	 */
+	,setQueryParameter :  function (url , param){
+		return setQueryParameter(url ,param);
 	}
 	/**
 	 * @method PubEP.util.getTreeModel
@@ -1241,6 +1247,77 @@ function getParameter(url, param){
 	}
 	
 	return rtnval; 
+}
+
+function getQueryParameter(url, duplFlag) {
+	
+	var queryString = typeof url === 'string' ? (url.indexOf('?') > -1 ? url.split('?')[1] : url): '';
+	var params = {};
+
+	if (!queryString) {
+		 return params ; 
+	}
+	queryString = queryString.split('#')[0];
+
+	var arr = queryString.split('&');
+
+	for (var i = 0; i < arr.length; i++) {
+		// separate the keys and the values
+		var a = arr[i].split('=');
+
+		var paramNum = undefined;
+		var paramName = a[0].replace(/\[\d*\]/, function(v) {
+			paramNum = v.slice(1, -1);
+			return '';
+		});
+
+		var paramValue = typeof (a[1]) === 'undefined' ? true : a[1];
+
+		paramName = paramName;
+		paramValue = paramValue;
+
+		if (duplFlag ===true && params[paramName]) {
+			
+			if (typeof params[paramName] === 'string') {
+				params[paramName] = [ params[paramName] ];
+			}
+
+			if (typeof paramNum === 'undefined') {
+				params[paramName].push(paramValue);
+			}else {
+				params[paramName][paramNum] = paramValue;
+			}
+		}else {
+			params[paramName] = paramValue;
+		}
+	}
+
+	return params;
+}
+
+function setQueryParameter(uri, addParam){
+	var uriParam= getQueryParameter(uri);
+
+	var addParamArr = [];
+	for(var paramKey in addParam){
+		
+		if(uriParam[paramKey]){
+			var re = new RegExp("([?&])("+ paramKey + "=)[^&#]*", "g");
+			uri = uri.replace(re, '$1$2' + addParam[paramKey]);
+		}else{
+			addParamArr.push(paramKey +'='+addParam[paramKey]);
+		}
+	}
+	
+	// need to add parameter to URI
+	var paramString = (uri.indexOf('?') < 0 ? "?" : "&")+ addParamArr.join('&');
+	var hashIndex = uri.indexOf('#');
+
+	if (hashIndex < 0){
+		return uri + paramString;
+	}else{
+		return uri.substring(0, hashIndex) + paramString + uri.substring(hashIndex);
+	}
 }
 
 // array으로 변환
