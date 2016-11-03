@@ -50,7 +50,6 @@ _$base.replaceHtm={
 	}
 }
 
-
 /**
  * @method PubEP
  * @description dialog
@@ -964,7 +963,7 @@ $.fn.errimgload = function(imgOpt) {
       
       if (e.isDefaultPrevented()) return
  
-	  if($this.data('bs.dropdown')._options && $.isFunction($this.data('bs.dropdown')._options.afterClick)){
+	  if($this.data('bs.dropdown') && $this.data('bs.dropdown')._options && $.isFunction($this.data('bs.dropdown')._options.afterClick)){
 		$this.data('bs.dropdown')._options.afterClick($this);
 	  }
       $this.attr('aria-expanded', 'false').removeClass('on');
@@ -984,8 +983,9 @@ $.fn.errimgload = function(imgOpt) {
     var $parent  = getParent($this)
     var isActive = $parent.hasClass('open')
 	var _drop_down_idx = $this.attr('_drop_down_idx'); 
-	
-	if(Dropdown.selectParent != $parent.selector || _drop_down_idx==$parent.attr('_drop_down_idx')){
+	var _pdrop_down_idx = $parent.attr('_drop_down_idx'); 
+
+	if(Dropdown.selectParent != $parent.selector || typeof _pdrop_down_idx==='undefined' || _drop_down_idx == _pdrop_down_idx){
 		Dropdown.prototype.clearMenus();
 	}
 	Dropdown.selectParent = $parent.selector;
@@ -1010,7 +1010,7 @@ $.fn.errimgload = function(imgOpt) {
  	  }
 	  
 
-	  if($this.data('bs.dropdown')._options && $.isFunction($this.data('bs.dropdown')._options.beforeClick)){
+	  if($this.data('bs.dropdown') && $this.data('bs.dropdown')._options && $.isFunction($this.data('bs.dropdown')._options.beforeClick)){
 		$this.data('bs.dropdown')._options.beforeClick($this);
 	  }
 	
@@ -1019,7 +1019,7 @@ $.fn.errimgload = function(imgOpt) {
         .attr('aria-expanded', 'true')
 		.addClass('on');
       
-      $($this.data('bs.dropdown')._options.iframeCoverSelector).each(function (i, item){
+      $($this.data('bs.dropdown') && $this.data('bs.dropdown')._options.iframeCoverSelector).each(function (i, item){
 		 var sItem = $(this);
 		 var tmpNextEle = sItem.next();
 		 if(!tmpNextEle.hasClass('bs-dropdown-iframe-cover')){
@@ -1093,7 +1093,7 @@ $.fn.errimgload = function(imgOpt) {
 	option = $.extend({
 		opt:(typeof option === 'string')?option:false
 		,bgiframe:true
-		,iframeCoverSelector : '#gainPage'
+		,iframeCoverSelector : '#eportal_main_iframe'
 	}, option);
     return this.each(function (i,item) {
       var $this = $(this)
@@ -1130,6 +1130,11 @@ $.fn.errimgload = function(imgOpt) {
   $(document)
     .on('click.bs.dropdown.data-api', Dropdown.prototype.clearMenus)
     .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+	.on('click.bs.dropdown.data-api', '.dropdown-menu :not(a)', function (e) {
+		if(e.target.nodeName.toLowerCase() !='a'){
+			e.stopPropagation();
+		}
+	})
     .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
     .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
     .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
