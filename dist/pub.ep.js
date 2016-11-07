@@ -536,7 +536,7 @@ _$base.page ={
 		if(url==''){
 			try{
 				tmpiframe.attr('src','').on('load.pubep.evt', function() {
-					tmpiframe.get(0).contentWindow.document.write('<h2>Check call Iframe Url : ['+url+']</h2>');
+					tmpiframe.get(0).contentWindow.document.write('<h2>Check iframe url : ['+url+']</h2>');
 					tmpiframe.off('load.pubep.evt');
 				});
 			}catch(e){console.log(e)}
