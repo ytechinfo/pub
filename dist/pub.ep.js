@@ -533,6 +533,17 @@ _$base.page ={
 		if(!options.target) throw SyntaxError('iframe id empty');
 		var tmpiframe =$(options.target);
 		
+		if(url==''){
+			try{
+				tmpiframe.attr('src','').on('load.pubep.evt', function() {
+					tmpiframe.get(0).contentWindow.document.write('<h2>Check call Iframe Url : ['+url+']</h2>');
+					tmpiframe.off('load.pubep.evt');
+				});
+			}catch(e){console.log(e)}
+
+			return false; 
+		}
+		
 		if(tmpiframe.length < 1) throw SyntaxError(options.target+ ' iframe element emtpy');
 				
 		var tmpParam = options.param?options.param:{};
@@ -540,6 +551,8 @@ _$base.page ={
 		
 		var urlIdx = url.indexOf('?');
 		var openUrl = urlIdx > 0 ?url.substring(0,urlIdx):url;
+
+		
 		
 		//if(url== tmpiframe.attr('_view_url') && options.refresh != true) return ; 
 		
