@@ -567,7 +567,7 @@ _$base.page ={
 			tmpParam=getParameter(url , tmpParam);
 			tmpParam=paramToArray(tmpParam);
 			
-			openUrl =openUrl+'?'+tmpParam.join('&');
+			if(tmpParam.length > 0)	openUrl =openUrl+'?'+tmpParam.join('&');
 			
 			tmpiframe.off("load");
 			tmpiframe.on("load", function(){
