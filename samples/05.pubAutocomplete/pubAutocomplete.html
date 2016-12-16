@@ -25,10 +25,48 @@
 <script>
 $(document).ready(function (){
 	$.pubAutocomplete('#asdf' , {
-		minChars :0
-		,height: 160
+		minLength : 0 // 최소 글자수 체크. 
+		,height: 160	// max height
+		,autoClose : false	// 자동으로 창닫을지 여부. 
+		,addSelector : false // autocomplete 넣을 위치의 select
+		,itemkey : 'title'	// 검색결과가 object인경우 검색할 object key 
+		,selectCls : 'selected'	// 선택시 표시될 클래스
+		,emptyMessage : 'no data'	// 결과 없을때 보여줄 메시지
+		// 검색 필터. 
+		,filter : function (itemVal , searchVal) {	
+			searchVal = searchVal.toLowerCase();
+			return ~(itemVal).toLowerCase().indexOf(searchVal);
+		}
+		// 검색할 item
+		,items :[]
+		// 아무것도 없을때 보여줄것이 있는경우. 
+		,charZeroConfig : { 
+			items :[]
+			,init : function (){
+				return 'asdfasdf';
+			}
+		}
+		//items 구할때 사용. 
+		,source: function (request, response){
+			response(this.items);
+		}
+		// 선택시 이벤트
+		,select : function (event,item){
+			console.log('onSelect : ' + item);
+		}
+		// 아이템 html 입힐때 사용.
+		,renderItem : function (matchData,item){
+			return matchData;				
+		}
+		// 검색 하이라이트 처리. 
+		,hilightTemplate : '<b>$1</b>'
+		// autocomplete template 디자인 관련
 		,autocompleteTemplate : function (baseHtml){
 			return '<div class="">'+baseHtml+'</div>';
+		}
+		// autocompleteTemplate 입혔을경우 입힌 template에 이벤트 등록시 사용. 
+		,initTemplateElementEvent : function (){
+			
 		}
 		,items: ['Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br']
 	});
@@ -38,6 +76,3 @@ $(document).ready(function (){
 
 </BODY>
 </HTML>
-<script>
-
-</script>

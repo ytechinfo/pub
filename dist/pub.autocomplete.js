@@ -14,40 +14,25 @@
         ,defaults = {
 			_currMode : 'default'
 			,addSelector : false
-			,minChars: 1
-			,filter : function (itemVal , searchVal) {
-				searchVal = searchVal.toLowerCase();
-				return ~(itemVal).toLowerCase().indexOf(searchVal);
-			}
-			,autoClose :true
+			,minLength: 1
+			,autoClose : true
 			,itemkey : 'title'
 			,height : 200
 			,selectCls : 'selected'
 			,emptyMessage : 'no data'
 			,items :[]
-			,charZeroConfig : { // 글자가 하나도 없을때 표시할 방법
-				items :['asdf','fafwfwe']
-				,init : function (){
-					return this.gridItems('charZeroConfig','');
-				}
-				,initEvt : function (){
-					this.autocompleteEle.find('.testaaa').on('click', function (e){
-						
-						e.preventDefault();
-						return false; 
-					})
-				}
-				,renderItem : function (matchData,item){
-					return '<span class="testaaa">'+matchData+'X</span>';	
-				}
+			,charZeroConfig : false
+			,filter : function (itemVal , searchVal) {
+				searchVal = searchVal.toLowerCase();
+				return ~(itemVal).toLowerCase().indexOf(searchVal);
 			}
-			,sourceItems : function (key, callback){
-				callback(this.items);
+			,source: function (request, response){
+				response(this.items);
 			}
-			,onSelect : function (item){
+			,select : function (event,item){
 				console.log('onSelect : ' + item);
 			}
-			,onFucus : function (e){
+			,focus : function (e){
 				
 			}
 			,renderItem : function (matchData,item){
@@ -70,8 +55,10 @@
         this.options = $.extend({}, defaults, options);
 		this.size = {eleH: 0,itemH : 0, itemAllH : 0};
 		this.currentSearchVal='';
-		this.config={};
-		this.layerMouseOver =false; 
+		this.config={
+			initStyleFlag : false
+		};
+		this.layerMouseOver =true; 
 		if(pubElement ===false){
 			$('body').append('<div class="pub-autocomplete-area"></div>');
 			pubElement = $('.pub-autocomplete-area');
@@ -107,9 +94,10 @@
 			});
 			
 			_this.selectorElement.on('focus.pubAutocomplete' , function (e){
-				if($.isFunction(_this.options.onFocus)){
-					_this.options.onFocus.call(_this,e);
+				if($.isFunction(_this.options.focus)){
+					_this.options.focus.call(_this,e);
 				}
+				_this.setCssStyle();
 
 				if(_this.selectorElement.val().length ==0){
 					_this._charZeroEvent();
@@ -154,7 +142,7 @@
 					if(searchVal.length==0){
 						_this._charZeroEvent();
 						return ; 
-					}else if(searchVal.length <= _this.options.minChars){
+					}else if(searchVal.length <= _this.options.minLength){
 						_this.hide();
 						return ; 
 					}
@@ -171,11 +159,35 @@
 				}
 				
 				$(this).addClass(_this.options.selectCls);
-				_this.selectItem();
+				_this.selectItem(e);
 			})
 
 			if($.isFunction(_this.options.initTemplateElementEvent)){
 				_this.options.initTemplateElementEvent.call(this);
+			}
+		}
+		,setCssStyle : function (cssStyle){
+			var _this =this; 
+			if(typeof cssStyle==='undefined'){
+				if(!_this.config.initStyleFlag){
+
+					var position = _this.selectorElement.offset(); 
+
+					var pubAutocompleteWrapper = _this.autocompleteEle.closest('.pub-autocomplete-wrapper');
+
+					pubAutocompleteWrapper.css('width',this.options.width||_this.selectorElement.outerWidth()+'px');
+
+					if(_this.options.addSelector ===false){
+						pubAutocompleteWrapper.css({ 'left': position.left+'px' 
+							,'top':(position.top+_this.selectorElement.outerHeight())+'px'
+							,'width': _this.selectorElement.outerWidth()+'px'
+						})
+					}
+					
+					_this.config.initStyleFlag = true; 
+				}
+			}else{
+				_this.autocompleteEle.closest('.pub-autocomplete-wrapper').css(cssStyle);
 			}
 		}
 		/**
@@ -184,12 +196,17 @@
 		 */
 		,_charZeroEvent : function (){
 			if($.isFunction(this.options.charZeroConfig.init)){
-				this.options.charZeroConfig.init.call(this);
-				this.calcSize();
+				var reval = this.options.charZeroConfig.init.call(this);
 				this.show();
 
-				if(this.options.charZeroConfig.initEvt){
-					this.options.charZeroConfig.initEvt.call(this);
+				if(typeof reval=='string'){
+					this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html(reval);
+				}else{
+					this.calcSize();
+					
+					if(this.options.charZeroConfig.initEvt){
+						this.options.charZeroConfig.initEvt.call(this);
+					}
 				}
 			}
 		}
@@ -249,17 +266,11 @@
 		,_addAutocompleteTemplate : function (){
 			var _this = this; 
 			if($(_this.autocompleteEleId).length < 1){
-				var position = _this.selectorElement.offset(); 
-				
 				var autotemplate = '<div id='+_this.autocompleteEleId+' class="pub-autocomplete-item-wrapper" style="max-height:'+_this.options.height+'px;"><ul class="pub-autocomplete-item-area"></ul></div>';
 				
 				var allTemplateHtm = [];
-				if(_this.options.addSelector !==false){
-					allTemplateHtm.push('<div class="pub-autocomplete-wrapper">');
-				}else{
-					allTemplateHtm.push('<div class="pub-autocomplete-wrapper" style="left:'+position.left+'px;top:'+(position.top+_this.selectorElement.outerHeight())+'px;width:'+_this.selectorElement.outerWidth()+'px;">');
-				}
-												
+				allTemplateHtm.push('<div class="pub-autocomplete-wrapper">');
+																
 				if($.isFunction(_this.options.autocompleteTemplate)){
 					allTemplateHtm.push(_this.options.autocompleteTemplate(autotemplate));
 				}else{
@@ -385,8 +396,8 @@
 			_this.options._currMode = mode;
 			_this.currentSearchVal = searchVal;
 
-			if(mode=='default' && $.isFunction(_this._getOptionValue('sourceItems'))){
-				_this._getOptionValue('sourceItems').call(this.options,searchVal, function (item){
+			if(mode=='default' && $.isFunction(_this._getOptionValue('source'))){
+				_this._getOptionValue('source').call(this.options,searchVal, function (item){
 					_this.setItems(item);
 					_this._drawSearchData(mode,searchVal);	
 				});
@@ -460,12 +471,12 @@
 		 * @method selectItem
 		 * @description 아이템 선택
 		 */	
-		,selectItem :  function (){
+		,selectItem :  function (event){
 			this.hide();
 			
 			this.selectorElement.val(unescape(this.getSelectElement().attr('data-val')));
-			if($.isFunction(this.options.onSelect)){
-				this.options.onSelect.call(this , this.getSelectItem());
+			if($.isFunction(this.options.select)){
+				this.options.select.call(this,event,this.getSelectItem());
 			}
 		}
 		/**
