@@ -1,0 +1,43 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub 자동완성 예제</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../../theme/default/pub.ep.css" rel="stylesheet">
+
+<script src="../../plugins/jquery-1.10.2.min.js"></script>
+<script src="../../dist/pub.autocomplete.js"></script>
+
+
+</HEAD>
+<BODY>
+<table>
+	<tr>
+		<td>
+			<input type="text" class="asdf" name="asdf" id="asdf" value=""/>
+		</td>
+		<td>
+			<input type="text" class="asdf" name="bbbb" id="bbbb" value=""/>
+		</td>
+	</tr>
+</table>
+
+<script>
+$(document).ready(function (){
+	$.pubAutocomplete('#asdf' , {
+		minChars :0
+		,height: 160
+		,autocompleteTemplate : function (baseHtml){
+			return '<div class="">'+baseHtml+'</div>';
+		}
+		,items: ['Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br','Australia', 'au', 'Austria', 'at', 'Brasil', 'br']
+	});
+})
+</script>
+
+
+</BODY>
+</HTML>
+<script>
+
+</script>
