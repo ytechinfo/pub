@@ -28,6 +28,42 @@
 .toast_layer .open.on{background: url(./images/toast_open_on.png) no-repeat; }
 .toast_layer .open.off{background: url(./images/toast_open.png) no-repeat; }
 
-.pagination { margin: 0px 0px 5px 0px;}
+/*select box */
+.pub-select-box-wrapper{
+	position:relative;
+}
 
-.pub-select-box .text_selected{color:#007eff}
+/*autocomplete start */
+.pub-autocomplete-area ul,.pub-autocomplete-area ol ,.pub-autocomplete-area li{
+	list-style:none;
+}
+
+.pub-autocomplete-wrapper{
+	z-index: 9999; 
+	position: absolute;
+	display:none;
+}
+.pub-autocomplete-item-wrapper{
+	border-top: 0;
+	overflow: hidden; 
+	overflow-y: auto;
+	box-sizing: border-box;
+}
+.pub-autocomplete-item-area{
+	padding: 0px;
+    margin: 0px;
+}
+
+.pub-autocomplete-item{
+	text-align: left;
+	padding: 3px 10px;
+	cursor:pointer;
+}
+.pub-autocomplete-item:hover{
+	background: #f0f0f0; 
+}
+
+.pub-autocomplete-item.selected { 
+	background: yellow; 
+}
+/*autocomplete end */
