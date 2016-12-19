@@ -32,7 +32,6 @@
 .pub-select-box-wrapper{
 	position:relative;
 }
-.pub-select-box-first .text_selected {color:#007eff}
 
 /*autocomplete start */
 .pub-autocomplete-area ul,.pub-autocomplete-area ol ,.pub-autocomplete-area li{
@@ -43,7 +42,7 @@
 	z-index: 10000; 
 	position: absolute;
 	background:#fff;
-	border:1px solid #d6cfcf;
+	border:1px solid #f1f1f1;
 	display:none;
 }
 .pub-autocomplete-item-wrapper{
