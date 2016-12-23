@@ -48,12 +48,13 @@ function fn_init(){
 	}
 
 	$.pubGrid('#asdfasdf',{
-		headerOptions:{
+		resizeGridWidthFixed : true
+		,headerOptions:{
 			view:true
 			,resize:{
 				enabled : true
 			}
-			,colWidthFixed : false
+			,colWidthFixed : true
 		}
 		,tColItem : [
 			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : false}

@@ -26,7 +26,7 @@ var _initialized = false
 		,resize:{	// resize 여부
 			enabled : true
 		}
-		,colWidthFixed:false  // 넓이 고정 여부.
+		,colWidthFixed : false  // 넓이 고정 여부.
 		,colMinWidth : 50  // 컬럼 최소 넓이
 		,resizeCursor : 'col-resize'
 	}
@@ -243,11 +243,16 @@ Plugin.prototype ={
 		
 		for(var j=0; j<tci.length; j++){
 			var tciItem = opt.tColItem[j];
+
+			console.log(tciItem.width);
+
 			tciItem.width = isNaN(tciItem.width) ? 0 :tciItem.width; 
-			tciItem.width = Math.max(tciItem.width, opt.headerOptions.colMinWidth0);
+			tciItem.width = Math.max(tciItem.width, opt.headerOptions.colMinWidth);
 			
 			tciItem['_alignClass'] = tciItem.align=='right' ? 'ar' : (tciItem.align=='center'?'ac':'al');
 			opt.tColItem[j] = tciItem;
+
+			
 			_this.config.totGridWidth +=tciItem.width;
 		}
 		
@@ -265,6 +270,8 @@ Plugin.prototype ={
 			,opt = _this.options
 			,tci = opt.tColItem
 			,tciLen = tci.length;
+
+		console.log(_this.config.totGridWidth)
 		
 		_w = _this.config.totGridWidth;
 		_containerWidth = (_w+opt.scrollWidth);
@@ -285,7 +292,7 @@ Plugin.prototype ={
 				_this.config.gridWidth = _w; 
 			}
 		}else{
-			if(opt.headerOptions.colWidthFixed !== true){
+			if(opt.headerOptions.colWidthFixed === true){
 				_this.config.gridWidth = gridElementWidth - opt.scrollWidth;
 				
 				// 동적으로 width 계산할 경우 colwidth 처리.
@@ -305,7 +312,7 @@ Plugin.prototype ={
 		if(opt.height=='auto'){
 			_this.config.height = _this.element.height();
 		}
-		//console.log(_this.config.gridWidth, gridElementWidth, _w, _sw );
+		console.log(_this.config.gridWidth, gridElementWidth, _w );
 	}
 	/**
      * @method _setTbody

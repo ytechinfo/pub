@@ -34,6 +34,8 @@
 }
 .pub-select-box-first .text_selected {color:#007eff}
 
+.pub-multiselect-area .text_selected {color:#007eff}
+
 /*autocomplete start */
 .pub-autocomplete-area ul,.pub-autocomplete-area ol ,.pub-autocomplete-area li{
 	list-style:none;

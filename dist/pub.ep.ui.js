@@ -55,17 +55,26 @@ _$base.replaceHtm={
  * @description dialog
  */
 _$base.dialog={
+	closeDialog : function (){
+		$(".ui-dialog-titlebar .ui-dialog-titlebar-close").trigger('click');
+	}
+	,textDialog : function (text , opt){
+		this._dialog('text',text ,opt);
+	}
 	/**
 	 * @method _$base.dialog.mgmtDialog
 	 * @param _url {String} dialog url
 	 * @param opt {Object} 상세 object
 	 * @description 게시판 더보기
 	 */	
-	mgmtDialog :function (_url , opt){
+	,frameDialog :function (_url , opt){
+		this._dialog('frame',_url ,opt);
+	}
+	,_dialog : function (mode , dialogInfo , opt){
 		var _opener = parent || window;
 		
 		var options = $.extend(true, {
-			targetID : '_main_top_div_id_'
+			targetID : '_main_div_dialog_frame_id_'
 			,title : '설정'
 			,width : '480'
 			,height : '355'
@@ -75,37 +84,66 @@ _$base.dialog={
 		
 		var _targetId = options.targetID; 
 		
-		
 		if(_opener.$('#'+_targetId).length < 1){
-			_opener.$('body').append('<div id="'+_targetId+'"></div>');
+			_opener.$('body').append('<div id="'+_targetId+'" style="overflow:hidden;"></div>');
 		}
 				
-		if(options.directCall===false){
-			_url=PubEP.getContextPath(_url)
+		if(_opener.$('#'+_targetId+'iframe').length > 0){
+			_opener.$('#'+_targetId).dialog("close");
 		}
 		
-		_opener.$('#'+_targetId).html('<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>').dialog({
-				  width:'auto'
-				, height:'auto'
+		if(mode=='frame'){
+			if(options.directCall===false){
+				dialogInfo=PubEP.getContextPath(dialogInfo);
+			}
+			
+			_opener.$('#'+_targetId).html('<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>').dialog({
+					  width:'auto'
+					, height:'auto'
+					, modal: true
+					, autoOpen : false
+					, resizable : false
+					, draggable: true
+					, open : function(){
+						_opener.PubEP.page.view(dialogInfo, "iframe", $.extend({},{target:"#"+_targetId+'iframe', gubun:"dialog", gubunkey:"portletTabConfig",name:decodeURIComponent("게시판 목록 관리")},opt));
+					}
+					//, buttons: [ { text: "Ok", click: function() { $( this ).dialog( "close" ); } } ]
+			}).dialog("open").parent().find('.ui-dialog-title').html('<h1 class="tit">'+options.title+'</h1>');
+		}else{
+			_opener.$('#'+_targetId).html(dialogInfo).dialog({
+				  width:options.width
+				, height:options.height
 				, modal: true
 				, autoOpen : false
 				, resizable : false
 				, draggable: true
-				, open : function(){
-					_opener.PubEP.page.view(_url, "iframe", $.extend({},{target:"#"+_targetId+'iframe', gubun:"dialog", gubunkey:"portletTabConfig",name:decodeURIComponent("게시판 목록 관리")},opt));
-				}
-				//, buttons: [ { text: "Ok", click: function() { $( this ).dialog( "close" ); } } ]
-		}).selectable({disable:true}).dialog("open").parent().find('.ui-dialog-title').html('<h1 class="tit">'+options.title+'</h1><p class="close"><a href="javascript:;">Close</a></p>');
+				, open : function(){}
+			}).dialog("open").parent().find('.ui-dialog-title').html('<h1 class="tit">'+options.title+'</h1>');
+		}
 
-		_opener.$(".ui-dialog-title .close a").on("click", function(){
+		_opener.$(".ui-dialog-titlebar .ui-dialog-titlebar-close").on("click", function(){
 			_opener.$('html').css('overflow','auto');
 			_opener.$('#'+_targetId).dialog("close");
 		});
 		
-		var closeBtnMarginTop = ($('.ui-dialog .ui-dialog-titlebar').height()-$('.ui-dialog .ui-dialog-titlebar .close').height())/2;
-		_opener.$(".ui-dialog-title .close").css('top',closeBtnMarginTop+'px');
-		_opener.$('html').css('overflow','hidden');
-		_opener.$('.ui-widget-overlay.ui-front').css('height',$(document).height());
+		if(options.cssStyle!=''){
+			_opener.$('#'+_targetId).attr('style',options.cssStyle);
+		}
+		
+		if(options.titleHide===true){
+			$('.ui-dialog-titlebar').hide();
+		}else{
+			$('.ui-dialog-titlebar').show();
+			_opener.$('html').css('overflow','hidden');
+			_opener.$('.ui-widget-overlay.ui-front').css('height',$(document).height());
+		}
+		
+		if(options.overlayHide===true){
+			_opener.$('.ui-widget-overlay.ui-front').off('click');
+			_opener.$('.ui-widget-overlay.ui-front').on('click' , function (){
+				_opener.$('#'+_targetId).dialog("close");
+			})
+		}
 	}
 }
 
@@ -212,6 +250,7 @@ _$base.module={
 		var defaultOpt = {
 			addItemClass:'select'
 			,useSelectOption : false
+			,dbclick : false
 			,firstItem : {
 				optVal : 'CODE_ID'
 				,optTxt : 'CODE_NM'
@@ -256,7 +295,6 @@ _$base.module={
 				var _this = this; 
 				_this.options = $.extend(true,defaultOpt,opt);
 				_this._initItem();
-				_this.initEvent();
 
 				return _this; 
 			}
@@ -342,7 +380,8 @@ _$base.module={
 							addItem[searchAttrName] = sObj.attr(searchAttrName);
 														
 							var _key = addItem[valKey]; 
-							_this.addItemList[_key] =addItem; 
+							addItem['_CU'] = 'U';
+							_this.addItemList[_key] =addItem;
 							_this.options.secondItem.items.push(addItem);
 							
 							$(_this.firstSelect+' option[value="'+addItem[valKey] +'"]').addClass(_this.options.addItemClass);
@@ -354,6 +393,7 @@ _$base.module={
 							tmpItem = tmpSecondItem.items[i];
 							
 							var tmpSelctOptVal = tmpItem[valKey]; 
+							tmpItem['_CU'] = 'U';
 							_this.addItemList[tmpSelctOptVal] =tmpItem;
 							strHtm.push(_this.getItemHtml(type,tmpSelctOptVal, tmpItem));
 							
@@ -367,6 +407,7 @@ _$base.module={
 						$(_this.firstSelect+' option').removeClass(_this.options.addItemClass);
 					}
 				}
+				_this.initEvent();
 			}
 			/**
 			 * @method _$base.selectBoxMove().getItemHtml
@@ -400,21 +441,35 @@ _$base.module={
 			 */		
 			,initEvent:function (){
 				var _this = this; 
-				$(_this.firstSelect).off('dblclick');
-				$(_this.firstSelect).on("dblclick", 'option', function(){
-					actionObj.firstMove();
-				});
 				
-				$(_this.secondSelect).off('dblclick');
-				$(_this.secondSelect).on("dblclick", 'option',function(){
-					actionObj.secondMove();
-				});
+				var dbclick  =false;
+				
+				if(_this.options.dbclick===true){
+					$(_this.firstSelect).off('dblclick');
+					$(_this.firstSelect).on("dblclick",  function(){
+						actionObj.firstMove();
+					});
+					
+					$(_this.secondSelect).off('click');
+					$(_this.secondSelect).dblclick(function (e){
+						dbclick = true;
+						
+						actionObj.secondMove();
+						
+						setTimeout(function (){
+							dbclick = false ; 
+						},400);
+					});
+				}
 				
 				if($.isFunction(_this.options.secondItemClick)){
-					$(_this.secondSelect).on("click",'option' ,function(){
-						var selectElement = $(_this.secondSelect+' option:selected');
-						
-						_this.options.secondItemClick({item : _this.getAddItem(selectElement.val()) ,element: selectElement});
+					$(_this.secondSelect).click(function(e){
+						setTimeout(function (){
+							if(dbclick == false){
+								var selectElement = $(_this.secondSelect+' option:selected:first');
+								_this.options.secondItemClick({item : _this.getAddItem(selectElement.val()) ,element: selectElement});
+							}
+						},300);
 					});
 				}
 			}
@@ -473,8 +528,9 @@ _$base.module={
 						}
 
 						var selectItem = _this.options.firstItem.items[_this.options.firstItem.itemKeyIdx[tmpVal]]; 
-											
-						_this.addItemList[tmpVal] =selectItem;
+						var _addItem = $.extend(true , {}, selectItem);
+						_addItem['_CU'] = 'C';
+						_this.addItemList[tmpVal] =_addItem;
 						$(actionObj.secondSelect).append(_this.getItemHtml('second',tmpVal ,selectItem ));
 						tmpObj.addClass(_this.options.addItemClass);
 											
@@ -551,6 +607,16 @@ _$base.module={
 			 * @param type {String} up or down
 			 * @description 두번째 selectbox 아래위 이동. 
 			 */	
+			,addItemStausUpdate : function (itemKey){
+				if(this.addItemList[itemKey]){
+					this.addItemList[itemKey]['_CU'] = 'CU';
+				}
+			}
+			/**
+			 * @method _$base.selectBoxMove().getAddItem
+			 * @param type {String} up or down
+			 * @description 두번째 selectbox 아래위 이동. 
+			 */	
 			,move:function (type){
 				var _this = this; 
 				var selectElement = $(_this.secondSelect+' option:selected');
@@ -613,6 +679,8 @@ _$base.module={
 		}
 		
 		return actionObj.init(); 
+		
+		
 	}
 	/**
 	 * @method _$base.module.getSelectItem
@@ -776,7 +844,7 @@ window.PubEPUI = _$base;
 		var strHTML = new Array();
 		strHTML.push('<div class="text-center">');
 		strHTML.push(' <ul class="pagination">');
-		if (preP_is == "true") {
+		if (new Boolean(preP_is) == true) {
 			strHTML
 					.push(' <li><a href="javascript:" class="page-click" pageno="'+preO+'">&laquo;</a></li>');
 		} else {
@@ -800,7 +868,7 @@ window.PubEPUI = _$base;
 								+ no + '</a></li>');
 			}
 		}
-		if (nextP_is == "true") {
+		if (new Boolean(nextP_is) == true) {
 			strHTML
 					.push(' <li><a href="javascript:" class="page-click" pageno="'+nextO+'">&raquo;</a></li>');
 		} else {
