@@ -16,7 +16,7 @@ var _initialized = false
 	fixed:false
 	,drag:false
 	,scrollWidth : 18
-	,minWidth : 30
+	,minWidth : 38
 	,autoResize : true
 	,resizeGridWidthFixed : false	// 리사이즈시 그리드 리사이즈 여부.
 	,headerOptions : {
@@ -25,10 +25,10 @@ var _initialized = false
 		,redraw : true	// 초기에 옵션 들어오면 새로 그릴지 여부.
 		,resize:{	// resize 여부
 			enabled : true
+			,cursor : 'col-resize'
 		}
 		,colWidthFixed : false  // 넓이 고정 여부.
 		,colMinWidth : 50  // 컬럼 최소 넓이
-		,resizeCursor : 'col-resize'
 	}
 	,height: 200
 	,tColItem : [] //head item
@@ -244,7 +244,7 @@ Plugin.prototype ={
 		for(var j=0; j<tci.length; j++){
 			var tciItem = opt.tColItem[j];
 
-			console.log(tciItem.width);
+			//console.log(tciItem.width);
 
 			tciItem.width = isNaN(tciItem.width) ? 0 :tciItem.width; 
 			tciItem.width = Math.max(tciItem.width, opt.headerOptions.colMinWidth);
@@ -271,7 +271,7 @@ Plugin.prototype ={
 			,tci = opt.tColItem
 			,tciLen = tci.length;
 
-		console.log(_this.config.totGridWidth)
+		//console.log(_this.config.totGridWidth)
 		
 		_w = _this.config.totGridWidth;
 		_containerWidth = (_w+opt.scrollWidth);
@@ -292,7 +292,7 @@ Plugin.prototype ={
 				_this.config.gridWidth = _w; 
 			}
 		}else{
-			if(opt.headerOptions.colWidthFixed === true){
+			if(opt.headerOptions.colWidthFixed !== true){
 				_this.config.gridWidth = gridElementWidth - opt.scrollWidth;
 				
 				// 동적으로 width 계산할 경우 colwidth 처리.
@@ -312,7 +312,7 @@ Plugin.prototype ={
 		if(opt.height=='auto'){
 			_this.config.height = _this.element.height();
 		}
-		console.log(_this.config.gridWidth, gridElementWidth, _w );
+		//console.log(_this.config.gridWidth, gridElementWidth, _w );
 	}
 	/**
      * @method _setTbody
@@ -572,20 +572,20 @@ Plugin.prototype ={
 		
 		$(_this.selector+'>.pubGrid-wrapper').css('width',(_this.config.gridElementWidth)+'px');
 
-		if(_this.options.resizeGridWidthFixed !== true){
-			_this.config.headerContainerElement.css('width',(_this.config.gridWidth+_this.options.scrollWidth)+'px');
-			_this.config.headerElement.css('width',(_this.config.gridWidth)+'px');
-			_this.config.bodyElement.css('width',(_this.config.gridWidth)+'px');
-		}
-		
 		if(_this.options.height =='auto'){
 			var bodyH = opt.height-_this.config.headerWrapElement.height(); 
 			bodyH = bodyH > 0?bodyH : _this.config.headerWrapElement.height()+5; 
 			_this.config.bodyContainerElement.css('height',(bodyH)+'px');
 		}
 
-		$('#'+_this.prefix+"colgroup_head").empty().html(_this._getColGroup(_this.prefix+'colHeader'));
-		$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody'));
+		if(_this.options.resizeGridWidthFixed !== true){
+			_this.config.headerContainerElement.css('width',(_this.config.gridWidth+_this.options.scrollWidth)+'px');
+			_this.config.headerElement.css('width',(_this.config.gridWidth)+'px');
+			_this.config.bodyElement.css('width',(_this.config.gridWidth)+'px');
+
+			$('#'+_this.prefix+"colgroup_head").empty().html(_this._getColGroup(_this.prefix+'colHeader'));
+			$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody'));
+		}
 		//_this._headerResize(_this.options.headerOptions.resize.enabled);
 
 	}
@@ -668,7 +668,7 @@ Plugin.prototype ={
 				
 				// resize시 select안되게 처리 . cursor처리 
 				_doc.attr("onselectstart", "return false");
-				_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.headerOptions.resizeCursor + "!important}</style>");
+				_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.headerOptions.resize.cursor + "!important}</style>");
 
 				_doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e){
 					_this.onGripDrag(e,_this);
@@ -829,7 +829,7 @@ Plugin.prototype ={
 		var w = drag.colW + (ox - drag.pageX) ;
 		
 		//console.log(w , ox , drag.pageX, (ox - drag.pageX) )
-		if(w > _this.options.minWidth){
+		if(w > _this.options.headerOptions.colMinWidth){
 			drag.changeColW = w;
 			_this.config.gridElementWidth = drag.gridW+(ox - drag.pageX);
 			_this.config.headerContainerElement.css('width',(_this.config.gridElementWidth+_this.options.scrollWidth)+'px');

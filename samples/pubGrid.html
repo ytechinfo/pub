@@ -3,7 +3,7 @@
 <HEAD>
 <TITLE>pub GRID-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
+<link href="../theme/default/pub.example.css" rel="stylesheet">
 <link href="../theme/default/pub.grid.css" rel="stylesheet">
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
@@ -12,21 +12,25 @@
 <script src="../dist/pub.grid.js"></script>
 </HEAD>
 <BODY>
-<table width = "100%" border = "0" height="100%">
-<tr>
-	<td>
-		<div id="asdfasdf"></div>
-	</td>
-</tr>
+<div class="pub-main">
+	<h2 class="page-header">그리드</h2>
+	<div>
+		<table width = "100%" border = "0" height="100%">
+		<tr>
+			<td>
+				<div id="asdfasdf"></div>
+			</td>
+		</tr>
 
-<tr>
-	<td>
-		<div id="asdfasdf1" style="width:700px;"></div>
-	</td>
-</tr>
+		<tr>
+			<td>
+				<div id="asdfasdf1" style="width:700px;"></div>
+			</td>
+		</tr>
 
-</table>
-
+		</table>
+	</div>
+</div>
 	
 </BODY>
 </HTML>
@@ -48,13 +52,11 @@ function fn_init(){
 	}
 
 	$.pubGrid('#asdfasdf',{
-		resizeGridWidthFixed : true
-		,headerOptions:{
+		headerOptions:{
 			view:true
 			,resize:{
 				enabled : true
 			}
-			,colWidthFixed : true
 		}
 		,tColItem : [
 			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : false}

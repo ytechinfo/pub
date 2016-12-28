@@ -1,0 +1,115 @@
+/*
+ * pub.css: 0.0.1
+ * ========================================================================
+ * Copyright 2015 ytkim
+ * Licensed under MIT
+ * http://www.opensource.org/licenses/mit-license.php
+*/
+
+.pub-main .row, .pub-main .col {
+	overflow: hidden;
+	position: absolute;
+}
+.pub-main .row {
+	left: 0;
+	right: 0;
+}
+
+.pub-main .col {
+	top: 0;
+	bottom: 0;
+}
+
+.pub-main .scroll-y {
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.pub-main-body {
+	margin: 0;
+	-webkit-text-size-adjust: 100%;
+	background: #fff;
+}
+
+.pub-main .header {
+	color: #eee;
+	background: #696f77;
+	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+	padding: 0 0.5em;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #696f77),
+		color-stop(100%, #28343b));
+	background: -webkit-linear-gradient(top, #696f77 0%, #28343b 100%);
+	background: -ms-linear-gradient(top, #696f77 0%, #28343b 100%);
+}
+
+.pub-main .header {
+	font-size: 1.4em;
+}
+
+.pub-main  .content-area.col {
+	border-left: 1px solid black;
+}
+
+.pub-main .content-area.col .body {
+	padding: 0px 0px 0px 1em;
+}
+
+.pub-main .navi-item {
+	padding: 0;
+	margin: 0;
+	font-weight: bold;
+	color: #444;
+}
+
+.pub-main .navi-item li  a {
+	display: block;
+	background: #eee;
+	padding: 5px 10px 5px;
+	border-top: 1px solid #aaa;
+	border-bottom: 1px solid #fff;
+	cursor: pointer;
+}
+
+.pub-main .navi-item li.selected {
+	background-color: #37F;
+	color: White;
+}
+
+.pub-main .navi-item li>a:focus {
+	background: #fff;
+}
+
+.pub-main .navi-item li>a:hover, .pub-main .navi-item li>A:active {
+	background: rgba(238, 238, 238, 0.09);
+}
+
+.pub-main .navi-area {
+	width: 250px;
+}
+
+.pub-main .content-area.col {
+	left: 250px;
+	right: 0;
+}
+
+.pub-main .header.row {
+	height: 75px;
+	line-height: 75px;
+}
+
+.pub-main .body.row {
+	top: 75px;
+	bottom: 0px;
+}
+
+.pub-main .content-view-iframe {
+	width: 100%;
+	height: 99%;
+	border: 0px solid #f1f1f1;
+}
+
+.pub-main .page-header{
+	padding-bottom:10px;
+	maring 20px 0px 10px;
+	border-bottom:1px solid #aaa;
+}

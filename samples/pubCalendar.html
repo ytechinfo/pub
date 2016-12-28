@@ -3,7 +3,7 @@
 <HEAD>
 <TITLE>pub Calendar-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
+<link href="../theme/default/pub.example.css" rel="stylesheet">
 <link href="../theme/default/pub.calendar.css" rel="stylesheet">
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
@@ -126,30 +126,34 @@ function createMini(){
 </HEAD>
 
 <BODY>
-<table width = "100%" border = "0" height="100%" border="1">
-<tr>
-	<td>
-		<div id="full" style=""></div>
-	</td>
-</tr>
-<tr>
-	<td>
-		<div id="minical"></div>
-	</td>
-</tr>
+<div class="pub-main">
+	<h2 class="page-header">캘린더</h2>
+	<div>
+		<table width = "100%" border = "0" height="100%" border="1">
+		<tr>
+			<td>
+				<div id="full" style=""></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div id="minical"></div>
+			</td>
+		</tr>
 
-<tr>
-	<td>
-		<div id="diayContentDiv" ></div>
-	</td>
-</tr>
-<tr>
-	<td>
-		<div id="yearCalendar"></div>
-	</td>
-</tr>
-</table>
-
+		<tr>
+			<td>
+				<div id="diayContentDiv" ></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div id="yearCalendar"></div>
+			</td>
+		</tr>
+		</table>
+	</div>
+</div>
 	
 </BODY>
 </HTML>

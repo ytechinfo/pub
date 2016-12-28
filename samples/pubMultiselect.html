@@ -3,7 +3,9 @@
 <HEAD>
 <TITLE>pub Multi select -예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../theme/default/pub.example.css" rel="stylesheet">
 <link href="../theme/default/pub.ep.css" rel="stylesheet">
+
 <script src="../plugins/jquery-1.10.2.min.js"></script>
 <script src="../plugins/jquery-ui-1.10.3.custom.min.js"></script>
 <script src="../dist/pub.multiselect.js"></script>
@@ -87,63 +89,66 @@
 }
 </style>
 
+<div class="pub-main">
+	<h2 class="page-header">다중선택</h2>
+	<div>
+		<table width="100%" border="0" class="exampleTbl" >
+			<colgroup>
+				<col width="200px">
+				<col width="50px">
+				<col width="200px">
+			</colgroup>
+			<tr>
+				<td colspan="10">
+					* 목록을 마우스로 드래그앤 드롭하거나 더블클릭 하세요. 
+					<div class="mbottom-10"></div>
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<div class="top-select mbottom-10 fb tl mRight-20" style="width:265px;">source</div>
+				</th>
+				<th></th>
+				<th>
+					<div class="top-select mbottom-10 fb tl mRight-20" style="width:265px;">target</div>
+					
+				</th>
+			</tr>
+			<tr>
+				<td>
+		<div>
+			<ul id="source" class="pub-select-source pub-multiselect-area" style="height: 200px;width: 265px;">
+			<li data-val="00000" _name="name0" class="pub-select-item  ui-draggable text_selected"><span>name0</span></li><li data-val="00001" _name="asdfasdf" class="pub-select-item  ui-draggable text_selected" data-text="asdfasdf"><span>name1</span></li><li data-val="00002" _name="name2" class="pub-select-item  ui-draggable text_selected"><span>name2</span></li><li data-val="00003" _name="name3" class="pub-select-item  ui-draggable text_selected selected" data-last-click="Y"><span>name3</span></li><li data-val="00004" _name="name4" class="pub-select-item  ui-draggable text_selected"><span>name4</span></li><li data-val="00005" _name="name5" class="pub-select-item  ui-draggable text_selected"><span>name5</span></li><li data-val="00006" _name="name6" class="pub-select-item  ui-draggable text_selected"><span>name6</span></li><li data-val="00007" _name="name7" class="pub-select-item  ui-draggable text_selected"><span>name7</span></li><li data-val="00008" _name="name8" class="pub-select-item  ui-draggable text_selected"><span>name8</span></li><li data-val="00009" _name="name9" class="pub-select-item  ui-draggable text_selected"><span>name9</span></li><li data-val="000010" _name="name10" class="pub-select-item  ui-draggable"><span>name10</span></li><li data-val="000011" _name="name11" class="pub-select-item  ui-draggable"><span>name11</span></li><li data-val="000012" _name="name12" class="pub-select-item  ui-draggable"><span>name12</span></li><li data-val="000013" _name="name13" class="pub-select-item  ui-draggable"><span>name13</span></li><li data-val="000014" _name="name14" class="pub-select-item  ui-draggable"><span>name14</span></li><li data-val="000015" _name="name15" class="pub-select-item  ui-draggable"><span>name15</span></li><li data-val="000016" _name="name16" class="pub-select-item  ui-draggable"><span>name16</span></li><li data-val="000017" _name="name17" class="pub-select-item  ui-draggable"><span>name17</span></li><li data-val="000018" _name="name18" class="pub-select-item  ui-draggable"><span>name18</span></li><li data-val="000019" _name="name19" class="pub-select-item  ui-draggable"><span>name19</span></li>
+			</ul>
+		</div>
+				</td>
+				<td>
+					<a href="javascript:;" class="add-item">>></a>
+					<br/>
+					<a href="javascript:;" class="cancle-item"><<</a>
+				</td>
+				<td>
+			<ul id="target" class="pub-select-target pub-multiselect-area" style="height: 200px;width: 265px;">
+				<li data-pageno="1" data-val="00000" _name="name0" class="pub-select-item" data-text="asdffefefefe"><span>name0</span></li><li data-pageno="1" data-val="00001" _name="name1" class="pub-select-item"><span>name1</span></li><li data-pageno="1" data-val="00002" _name="name2" class="pub-select-item"><span>name2</span></li><li data-pageno="1" data-val="00003" _name="name3" class="pub-select-item"><span>name3</span></li><li data-pageno="1" data-val="00004" _name="name4" class="pub-select-item"><span>name4</span></li><li data-pageno="1" data-val="00005" _name="name5" class="pub-select-item"><span>name5</span></li>
+			</ul>
+				</td>
+				<td>
+				<div id="page_area"></div>
+				</td>
+				
+			</tr>
 
-<table width="100%" border="0" class="exampleTbl" >
-	<colgroup>
-		<col width="200px">
-		<col width="50px">
-		<col width="200px">
-	</colgroup>
-	<tr>
-		<td colspan="10">
-			* 목록을 마우스로 드래그앤 드롭하거나 더블클릭 하세요. 
-			<div class="mbottom-10"></div>
-		</td>
-	</tr>
-	<tr>
-		<th>
-			<div class="top-select mbottom-10 fb tl mRight-20" style="width:265px;">source</div>
-		</th>
-		<th></th>
-		<th>
-			<div class="top-select mbottom-10 fb tl mRight-20" style="width:265px;">target</div>
-			
-		</th>
-	</tr>
-	<tr>
-		<td>
-<div>
-	<ul id="source" class="pub-select-source pub-multiselect-area" style="height: 200px;width: 265px;">
-	<li data-val="00000" _name="name0" class="pub-select-item  ui-draggable text_selected"><span>name0</span></li><li data-val="00001" _name="asdfasdf" class="pub-select-item  ui-draggable text_selected" data-text="asdfasdf"><span>name1</span></li><li data-val="00002" _name="name2" class="pub-select-item  ui-draggable text_selected"><span>name2</span></li><li data-val="00003" _name="name3" class="pub-select-item  ui-draggable text_selected selected" data-last-click="Y"><span>name3</span></li><li data-val="00004" _name="name4" class="pub-select-item  ui-draggable text_selected"><span>name4</span></li><li data-val="00005" _name="name5" class="pub-select-item  ui-draggable text_selected"><span>name5</span></li><li data-val="00006" _name="name6" class="pub-select-item  ui-draggable text_selected"><span>name6</span></li><li data-val="00007" _name="name7" class="pub-select-item  ui-draggable text_selected"><span>name7</span></li><li data-val="00008" _name="name8" class="pub-select-item  ui-draggable text_selected"><span>name8</span></li><li data-val="00009" _name="name9" class="pub-select-item  ui-draggable text_selected"><span>name9</span></li><li data-val="000010" _name="name10" class="pub-select-item  ui-draggable"><span>name10</span></li><li data-val="000011" _name="name11" class="pub-select-item  ui-draggable"><span>name11</span></li><li data-val="000012" _name="name12" class="pub-select-item  ui-draggable"><span>name12</span></li><li data-val="000013" _name="name13" class="pub-select-item  ui-draggable"><span>name13</span></li><li data-val="000014" _name="name14" class="pub-select-item  ui-draggable"><span>name14</span></li><li data-val="000015" _name="name15" class="pub-select-item  ui-draggable"><span>name15</span></li><li data-val="000016" _name="name16" class="pub-select-item  ui-draggable"><span>name16</span></li><li data-val="000017" _name="name17" class="pub-select-item  ui-draggable"><span>name17</span></li><li data-val="000018" _name="name18" class="pub-select-item  ui-draggable"><span>name18</span></li><li data-val="000019" _name="name19" class="pub-select-item  ui-draggable"><span>name19</span></li>
-	</ul>
+			<tr>
+				<td colspan="3" align="right">
+					<a href="javascript:;" class="item-move" mode="up">위</a>
+					<span style="padding-left:10px;"></span>
+					<a href="javascript:;" class="item-move" mode="down">아래</a>
+					<span style="padding-right:10px;"></span>
+				</td>
+			</tr>
+		</table>
+	</div>
 </div>
-		</td>
-		<td>
-			<a href="javascript:;" class="add-item">>></a>
-			<br/>
-			<a href="javascript:;" class="cancle-item"><<</a>
-		</td>
-		<td>
-	<ul id="target" class="pub-select-target pub-multiselect-area" style="height: 200px;width: 265px;">
-		<li data-pageno="1" data-val="00000" _name="name0" class="pub-select-item" data-text="asdffefefefe"><span>name0</span></li><li data-pageno="1" data-val="00001" _name="name1" class="pub-select-item"><span>name1</span></li><li data-pageno="1" data-val="00002" _name="name2" class="pub-select-item"><span>name2</span></li><li data-pageno="1" data-val="00003" _name="name3" class="pub-select-item"><span>name3</span></li><li data-pageno="1" data-val="00004" _name="name4" class="pub-select-item"><span>name4</span></li><li data-pageno="1" data-val="00005" _name="name5" class="pub-select-item"><span>name5</span></li>
-	</ul>
-		</td>
-		<td>
-		<div id="page_area"></div>
-		</td>
-		
-	</tr>
-
-	<tr>
-		<td colspan="3" align="right">
-			<a href="javascript:;" class="item-move" mode="up">위</a>
-			<span style="padding-left:10px;"></span>
-			<a href="javascript:;" class="item-move" mode="down">아래</a>
-			<span style="padding-right:10px;"></span>
-		</td>
-
-	</tr>
-</table>
 </BODY>
 </HTML>
 

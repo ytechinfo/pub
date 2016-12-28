@@ -4,7 +4,9 @@
 <TITLE>pub EP-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
+<link href="../theme/default/pub.example.css" rel="stylesheet">
 <link href="../theme/default/pub.tree.css" rel="stylesheet">
+
 <script src="../plugins/jquery-1.10.2.min.js"></script>
 <script src="../plugins/jquery-ui-1.10.3.custom.min.js"></script>
 <script src="../dist/pub.tree.js"></script>
@@ -95,31 +97,36 @@ function addTest(){
  </HEAD>
 
  <BODY>
-	<table border = "1" width ="800px;" height = "100%">
-		<tr valign = "top">
-			<td width = "400px">
-  <input type = "button" value = "aaaa" onclick = "init()">
-	||
-	<input type = "button" value = "오픈" onclick = "treeOpen()">
-	||
-	<input type = "button" value = "닫기" onclick = "treeClose()">
+ <div class="pub-main">
+	<h2 class="page-header">트리</h2>
+	<div>
+		<table border = "1" width ="800px;" height = "100%">
+			<tr valign = "top">
+				<td width = "400px">
+	  <input type = "button" value = "aaaa" onclick = "init()">
+		||
+		<input type = "button" value = "오픈" onclick = "treeOpen()">
+		||
+		<input type = "button" value = "닫기" onclick = "treeClose()">
 
-	<div id = "treeDiv" ondragstart="return false;" ondrag="return false;" onselectstart="return false" ></div>
-	
-	<br />
+		<div id = "treeDiv" ondragstart="return false;" ondrag="return false;" onselectstart="return false" ></div>
+		
+		<br />
 
-	<div id = "treeDiv2" >
-			</td>
-			<td width = "400px">
-				<!--
-					노드명 <input type = "text" id = "name"> <br />
-					링크 <input type = "text" id = "url"> <br />
-					사용여부<input type = "text" id = ""> <br />
-					팝업여부<input type = "text" id = "ccc"> <br />
-					팝업여부<input type = "button" onclick = "saveInfo()" value = "저장"> <br />
-				-->
-			</td>
-		</tr>
-	</table>
+		<div id = "treeDiv2" >
+				</td>
+				<td width = "400px">
+					<!--
+						노드명 <input type = "text" id = "name"> <br />
+						링크 <input type = "text" id = "url"> <br />
+						사용여부<input type = "text" id = ""> <br />
+						팝업여부<input type = "text" id = "ccc"> <br />
+						팝업여부<input type = "button" onclick = "saveInfo()" value = "저장"> <br />
+					-->
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
  </BODY>
 </HTML>

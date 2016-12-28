@@ -5,6 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link href="../plugins/css/jquery.toast.css" rel="stylesheet">
 <link href="../theme/default/pub.ep.css" rel="stylesheet">
+<link href="../theme/default/pub.example.css" rel="stylesheet">
 
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
@@ -45,61 +46,65 @@
     .exampleTbl td {vertical-align:top;  border-top: 1px solid;}
     .exampleTbl td:last-child {padding-top:27px;}
 </style>
-<table width="100%" border="1" class="exampleTbl">
-	<colgroup>
-		<col width="500px">
-		<col width="500px">
-	</colgroup>
-	<tr>
-		<th colspan="2">
-			사용법은 아래 사용법을 복사해서 사용하시면됩니다. <br/>  
-		</th>
-	</tr>
-	<tr>
-		<th>사용법 </th>
-		<th>설명 </th>
-	</tr>
-	<tr>
-		<td>
-<div class="code-runner text-right">
-	<a href="#" class="copy-btn">copy</a>
-	<a href="#" class="eval-js">demo dialog</a>
-<pre class="text-left"><code class="text-to-copy">PubEPUI.dialog.mgmtDialog('./pubEPUI.html', {
-					title : 'pubjs'
-					,width : '480'
-					,height : '355'
-					,directCall :true
-				});</code></pre>
+<div class="pub-main">
+	<h2 class="page-header">EP-ui</h2>
+	<div>
+		<table width="100%" border="1" class="exampleTbl">
+			<colgroup>
+				<col width="500px">
+				<col width="500px">
+			</colgroup>
+			<tr>
+				<th colspan="2">
+					사용법은 아래 사용법을 복사해서 사용하시면됩니다. <br/>  
+				</th>
+			</tr>
+			<tr>
+				<th>사용법 </th>
+				<th>설명 </th>
+			</tr>
+			<tr>
+				<td>
+		<div class="code-runner text-right">
+			<a href="#" class="copy-btn">copy</a>
+			<a href="#" class="eval-js">demo dialog</a>
+		<pre class="text-left"><code class="text-to-copy">PubEPUI.dialog.frameDialog('./pubEPUI.html', {
+							title : 'pubjs'
+							,width : '480'
+							,height : '355'
+							,directCall :true
+						});</code></pre>
+		</div>
+				</td>
+				<td>
+		<code>
+		옵션은 jquery-ui-1.10.3.custom.min.js dialog 동일합니다.  
+		</code>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+		<div class="code-runner text-right">
+			<a href="#" class="copy-btn">copy</a>
+			<a href="#" class="eval-js">demo dialog</a>
+		<pre class="text-left"><code class="text-to-copy">PubEPUI.toast.view({
+						heading: 'Information'
+						,text: '테스트'
+						,icon:'info'
+					})</code></pre>
+		</div>
+				</td>
+				<td>
+		<code>
+		옵션은 jquery.toast 동일합니다.  
+		</code>
+				</td>
+			</tr>
+
+		</table>
+	</div>
 </div>
-		</td>
-		<td>
-<code>
-옵션은 jquery-ui-1.10.3.custom.min.js dialog 동일합니다.  
-</code>
-		</td>
-	</tr>
-
-	<tr>
-		<td>
-<div class="code-runner text-right">
-	<a href="#" class="copy-btn">copy</a>
-	<a href="#" class="eval-js">demo dialog</a>
-<pre class="text-left"><code class="text-to-copy">PubEPUI.toast.view({
-				heading: 'Information'
-				,text: '테스트'
-				,icon:'info'
-			})</code></pre>
-</div>
-		</td>
-		<td>
-<code>
-옵션은 jquery.toast 동일합니다.  
-</code>
-		</td>
-	</tr>
-
-</table>
-
 
 <div id="copyArea" style="width:3px;height:3px;overflow:hidden;"></div>
 <script>

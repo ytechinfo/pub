@@ -3,7 +3,7 @@
 <HEAD>
 <TITLE>pub EP-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
+<link href="../theme/default/pub.example.css" rel="stylesheet">
 <link href="../theme/default/pub.ep.css" rel="stylesheet">
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
@@ -43,96 +43,100 @@
     .exampleTbl td {vertical-align:top;  border-top: 1px solid;}
     .exampleTbl td:last-child {padding-top:27px;}
 </style>
-<table width="100%" border="1" class="exampleTbl" >
-	<colgroup>
-		<col width="50%">
-		<col width="50%">
-	</colgroup>
-	<tr>
-		<th colspan="2">
-			사용법은 아래 사용법을 복사해서 사용하시면됩니다. <br/>  
-		</th>
-	</tr>
-	<tr>
-		<th>사용법 </th>
-		<th>설명 </th>
-	</tr>
+<div class="pub-main">
+	<h2 class="page-header">EP</h2>
+	<div>
+		<table width="100%" border="1" class="exampleTbl" >
+			<colgroup>
+				<col width="50%">
+				<col width="50%">
+			</colgroup>
+			<tr>
+				<th colspan="2">
+					사용법은 아래 사용법을 복사해서 사용하시면됩니다. <br/>  
+				</th>
+			</tr>
+			<tr>
+				<th>사용법 </th>
+				<th>설명 </th>
+			</tr>
 
-	<tr>
-		<td>
-<div class="code-runner text-right">
-	<a href="#" class="copy-btn">copy</a>
-	<a href="#" class="eval-js">demo</a>
-<div class="text-left"><code class="text-to-copy">PubEP.req.ajax({
-	url: 'http://jsfiddle.net/echo/jsonp/?text=%27asdf%27',
-	loadSelector : '#ajaxtest',
-	cache: false,
-	dataType: "jsonp",
-	data:{
-		aaa:'test'
-	},
-	success: function(resData) {
-		$('#ajaxtest').html('result');
-	},
-	error: function(xhr, status, e) {
-		
-	}
-});</code></div>
+			<tr>
+				<td>
+		<div class="code-runner text-right">
+			<a href="#" class="copy-btn">copy</a>
+			<a href="#" class="eval-js">demo</a>
+		<div class="text-left"><code class="text-to-copy">PubEP.req.ajax({
+			url: 'http://jsfiddle.net/echo/jsonp/?text=%27asdf%27',
+			loadSelector : '#ajaxtest',
+			cache: false,
+			dataType: "jsonp",
+			data:{
+				aaa:'test'
+			},
+			success: function(resData) {
+				$('#ajaxtest').html('result');
+			},
+			error: function(xhr, status, e) {
+				
+			}
+		});</code></div>
+		</div>
+				</td>
+				<td>
+		<code>
+		ajax jquery ajax 옵션과 동일.
+		</code>
+		<div id="ajaxtest" style="height:40px;border:1px solid #000;">결과</div>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+		<div class="code-runner text-right">
+			<a href="#" class="copy-btn">copy</a>
+			<a href="#" class="eval-js">demo</a>
+		<div class="text-left"><code class="text-to-copy">PubEP.cookie('cookieName')</code></div>
+		</div>
+				</td>
+				<td>
+		<code>
+		cookie 보기 PubEP.cookie('cookieName')
+		cookie 셋팅 PubEP.cookie('쿠키명', '쿠키값', {expires:1, path:'/', domain:'zpubjs.com'})
+
+		</code>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+		<div class="code-runner text-right">
+			<a href="#" class="copy-btn">copy</a>
+			<a href="#" class="eval-js">demo</a>
+		<div class="text-left"><code class="text-to-copy">
+		PubEP.page.view('https://github.com/young-tae/pub', "popup", {gubun:'popup',method:"get", position:{align:'top' ,topMargin:50,leftMargin:200},gubunkey:"test", viewOption:'width=500,height=500'});
+		</code></div>
+		</div>
+				</td>
+				<td>
+		<code>
+		팝업보기<br/>
+		PubEP.page.view('https://github.com/young-tae/pub', "popup", {gubun:'popup',method:"get", gubunkey:"test", viewOption:'width=500,height=500'});
+		<br/>
+		<br/>
+		페이지 보기.<br/>
+		PubEP.page.view('https://github.com/young-tae/pub', "location", '');
+		<br/>
+		<br/>
+		iframe 보기<br/>
+		PubEP.page.view('https://github.com/young-tae/pub', "iframe", {target:'#iframeView'});
+		</code>
+				</td>
+			</tr>
+
+		</table>
+	</div>
 </div>
-		</td>
-		<td>
-<code>
-ajax jquery ajax 옵션과 동일.
-</code>
-<div id="ajaxtest" style="height:40px;border:1px solid #000;">결과</div>
-		</td>
-	</tr>
-
-	<tr>
-		<td>
-<div class="code-runner text-right">
-	<a href="#" class="copy-btn">copy</a>
-	<a href="#" class="eval-js">demo</a>
-<div class="text-left"><code class="text-to-copy">PubEP.cookie('cookieName')</code></div>
-</div>
-		</td>
-		<td>
-<code>
-cookie 보기 PubEP.cookie('cookieName')
-cookie 셋팅 PubEP.cookie('쿠키명', '쿠키값', {expires:1, path:'/', domain:'zpubjs.com'})
-
-</code>
-		</td>
-	</tr>
-
-	<tr>
-		<td>
-<div class="code-runner text-right">
-	<a href="#" class="copy-btn">copy</a>
-	<a href="#" class="eval-js">demo</a>
-<div class="text-left"><code class="text-to-copy">
-PubEP.page.view('https://github.com/young-tae/pub', "popup", {gubun:'popup',method:"get", position:{align:'top' ,topMargin:50,leftMargin:200},gubunkey:"test", viewOption:'width=500,height=500'});
-</code></div>
-</div>
-		</td>
-		<td>
-<code>
-팝업보기<br/>
-PubEP.page.view('https://github.com/young-tae/pub', "popup", {gubun:'popup',method:"get", gubunkey:"test", viewOption:'width=500,height=500'});
-<br/>
-<br/>
-페이지 보기.<br/>
-PubEP.page.view('https://github.com/young-tae/pub', "location", '');
-<br/>
-<br/>
-iframe 보기<br/>
-PubEP.page.view('https://github.com/young-tae/pub', "iframe", {target:'#iframeView'});
-</code>
-		</td>
-	</tr>
-
-</table>
-
 
 <iframe id="iframeView" width="400px" height="500px"></iframe>
 <div id="copyArea" style="width:3px;height:3px;overflow:hidden;"></div>
