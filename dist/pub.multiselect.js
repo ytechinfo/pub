@@ -477,10 +477,10 @@
 			sEle.attr('data-last-click','Y');	
 		}
 		/**
-		 * @method getAddItem
+		 * @method getTargetItem
 		 * @description 추가된 아이템 구하기.
 		 */	
-		,getAddItem : function (itemKey, pageNum){
+		,getTargetItem : function (itemKey, pageNum){
 			var  _this = this;
 			
 			if(itemKey){
@@ -522,14 +522,19 @@
 		,getSelectElement : function (evtElement){
 			return 	evtElement ? evtElement.find(this.options.itemSelector+'.'+ this.options.selectCls) : this.targetElement.find(this.options.itemSelector+'.'+ this.options.selectCls);
 		}
+		,getElement : function (key){
+			return 	this.targetElement.find('[data-val="'+key+'"]');
+		}
 		/**
 		 * @method addItemStausUpdate
 		 * @param itemKey {String} 아이템 key
 		 * @description 등록된 아이템 상태 업데이트.
 		 */	
 		,addItemStausUpdate : function (itemKey){
-			if(this.addItemList[this.config.currPage][itemKey]){
-				this.addItemList[this.config.currPage][itemKey]['_CU'] = 'CU';
+			var tmpItem = this.addItemList[this.config.currPage][itemKey]; 
+			if(typeof tmpItem !=='undefined'){
+				tmpItem['_CU'] = 'CU';
+				this.getElement(itemKey).replaceWith(this.getItemHtml('target',itemKey,tmpItem));
 			}
 		}
 		/**

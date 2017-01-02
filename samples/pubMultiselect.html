@@ -201,6 +201,10 @@ $(document).ready(function (){
 			,dblclick : function (e, sEle){
 				console.log(e,sEle);
 			}
+			,render: function (sItem){
+				console.log('render', sItem);
+				return '<span  style="color:'+sItem.item.STYLE+'">'+sItem.text+'</span>';
+			}
 		}
 	}); 
 

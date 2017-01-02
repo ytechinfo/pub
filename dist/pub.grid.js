@@ -26,6 +26,7 @@ var _initialized = false
 		,resize:{	// resize 여부
 			enabled : true
 			,cursor : 'col-resize'
+			,realTime : true	// resize 실시간으로 반영할지 여부. 
 		}
 		,colWidthFixed : false  // 넓이 고정 여부.
 		,colMinWidth : 50  // 컬럼 최소 넓이
@@ -644,46 +645,6 @@ Plugin.prototype ={
 		});
 	}
 	/**
-     * @method colResize
-	 * @param  flag {Boolean} resize 여부
-     * @description header resize 설정
-     */
-	,_headerResize :function (flag){
-		var _this = this
-			,resizeEle = $('#'+_this.prefix+'pubGrid-header .pub-header-resizer');
-		if(flag===true){
-			resizeEle.css('cursor','e-resize');
-			
-			resizeEle.on('touchstart.pubresizer mousedown.pubresizer',function (e){
-				var oe = e.originalEvent.touches;
-
-				_this.drag = {};
-				_this.drag.pageX = oe ? oe[0].pageX : e.pageX;
-				_this.drag.ele = $(this);
-				_this.drag.colspanidx = _this.drag.ele.attr('colspanidx');
-				_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.colspanidx);
-				_this.drag.colBody= $('#'+_this.prefix+'colbody'+_this.drag.colspanidx);
-				_this.drag.colW = _this.drag.colHeader.attr('_width')?parseInt(_this.drag.colHeader.attr('_width'),10):_this.drag.colHeader.width();
-				_this.drag.gridW = _this.config.headerElement.width();
-				
-				// resize시 select안되게 처리 . cursor처리 
-				_doc.attr("onselectstart", "return false");
-				_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.headerOptions.resize.cursor + "!important}</style>");
-
-				_doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e){
-					_this.onGripDrag(e,_this);
-				}).on('touchend.colheaderresize mouseup.colheaderresize mouseleave.colheaderresize', function (e){
-					_this.onGripDragEnd(e,_this);
-				});
-
-				return false; 
-			})
-		}else{
-			resizeEle.css('cursor','auto');
-			resizeEle.off('touchstart.pubresizer mousedown.pubresizer');
-		}
-	}
-	/**
      * @method getItems
 	 * @param  idx {Integer} item index
      * @description item 값 얻기.
@@ -811,35 +772,55 @@ Plugin.prototype ={
 		return tbi; 
 	}
 	/**
+     * @method colResize
+	 * @param  flag {Boolean} resize 여부
+     * @description header resize 설정
+     */
+	,_headerResize :function (flag){
+		var _this = this
+			,resizeEle = $('#'+_this.prefix+'pubGrid-header .pub-header-resizer');
+		if(flag===true){
+			resizeEle.css('cursor','e-resize');
+			
+			resizeEle.on('touchstart.pubresizer mousedown.pubresizer',function (e){
+				var oe = e.originalEvent.touches;
+
+				_this.drag = {};
+				_this.drag.pageX = oe ? oe[0].pageX : e.pageX;
+				_this.drag.ele = $(this);
+				_this.drag.ele.addClass('pubGrid-move-header')
+				_this.drag.colspanidx = _this.drag.ele.attr('colspanidx');
+				_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.colspanidx);
+				_this.drag.colBody= $('#'+_this.prefix+'colbody'+_this.drag.colspanidx);
+				_this.drag.colW = _this.drag.colHeader.attr('_width')?parseInt(_this.drag.colHeader.attr('_width'),10):_this.drag.colHeader.width();
+				_this.drag.gridW = _this.config.headerElement.width();
+				
+				// resize시 select안되게 처리 . cursor처리 
+				_doc.attr("onselectstart", "return false");
+				_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.headerOptions.resize.cursor + "!important}</style>");
+
+				_doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e){
+					_this.onGripDrag(e,_this);
+				}).on('touchend.colheaderresize mouseup.colheaderresize mouseleave.colheaderresize', function (e){
+					_this.drag.ele.removeClass('pubGrid-move-header');
+					_this.onGripDragEnd(e,_this);
+				});
+
+				return false; 
+			})
+		}else{
+			resizeEle.css('cursor','auto');
+			resizeEle.off('touchstart.pubresizer mousedown.pubresizer');
+		}
+	}
+	/**
      * @method onGripDrag
 	 * @param  e {Event} 이벤트
 	 * @param  _this {Object} pub그리드 this
      * @description reisze 드래그 처리.
      */
 	,onGripDrag : function(e, _this) { 
-		
-		if (!_this.drag) return false;
-
-		var drag = _this.drag; 
-		
-		var t = drag.ele
-			,oe = e.originalEvent.touches
-			,ox = oe ? oe[0].pageX : e.pageX;
-		
-		var w = drag.colW + (ox - drag.pageX) ;
-		
-		//console.log(w , ox , drag.pageX, (ox - drag.pageX) )
-		if(w > _this.options.headerOptions.colMinWidth){
-			drag.changeColW = w;
-			_this.config.gridElementWidth = drag.gridW+(ox - drag.pageX);
-			_this.config.headerContainerElement.css('width',(_this.config.gridElementWidth+_this.options.scrollWidth)+'px');
-			_this.config.headerElement.css('width',(_this.config.gridElementWidth)+'px');
-			_this.config.bodyElement.css('width',(_this.config.gridElementWidth)+'px');
-
-			drag.colHeader.css('width',w+'px');
-			drag.colHeader.attr('_width',w);
-			drag.colBody.css('width',w+'px');
-		}		
+		_this._setHeaderResize(e,_this, 'move');	
 			
 		return false
 	}
@@ -850,15 +831,50 @@ Plugin.prototype ={
      * @description reisze 드래그 end
      */
 	,onGripDragEnd : function(e,_this) {
+		
 		_doc.off('touchend.colheaderresize mouseup.colheaderresize').off('touchmove.colheaderresize mousemove.colheaderresize mouseleave.colheaderresize');
 		_doc.removeAttr("onselectstart");
 		_this.config.hiddenArea.empty();
 		
-		if(!_this.drag) return false;
+		_this._setHeaderResize(e,_this, 'end');
 		
 		_this.drag=false;
 
 		return false; 
+	}
+	,_setHeaderResize : function (e,_this , mode){
+
+		if (!_this.drag) return false;
+
+		var drag = _this.drag; 
+		
+		var oe = e.originalEvent.touches
+			,ox = oe ? oe[0].pageX : e.pageX;
+		
+		var w = drag.colW + (ox - drag.pageX);
+
+		if(_this.options.headerOptions.resize.realTime || mode=='end'){
+			if(w > _this.options.headerOptions.colMinWidth){
+	
+			}else{
+				w =_this.options.headerOptions.colMinWidth;
+			}
+			drag.changeColW = w;	
+			_this.config.gridElementWidth = drag.gridW+(ox - drag.pageX);
+			_this.config.headerContainerElement.css('width',(_this.config.gridElementWidth+_this.options.scrollWidth)+'px');
+			_this.config.headerElement.css('width',(_this.config.gridElementWidth)+'px');
+			_this.config.bodyElement.css('width',(_this.config.gridElementWidth)+'px');
+			
+			drag.ele.removeAttr('style');
+			drag.colHeader.css('width',w+'px');
+			drag.colHeader.attr('_width',w);
+			drag.colBody.css('width',w+'px');
+		}else{
+			if(w > _this.options.headerOptions.colMinWidth){
+				drag.changeColW = w;
+				drag.ele.css('left',w);
+			}
+		}
 	}
 	/**
      * @method destory
