@@ -50,18 +50,23 @@ _defaultOption ={
 		,'location':'location'
 	}
 	,defaultPopupMethod:'post'
+	,useReplaceParam : true
+	,useLinkReplace : true
 	,log :{
-		url : '/eppub/log'
+		url : '/epplt/api/logWrite'
 		,param :{
 			
 		}
+		,logWriteKey : 'all'
+		/*
 		,logWriteKey:[
-		     'SSO'
+		     'all'
       	]
+      */
 	} 
 	,defaultPopupPosition : {
 		align : 'top'
-		,topMargin : 20
+		,topMargin : 10
 		,top:2
 		,left:2
 		,ieDualCenter : false
@@ -231,45 +236,47 @@ jQuery.fn.centerLoading = function(options) {
 		action: 'slide',
 		height: 0,
 		width: 0,
+		position:'absolute',
+		opacity : '0.3',
+		zIndex : 10,
 		padding:'0',
 		margin :'0',
 		top :'0',
 		left :'0',
 		centerYn:'Y',
-		bgColor : '#ffffff',
-		loadingImg : '../../theme/default/images/loading.gif',
+		bgColor : '#0059ab',
+		loadingImg : '/images/loading.gif',
 		cursor:	'wait',
+		content :'',
 		contentClear : false
 	}
 	
-	var id,w,h;
+	var id,w,h,opacity;
 		
 	var config = $.extend({},this.config, options);
 	id = this.attr('id');
 
 	w = config.width==0?this.width():config.width;
 	h = config.height==0?this.height():config.height;
-
-	if($(this).parent().attr('prevspan') =='Y')	config.contentClear = false;	
-		
-	var firstDiv = $('<div style="z-index:10;'+(!config.contentClear?"position:absolute;":"")+'width:'+w+'px; height:'+h+';" class="centerLoading"></div>');
-	var centerLoading = $('<div style="background-repeat:no-repeat;"></div>');
-	centerLoading.css('background-image', 'url("'+config.loadingImg+'")')
-				.css('background-position', config.centerYn=='Y'?'center center':'')
-				.css('height', h)
-				.css('width',w)
-				.css('cursor', config.cursor);
+	opacity = config.opacity;
 	
-	firstDiv.html(centerLoading);
-
+	if($(this).parent().attr('prevspan') =='Y')	config.contentClear = false;
+	
+	var strHtm = [];
+	strHtm.push('<div class="centerLoading" style="z-index:'+config.zIndex+';position:'+config.position+';top: 0;left: 0;width:'+w+'px;height:'+h+'px;cursor:'+config.cursor+';">');
+	strHtm.push('<div style="background:'+config.bgColor+';opacity:'+opacity+';filter: alpha(opacity='+(parseFloat('0.4')*100)+');-moz-opacity:'+opacity+';-khtml-opacity: '+opacity+';'+(!config.contentClear?"position:absolute;":"")+'width:'+w+'px; height:'+h+'px;"></div>');
+	strHtm.push('<table style="position:absolute;z-index:3;width:100%;height:100%;"><tr><td style="vertical-align:middle;text-align:center;">')
+	strHtm.push('<div><div><img src="'+config.loadingImg+'"></div><div class="center-loading-content" style="color:#ffffff;"></div></div></td></tr></table>')
+	strHtm.push('</div>');
+	
 	if(!config.contentClear){
-		this.prepend(firstDiv);
+		this.prepend(strHtm.join(''));
 	}else{
-		this.html(firstDiv);
+		this.html(strHtm.join(''));
 	}
 
-	if(config.content != ""){
-		centerLoading.appendTo(config.content);
+	if(config.content){
+		$(this.find('.center-loading-content')).html(config.content);
 	}
 	
 	config.action == 'slide'?jQuery(this).slideDown('slow') : config.action == 'fade'?jQuery(this).fadeIn('slow'):jQuery(this).show();
@@ -294,21 +301,22 @@ _$base.log=function (){
 * 
 */
 _$base.logWrite = function (url, type, options){
-	var tmpIfno = (typeof pubEPortalConfig === 'undefined' ? {userInfo:{}} : pubEPortalConfig); 
+	var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {replaceParam:{userid:''}} : pubEPortalConfig); 
 	
-	if($.inArray(options.gubun, globalOption.log.logWriteKey) > -1 || globalOption.log.logWriteKey =='all' ){
+	if(options.logWriteFlag !==false && (globalOption.log.logWriteKey =='all' || $.inArray(options.gubun, globalOption.log.logWriteKey) > -1 ) ){
 		$.ajax({
-			url : globalOption.log.logUrl
+			url : globalOption.log.url
 			,dataType : "text"
 			,data : {
 				gubun : options.gubun
 				,gubunkey : options.gubunkey
 				,url : url
-				,browser :  (navigator?navigator.userAgent:'')
+				,browser :  ($.browser.name)
+				,desktop :  ($.browser.desktop)
+				,platform :  ($.browser.platform)
 				,ip : ''
-				,loginfo : tmpIfno.userId
-				,userid : tmpIfno.userId
-				,ent_code : tmpIfno.userInfo.ENT_CODE
+				,loginfo : tmpInfo.replaceParam.userid
+				,userid : tmpInfo.replaceParam.userid
 			}
 			,success : function(resdata) {}
 			,error : function() {}
@@ -321,16 +329,30 @@ _$base.logWrite = function (url, type, options){
 _$base.page ={
 	popupPostMsg : ''	
 	,view : function(url, type, options){
-		var tmpIfno = (typeof pubEPortalConfig === 'undefined' ? {link : {}} : pubEPortalConfig); 
+    
+		if(typeof url ==='undefined') throw 'PubEP.page.view url undefined : ['+url+']';
 		
-		if(tmpIfno.link){
-			$.each(tmpIfno.link, function(key, value){
-				var re = new RegExp("{"+key+"}", "g");
-				url = url.replace(re, value);
-			})
+		if(typeof globalOption.openType[type]==='undefined') throw 'PubEP.page.view ['+type+'] Type mismatch view url:'+url;
+		
+		var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {link : {}, replaceParam :{}} : pubEPortalConfig); 
+		
+		options = $.extend(true, options||{},{useLinkReplace : globalOption.useLinkReplace, useReplaceParam : globalOption.useReplaceParam});
+		
+		if(options.useLinkReplace===true && tmpInfo.link){
+			var matchArr = url.match(/({[a-zA-Z0-9]+)}/gi);
+			
+			if(matchArr){
+				for(var i= 0 ; i < matchArr.length; i ++){
+					var matchStr = matchArr[i];
+					url = url.replace(matchStr, tmpInfo.link[matchStr.replace(/[{}]/g,'')]);
+				}
+			}
 		}
 		
-		options = options ||[];
+		if(options.useReplaceParam ===true && tmpInfo.replaceParam){
+			url=_$base.util.replaceUrl(url,tmpInfo.replaceParam);
+		}
+		
 		if(options.logwrite !== false){
 			_$base.logWrite(url, type, options);
 		}
@@ -349,7 +371,7 @@ _$base.page ={
 	}
 	,_location:function (url, options){
 		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > 0 ?url.substring(0,urlIdx):url;
+		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
 		var tmpParam=getParameter(url , {});
 		tmpParam=paramToArray(tmpParam);
 		
@@ -385,7 +407,7 @@ _$base.page ={
 			, tmpName ='PubEP_'+(options.name?( options.name.replace(/[ \{\}\[\]\/?.,;:|\)*~`!^\-+┼<>@\#$%&\'\"\\(\=]/gi,'') ):targetId.replace(/-/g,''));
 		
 		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > 0 ?url.substring(0,urlIdx):url;
+		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
 		
 		tmpPopOption = tmpPopOption.replace(/\s/gi,'');
 		
@@ -476,10 +498,11 @@ _$base.page ={
 
 			tmpPopOption = tmpOpt+', width=' + _w + 'px, height=' + _h + 'px, top=' + _viewPosition.top + 'px, left=' + _viewPosition.left+'px';
 		}
-
+    tmpParam=getParameter(url , tmpParam);
+		
 		// get method
 		if(globalOption.httpMethod.get ==tmpMethod){
-			tmpParam=getParameter(url , tmpParam);
+			
 			tmpParam=paramToArray(tmpParam);
 			
 			if(tmpParam.length > 0)	openUrl =openUrl+'?'+tmpParam.join('&');
@@ -489,7 +512,6 @@ _$base.page ={
 				myWindow.focus();
 			}catch(e){}
 		}else{  // post method
-			tmpParam=getParameter(url , tmpParam);
 			var inputStr = [];
 			inputStr.push('<!doctype html><head>');
 			inputStr.push('<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta charset="UTF-8" /></head>');
@@ -550,10 +572,8 @@ _$base.page ={
 		tmpParam=getParameter(url , tmpParam);
 		
 		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > 0 ?url.substring(0,urlIdx):url;
+		var openUrl = urlIdx > -1 ? url.substring(0,urlIdx) : url;
 
-		
-		
 		//if(url== tmpiframe.attr('_view_url') && options.refresh != true) return ; 
 		
 		tmpiframe.attr('_view_url', url);
@@ -576,8 +596,6 @@ _$base.page ={
 			$("#hiddenFormIframe").append(tmpForm);
 			tmpForm.submit();
 		}else{
-			
-			tmpParam=getParameter(url , tmpParam);
 			tmpParam=paramToArray(tmpParam);
 			
 			if(tmpParam.length > 0)	openUrl =openUrl+'?'+tmpParam.join('&');
@@ -600,7 +618,7 @@ _$base.page ={
 		
 		for(var i = 0 ; i <styleArr.length; i ++){
 			cssArr = styleArr[i].split(':');
-			if(cssArr.length > 1) tmpiframe.css(cssArr[0],cssArr[1]);
+			if(cssArr.length > 1) tmpiframe.css($.trim(cssArr[0]),cssArr[1]);
 		}
 	}
 }
@@ -626,6 +644,26 @@ _$base.util = {
 			a.setDate(a.getDate()+num);
 		}
 		return this.dateFormat(a,format);
+	}
+	/**
+	 * @method domain
+	 * @param mode
+	 * @description current domain
+	 */	
+	,domain : function (mode){
+		if(typeof mode==='undefined'){
+			if(window.location.origin){
+				return window.location.origin; 
+			}else{
+				return window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+			}
+		}else {
+			if(mode=='domain'){
+				return window.location.hostname; 
+			}else{
+				return window.location.hostname;
+			}
+		}
 	}
 	/**
 	 * @method objectMerge
@@ -685,38 +723,74 @@ _$base.util = {
      * @param rangeNum
      * @description 날자 범위 지정하기
      */
-	,setRangeDate :function(sdtObj, edtObj, cdt, rangeNum, type){
+	,setRangeDate :function(sdtObj, edtObj, cdt, rangeNum, type, returnFormat){
 		
 		if(isNaN(rangeNum)) return false;
 		
 		var _self = this; 
-		var flag = rangeNum >0 ?true:false; 
+		var flag = rangeNum >0 ?true:false;
+
+		returnFormat = returnFormat ?returnFormat : 'yyyy-mm-dd';
 		
-		sdtObj = $(sdtObj);
-		edtObj = $(edtObj);
+		var sdtEle = $(sdtObj);
+		var	edtEle = $(edtObj);
+
+		if(!(sdtEle.length > 0 && edtEle.length > 0)) throw 'selector not defined first ['+sdtObj+'] or second ['+edtObj+'] '; 
+
+		var cdtVal = _self.removeSpecial(cdt);
+		var cdt = cdtVal.substring(0,4)+'-'+cdtVal.substring(4,6)+'-'+cdtVal.substring(6,8);
 		
+		var tmped = _self.calcDate(cdt,rangeNum, type);
+
 		if(flag){
-			var sdt = sdtObj.val()
-				,tmped = _self.calcDate(sdt, rangeNum,type);
-			
-			if(parseInt(_self.removeSpecial(sdt), 10) > parseInt(_self.removeSpecial(cdt),10)){
-				sdtObj.val(cdt);
-				tmped = cdt; 
-			}else if(parseInt(_self.removeSpecial(tmped), 10) > parseInt(_self.removeSpecial(cdt),10)){
-				tmped = cdt; 
-			}
-			
-			edtObj.val(tmped);
+			sdtEle.val(_self.dateFormat(cdt,returnFormat));
+			edtEle.val(_self.dateFormat(tmped,returnFormat));
 		}else{
-			var sdt = edtObj.val()
-				,tmped = _self.calcDate(sdt,rangeNum, type);
-		
-			if(parseInt(_self.removeSpecial(sdt), 10) > parseInt(_self.removeSpecial(cdt),10)){
-				edtObj.val(cdt);
-				tmped = _self.calcDate(cdt, rangeNum, type);
-			}
-			sdtObj.val(tmped);
+			sdtEle.val(_self.dateFormat(tmped,returnFormat));
+			edtEle.val(_self.dateFormat(cdt,returnFormat));
 		}
+	}
+	/**
+     * @method PubEP.util.functionCall
+     * @param fnInfo {Strinb, Object {name :'functionName' , context : 'call object ex)window, PubEP'}}
+     * @param arguments
+     * @description 문자열 function 호출. 
+     */
+	,functionCall : function(fnInfo) {
+
+		if(typeof fnInfo === 'string'){
+			fnInfo = {
+				'name' : fnInfo
+			};
+		}
+
+		if(typeof fnInfo.name ==='undefined') throw 'function name undefined : '+ fnInfo; 
+
+		var name =  fnInfo.name 
+			,context = fnInfo['context'] ? fnInfo['context']:window
+			,args = Array.prototype.slice.call(arguments, 1);
+
+		var func, i, j, k, len, len1, n, normalizedName, ns;
+
+		normalizedName = name.replace(/[\]'"]/g, '').replace(/\[/g, '.');
+		ns = normalizedName.split(".");
+		func = context;
+		
+		for (i = j = 0, len = ns.length; j < len; i = ++j) {
+			n = ns[i];
+			func = func[n];
+		}
+		ns.pop();
+		
+		for (i = k = 0, len1 = ns.length; k < len1; i = ++k) {
+			n = ns[i];
+			context = context[n];
+		}
+
+		if (typeof func !== 'function') {
+			throw new TypeError('Cannot execute function ' + name);
+		}
+		return func.apply(context, args);
 	}
 	,generateUUID: function () {
 		var d = new Date().getTime();
