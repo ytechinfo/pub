@@ -52,6 +52,8 @@ _defaultOption ={
 	,defaultPopupMethod:'post'
 	,useReplaceParam : true
 	,useLinkReplace : true
+	,loadingImg : '/images/loading.gif'
+	,loadingBgColor:'#ffffff'
 	,log :{
 		url : '/epplt/api/logWrite'
 		,param :{
@@ -244,8 +246,8 @@ jQuery.fn.centerLoading = function(options) {
 		top :'0',
 		left :'0',
 		centerYn:'Y',
-		bgColor : '#0059ab',
-		loadingImg : '/images/loading.gif',
+		bgColor : globalOption.loadingBgColor,
+		loadingImg : globalOption.loadingImg,
 		cursor:	'wait',
 		content :'',
 		contentClear : false
@@ -263,8 +265,8 @@ jQuery.fn.centerLoading = function(options) {
 	if($(this).parent().attr('prevspan') =='Y')	config.contentClear = false;
 	
 	var strHtm = [];
-	strHtm.push('<div class="centerLoading" style="z-index:'+config.zIndex+';position:'+config.position+';top: 0;left: 0;width:'+w+'px;height:'+h+'px;cursor:'+config.cursor+';">');
-	strHtm.push('<div style="background:'+config.bgColor+';opacity:'+opacity+';filter: alpha(opacity='+(parseFloat('0.4')*100)+');-moz-opacity:'+opacity+';-khtml-opacity: '+opacity+';'+(!config.contentClear?"position:absolute;":"")+'width:'+w+'px; height:'+h+'px;"></div>');
+	strHtm.push('<div class="pub-center-loading" style="z-index:'+config.zIndex+';position:'+config.position+';top: 0;left: 0;width:'+w+'px;height:'+h+'px;cursor:'+config.cursor+';">');
+	strHtm.push('<div class="pub-center-loading-bg"" style="background:'+config.bgColor+';opacity:'+opacity+';filter: alpha(opacity='+(parseFloat('0.4')*100)+');-moz-opacity:'+opacity+';-khtml-opacity: '+opacity+';'+(!config.contentClear?"position:absolute;":"")+'width:'+w+'px; height:'+h+'px;"></div>');
 	strHtm.push('<table style="position:absolute;z-index:3;width:100%;height:100%;"><tr><td style="vertical-align:middle;text-align:center;">')
 	strHtm.push('<div><div><img src="'+config.loadingImg+'"></div><div class="center-loading-content" style="color:#ffffff;"></div></div></td></tr></table>')
 	strHtm.push('</div>');
@@ -285,7 +287,7 @@ jQuery.fn.centerLoading = function(options) {
 };
 
 jQuery.fn.centerLoadingClose= function(options) {
-	this.find('.centerLoading').remove();
+	this.find('.pub-center-loading').remove();
 };
 
 _$base.log=function (){
@@ -851,7 +853,7 @@ _$base.util = {
 		}
 	}
 	,replaceUrl : function (url, param){
-		var urlArr = url.match(/(#[a-zA-Z0-9]+)#/gi);
+		var urlArr = url.match(/(#[_a-zA-Z0-9]+)#/gi);
 		
 		if(urlArr){
 			for(var i= 0 ; i < urlArr.length; i ++){
