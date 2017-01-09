@@ -11,89 +11,7 @@
 <script src="../plugins/jquery-ui-1.10.3.custom.min.js"></script>
 <script src="../dist/pub.tree.js"></script>
 
-<script>
-$(document).ready(function (){
-	init();
-})
 
-var d = new pubTree("treeDiv"); // 트리 객체 네임  div명
-function init(){
-
-	d.add({	id:0	,pid:''	,name:'My example tree1' ,url:"detail('2')"});
-	d.add({	id:97	,pid:''	,name:'My example tree2' ,url:"detail('2')"});
-	d.add({id:1,pid:0,name:'pub 1',url:"detail('2')"});	
-	d.add({id:3,pid:1,name:'pub 1.1',url:"detail('2')"});	
-	d.add({id:5,pid:3,name:'5Node 1.1.1',url:"detail('2')"});
-	d.add({id:6,pid:5,name:'6Node 1.1.1.1',url:"detail('2')"});
-	d.add({id:14,pid:3,name:'14Node 1.1.1',url:"detail('2')"});
-	d.add({id:15,pid:14,name:'15Node 1.1.1',url:"detail('2')"});
-	d.add({id:16,pid:14,name:'16Node 1.1.1',url:"detail('2')" , childCnt:1000});
-	d.add({id:4,pid:0,name:'4Node 3',url:"detail('2')"});
-	d.add({id:2,pid:0,name:'2Node 2',url:"detail('2')"});
-	d.add({id:7,pid:0,name:'7Node 4',url:"detail('2')"});
-	d.add({id:9,pid:0,name:'9My Pictures',url:"detail('2')" , img:'img/cd.gif', childCnt:10});
-
-	d.add({	id:99	,pid:''	,name:'My example tree3' ,url:"detail('2')"});
-	d.add({	id:98	,pid:''	,name:'My example tree4' ,url:"detail('2')"});
-
-	d.open();
-}
-
-
-
-function subMenuTreeCall(nodeId){
-	d.add({id:17+''+nodeId,pid:nodeId,name:nodeId+'17Node 3',url:"detail('2')",childCnt:1000});	
-	d.add({id:18+''+nodeId,pid:nodeId,name:nodeId+'18Node 3',url:"detail('2')"});	
-	d.add({id:19+''+nodeId,pid:nodeId,name:nodeId+'19Node 3',url:"detail('2')"});	
-	d.add({id:20+''+nodeId,pid:nodeId,name:nodeId+'20Node 3',url:"detail('2')",childCnt:1000});	
-
-	for (var i=0; i< 500 ; i ++ ){
-		if(i%2==0)
-			d.add({id:(20+1+i)+''+nodeId,pid:nodeId,name:nodeId+(20+1+i)+'20Node 3',url:"detail('2')",childCnt:1000});	
-		else
-			d.add({id:(20+1+i)+''+nodeId,pid:nodeId,name:nodeId+(20+1+i)+'20Node 3',url:"detail('2')"});	
-	}
-	//d.add(20,17,'ddddddddddddddddd',"detail('10')");
-
-	d.open();
-}
-
-function treeOpen(){
-	d.allOpen();
-}
-
-function treeClose(){
-	d.allClose();
-}
-
-
-function detail(obj){
-	//alert(obj)
-}
-
-function saveInfo(){
-
-	d.addNode((pubTreeConfig.allTreeItem.length+100),pubTreeConfig.selectedNode.id ,document.getElementById('name').value,document.getElementById('url').value)
-}
-
-function addTest(){
-	d.add({id:17,pid:11,name:'17Node 3',url:"detail('2')"});	
-	d.add({id:18,pid:17,name:'18Node 3',url:"detail('2')"});	
-	d.add({id:19,pid:17,name:'19Node 3',url:"detail('2')"});	
-	d.add({id:20,pid:17,name:'20Node 3',url:"detail('2')"});	
-
-	for (var i=0; i<1000 ; i ++ ){
-		d.add({id:20+1+i,pid:17,name:'20Node 3'+i,url:"detail('2')"});	
-	}
-	//d.add(20,17,'ddddddddddddddddd',"detail('10')");
-
-
-	//console.log(pubTreeConfig.treeItem);
-	
-	d.open();
-}
-
-  </script>
  </HEAD>
 
  <BODY>
@@ -130,3 +48,83 @@ function addTest(){
 </div>
  </BODY>
 </HTML>
+<script>
+$(document).ready(function (){
+	init();
+})
+
+
+function init(){
+	
+	var treeItem = [];
+	treeItem.push({	id:0	,pid:''	,name:'My example tree1' ,url:"detail('2')"});
+	treeItem.push({id:1,pid:0,name:'pub 1',url:"detail('2')"});	
+	treeItem.push({id:3,pid:1,name:'pub 1.1',url:"detail('2')"});	
+	treeItem.push({id:5,pid:3,name:'5Node 1.1.1',url:"detail('2')"});
+	treeItem.push({id:6,pid:5,name:'6Node 1.1.1.1',url:"detail('2')"});
+	treeItem.push({id:14,pid:3,name:'14Node 1.1.1',url:"detail('2')"});
+	treeItem.push({id:15,pid:14,name:'15Node 1.1.1',url:"detail('2')"});
+	treeItem.push({id:16,pid:14,name:'16Node 1.1.1',url:"detail('2')" , childCnt:1000});
+	treeItem.push({id:4,pid:0,name:'4Node 3',url:"detail('2')"});
+	treeItem.push({id:2,pid:0,name:'2Node 2',url:"detail('2')"});
+	treeItem.push({id:7,pid:0,name:'7Node 4',url:"detail('2')"});
+	treeItem.push({id:9,pid:0,name:'9My Pictures',url:"detail('2')" , img:'img/cd.gif', childCnt:10});
+
+
+	$.pubTree("#treeDiv", {source:treeItem, topMenuView:false}); // 트리 객체 네임  div명
+}
+
+
+function subMenuTreeCall(nodeId){
+	d.add({id:17+''+nodeId,pid:nodeId,name:nodeId+'17Node 3',url:"detail('2')",childCnt:1000});	
+	d.add({id:18+''+nodeId,pid:nodeId,name:nodeId+'18Node 3',url:"detail('2')"});	
+	d.add({id:19+''+nodeId,pid:nodeId,name:nodeId+'19Node 3',url:"detail('2')"});	
+	d.add({id:20+''+nodeId,pid:nodeId,name:nodeId+'20Node 3',url:"detail('2')",childCnt:1000});	
+
+	for (var i=0; i< 500 ; i ++ ){
+		if(i%2==0)
+			d.add({id:(20+1+i)+''+nodeId,pid:nodeId,name:nodeId+(20+1+i)+'20Node 3',url:"detail('2')",childCnt:1000});	
+		else
+			d.add({id:(20+1+i)+''+nodeId,pid:nodeId,name:nodeId+(20+1+i)+'20Node 3',url:"detail('2')"});	
+	}
+	//d.add(20,17,'ddddddddddddddddd',"detail('10')");
+
+	d.open();
+}
+
+function treeOpen(){
+	$.pubTree("#treeDiv").allOpen();
+}
+
+function treeClose(){
+	$.pubTree("#treeDiv").allClose();
+}
+
+
+function detail(obj){
+	//alert(obj)
+}
+
+function saveInfo(){
+
+	$.pubTree("#treeDiv").addNode((pubTreeConfig.allTreeItem.length+100),pubTreeConfig.selectedNode.id ,document.getElementById('name').value,document.getElementById('url').value)
+}
+
+function addTest(){
+	$.pubTree("#treeDiv").add({id:17,pid:11,name:'17Node 3',url:"detail('2')"});	
+	$.pubTree("#treeDiv").add({id:18,pid:17,name:'18Node 3',url:"detail('2')"});	
+	$.pubTree("#treeDiv").add({id:19,pid:17,name:'19Node 3',url:"detail('2')"});	
+	$.pubTree("#treeDiv").add({id:20,pid:17,name:'20Node 3',url:"detail('2')"});	
+
+	for (var i=0; i<1000 ; i ++ ){
+		$.pubTree("#treeDiv").add({id:20+1+i,pid:17,name:'20Node 3'+i,url:"detail('2')"});	
+	}
+	//d.add(20,17,'ddddddddddddddddd',"detail('10')");
+
+
+	//console.log(pubTreeConfig.treeItem);
+	
+	$.pubTree("#treeDiv").open();
+}
+
+  </script>
