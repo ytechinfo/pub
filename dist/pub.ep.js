@@ -49,7 +49,7 @@ _defaultOption ={
 		,'popup':'popup'
 		,'location':'location'
 	}
-	,defaultPopupMethod:'post'
+	,defaultPopupMethod:'get'
 	,useReplaceParam : true
 	,useLinkReplace : true
 	,loadingImg : '/images/loading.gif'
@@ -298,7 +298,7 @@ _$base.log=function (){
 * url open 메소드
 * view 필수 항복  url, type , options{gubun:'menu , portlet, sso 등등', gubunkey:'구분키 값'}
 * ex : 
-* popup ex : _$base.page.view("http://dev.pub.com/",'popup',{gubun:'menu', gubunkey:'menu_pub',name:'popup name', mehtod:'get or post',viewOption:'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400'});
+* popup ex : _$base.page.view("http://dev.pub.com/",'popup',{gubun:'menu', gubunkey:'menu_pub',name:'popup name', method:'get or post',viewOption:'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400'});
 * location ex : _$base.page.view("http://dev.pub.com/",'location',{gubun:'menu', gubunkey:'menu_location'});
 * 
 */
@@ -406,8 +406,8 @@ _$base.page ={
 			, tmpMethod = options.method?options.method:globalOption.defaultPopupMethod
 			, tmpPopOption = options.viewOption?options.viewOption:''
 			, tmpPosition = $.extend({},globalOption.defaultPopupPosition,( $.isPlainObject(options.position)?options.position:{align:options.position} ))
-			, tmpName ='PubEP_'+(options.name?( options.name.replace(/[ \{\}\[\]\/?.,;:|\)*~`!^\-+┼<>@\#$%&\'\"\\(\=]/gi,'') ):targetId.replace(/-/g,''));
-		
+			, tmpName ='PubEP_'+(options.name?( escape(options.name).replace(/[ \{\}\[\]\/?.,;:|\)*~`!^\-+┼<>@\#$%&\'\"\\(\=]/gi,'') ):targetId.replace(/-/g,''));
+			
 		var urlIdx = url.indexOf('?');
 		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
 		
@@ -500,7 +500,7 @@ _$base.page ={
 
 			tmpPopOption = tmpOpt+', width=' + _w + 'px, height=' + _h + 'px, top=' + _viewPosition.top + 'px, left=' + _viewPosition.left+'px';
 		}
-    tmpParam=getParameter(url , tmpParam);
+		tmpParam=getParameter(url , tmpParam);
 		
 		// get method
 		if(globalOption.httpMethod.get ==tmpMethod){
@@ -532,24 +532,19 @@ _$base.page ={
 			inputStr.push('</form>');
 			inputStr.push('<script type="text/javascript">try{document.charset="utf-8";}catch(e){}document.'+targetId+'.submit();</'+'script>');
 			
-			
 			var tmpPopupObj=window.open('about:blank', tmpName, tmpPopOption);
 			
 			try{
 				tmpPopupObj.document.write(inputStr.join(''));
 				tmpPopupObj.focus();
 			}catch(e){
-				/* 이전 창이 이으면 닫고 다시 열기. 
-				tmpPopupObj.close();
-				tmpPopupObj=window.open('about:blank', tmpName, tmpPopOption);
+				tmpPopupObj=window.open('about:blank', tmpName+targetId, tmpPopOption);
 				try{
 					tmpPopupObj.document.write(inputStr.join(''));
 					tmpPopupObj.focus();
 				}catch(e1){
 					console.log(e1);
 				}
-				*/
-				//console.log('parent',e);
 			}
 		}
 	}
