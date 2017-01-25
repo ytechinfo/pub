@@ -15,7 +15,7 @@ if (typeof window != "undefined") {
 	}
 }
 
-(function( window, jQuery ) {
+(function( window, $ ) {
 	'use strict';
 
 var _$base = {},
@@ -416,7 +416,7 @@ _$base.page ={
 		if(tmpPopOption != ''){
 		
 			var popupOptArr = tmpPopOption.split(',');
-			var tmpItem ,_t=0 , _l=0 ,_w=1050, _h=0, addFlag ,tmpOpt='',addScrollbarOpt = true, addStatusOpt=false; 
+			var tmpItem ,_t=0 , _l=0 ,_w=1050, _h=0, addFlag ,tmpOpt='',addScrollbarOpt = true, addStatusOpt=false, addResizeableOpt=true; 
 				
 			for(var i = 0 ;i < popupOptArr.length; i++){
 				tmpItem = popupOptArr[i];
@@ -440,6 +440,11 @@ _$base.page ={
 				if(tmpItem.toLowerCase().indexOf('scrollbars=')==0){
 					addScrollbarOpt= false; 
 				}
+				
+				if(tmpItem.toLowerCase().indexOf('resizable=')==0){
+					addResizeableOpt= false; 
+				}
+				
 				if(tmpItem.toLowerCase().indexOf('status=') > -1 && tmpItem.toLowerCase()=='status=1' &&  tmpPosition.browser[$.browser.name] == 40){
 					addStatusOpt= true;
 				} 
@@ -447,7 +452,8 @@ _$base.page ={
 				tmpOpt += (addFlag ? ( (tmpOpt==''?'':',') + tmpItem ) : '');
 			}
 
-			tmpOpt += addScrollbarOpt?'scrollbars=yes':'';
+			tmpOpt += addScrollbarOpt?',scrollbars=yes':'';
+			tmpOpt += addResizeableOpt?',resizable=yes':'';
 
 			if(typeof options.position=='undefined' && _h !=0 ){
 				tmpPosition.align='center';

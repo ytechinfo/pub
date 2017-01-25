@@ -675,13 +675,27 @@
 			if(selectVal.length >0){
 				var removeItem; 
 				selectVal.each(function (i, item){
+					var tmpKey = $(item).attr('data-val'); 
+					removeItem = _this.options.sourceItem.items[_this.config.itemKey.sourceIdx[tmpKey]];
+
 					if($.isFunction(_this.options.beforeTargetMove)){
 						_this.options.beforeTargetMove($(item)); 
 					}
-					var tmpKey = $(item).attr('data-val'); 
-					removeItem = _this.options.sourceItem.items[_this.config.itemKey.sourceIdx[tmpKey]];
+					
+					var removeFlag = false; 
+
+					for(var tmpPageNo in _this.addItemList){
+						if(_this.config.currPage != tmpPageNo){
+							if(typeof _this.addItemList[tmpPageNo][tmpKey] !=='undefined'){
+								removeFlag = true ; 
+								break;
+							}
+						}
+					}
 					if(removeItem){
-						_this.sourceElement.find(_this.options.itemSelector+'[data-val="'+tmpKey+'"]').removeClass(_this.options.addItemClass);
+						if(removeFlag !== true){
+							_this.sourceElement.find(_this.options.itemSelector+'[data-val="'+tmpKey+'"]').removeClass(_this.options.addItemClass);
+						}
 					}
 					$(item).remove();
 					
