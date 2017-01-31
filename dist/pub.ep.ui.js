@@ -53,7 +53,7 @@ _$base.dialog={
 	closeDialog : function (){
 		$(".ui-dialog-titlebar .ui-dialog-titlebar-close").trigger('click');
 	}
-	,text : function (text , opt){
+	,html : function (text , opt){
 		this._dialog('text',text ,opt);
 	}
 	/**
@@ -66,7 +66,7 @@ _$base.dialog={
 		this._dialog('frame',_url ,opt);
 	}
 	,_dialog : function (mode , dialogInfo , opt){
-var _opener = parent || window;
+		var _opener = parent || window;
 		
 		var options = $.extend(true, {
 			targetID : '_main_div_dialog_frame_id_'
@@ -112,6 +112,7 @@ var _opener = parent || window;
 		}else{
 			modalOption.width = options.width;
 			modalOption.height =options.height;
+			modalOption.open = function (){};
 			dialogHtm = dialogInfo;
 		}
 		
