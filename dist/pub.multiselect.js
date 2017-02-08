@@ -6,6 +6,19 @@
  * http://www.opensource.org/licenses/mit-license.php
 */
 ;(function ($, window, document, undefined) {
+if (!Object.keys) {
+  Object.keys = function(obj) {
+    var keys = [];
+
+    for (var i in obj) {
+      if (obj.hasOwnProperty(i)) {
+        keys.push(i);
+      }
+    }
+
+    return keys;
+  };
+}
 
     var pluginName = "pubMultiselect"
 		,initialized = false
@@ -150,7 +163,7 @@
 					_this.config.currPage = currPageNo; 
 
 					if(opts.pageInfo.emptyMessage !== false && _this.config.pageNumInfo[currPageNo].length < 1){
-						selectObj.targetElement.empty().html('<li class="empty-message">'+opts.pageInfo.emptyMessage+'</li>');
+						selectObj.targetElement.empty().html(_this.getEmptyMessage());
 					}else{
 						selectObj.targetElement.empty().html(_this.config.pageNumInfo[currPageNo].join(''));
 					}
@@ -212,12 +225,19 @@
 				
 				tmpSourceItem.items = items;
 				len = tmpSourceItem.items.length;
-
+				var pageMaxVal = _opts.pageInfo.max; 
 				for(var i=0 ;i < len; i++){
 					tmpItem = tmpSourceItem.items[i];
 					var tmpSelctOptVal = tmpItem[valKey]; 
+					var selectFlag = false; 
+					for(var j = 1 ;j <=pageMaxVal; j++){
+						if(typeof _this.addItemList[j][tmpSelctOptVal] !=='undefined') {
+							selectFlag = true; 
+							continue; 
+						}
+					}
 
-					strHtm.push(_this.getItemHtml(type,tmpSelctOptVal, tmpItem));
+					strHtm.push(_this.getItemHtml(type,tmpSelctOptVal, tmpItem , selectFlag));
 					_this.config.itemKey.sourceIdx[tmpSelctOptVal] = i;
 				}
 
@@ -225,7 +245,7 @@
 				
 				_this._setDragOpt();
 			}else{
-				var tmpTargetItem= _opts.targetItem; 
+				var tmpTargetItem= _opts.targetItem;
 
 				tmpTargetItem.items = items;
 				len = tmpTargetItem.items.length;
@@ -285,9 +305,12 @@
 
 						_this.sourceElement.find(_opts.itemSelector+'[data-val="'+tmpSelctOptVal+'"]').addClass(_opts.addItemClass);
 					}
-				
-					_this.targetElement.empty().html(_this.config.pageNumInfo[_this.config.currPage].join(''));
-					
+
+					if(_this.config.pageNumInfo[_this.config.currPage].length > 0){
+						_this.targetElement.empty().html(_this.config.pageNumInfo[_this.config.currPage].join(''));
+					}else{
+						_this.targetElement.empty().html(_this.getEmptyMessage());
+					}
 				}else{
 					_this.sourceElement.find(_opts.itemSelector).removeClass(_opts.addItemClass);
 				}
@@ -705,6 +728,12 @@
 						_this.options.afterTargetMove(removeItem); 
 					}
 				});
+
+				
+
+				if(Object.keys(_this.addItemList[_this.config.currPage]).length < 1){
+					_this.targetElement.empty().html(_this.getEmptyMessage());
+				}
 			}else{
 				if(_this.options.message.delEmpty !== false){
 					alert(_this.options.message.delEmpty);
@@ -713,13 +742,20 @@
 			}
 		}
 		/**
+		 * @method getEmptyMessage
+		 * @description empty item message
+		 */	
+		,getEmptyMessage : function (){
+			return '<li class="empty-message">'+this.options.pageInfo.emptyMessage+'</li>';
+		}
+		/**
 		 * @method getItemHtml
 		 * @param type {String} source , target
 		 * @param seletVal {String} source , target
 		 * @param tmpItem {Object} select item
 		 * @description 선택된 html 얻기.
 		 */	
-		,getItemHtml: function (type  , seletVal , tmpItem){
+		,getItemHtml: function (type  , seletVal , tmpItem, selectFlag){
 			var _this = this
 				, _opts = _this.options
 				, sourceItem = _opts.sourceItem
@@ -740,7 +776,7 @@
 					renderTemplate = tmpItem[txtKey];
 				}
 
-				return '<li data-val="'+seletVal+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-select-item '+styleClass+'">'+renderTemplate+'</li>'; 
+				return '<li data-val="'+seletVal+'" '+searchAttrName+'="'+escape(tmpItem[searchAttrKey])+'" class="pub-select-item '+(selectFlag==true?_opts.addItemClass+' ' :'')+styleClass+'">'+renderTemplate+'</li>'; 
 			}else{
 				if($.isFunction(_opts.targetItem.render)){
 					renderTemplate = _opts.targetItem.render.call(sourceItem,{text : tmpItem[txtKey] , item : tmpItem});

@@ -155,10 +155,9 @@
 
 <script>
 var selectObj;
-var tmpSourceItem = []
+var tmpSourceItem = [] , paramSourceItem=[]; 
 $(document).ready(function (){
-	var paramSourceItem = [],
-		paramTargetItem = [];
+	var paramTargetItem = [];
 	for(var i = 0 ;i <20; i++){
 		paramSourceItem.push({LINK_ID :'0000'+i ,LINK_NAME:'name'+i});
 	}
@@ -169,9 +168,9 @@ $(document).ready(function (){
 	
 
 	for(var i = 0 ;i <10; i++){
-		var pageNum = 1; 
+		var pageNum = 3; 
 		if(i > 5){
-			pageNum =2;
+			pageNum =4;
 		}
 		paramTargetItem.push({LINK_ID :'0000'+i ,LINK_NAME:'name'+i,pageNo:pageNum});
 	}
@@ -194,7 +193,7 @@ $(document).ready(function (){
 		,targetItem : {
 			optVal : 'LINK_ID'
 			,optTxt : 'LINK_NAME'
-			,items :paramTargetItem
+			,items : []
 			,click: function (e, sEle){
 				//console.log(e,sEle);
 			}
@@ -207,6 +206,9 @@ $(document).ready(function (){
 			}
 		}
 	}); 
+
+
+	selectObj.setItem('target',paramTargetItem);
 
 
 	//추가
