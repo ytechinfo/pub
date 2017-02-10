@@ -65,6 +65,9 @@ _$base.dialog={
 	,frame :function (_url , opt){
 		this._dialog('frame',_url ,opt);
 	}
+	,frameHtml : function (html ,opt){
+		this._dialog('frameHtml',html ,opt);
+	}
 	,_dialog : function (mode , dialogInfo , opt){
 		var _opener = parent || window;
 		
@@ -80,7 +83,7 @@ _$base.dialog={
 		var _targetId = options.targetID; 
 		
 		if(_opener.$('#'+_targetId).length < 1){
-			_opener.$('body').append('<div id="'+_targetId+'" style="overflow:hidden;"></div>');
+			_opener.$('body').append('<div id="'+_targetId+'"></div>');
 		}
 				
 		if(_opener.$('#'+_targetId+'iframe').length > 0){
@@ -109,6 +112,17 @@ _$base.dialog={
 				_opener.PubEP.page.view(dialogInfo, "iframe", $.extend({},{target:"#"+_targetId+'iframe', gubun:"dialog", gubunkey:"portletTabConfig",name:decodeURIComponent("게시판 목록 관리")},opt));
 			}
 			dialogHtm = '<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>'; 
+		}else if(mode=='frameHtml'){
+			modalOption.width = 'auto';
+			modalOption.height = 'auto';
+			modalOption.open =function(){
+				var previewFrame = document.getElementById(_targetId+'iframe');
+		        var preview =  previewFrame.contentDocument ||  previewFrame.contentWindow.document;
+		        preview.open();
+		        preview.write(dialogInfo);
+		        preview.close();
+			}
+			dialogHtm = '<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>';
 		}else{
 			modalOption.width = options.width;
 			modalOption.height =options.height;
