@@ -69,7 +69,13 @@ _$base.dialog={
 		this._dialog('frameHtml',html ,opt);
 	}
 	,_dialog : function (mode , dialogInfo , opt){
-		var _opener = parent || window;
+		var _opener = window;
+		
+		if(typeof top.PubEPUI !=='undefined'){
+			_opener = top; 
+		}else if(typeof parent.PubEPUI !=='undefined'){
+			_opener = parent; 
+		}
 		
 		var options = $.extend(true, {
 			targetID : '_main_div_dialog_frame_id_'
@@ -84,6 +90,12 @@ _$base.dialog={
 		
 		if(_opener.$('#'+_targetId).length < 1){
 			_opener.$('body').append('<div id="'+_targetId+'"></div>');
+		}
+		
+		if(options.scrolling=='no'){
+			$('#'+_targetId).css('overflow', 'hidden');
+		}else{
+			$('#'+_targetId).css('overflow', 'auto');
 		}
 				
 		if(_opener.$('#'+_targetId+'iframe').length > 0){

@@ -649,6 +649,18 @@ _$base.util = {
 		return this.dateFormat(a,format);
 	}
 	/**
+	 * @method charFill
+	 * @param num 
+	 * @param width 
+	 * @param fillchar 
+	 * @description 문자 채우기
+	 */	
+	,charFill :function(num, width, fillChar) {
+		fillChar = typeof fillChar !=='undefined' ? fillChar :'0'; 
+		var str = String((new Array(width+1)).join(fillChar) + num).slice(-width)
+		return str
+	}
+	/**
 	 * @method domain
 	 * @param mode
 	 * @description current domain
