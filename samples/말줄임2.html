@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+ <HEAD>
+  <TITLE> ±€¡Ÿ¿”</TITLE>
+
+<script>
+
+function testF(){
+	
+}
+
+</script>
+
+<style>
+/*
+.ellip {
+  display: block;
+  height: 100%;
+}
+
+.ellip-line {
+  display: inline-block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: normal;
+  max-width: calc(100% - 20px);
+}
+
+.ellip,
+.ellip-line {
+  position: relative;
+  overflow: hidden;
+}
+*/
+.ellip {
+  display: inline-block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: normal;
+  max-width: calc(100% - 20px);
+  overflow: hidden;
+}
+
+.tbl{
+	width:100%;
+	border:1px solid #f1f1f1;
+    table-layout: fixed;
+}
+.ellip-next{
+	background:blue;
+}
+.first{
+	width:30%;
+}
+.second{
+	width:70%;
+}
+</style>
+ </HEAD>
+
+ <BODY>
+	<br/>
+	<br/>
+	<br/>
+   <div>
+   <table class="tbl">
+   <tr>
+   <td class="first">
+
+        <span class="ellip ellip-line">
+			Lorem ipsum dolor sit amet, consectetur asdfasdfasdfasdfasdfasdfasdfasdfasdfLorem ipsum dolor sit amet
+		</span>
+		<span class="ellip-next">
+			A
+		</span>
+ 
+	</td>
+	<td class="second">
+		asdf
+	</td>
+	</tr>
+	</table>
+</div>
+ </BODY>
+</HTML>
