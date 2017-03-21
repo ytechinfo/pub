@@ -76,7 +76,7 @@ _$base.dialog={
 		}else if(typeof parent.PubEPUI !=='undefined'){
 			_opener = parent; 
 		}
-		
+		opt.height = opt.height+'';
 		var options = $.extend(true, {
 			targetID : '_main_div_dialog_frame_id_'
 			,title : '설정'
@@ -112,6 +112,8 @@ _$base.dialog={
 			}
 		}
 		
+		modalOption = $.extend(true,modalOption,options);
+		
 		var dialogHtm;
 		
 		if(mode=='frame'){
@@ -146,7 +148,6 @@ _$base.dialog={
 			.dialog(modalOption)
 			.dialog("open").parent().find('.ui-dialog-title').html('<h1 class="tit">'+options.title+'</h1>');
 		
-		
 		if(options.cssStyle!=''){
 			_opener.$('#'+_targetId).attr('style',options.cssStyle);
 		}
@@ -167,7 +168,7 @@ _$base.dialog={
 			})
 		}
 		
-		if(options.bgiframe !== false || globalUIOption.dialogBgIframe ===true){
+		if(options.bgiframe !== false && globalUIOption.dialogBgIframe !== false){
 			_opener.$('.ui-widget-overlay.ui-front').append('<div class="bg-iframe-overlay" style="display:block;position:fixed;z-index:1;top:0px;left:0px;width:100%;height:100%;opacity:0;"></div>')
 			_opener.$('.ui-widget-overlay.ui-front').bgiframe();
 			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').off('click');

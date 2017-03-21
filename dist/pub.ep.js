@@ -179,6 +179,11 @@ _$base.req ={
 	ajax:function (option){
 		
 		var loadSelector = option.loadSelector ?option.loadSelector :false; 
+		
+		if(option.dataType == 'jsonp'){
+			option.timeout = option.timeout || 10000;
+		}
+		
 		$.ajax($.extend({}, {
 			type :'get'
 			,cache: false
