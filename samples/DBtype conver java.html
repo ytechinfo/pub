@@ -1,0 +1,287 @@
+<html>
+<head>
+<title>테이블 컬럼 카멜 표기법 변환기</title>
+<meta http-ｅquiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="css/style.css" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script>
+
+function convertCamel(camelStr){
+	
+    if(camelStr == '') {
+        return camelStr;
+    }
+    camelStr = camelStr.toLowerCase();
+
+    // conversion
+    var returnStr = camelStr.replace(/_(\w)/g, function(word) {
+        return word.toUpperCase();
+    });
+    returnStr = returnStr.replace(/_/g, "");
+    
+    return returnStr; 
+}
+
+alert(convertCamel('ASDF_FEFEf'));
+
+    $(document).ready(function() {
+        // default data
+        var sample = ['USER_ID\n'];
+        sample.push('ADDR_HOME_STREET\n');
+        sample.push('YOU_LOVE_ME_SO_MUCH\n');
+        $('#monkeyinput').text(sample.join(''));
+        $('#code_basic').click();
+    });
+    function convert() {
+        var input = $('#monkeyinput').val();
+        var count = 0;
+        var output1 = '';
+        var output2 = '';
+        var lines = input.split(/\n/);
+        for(var i = 0, maxi = lines.length; i < maxi; i++) {
+            var before = lines[i];
+            before = $.trim(before.toLowerCase());
+            // skip empty lines
+            if(before == '') {
+                continue;
+            }
+            // conversion
+            var after = before.replace(/_(\w)/g, function(word) {
+                return word.toUpperCase();
+            });
+            after = after.replace(/_/g, "");
+            // console.log('\t' + before + ' ->> ' + after);
+            // make result for each
+            if($('#code_basic:checked').val()) {
+                output1 += (after + '\n');
+            }
+            // Value Object
+            else if($('#code_vo:checked').val()) {
+                var modifier = $('#modifier option:selected').val();
+                var datatype = $('#datatype option:selected').val();
+                // hibernate annatation
+                if(document.conf.hibernate.checked) {
+                    output1 += ('@Column(name = "' + before + '")\n' + modifier + ' ' + datatype + ' ' + after + ';\n\n');
+                }
+                else {
+                    output1 += (modifier + ' ' + datatype + ' ' + after + ';\n');
+                }
+            }
+            // ResultMap
+            else if($('#code_resultmap:checked').val()) {
+                output1 += ('\t<result property="' + after + '" column="' + before + '" />\n');
+            }
+            // Select
+            else if($('#code_select:checked').val()) {
+    before=before.toUpperCase();
+                if(count == 0) {
+                    output1 += (before + ' AS ' + after);
+                }
+                else {
+                    output1 += (',\n\t' + before + ' AS ' + after);
+                }
+                if(count == 0) {
+                    output2 += (before + ' = #{' + after + '}\n');
+                }
+                else {
+                    output2 += ('AND\t' + before + ' = #{' + after + '}\n');
+                }
+            }
+            // Insert
+            else if($('#code_insert:checked').val()) {
+                if(count == 0) {
+                    output1 += (before);
+                }
+                else {
+                    output1 += (', ' + before);
+                }
+                if(count == 0) {
+                    output2 += ('#{' + after + '}');
+                }
+                else {
+                    output2 += (', #{' + after + '}');
+                }
+            }
+            // Update
+            else if($('#code_update:checked').val()) {
+                if(count == 0) {
+                    output1 += (before + ' = #{' + after + '}#');
+                }
+                else {
+                    output1 += (',\n\t' + before + ' = #{' + after + '}');
+                }
+                if(count == 0) {
+                    output2 += (before + ' = #{' + after + '}\n');
+                }
+                else {
+                    output2 += ('AND\t' + before + ' = #{' + after + '}\n');
+                }
+            }
+            // Delete
+            else if($('#code_delete:checked').val()) {
+                if(count == 0) {
+                    output1 += (before + ' = #{' + after + '}\n');
+                }
+                else {
+                    output1 += ('AND\t' + before + ' = #{' + after + '}\n');
+                }
+            }
+            else {
+                output1 += (after + '\n');
+            }
+            count++;
+        }
+        var output = '';
+        if($('#code_basic:checked').val()) {
+            output = output1;
+        }
+        else if($('#code_vo:checked').val()) {
+            output = output1;
+        }
+        else if($('#code_resultmap:checked').val()) {
+            output = '<resultMap id="' + document.conf._id.value + '" class="' + document.conf._class.value + '">\n';
+            output += output1;
+            output += '</resultMap>';
+        }
+        else if($('#code_select:checked').val()) {
+            output = 'SELECT\t';
+            output += output1 + '\n';
+            output += 'FROM\t' + getTableName() + ' \n';
+            output += 'WHERE\t';
+            output += output2;
+        }
+        else if($('#code_insert:checked').val()) {
+            output = 'INSERT INTO ' + getTableName() + '(' + output1 + ') \n';
+            output += 'VALUES(' + output2 + ')';
+        }
+        else if($('#code_update:checked').val()) {
+            output = 'UPDATE\t' + getTableName() + ' \n';
+            output += 'SET\t' + output1 + '\n';
+            output += 'WHERE\t';
+            output += output2;
+        }
+        else if($('#code_delete:checked').val()) {
+            output = 'DELETE FROM ' + getTableName() + ' \n';
+            output += 'WHERE\t';
+            output += output1;
+        }
+        $('#monkeyoutput').text(output);
+    }
+    function getTableName() {
+        var tableName = $('input[name=table]').val();
+        if(tableName != '') {
+            return tableName;
+        }
+        return '[table_name]';
+    }
+    function fillOptionBox() {
+        var html = [];
+        html.push('<p>');
+        html.push('Table: <input id="table" type="text" name="table" on keyup="convert();" />');
+        html.push('</p>');
+        $('#options').html(html.join(''));
+        $('#table').focus();
+        convert();
+    }
+</script>
+</head>
+<body>
+ <h1>테이블 컬럼 카멜 표기법 변환기</h1>
+ <p>이 프로그램을 통해 Underscore Notation으로 표기된 테이블 컬럼명을 Camel Notation으로
+  변환된 자바 필드명으로 변경할 수 있다.</p>
+ <h2>사용법</h2>
+ <ol>
+  <li>테이블정의서에서 복사한 컬럼명을 왼쪽 Textarea에 붙여넣는다.</li>
+  <li>자동으로 Camel Notation으로 변경된 결과가 우측 Textarea에 표시된다.</li>
+  <li>필요한 경우 여러가지 Conversion Style을 선택할 수 있다.
+   <ul>
+    <li>Basic: 기본적인 Camel Notation 변환만 수행</li>
+    <li>VO: 자바의 필드 선언문으로 변환 (Hibernate Annotation도 추가로 지정 가능)</li>
+    <li>ResultMap: mybatis에서 사용하는</li>
+    <li>Select: mybatis에서 사용하는 select 쿼리문으로 변환</li>
+    <li>Insert: mybatis에서 사용하는 insert 쿼리문으로 변환</li>
+    <li>Update: mybatis에서 사용하는 update 쿼리문으로 변환</li>
+    <li>Delete: mybatis에서 사용하는 delete 쿼리문으로 변환</li>
+   </ul>
+  </li>
+  <li>우측 Textarea의 결과를 복사하여 필요한 곳에서 사용한다.</li>
+ </ol>
+ <form name="conf">
+  <fieldset>
+   <legend> Configurations </legend>
+   <p>
+    <strong>Conversion Style</strong> <br>
+    <input id="code_basic" type="radio" name="code" checked />
+    <label for="code_basic">Basic</label> 
+    <input id="code_vo" type="radio" name="code" />
+    <label for="code_vo">VO</label>  <input id="code_resultmap" type="radio" name="code" />
+    <label for="code_resultmap">ResultMap</label> 
+    <input id="code_select" type="radio" name="code" />
+    <label for="code_select">Select</label> 
+    <input id="code_insert" type="radio" name="code" />
+    <label for="code_insert">Insert</label> 
+    <input id="code_update" type="radio" name="code" />
+    <labelfor="code_update">Update</label> 
+    <input id="code_delete" type="radio" name="code" />
+    <label for="code_delete">Delete</label> 
+    <script type="text/javascript">
+                    $('#code_basic').click(function() {
+                        $('#options').html('');
+                        convert();
+                    });
+    
+                    $('#code_vo').click(function() {
+                        var html = [];
+                        html.push('<p>');
+                        html.push('<strong>Modifier Datatype</strong><br>');
+                        html.push('<select id="modifier" on change="convert();">');
+                        html.push('    <option>public</option>');
+                        html.push('    <option>protected</option>');
+                        html.push('    <option selected>private</option>');
+                        html.push('</select>');
+                        html.push('<select id="datatype" on change="convert();">');
+                        html.push('    <option>int</option>');
+                        html.push('    <option>long</option>');
+                        html.push('    <option>float</option>');
+                        html.push('    <option>double</option>');
+                        html.push('    <option>byte[]</option>');
+                        html.push('    <option>boolean</option>');
+                        html.push('    <option>char</option>');
+                        html.push('    <option selected>String</option>');
+                        html.push('</select>');
+                        html.push('</p>');
+                        html.push('<p>');
+                        html.push('<strong>Hibernate</strong><br>');
+                        html.push('<input type="checkbox" name="hibernate" value="hibernate" id="hibernate" on click="convert();" /><label for="hibernate">Use hibernate annotation</label>');
+                        html.push('</p>');
+                        $('#options').html(html.join(''));
+                        convert();
+                    });
+    
+                    $('#code_resultmap').click(function() {
+                        var html = [];
+                        html.push('<p>');
+                        html.push('id: <input id="_id" type="text" name="id" on keyup="convert();" /> ');
+                        html.push('class: <input id="_class" type="text" name="class" on keyup="convert();" />');
+                        html.push('</p>');
+                        $('#options').html(html.join(''));
+                        $('#_id').focus();
+                        convert();
+                    });
+    
+                    $('#code_select').click(fillOptionBox);
+                    $('#code_insert').click(fillOptionBox);
+                    $('#code_update').click(fillOptionBox);
+                    $('#code_delete').click(fillOptionBox);
+                </script>
+   </p>
+   <div id="options"></div>
+  </fieldset>
+ </form>
+ <br>
+ <p>
+  <textarea id="monkeyinput" class="camel" style="width: 48.5%; height: 50%;" on keyup="convert();"></textarea> 
+  <textarea id="monkeyoutput" class="camel" style="width: 48.5%; height: 50%;" readonly></textarea>
+ </p>
+</body>
+</html>

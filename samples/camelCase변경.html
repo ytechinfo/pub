@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+ <HEAD>
+  <TITLE> New Document </TITLE>
+	<script src="C:/eclipse/jee-mars/eclipse/aig_workspace/ep_web/js/jquery.min.js"></script>
+	<script src="C:/eclipse/jee-mars/eclipse/aig_workspace/ep_web/js/jquery-ui.min.js"></script>
+
+<style>
+textarea {
+	width:100%;
+}
+</style>
+<script>
+
+function testF(){
+	
+}
+
+</script>
+ </HEAD>
+
+ <BODY>
+ <div style="text-align: center;">
+	소문자전환해서 변환<input type="checkbox" id="lowercaseYN">
+	<a href="javascript:;" class="change-btn">변환</a>
+ </div>
+   <table style="width:100%;height:100%">
+		<tr valign="top">
+			<td>
+				<textarea rows="20" id="before"></textarea>
+			</td>
+			<td>
+				<textarea rows="20" id="after"></textarea>
+			</td>
+		</tr>
+	</table>
+ </BODY>
+</HTML>
+<script>
+
+function convertCamel(camelStr){
+	
+    if(camelStr == '') {
+        return camelStr;
+    }
+	if($('#lowercaseYN').is(':checked')){
+		camelStr = camelStr.toLowerCase();
+	}
+    // conversion
+    var returnStr = camelStr.replace(/_(\w)/g, function(word) {
+        return word.toUpperCase();
+    });
+    returnStr = returnStr.replace(/_/g, "");
+    
+    return returnStr; 
+}
+
+function capitalizeFirstLetter(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function fnChange(){
+	var before = $('#before').val();
+	
+	var beforeArr = before.split('\n');
+
+	var reval = [];
+	for(var i = 0 ;i < beforeArr.length ;i++){
+		var item = beforeArr[i];
+
+		reval.push(convertCamel(item));
+	}
+
+	$('#after').val(reval.join('\n'));
+}
+
+$(document).ready(function (){
+	$('.change-btn').on('click',function (){
+		fnChange();
+	})
+})
+</script>
