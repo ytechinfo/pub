@@ -21,7 +21,8 @@ var _initialized = false
 		colHeight:25
 	}
 	,bigData : {
-		gridCount : 20
+		gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+		,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
 	}
 	,autoResize : true
 	,resizeGridWidthFixed : false	// 리사이즈시 그리드 리사이즈 여부.
@@ -435,9 +436,29 @@ Plugin.prototype ={
 		}else{
 			_this.drawGrid('tbody', gridMode);
 		}
-		_this.config.pubGridBodyHeightElement.css('height', _this.options.tbodyItem.length* _this.options.rowOptions.colHeight);
+
+		var itemHeight = _this.options.tbodyItem.length* _this.options.rowOptions.colHeight
+			,unitHeight = _this.options.bigData.spaceUnitHeight
+			,loopCnt = Math.floor(itemHeight/unitHeight);
+		
+		var itemHeightHtm = [], topHeightHtm = [];
+
+		for(var i =0 ;i <loopCnt ;i++ ){
+			itemHeightHtm.push('<div _idx="'+i+'" style="height:'+unitHeight+'px;"></div>');
+			topHeightHtm.push('<div data-top-idx="'+i+'" style="height:0px;"></div>');
+		}
+
+		if(itemHeight%unitHeight != 0){
+			itemHeightHtm.push('<div style="height:'+itemHeight%unitHeight+'px;"></div>');
+			topHeightHtm.push('<div data-top-idx="'+(loopCnt)+'" style="height:0px;"></div>');
+			loopCnt+=1;
+		}
+		
+		_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
+		_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
 		// scroll height 값
-		_this.config.scroll.height = $('#'+_this.prefix+'pubGrid-body-container').height() - _this.config.bodyScroll.height();
+		_this.config.scroll.height = itemHeight - _this.config.bodyScroll.height();
+		_this.config.scroll.spaceCount = loopCnt;
 	}
 	/**
      * @method getHeaderHtml
@@ -452,21 +473,21 @@ Plugin.prototype ={
 			+'	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container">'
 			+'		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper">'
 			+'			<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container" style="width: '+(_this.config.totGridWidth+_this.options.scrollWidth)+'px;">'
-			+'				<table id="'+_this.prefix+'pubGrid-header" class="pubGrid-header" style="width:'+_this.config.gridWidth+'px" onselectstart="return false">'
+			+'				<table id="'+_this.prefix+'pubGrid-header" class="pubGrid-header" style="width:'+_this.config.gridWidth+'px;" onselectstart="return false">'
 			+'				#theaderHtmlArea#</table>'
 			+'			</div>'	
 			+'		</div>'
 			+'		<div id="pubGrid-body-wrapper" class="pubGrid-body-wrapper">'
 			+'			<div id="'+_this.prefix+'pubGrid-body-scroll" class="pubGrid-body-scroll" style="height:'+_this.options.height+'px;">'
 			+'			  <div id="'+_this.prefix+'pubGrid-body-container" class="pubGrid-body-container">'
-			+'				<div id="'+_this.prefix+'pubGrid-body-top-space" class="pubGrid-body-top-space" style="width: 0px; height: 0px; padding:0px;line-height:0px;"></div>'
+			+'				<div id="'+_this.prefix+'pubGrid-body-top-space" class="pubGrid-body-top-space" style="width: 0px; padding:0px;line-height:0px;"></div>'
 			+'				<table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body" style="width:'+_this.config.gridWidth+'px">'
 			+'					<colgroup id="'+_this.prefix+'colgroup_body">'+_this._getColGroup(_this.prefix+'colbody')+'</colgroup>'
 			+'					<tbody class="pub-cont-tbody-top"></tbody>'
 			+'					<tbody class="pub-cont-tbody-middle"></tbody>'
 			+'					<tbody class="pub-cont-tbody-bottom"></tbody>'
 			+'				</table>'	
-			+'				<div id="'+_this.prefix+'pubGrid-body-height" class="pubGrid-body-height" style="position:absolute;z-index:-1;top:0px;width: 1px; height: 0px; padding:0px;"></div>'
+			+'				<div id="'+_this.prefix+'pubGrid-body-height" class="pubGrid-body-height" style="position:absolute;z-index:-1;top:0px;width: 1px;padding:0px;"></div>'
 			+'			  </div>'
 			+'			</div>'
 			+'		</div>'
@@ -482,12 +503,12 @@ Plugin.prototype ={
 		
 		if(tbi.length > 0){
 			var tbiItem, clickFlag = false;
-			var startIdx = 0,endIdx = tbi.length;
+			var startIdx = 0,endIdx = tbi.length, itemVal;
 			
 			if(itemIdx !='all'){
-				var idxInfo = this.getItemIdxInfo(itemIdx);
-				startIdx = idxInfo.startIdx;
-				endIdx = idxInfo.endIdx;
+				var itemLen = endIdx; 
+				startIdx = (itemIdx-1) * this.options.bigData.gridCount
+				endIdx = itemLen> startIdx ? ( itemLen > (startIdx + this.options.bigData.gridCount) ? (startIdx + this.options.bigData.gridCount) : itemLen) : 0;
 			}
 			
 			for(var i =startIdx ; i < endIdx; i++){
@@ -497,8 +518,10 @@ Plugin.prototype ={
 				for(var j=0 ;j <tci.length; j++){
 					thiItem = tci[j];
 					clickFlag = thiItem.colClick;
+
+					itemVal = tbiItem[thiItem.key];
 					
-					strHtm.push('<td class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-colinfo="'+i+','+j+'"><div class="pub-content '+thiItem._alignClass+'"><div class="pub-content-cell"><div class="pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'">'+tbiItem[thiItem.key]+'</div></div></div></td>');
+					strHtm.push('<td class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-colinfo="'+i+','+j+'"><div class="pub-content '+thiItem._alignClass+'"><div class="pub-content-cell"><div class="pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'">'+itemVal+'</div></div></div></td>');
 				}
 			}
 		}else{
@@ -506,18 +529,6 @@ Plugin.prototype ={
 		}
 		
 		return strHtm.join('');
-	}
-	,getItemIdxInfo : function (itemIdx){
-
-		var	itemLen = this.options.tbodyItem.length
-			,startIdx = (itemIdx-1) * this.options.bigData.gridCount
-			,endIdx = itemLen> startIdx ? ( itemLen > (startIdx + this.options.bigData.gridCount) ? (startIdx + this.options.bigData.gridCount) : itemLen) : 0;
-
-		return {
-			startIdx : startIdx
-			,endIdx: endIdx
-			,len : (endIdx-startIdx > 0 ?endIdx-startIdx : 0)
-		}
 	}
 	/**
      * @method drawGrid
@@ -622,35 +633,45 @@ Plugin.prototype ={
 			,topIdx =viewItemIdx ,middleIdx=viewItemIdx+1 , bottomIdx = viewItemIdx+2; 
 	
 		if(type=='scroll'){
+
 			if(updown =='down'){
-				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-top').empty().remove();
-				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-middle').addClass('pub-cont-tbody-top').removeClass('pub-cont-tbody-middle');
-				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-bottom').addClass('pub-cont-tbody-middle').removeClass('pub-cont-tbody-bottom');
-				_this.config.bodyElement.append('<tbody class="pub-cont-tbody-bottom">'+tbodyHtml(bottomIdx)+'</tbody>');
+				var topEle = _this.config.bodyElement.find('.pub-cont-tbody-top').addClass('pub-cont-tbody-top-temp').removeClass('pub-cont-tbody-top');
+				_this.config.bodyElement.find('.pub-cont-tbody-middle').addClass('pub-cont-tbody-top').removeClass('pub-cont-tbody-middle');
+				_this.config.bodyElement.find('.pub-cont-tbody-bottom').addClass('pub-cont-tbody-middle').removeClass('pub-cont-tbody-bottom');
+
+				topEle.addClass('pub-cont-tbody-bottom').removeClass('pub-cont-tbody-top-temp');
+				_this.config.bodyElement.find('.pub-cont-tbody-middle').after(topEle);
+				topEle.empty().html(tbodyHtml(bottomIdx));
 			}else if(updown =='up'){
-				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-bottom').empty().remove();
-				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-middle').addClass('pub-cont-tbody-bottom').removeClass('pub-cont-tbody-middle');
-				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-top').addClass('pub-cont-tbody-middle').removeClass('pub-cont-tbody-top');
-				_this.config.bodyElement.prepend('<tbody class="pub-cont-tbody-top">'+tbodyHtml(topIdx)+'</tbody>');
+				var bottomEle = _this.config.bodyElement.find('.pub-cont-tbody-bottom').addClass('pub-cont-tbody-bottom-temp').removeClass('pub-cont-tbody-bottom');
+				_this.config.bodyElement.find('.pub-cont-tbody-middle').addClass('pub-cont-tbody-bottom').removeClass('pub-cont-tbody-middle');
+				_this.config.bodyElement.find('.pub-cont-tbody-top').addClass('pub-cont-tbody-middle').removeClass('pub-cont-tbody-top');
+				
+				bottomEle.addClass('pub-cont-tbody-top').removeClass('pub-cont-tbody-bottom-temp');
+				_this.config.bodyElement.find('.pub-cont-tbody-middle').before(bottomEle);
+				bottomEle.empty().html(tbodyHtml(topIdx));
 			}
+
 		}else{
-			$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-top').empty().html(tbodyHtml(topIdx));
-			$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-middle').empty().html(tbodyHtml(middleIdx));
-			$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-bottom').empty().html(tbodyHtml(bottomIdx));
+			_this.config.bodyElement.find('.pub-cont-tbody-top').empty().html(tbodyHtml(topIdx));
+			_this.config.bodyElement.find('.pub-cont-tbody-middle').empty().html(tbodyHtml(middleIdx));
+			_this.config.bodyElement.find('.pub-cont-tbody-bottom').empty().html(tbodyHtml(bottomIdx));
 		}
 		
-		
-		// top space height 
-		_this.config.pubGridTopSpaceElement.css('height', (bigDataGridCount* viewItemIdx -bigDataGridCount) * _this.options.rowOptions.colHeight);
-		
-		/*
-		var lastItemIdx = tbi.length - ((viewItemIdx+2) * bigDataGridCount);
-		var bottomHeight = lastItemIdx > 0 ? lastItemIdx * _this.options.rowOptions.colHeight : 0;
+		var topSpaceHeight = (bigDataGridCount* viewItemIdx -bigDataGridCount) * _this.options.rowOptions.colHeight; 
 
-		// bottom space height 
-		_this.config.pubGridBodyHeightElement.css('height',bottomHeight);
-		*/
+		var spaceItemCount = Math.floor(topSpaceHeight /_this.options.bigData.spaceUnitHeight)
+			,overHeight = topSpaceHeight % _this.options.bigData.spaceUnitHeight; 
 		
+		
+		for(var i =0 ;i < _this.config.scroll.spaceCount; i++){
+			if(i < spaceItemCount){
+				_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+i+'"]').css('height', _this.options.bigData.spaceUnitHeight);
+			}else{
+				_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+i+'"]').css('height', 0);
+			}
+		}
+		_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+spaceItemCount+'"]').css('height', overHeight);	
 		_this._setBodyEvent();
 	}
 	/**
@@ -1101,19 +1122,52 @@ Plugin.prototype ={
      */
 	,excelExport : function (opt){
 
-		var headerHTML = this.config.headerContainerElement.html();
-
-		headerHTML = headerHTML.replace('<tbody></tbody>', this.getTbodyHtml(this.options.tbodyItem, this.options.tColItem,'all'));
-
+		var downloadInfo =this.config.headerContainerElement.html();
+		
+		var cssText = '<style type="text/css">';
+		cssText += opt.style || '';
+        cssText += 'td {border:thin   solid #524848;border-collapse: collapse;}';
+        cssText += '</style>';
+		
+		downloadInfo = downloadInfo.replace('<tbody></tbody>', this.getTbodyHtml(this.options.tbodyItem, this.options.tColItem,'all'));
+		
+		downloadInfo = cssText+downloadInfo;
 		if(typeof opt !=='undefined'){
 			if(opt.type=='download'){
-					
-			}else{
-				
+				var fileName = opt.fileName || 'pubgrid-excel-data.xls',
+					charset = opt.charset||"utf-8";
+
+				if (navigator.msSaveOrOpenBlob) {
+					var _blob = new Blob([downloadInfo], { type: "text/html" });
+					window.navigator.msSaveOrOpenBlob(_blob, fileName);
+				} else {
+					if (_broswer=='msie' && typeof Blob === "undefined") {
+						
+						var downloadFrame = $('<iframe id="' + this.prefix+ '-excel-export" style="display:none"></iframe>');
+						$(document.body).append(downloadFrame);
+
+						 var frmTarget =downloadFrame.get(0).contentWindow.document ; // 해당 아이프레임의 문서에 접근
+				 
+						frmTarget.open("text/html", "replace");
+						frmTarget.write(downloadInfo);
+						frmTarget.execCommand("SaveAs", true, fileName);
+						frmTarget.close();
+						frmTarget.charset = "utf-8";
+						frmTarget.focus();
+					} else {
+						var uri = "data:application/vnd.ms-excel;base64,"+window.btoa(unescape(encodeURIComponent(downloadInfo)))
+							,anchor = document.body.appendChild(document.createElement("a"));
+						
+						anchor.download = fileName;
+						//anchor.href = URL.createObjectURL( blob );
+						anchor.href = uri;
+						anchor.click();
+						document.body.removeChild(anchor);
+					}
+				}
 			}
 		}else{
-			
-			return ''; 
+			return downloadInfo; 
 		}
 	}
 	/**

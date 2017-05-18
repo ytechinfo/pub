@@ -12,18 +12,26 @@
 <script src="../dist/pub.grid.js"></script>
 </HEAD>
 <BODY>
+<div>
+	<button class="exceldown" type="button">excel download</button>
+</div>
 <div id="asdfasdf" style="height:300px"></div>
 	
 </BODY>
 </HTML>
 <script>
 $(document).ready(function (){
+	
 	fn_init();
+
+	$('.exceldown').on('click', function (){
+		$.pubGrid('#asdfasdf').excelExport({type:'download', fileName:'aaa.xls'});
+	})
 });
 
 function fn_init(){
 	var aaa = [];
-	for(var i =0 ;i <1000; i++){
+	for(var i =0 ;i <70; i++){
 		aaa.push({
 			a:'aaasdfasdfasdfasdfasdfasdfa'+i
 			,b:'ddd_'+i+'asdf'
