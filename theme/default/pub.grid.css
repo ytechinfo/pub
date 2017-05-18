@@ -22,6 +22,7 @@
 .pubGrid-header-wrapper{
 	background-color: #EFEFEF;
 	overflow-x: hidden;
+    overflow-y: hidden;
 }
 /* header ����*/
 .pubGrid-header {

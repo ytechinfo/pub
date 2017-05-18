@@ -18,7 +18,7 @@ var _initialized = false
 	,scrollWidth : 18
 	,minWidth : 38
 	,rowOptions:{
-		colHeight:20
+		colHeight:25
 	}
 	,bigData : {
 		gridCount : 20
