@@ -12,25 +12,7 @@
 <script src="../dist/pub.grid.js"></script>
 </HEAD>
 <BODY>
-<div class="pub-main">
-	<h2 class="page-header">그리드</h2>
-	<div>
-		<table width = "100%" border = "0" height="100%">
-		<tr>
-			<td>
-				<div id="asdfasdf"></div>
-			</td>
-		</tr>
-
-		<tr>
-			<td>
-				<div id="asdfasdf1" style="width:700px;"></div>
-			</td>
-		</tr>
-
-		</table>
-	</div>
-</div>
+<div id="asdfasdf" style="height:300px"></div>
 	
 </BODY>
 </HTML>
@@ -41,10 +23,10 @@ $(document).ready(function (){
 
 function fn_init(){
 	var aaa = [];
-	for(var i =0 ;i <20; i++){
+	for(var i =0 ;i <1000; i++){
 		aaa.push({
 			a:'aaasdfasdfasdfasdfasdfasdfa'+i
-			,b:'ddd_'+i+'<br/>asdf'
+			,b:'ddd_'+i+'asdf'
 			,c:'ccc_'+i
 			,d:'ddd_'+i
 			,e:'eee_'+i
@@ -53,13 +35,17 @@ function fn_init(){
 
 	$.pubGrid('#asdfasdf',{
 		headerOptions:{
-			view:true
+			view : true
+			,sort : true
 			,resize:{
 				enabled : true
 			}
 		}
+		,rowOptions:{
+			colHeight : 25
+		}
 		,tColItem : [
-			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : false}
+			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
 			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)}}
 			,{key :'c', label:'씨',width:100, align:'center'}
 			,{key :'d', label:'디',width:100 }

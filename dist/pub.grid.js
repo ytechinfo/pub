@@ -10,13 +10,19 @@
 "use strict";
 
 var _initialized = false
-,_doc = $(document)
+,_$doc = $(document)
 ,_datastore = {}
 ,_defaults = {
 	fixed:false
 	,drag:false
 	,scrollWidth : 18
 	,minWidth : 38
+	,rowOptions:{
+		colHeight:20
+	}
+	,bigData : {
+		gridCount : 20
+	}
 	,autoResize : true
 	,resizeGridWidthFixed : false	// 리사이즈시 그리드 리사이즈 여부.
 	,headerOptions : {
@@ -106,11 +112,13 @@ Plugin.prototype ={
 		_this.setOptions(options);
 		_this.drag ={};
 		_this._setGridWidth('init');
+
+		_this.addStyleTag();
 		
 		_this.config.gridXScrollFlag = false;
+		_this.config.scroll = {top :0 , left:0, startIdx :0, endIdx :0, updown:'', viewItemIdx : 1, height:0};
+
 		_this._setThead();
-		
-		
 		_this.setData(_this.options.tbodyItem , 'init');
 
 		_this._windowResize();
@@ -122,18 +130,17 @@ Plugin.prototype ={
      * @description grid 넓이 구하기
      */
 	,_setGridWidth : function (mode){
-		var _this = this,pubGridWrapper;
+		var _this = this;
 		
 		if(mode != 'init'){
-			pubGridWrapper = $(_this.selector + '>.pubGrid-wrapper'); 
-			pubGridWrapper.hide();
+			_this.config.pubGridElement.hide();
 		}
 			
 		_this.config.gridSelectEleWidth = _this.element.innerWidth(); // border 값 빼주기.
 		_this.config.gridElementWidth = _this.config.gridSelectEleWidth-3; // border 값 빼주기.
 		_this.config.gridWidth = _this.config.gridElementWidth;
 			
-		if(mode != 'init') pubGridWrapper.show();
+		if(mode != 'init') _this.config.pubGridElement.show();
 	}
 	/**
      * @method setOptions
@@ -163,6 +170,35 @@ Plugin.prototype ={
 		}else{
 			_this.options.rowContextMenu =false; 
 		}
+	}
+	/**
+     * @method addStyleTag
+	 * @param options {Object} - 데이타 .
+     * @description  add style tab
+     */
+	,addStyleTag : function (){
+		var _this = this
+			,_d = document; 
+		
+		var cssStr = [];
+		
+		if(!isNaN(_this.options.rowOptions.colHeight)){
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td{height:'+_this.options.rowOptions.colHeight+'px;padding: 0px;margin:0px;}');
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-content-ellipsis{height:'+(_this.options.rowOptions.colHeight-10)+'px;padding: 0px;margin:0px;}');
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td> .pub-content{height:'+_this.options.rowOptions.colHeight+'px;}');
+		}
+
+		var styleTag = _d.createElement('style');
+		
+		_d.getElementsByTagName('head')[0].appendChild(styleTag);
+		styleTag.setAttribute('type', 'text/css');
+
+		if (styleTag.styleSheet) {
+			styleTag.styleSheet.cssText = cssStr.join('');
+		} else {
+			styleTag.appendChild(document.createTextNode(cssStr.join('')));
+		}
+		
 	}
 	/**
      * @method _setThead
@@ -203,7 +239,7 @@ Plugin.prototype ={
 					headItem['r'] = i;
 					headItem['c'] = j;
 					headItem['view'] = true;
-					headItem['sort'] = tciItem.sort===false?false:true;
+					headItem['sort'] = tciItem.sort===true ? true : opt.headerOptions.sort;
 					headItem['colSpanIdx'] = j;
 					headItem['span'] = 'scope="col"';
 					headItem['label'] = headItem.label ? headItem.label : tciItem.label;
@@ -399,6 +435,89 @@ Plugin.prototype ={
 		}else{
 			_this.drawGrid('tbody', gridMode);
 		}
+		_this.config.pubGridBodyHeightElement.css('height', _this.options.tbodyItem.length* _this.options.rowOptions.colHeight);
+		// scroll height 값
+		_this.config.scroll.height = $('#'+_this.prefix+'pubGrid-body-container').height() - _this.config.bodyScroll.height();
+	}
+	/**
+     * @method getHeaderHtml
+     * @description header html 
+     */
+	,getHeaderHtml : function (){
+		var _this = this; 
+
+		return '<div class="pubGrid-wrapper">'
+			+' <div class="pubGrid-width-size" style="width:100%;height:0px;"></div>'
+			+'  <div id="'+_this.prefix+'pubGrid" class="pubGrid" style="width:'+_this.config.gridElementWidth+'px;">'
+			+'	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container">'
+			+'		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper">'
+			+'			<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container" style="width: '+(_this.config.totGridWidth+_this.options.scrollWidth)+'px;">'
+			+'				<table id="'+_this.prefix+'pubGrid-header" class="pubGrid-header" style="width:'+_this.config.gridWidth+'px" onselectstart="return false">'
+			+'				#theaderHtmlArea#</table>'
+			+'			</div>'	
+			+'		</div>'
+			+'		<div id="pubGrid-body-wrapper" class="pubGrid-body-wrapper">'
+			+'			<div id="'+_this.prefix+'pubGrid-body-scroll" class="pubGrid-body-scroll" style="height:'+_this.options.height+'px;">'
+			+'			  <div id="'+_this.prefix+'pubGrid-body-container" class="pubGrid-body-container">'
+			+'				<div id="'+_this.prefix+'pubGrid-body-top-space" class="pubGrid-body-top-space" style="width: 0px; height: 0px; padding:0px;line-height:0px;"></div>'
+			+'				<table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body" style="width:'+_this.config.gridWidth+'px">'
+			+'					<colgroup id="'+_this.prefix+'colgroup_body">'+_this._getColGroup(_this.prefix+'colbody')+'</colgroup>'
+			+'					<tbody class="pub-cont-tbody-top"></tbody>'
+			+'					<tbody class="pub-cont-tbody-middle"></tbody>'
+			+'					<tbody class="pub-cont-tbody-bottom"></tbody>'
+			+'				</table>'	
+			+'				<div id="'+_this.prefix+'pubGrid-body-height" class="pubGrid-body-height" style="position:absolute;z-index:-1;top:0px;width: 1px; height: 0px; padding:0px;"></div>'
+			+'			  </div>'
+			+'			</div>'
+			+'		</div>'
+			+'		<div id="'+_this.prefix+'hiddenArea" style="display:none;"></div>'
+			+'	</div>'
+			+'  </div>'
+			+'</div>'; 
+
+	}
+	//body html  만들기
+	,getTbodyHtml : function(tbi, tci , itemIdx){
+		var strHtm = [], thiItem;
+		
+		if(tbi.length > 0){
+			var tbiItem, clickFlag = false;
+			var startIdx = 0,endIdx = tbi.length;
+			
+			if(itemIdx !='all'){
+				var idxInfo = this.getItemIdxInfo(itemIdx);
+				startIdx = idxInfo.startIdx;
+				endIdx = idxInfo.endIdx;
+			}
+			
+			for(var i =startIdx ; i < endIdx; i++){
+				tbiItem = tbi[i];
+				strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
+
+				for(var j=0 ;j <tci.length; j++){
+					thiItem = tci[j];
+					clickFlag = thiItem.colClick;
+					
+					strHtm.push('<td class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-colinfo="'+i+','+j+'"><div class="pub-content '+thiItem._alignClass+'"><div class="pub-content-cell"><div class="pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'">'+tbiItem[thiItem.key]+'</div></div></div></td>');
+				}
+			}
+		}else{
+			strHtm.push('<tr><td colspan="'+tci.length+'"><div class="text-center">NO DATA</div></td></tr>');
+		}
+		
+		return strHtm.join('');
+	}
+	,getItemIdxInfo : function (itemIdx){
+
+		var	itemLen = this.options.tbodyItem.length
+			,startIdx = (itemIdx-1) * this.options.bigData.gridCount
+			,endIdx = itemLen> startIdx ? ( itemLen > (startIdx + this.options.bigData.gridCount) ? (startIdx + this.options.bigData.gridCount) : itemLen) : 0;
+
+		return {
+			startIdx : startIdx
+			,endIdx: endIdx
+			,len : (endIdx-startIdx > 0 ?endIdx-startIdx : 0)
+		}
 	}
 	/**
      * @method drawGrid
@@ -411,8 +530,7 @@ Plugin.prototype ={
 			,ci = _this.config
 			,tci = opt.tColItem
 			,tbi = opt.tbodyItem
-			,hederOpt=opt.headerOptions
-			,thiItem;
+			,hederOpt=opt.headerOptions;
 
 		type = type ? type :'all';
 
@@ -448,32 +566,12 @@ Plugin.prototype ={
 				}
 			}
 			strHtm.push("</thead>");
+			strHtm.push("<tbody></tbody>");
 			return strHtm.join('');
 		}
-		
-		//body html  만들기
-		function tbodyHtml(){
-			var strHtm = [];
-			
-			if(tbi.length > 0){
-				var tbiItem, clickFlag = false;
-				
-				for(var i =0 ; i <tbi.length ; i++){
-					tbiItem = tbi[i];
-					strHtm.push('<tr class="pub-body-tr" rowinfo="'+i+'">');
 
-					for(var j=0 ;j <tci.length; j++){
-						thiItem = tci[j];
-						clickFlag = thiItem.colClick;
-						
-						strHtm.push('<td class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'"><div class="pub-content '+thiItem._alignClass+'"><a href="javascript:;" class="'+ (clickFlag?'pub-body-td-click':'') +'" colinfo="'+i+','+j+'">'+tbiItem[thiItem.key]+'</a></div></td>');
-					}
-				}
-			}else{
-				strHtm.push('<tr><td colspan="'+tci.length+'"><div class="text-center">NO DATA</div></td></tr>');
-			}
-			
-			return strHtm.join('');
+		function tbodyHtml(itemIdx){
+			return _this.getTbodyHtml(tbi, tci , itemIdx);
 		}
 		
 		// foot html 만들기
@@ -493,60 +591,156 @@ Plugin.prototype ={
 
 		if(type =='all'){
 			
-			var strHtm = [];
-			strHtm.push('<div class="pubGrid-width-size" style="width:100%;height:0px;"></div>');
-			strHtm.push('<div class="pubGrid-wrapper" style="width:'+_this.config.gridElementWidth+'px;">');
-			strHtm.push('	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container">');
-			strHtm.push('		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper">');
-			strHtm.push('			<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container" style="width: '+(_this.config.totGridWidth+_this.options.scrollWidth)+'px;">');
-			strHtm.push('				<table id="'+_this.prefix+'pubGrid-header" class="pubGrid-header" style="width:'+_this.config.gridWidth+'px" onselectstart="return false">');
-			strHtm.push(theadHtml());
-			strHtm.push('				</table>');
-			strHtm.push('			</div>');	
-			strHtm.push('		</div>');
-			strHtm.push('		<div class="pubGrid-body-wrapper">');
-			strHtm.push('			<div id="'+_this.prefix+'pubGrid-body-container" class="pubGrid-body-container" style="height:'+opt.height+'px;">');
-			strHtm.push('				<table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body" style="width:'+_this.config.gridWidth+'px">');
-			strHtm.push('					<colgroup id="'+_this.prefix+'colgroup_body">'+_this._getColGroup(_this.prefix+'colbody')+'</colgroup>');
-			strHtm.push('					<tbody class="pub-cont-tbody">');
-			strHtm.push('					</tbody>');
-			strHtm.push('				</table>');	
-			strHtm.push('			</div>');
-			strHtm.push('		</div>');
-			strHtm.push('		<div id="'+_this.prefix+'hiddenArea" style="display:none;"></div>');
-			strHtm.push('	</div>');
-
-			strHtm.push('</div>');
-
-			_this.element.empty();
-			_this.element.html(strHtm.join(''));
+			_this.element.empty().html(_this.getHeaderHtml().replace('#theaderHtmlArea#',theadHtml()));
 			
+			_this.config.pubGridElement = $('#'+_this.prefix +'pubGrid');
+			_this.config.pubGridTopSpaceElement = $('#'+_this.prefix +'pubGrid-body-top-space');
+			_this.config.pubGridBodyHeightElement = $('#'+_this.prefix +'pubGrid-body-height');
 			_this.config.headerWrapElement = $('#'+_this.prefix +'pubGrid-header-wrapper');
 			_this.config.headerContainerElement = $('#'+_this.prefix +'pubGrid-header-container');
 			_this.config.headerElement = $('#'+_this.prefix +'pubGrid-header');
 			_this.config.bodyElement = $('#'+_this.prefix +'pubGrid-body');
-			_this.config.bodyContainerElement = $('#'+_this.prefix +'pubGrid-body-container');
+			_this.config.bodyScroll = $('#'+_this.prefix +'pubGrid-body-scroll');
 			_this.config.hiddenArea = $('#'+_this.prefix +'hiddenArea');
 			
 			if(opt.height =='auto'){
 				var bodyH = _this.config.height-_this.config.headerWrapElement.height(); 
 				bodyH = bodyH > 0?bodyH : _this.config.headerWrapElement.height+5 ; 
-				_this.config.bodyContainerElement.css('height',(bodyH)+'px');
+				_this.config.bodyScroll.css('height',(bodyH)+'px');
 			}
-			
-			$(_this.selector+' .pubGrid-body-container').scroll(function (e){
-				_this.config.headerWrapElement.scrollLeft($(this).scrollLeft());
-			});
-
 			// resize 설정
 			_this._initHeaderEvent();
 			_this._headerResize(hederOpt.resize.enabled);
+			_this.scroll();
+			_this._initBodyEvent();
+
+		}
+
+		var viewItemIdx=_this.config.scroll.viewItemIdx
+			,updown = _this.config.scroll.updown
+			,bigDataGridCount = _this.options.bigData.gridCount
+			,topIdx =viewItemIdx ,middleIdx=viewItemIdx+1 , bottomIdx = viewItemIdx+2; 
+	
+		if(type=='scroll'){
+			if(updown =='down'){
+				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-top').empty().remove();
+				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-middle').addClass('pub-cont-tbody-top').removeClass('pub-cont-tbody-middle');
+				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-bottom').addClass('pub-cont-tbody-middle').removeClass('pub-cont-tbody-bottom');
+				_this.config.bodyElement.append('<tbody class="pub-cont-tbody-bottom">'+tbodyHtml(bottomIdx)+'</tbody>');
+			}else if(updown =='up'){
+				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-bottom').empty().remove();
+				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-middle').addClass('pub-cont-tbody-bottom').removeClass('pub-cont-tbody-middle');
+				$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-top').addClass('pub-cont-tbody-middle').removeClass('pub-cont-tbody-top');
+				_this.config.bodyElement.prepend('<tbody class="pub-cont-tbody-top">'+tbodyHtml(topIdx)+'</tbody>');
+			}
+		}else{
+			$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-top').empty().html(tbodyHtml(topIdx));
+			$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-middle').empty().html(tbodyHtml(middleIdx));
+			$('#'+_this.prefix+'pubGrid-body .pub-cont-tbody-bottom').empty().html(tbodyHtml(bottomIdx));
 		}
 		
-		if(type =='all' || type =='tbody'){
-			$(_this.selector +' .pub-cont-tbody').empty().html(tbodyHtml());
-			_this._initBodyEvent();
-		}
+		
+		// top space height 
+		_this.config.pubGridTopSpaceElement.css('height', (bigDataGridCount* viewItemIdx -bigDataGridCount) * _this.options.rowOptions.colHeight);
+		
+		/*
+		var lastItemIdx = tbi.length - ((viewItemIdx+2) * bigDataGridCount);
+		var bottomHeight = lastItemIdx > 0 ? lastItemIdx * _this.options.rowOptions.colHeight : 0;
+
+		// bottom space height 
+		_this.config.pubGridBodyHeightElement.css('height',bottomHeight);
+		*/
+		
+		_this._setBodyEvent();
+	}
+	/**
+     * @method scroll
+     * @description 스크롤 컨트롤.
+     */
+	,scroll : function (){
+		var _this = this
+			,_opt = _this.options
+			,_conf = _this.config
+			,colHeight = _opt.rowOptions.colHeight; 
+		
+		// horizontal scroll control
+		_conf.bodyScroll.scroll(function (e){
+			_conf.headerWrapElement.scrollLeft($(this).scrollLeft());
+		});
+		
+		var timerObj = null; 
+		
+		_conf.bodyScroll.on("scroll", function(event) {
+			event.preventDefault();
+			var scrollEle = $(this);
+
+			var e = event.originalEvent
+				,scrollData = _conf.scroll
+				,scrollH = scrollData.height
+				,sTop  = scrollEle.scrollTop()
+				,sLeft = scrollEle.scrollLeft();
+
+			var updown = '';
+			if(scrollData.top > sTop){
+				updown = 'up';
+			}else if(scrollData.top < sTop){
+				updown = 'down';
+			}
+
+			var lr = '';
+			if(scrollData.left > sLeft){
+				lr = 'left';
+			}else if(scrollData.left < sLeft){
+				lr = 'right';
+			}
+			
+			scrollData.top= sTop;
+			scrollData.left= sLeft;
+			scrollData.updown= updown;
+			scrollData.leftright= lr;
+
+			_conf.scroll = scrollData;
+			
+			var redrawFlag = false;
+			
+			var viewIdx = _conf.scroll.viewItemIdx;
+			
+			if(updown =='up'){
+				redrawFlag = sTop < _this._getScrollOverHeight(viewIdx-1 ,updown) ?true:false;
+			}else if(updown =='down'){
+				redrawFlag = sTop > _this._getScrollOverHeight(viewIdx+1 ,updown) ?true:false;
+			}
+			
+			//console.log('#############',viewIdx ,scrollEle.prop("scrollHeight"),scrollData);
+			
+			if(redrawFlag){
+
+				//if(timerObj) clearTimeout(timerObj);
+				
+				//timerObj = setTimeout(function(){ 
+					
+					
+					var scrIdx = Math.round(sTop/_opt.bigData.gridCount/ _opt.rowOptions.colHeight);
+					scrIdx = scrIdx < 1 ? 1 :scrIdx;
+					var maxScrIdx = Math.ceil(_opt.tbodyItem.length / _opt.bigData.gridCount)-2;
+
+					scrIdx =  scrIdx > maxScrIdx ? maxScrIdx : scrIdx;
+
+					if(scrIdx - viewIdx > 1 || viewIdx-scrIdx > 1){
+						_conf.scroll.viewItemIdx = scrIdx;
+						_this.drawGrid('scrollRedraw');
+					}else{
+						_conf.scroll.viewItemIdx = viewIdx + (updown=='down' ? 1 : -1);
+						_this.drawGrid('scroll');
+					}
+				//}, 5);
+			}
+
+			return true; 
+		});
+	}
+	,_getScrollOverHeight : function (idx , updown){
+		return idx* this.options.bigData.gridCount* this.options.rowOptions.colHeight;
 	}
 	/**
      * @method resizeDraw
@@ -570,13 +764,12 @@ Plugin.prototype ={
 		
 		_this._setGridWidth();
 		_this._calcElementWidth('resize');
-		
-		$(_this.selector+'>.pubGrid-wrapper').css('width',(_this.config.gridElementWidth)+'px');
+		_this.config.pubGridElement.css('width',(_this.config.gridElementWidth)+'px');
 
 		if(_this.options.height =='auto'){
 			var bodyH = opt.height-_this.config.headerWrapElement.height(); 
 			bodyH = bodyH > 0?bodyH : _this.config.headerWrapElement.height()+5; 
-			_this.config.bodyContainerElement.css('height',(bodyH)+'px');
+			_this.config.bodyScroll.css('height',(bodyH)+'px');
 		}
 
 		if(_this.options.resizeGridWidthFixed !== true){
@@ -657,7 +850,7 @@ Plugin.prototype ={
 		}
 	}
 	/**
-     * @method _initBodyEvent
+     * @method _initHeaderEvent
      * @description 바디 이벤트 초기화.
      */
 	,_initHeaderEvent : function (){
@@ -676,6 +869,13 @@ Plugin.prototype ={
 			//.removeClass('sortasc sortdesc');
 			sortType = sortType =='asc' ? 'desc' : (sortType =='desc'?'asc':'asc');
 			
+			// col select background col setting
+			if($('#'+_this.prefix+'colbody'+col_idx).attr('data-sort-flag') != 'Y'){
+				$(_this.config.bodyElement.find('col[data-sort-flag]')).css('background-color','inherit').removeAttr('data-sort-flag');
+				$('#'+_this.prefix+'colbody'+col_idx).attr('data-sort-flag','Y');
+				$('#'+_this.prefix+'colbody'+col_idx).css('background-color','#b9dfdc !important');
+			}
+			
 			selEle.attr('sort_type', sortType);
 			
 			selEle.closest('.label-wrapper').removeClass('sortasc sortdesc').addClass('sort'+sortType);
@@ -691,14 +891,37 @@ Plugin.prototype ={
      */
 	,_initBodyEvent : function (){
 		var _this = this
-			 ,_rowTr =$('#'+_this.prefix+'pubGrid-container .pub-body-tr')
 			 ,rowClickFlag =false; 
+		
+		var beforeCol; 
+		_this.config.bodyElement.on('click.pubgridcol','.pub-body-td',function (e){
+			var sEle = $(this)
+				,selCol = sEle.attr('data-colinfo').split(',')
+				,selRow = selCol[0]
+				,colIdx = selCol[1]
+				,selItem = _this.options.tbodyItem[selRow];
+			
+			if(beforeCol) beforeCol.removeClass('col-active');
+			sEle.addClass('col-active');
+
+			beforeCol = sEle; 
+
+			if($.isFunction(_this.options.tColItem[colIdx].colClick)){
+				_this.options.tColItem[colIdx].colClick.call(this,colIdx,{
+					r:selRow
+					,c:colIdx
+					,item:selItem
+				});
+				return false; 
+			}
+		});
+		
+
 		if(_this.options.rowClick !== false && typeof _this.options.rowClick == 'function'){
 			rowClickFlag =true; 
 
 			var beforeRow; 
-			_rowTr.off('click.pubgridrow');
-			_rowTr.on('click.pubgridrow',function (e){
+			_this.config.bodyElement.on('click.pubgridrow','.pub-body-tr',function (e){
 				var selRow = $(this)
 					,rowinfo=selRow.attr('rowinfo')
 					,selItem = _this.options.tbodyItem[rowinfo];
@@ -711,26 +934,14 @@ Plugin.prototype ={
 				_this.options.rowClick.call(selRow ,rowinfo , selItem);							
 			});
 		}
-
-		if(_this.options.rowContextMenu !== false){
-			$.pubContextMenu(_rowTr,_this.options.rowContextMenu);
-		}
-		
-		if(!rowClickFlag){
-			$('#'+_this.prefix+'pubGrid-container .pub-body-td-click').off('click.pub.gridcol');
-			$('#'+_this.prefix+'pubGrid-container .pub-body-td-click').on('click.pub.gridcol',function (e){
-				var selCol = $(this).attr('colinfo').split(',')
-					,selRow = selCol[0]
-					,colIdx = selCol[1]
-					,selItem = _this.options.tbodyItem[selRow];
-
-				_this.options.tColItem[colIdx].colClick.call(this,colIdx,{
-					r:selRow
-					,c:colIdx
-					,item:selItem
-				});
-				
-			});
+	}
+	/**
+     * @method _setBodyEvent
+     * @description body event setting
+     */
+	,_setBodyEvent : function (){
+		if(this.options.rowContextMenu !== false){
+			$.pubContextMenu($('#'+this.prefix+'pubGrid-container .pub-body-tr'),this.options.rowContextMenu);
 		}
 	}
 	/**
@@ -780,7 +991,7 @@ Plugin.prototype ={
 		var _this = this
 			,resizeEle = $('#'+_this.prefix+'pubGrid-header .pub-header-resizer');
 		if(flag===true){
-			resizeEle.css('cursor','e-resize');
+			resizeEle.css('cursor',_this.options.headerOptions.resize.cursor);
 			
 			resizeEle.on('touchstart.pubresizer mousedown.pubresizer',function (e){
 				var oe = e.originalEvent.touches;
@@ -796,10 +1007,10 @@ Plugin.prototype ={
 				_this.drag.gridW = _this.config.headerElement.width();
 				
 				// resize시 select안되게 처리 . cursor처리 
-				_doc.attr("onselectstart", "return false");
+				_$doc.attr("onselectstart", "return false");
 				_this.config.hiddenArea.append("<style type='text/css'>*{cursor:" + _this.options.headerOptions.resize.cursor + "!important}</style>");
 
-				_doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e){
+				_$doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e){
 					_this.onGripDrag(e,_this);
 				}).on('touchend.colheaderresize mouseup.colheaderresize mouseleave.colheaderresize', function (e){
 					_this.drag.ele.removeClass('pubGrid-move-header');
@@ -832,8 +1043,8 @@ Plugin.prototype ={
      */
 	,onGripDragEnd : function(e,_this) {
 		
-		_doc.off('touchend.colheaderresize mouseup.colheaderresize').off('touchmove.colheaderresize mousemove.colheaderresize mouseleave.colheaderresize');
-		_doc.removeAttr("onselectstart");
+		_$doc.off('touchend.colheaderresize mouseup.colheaderresize').off('touchmove.colheaderresize mousemove.colheaderresize mouseleave.colheaderresize');
+		_$doc.removeAttr("onselectstart");
 		_this.config.hiddenArea.empty();
 		
 		_this._setHeaderResize(e,_this, 'end');
@@ -842,6 +1053,13 @@ Plugin.prototype ={
 
 		return false; 
 	}
+	/**
+     * @method _setHeaderResize
+	 * @param  e {Event} 이벤트
+	 * @param  _this {Object} pub그리드 this
+	 * @param  mode {String} 그리드 모드
+     * @description reisze 드래그 end
+     */
 	,_setHeaderResize : function (e,_this , mode){
 
 		if (!_this.drag) return false;
@@ -874,6 +1092,28 @@ Plugin.prototype ={
 				drag.changeColW = w;
 				drag.ele.css('left',w);
 			}
+		}
+	}
+	/**
+     * @method excelExport
+	 * @param  opt {object} excel export 타입 ()
+     * @description 해제.
+     */
+	,excelExport : function (opt){
+
+		var headerHTML = this.config.headerContainerElement.html();
+
+		headerHTML = headerHTML.replace('<tbody></tbody>', this.getTbodyHtml(this.options.tbodyItem, this.options.tColItem,'all'));
+
+		if(typeof opt !=='undefined'){
+			if(opt.type=='download'){
+					
+			}else{
+				
+			}
+		}else{
+			
+			return ''; 
 		}
 	}
 	/**
