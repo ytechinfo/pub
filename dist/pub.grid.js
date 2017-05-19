@@ -15,10 +15,14 @@ var _initialized = false
 ,_defaults = {
 	fixed:false
 	,drag:false
-	,scrollWidth : 18
+	,scrollWidth : 18	// 스크롤바 넓이
 	,minWidth : 38
 	,rowOptions:{
-		colHeight:25
+		colHeight:25	// cell 높이
+	}
+	,formatter :{
+		money :{prefix :'$', suffix :'원' , fixed : 0}	// money 설정 prefix 앞에 붙일 문구 , suffix : 마지막에 뭍일것 , fixed : 소수점 
+		,number : {prefix :'$', suffix :'원' , fixed : 0}
 	}
 	,bigData : {
 		gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
@@ -91,6 +95,30 @@ var _initialized = false
 	}
     return 11;
 })());
+
+
+var util= {
+	formatter : {
+		'money' : function (num , fixedNum , prefix , suffix){
+			return (prefix||'')+ util.formatter.number(num, fixedNum) +(suffix||'');
+		}
+		,'number': function (num, fixedNum){
+			fixedNum = fixedNum || 0; 
+			
+			if (!isFinite(num)) {
+				return num;
+			}
+			var a = num.toFixed(fixedNum).split('.');
+			a[0] = a[0].replace(/\d(?=(\d{3})+$)/g, '$&,');
+			return a.join('.');
+
+
+		}
+		,'string' : function (val){
+			return val ; 
+		}
+	}
+}
 
 
 function Plugin(element, options) {
@@ -518,10 +546,7 @@ Plugin.prototype ={
 				for(var j=0 ;j <tci.length; j++){
 					thiItem = tci[j];
 					clickFlag = thiItem.colClick;
-
-					itemVal = tbiItem[thiItem.key];
-					
-					strHtm.push('<td class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-colinfo="'+i+','+j+'"><div class="pub-content '+thiItem._alignClass+'"><div class="pub-content-cell"><div class="pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'">'+itemVal+'</div></div></div></td>');
+					strHtm.push('<td class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-colinfo="'+i+','+j+'"><div class="pub-content '+thiItem._alignClass+'"><div class="pub-content-cell"><div class="pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'">'+this.valueFormatter( i, thiItem,tbiItem)+'</div></div></div></td>');
 				}
 			}
 		}else{
@@ -529,6 +554,38 @@ Plugin.prototype ={
 		}
 		
 		return strHtm.join('');
+	}
+	/**
+     * @method valueFormatter
+	 * @param  thiItem {Object} header col info
+	 * @param  item {Object} row 값
+     * @description foot 데이타 셋팅
+     */
+	,valueFormatter : function (_idx ,thiItem, rowItem){
+		var type = thiItem.type || 'string';
+		
+		var itemVal = rowItem[thiItem.key];
+		var tmpFormatter={}; 		
+		if(type == 'money' || type == 'number'){
+			tmpFormatter = this.options.formatter[type];
+		}
+
+		if($.isFunction(thiItem.formatter)){
+			itemVal = thiItem.formatter.call(null,{idx : _idx , colInfo:thiItem, item: rowItem , formatter : function (val, fixed , prefix , suffix){
+				fixed = typeof fixed ==='undefined'?tmpFormatter.fixed :fixed;
+				prefix = typeof prefix ==='undefined'?tmpFormatter.prefix :prefix;
+				suffix = typeof suffix ==='undefined'?tmpFormatter.suffix :suffix;
+				return util.formatter[type](val, fixed ,prefix, suffix); 
+			}});
+		}else{
+			if(type == 'money'){
+				itemVal = util.formatter[type](itemVal, tmpFormatter.fixed , tmpFormatter.prefix ,tmpFormatter.suffix);
+			}else if(type == 'number'){
+				itemVal = util.formatter[type](itemVal , tmpFormatter.fixed , tmpFormatter.prefix ,tmpFormatter.suffix);
+			}
+		}
+
+		return itemVal; 
 	}
 	/**
      * @method drawGrid

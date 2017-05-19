@@ -31,11 +31,11 @@ $(document).ready(function (){
 
 function fn_init(){
 	var aaa = [];
-	for(var i =0 ;i <70; i++){
+	for(var i =0 ;i <10000; i++){
 		aaa.push({
 			a:'aaasdfasdfasdfasdfasdfasdfa'+i
 			,b:'ddd_'+i+'asdf'
-			,c:'ccc_'+i
+			,c: (i*10000)
 			,d:'ddd_'+i
 			,e:'eee_'+i
 		})
@@ -52,8 +52,12 @@ function fn_init(){
 		,tColItem : [
 			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
 			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)}}
-			,{key :'c', label:'씨',width:100, align:'center'}
-			,{key :'d', label:'디',width:100 }
+			,{key :'c', label:'씨',width:100, align:'center', type : 'money'}
+			,{key :'d', label:'디',width:100 ,type : 'number', formatter : function (rowInfo){
+				
+				var item  = rowInfo.item;
+				return rowInfo.formatter(item['c'],0);
+			}}
 			,{key :'e', label:'이',width:100}
 			//,{key :'d', label:'디', hidden:true}
 		]
