@@ -155,7 +155,7 @@
     display: table-cell;
     height: 100%;
     vertical-align: middle;
-	padding:1px 5px 1px 5px;
+	padding:1px 2px 1px 2px;
 }
 
 .pubGrid-body .pub-body-tr > td .pub-content-ellipsis {
@@ -166,7 +166,6 @@
 
 .pubGrid-body .pub-body-td.col-active .pub-content-cell{
 	background: #FEF1EC;
-	padding:1px 5px 1px 5px;
 	-moz-box-sizing:border-box;
     -webkit-box-sizing:border-box;
     box-sizing:border-box;

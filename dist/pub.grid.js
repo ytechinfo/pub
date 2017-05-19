@@ -18,7 +18,7 @@ var _initialized = false
 	,scrollWidth : 18	// 스크롤바 넓이
 	,minWidth : 38
 	,rowOptions:{
-		colHeight:25	// cell 높이
+		colHeight:20	// cell 높이
 	}
 	,formatter :{
 		money :{prefix :'$', suffix :'원' , fixed : 0}	// money 설정 prefix 앞에 붙일 문구 , suffix : 마지막에 뭍일것 , fixed : 소수점 
@@ -213,7 +213,7 @@ Plugin.prototype ={
 		
 		if(!isNaN(_this.options.rowOptions.colHeight)){
 			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td{height:'+_this.options.rowOptions.colHeight+'px;padding: 0px;margin:0px;}');
-			cssStr.push('#'+_this.prefix+'pubGrid .pub-content-ellipsis{height:'+(_this.options.rowOptions.colHeight-10)+'px;padding: 0px;margin:0px;}');
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-content-ellipsis{height:'+(_this.options.rowOptions.colHeight-4)+'px;padding: 0px;margin:0px;}');
 			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td> .pub-content{height:'+_this.options.rowOptions.colHeight+'px;}');
 		}
 
@@ -231,8 +231,6 @@ Plugin.prototype ={
 	}
 	/**
      * @method _setThead
-	 * @param pItem {Object} - 데이타 .
-	 * @param drawFlag {Boolean} - 새로 그리기 여부.
      * @description 헤더 label 셋팅.
      */
 	,_setThead : function (){
@@ -382,8 +380,6 @@ Plugin.prototype ={
 	}
 	/**
      * @method _setTbody
-     * @param pItem {Object} - 데이타 .
-	 * @param drawFlag {Boolean} - 새로 그리기 여부.
 	 * @description 바디 데이타 셋팅
      */
 	,_setTbody : function(){
@@ -392,8 +388,6 @@ Plugin.prototype ={
 	}
 	/**
      * @method _setTfoot
-	 * @param pItem {Object} - 데이타 .
-	 * @param drawFlag {Boolean} - 새로 그리기 여부. 
      * @description foot 데이타 셋팅
      */
 	,_setTfoot : function(){
@@ -711,8 +705,10 @@ Plugin.prototype ={
 
 		}else{
 			_this.config.bodyElement.find('.pub-cont-tbody-top').empty().html(tbodyHtml(topIdx));
-			_this.config.bodyElement.find('.pub-cont-tbody-middle').empty().html(tbodyHtml(middleIdx));
-			_this.config.bodyElement.find('.pub-cont-tbody-bottom').empty().html(tbodyHtml(bottomIdx));
+			if(tbi.length > 0){
+				_this.config.bodyElement.find('.pub-cont-tbody-middle').empty().html(tbodyHtml(middleIdx));
+				_this.config.bodyElement.find('.pub-cont-tbody-bottom').empty().html(tbodyHtml(bottomIdx));
+			}
 		}
 		
 		var topSpaceHeight = (bigDataGridCount* viewItemIdx -bigDataGridCount) * _this.options.rowOptions.colHeight; 
