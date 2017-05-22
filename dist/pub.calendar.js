@@ -2398,8 +2398,8 @@ $.pubCalendar = function (selector,options, args) {
 		return '['+selector + '] selector  not found '; 
 	}
 
-	if(typeof options === undefined){
-		return _datastore[selector]; 
+	if(typeof options === 'undefined'){
+		return _datastore[selector]||{}; 
 	}
 
 	var _cacheObject = _datastore[selector]; 

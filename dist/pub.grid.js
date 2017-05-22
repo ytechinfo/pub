@@ -25,7 +25,7 @@ var _initialized = false
 		,number : {prefix :'$', suffix :'원' , fixed : 0}
 	}
 	,bigData : {
-		gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+		gridCount : 30		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
 		,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
 	}
 	,autoResize : true
@@ -793,28 +793,34 @@ Plugin.prototype ={
 				
 				//timerObj = setTimeout(function(){ 
 					
+						
+						viewIdx = viewIdx + (updown=='down' ? 1 : -1);
+
+						var scrIdx = Math.round(sTop/(_opt.bigData.gridCount* _opt.rowOptions.colHeight));
+						scrIdx = scrIdx < 1 ? 1 :scrIdx;
+						var maxScrIdx = Math.ceil(_opt.tbodyItem.length / _opt.bigData.gridCount)-2;
+
+						scrIdx =  scrIdx > maxScrIdx ? maxScrIdx : scrIdx;
+
+						if(scrIdx - viewIdx > 1 || viewIdx-scrIdx > 1){
+
+							
+							_conf.scroll.viewItemIdx = scrIdx-1;
+							_this.drawGrid('scrollRedraw');
+						}else{
+							_conf.scroll.viewItemIdx = viewIdx;
+							_this.drawGrid('scroll');
+						}
 					
-					var scrIdx = Math.round(sTop/_opt.bigData.gridCount/ _opt.rowOptions.colHeight);
-					scrIdx = scrIdx < 1 ? 1 :scrIdx;
-					var maxScrIdx = Math.ceil(_opt.tbodyItem.length / _opt.bigData.gridCount)-2;
-
-					scrIdx =  scrIdx > maxScrIdx ? maxScrIdx : scrIdx;
-
-					if(scrIdx - viewIdx > 1 || viewIdx-scrIdx > 1){
-						_conf.scroll.viewItemIdx = scrIdx;
-						_this.drawGrid('scrollRedraw');
-					}else{
-						_conf.scroll.viewItemIdx = viewIdx + (updown=='down' ? 1 : -1);
-						_this.drawGrid('scroll');
-					}
-				//}, 5);
+					
+				//}, 1);
 			}
 
 			return true; 
 		});
 	}
 	,_getScrollOverHeight : function (idx , updown){
-		return idx* this.options.bigData.gridCount* this.options.rowOptions.colHeight;
+		return idx* (this.options.bigData.gridCount)* this.options.rowOptions.colHeight;
 	}
 	/**
      * @method resizeDraw
@@ -1242,8 +1248,8 @@ $.pubGrid = function (selector,options, args) {
 		return '['+selector + '] selector  not found '; 
 	}
 
-	if(typeof options === undefined){
-		return _datastore[selector]; 
+	if(typeof options === 'undefined'){
+		return _datastore[selector]||{}; 
 	}
 
 	var _cacheObject = _datastore[selector]; 

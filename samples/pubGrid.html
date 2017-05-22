@@ -20,7 +20,7 @@
 </HTML>
 <script>
 $(document).ready(function (){
-	
+	//$.pubGrid('#asdfasdf').resizeDraw({});
 	fn_init();
 
 	$('.exceldown').on('click', function (){
@@ -47,6 +47,10 @@ function fn_init(){
 			,resize:{
 				enabled : true
 			}
+		}
+		,bigData : {
+			gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+			,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
 		}
 		,tColItem : [
 			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}

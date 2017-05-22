@@ -842,8 +842,8 @@ if (!Object.keys) {
 
 		var _cacheObject = _datastore[selector];
 
-		if(typeof options === undefined){
-			return _cacheObject; 
+		if(typeof options === 'undefined'){
+			return _cacheObject||{}; 
 		}
 		
 		if(!_cacheObject){
