@@ -476,12 +476,15 @@ Plugin.prototype ={
 			topHeightHtm.push('<div data-top-idx="'+(loopCnt)+'" style="height:0px;"></div>');
 			loopCnt+=1;
 		}
+
+		_this.config.scroll.spaceCount = loopCnt;
 		
 		_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
 		_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
-		// scroll height 값
-		_this.config.scroll.height = itemHeight - _this.config.bodyScroll.height();
-		_this.config.scroll.spaceCount = loopCnt;
+		
+		// item total height 값
+		_this.config.scroll.itemGroupTotalHeight = opt.bigData.gridCount* _this.config.totalColHeight; 
+		_this.config.scroll.maxViewItemIdx = Math.ceil(opt.tbodyItem.length / opt.bigData.gridCount)-2;
 	}
 	/**
      * @method getHeaderHtml
@@ -683,12 +686,11 @@ Plugin.prototype ={
 			,updown = _this.config.scroll.updown
 			,bigDataGridCount = _this.options.bigData.gridCount
 			,topIdx =viewItemIdx ,middleIdx=viewItemIdx+1 , bottomIdx = viewItemIdx+2; 
+
 		
+		//console.log('scroll top start : ',updown , viewItemIdx, $('.pubGrid-body-scroll').scrollTop());
 
-
-		console.log('scroll top start : ', $('.pubGrid-body-scroll').scrollTop());
 		if(type=='scroll'){
-
 			if(updown =='down'){
 				var topEle = _this.config.bodyElement.find('.pub-cont-tbody-top').addClass('pub-cont-tbody-top-temp').removeClass('pub-cont-tbody-top');
 				_this.config.bodyElement.find('.pub-cont-tbody-middle').addClass('pub-cont-tbody-top').removeClass('pub-cont-tbody-middle');
@@ -706,7 +708,7 @@ Plugin.prototype ={
 				_this.config.bodyElement.find('.pub-cont-tbody-middle').before(bottomEle);
 				bottomEle.empty().html(tbodyHtml(topIdx));
 			}
-
+			
 		}else{
 			_this.config.bodyElement.find('.pub-cont-tbody-top').empty().html(tbodyHtml(topIdx));
 			if(tbi.length > 0){
@@ -715,12 +717,13 @@ Plugin.prototype ={
 			}
 		}
 		
-		var topSpaceHeight = (bigDataGridCount* viewItemIdx -bigDataGridCount) * _this.config.totalColHeight; 
+		
+
+		var topSpaceHeight = (viewItemIdx -1)*_this.config.scroll.itemGroupTotalHeight; 
 
 		var spaceItemCount = Math.floor(topSpaceHeight /_this.options.bigData.spaceUnitHeight)
 			,overHeight = topSpaceHeight % _this.options.bigData.spaceUnitHeight; 
-		
-		
+				
 		for(var i =0 ;i < _this.config.scroll.spaceCount; i++){
 			if(i < spaceItemCount){
 				_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+i+'"]').css('height', _this.options.bigData.spaceUnitHeight);
@@ -728,13 +731,12 @@ Plugin.prototype ={
 				_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+i+'"]').css('height', 0);
 			}
 		}
+		
+		_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+spaceItemCount+'"]').css('height', overHeight);
 
-		var overval = overHeight;
-		//overHeight =  overHeight + (_this.config.scroll.top - (overHeight+bigDataGridCount* _this.config.totalColHeight));
 
-		_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+spaceItemCount+'"]').css('height', overHeight);	
+		//console.log('----------------)))))))))))', type,overHeight,  $('.pubGrid-body-scroll').scrollTop());
 
-		console.log('----------------)))))))))))', type,overval,  (overHeight+bigDataGridCount* _this.config.totalColHeight), overHeight, $('.pubGrid-body-scroll').scrollTop());
 
 		_this._setBodyEvent();
 	}
@@ -761,7 +763,6 @@ Plugin.prototype ={
 
 			var e = event.originalEvent
 				,scrollData = _conf.scroll
-				,scrollH = scrollData.height
 				,sTop  = scrollEle.scrollTop()
 				,sLeft = scrollEle.scrollLeft();
 
@@ -771,8 +772,6 @@ Plugin.prototype ={
 			}else if(sTop < scrollData.top){
 				updown = 'up';
 			}
-
-			
 
 			var lr = '';
 			if(sLeft < scrollData.left){
@@ -788,67 +787,62 @@ Plugin.prototype ={
 
 			_conf.scroll = scrollData;
 			
-			var redrawFlag = false;
+			var scrollRedrawFlag = false;
 			
 			var viewIdx = _conf.scroll.viewItemIdx;
 
-				
 			if(updown =='up'){
-				redrawFlag = sTop < _this._getScrollOverHeight(viewIdx,updown) ?true:false;
+				scrollRedrawFlag = sTop < _this._getScrollOverHeight(viewIdx,updown) ?true:false;
 			}else if(updown =='down'){
-				redrawFlag = sTop > _this._getScrollOverHeight(viewIdx+1 ,updown) ?true:false;
+				scrollRedrawFlag = sTop > _this._getScrollOverHeight(viewIdx+1 ,updown) ?true:false;
 			}
-			
-			
-			
-			if(redrawFlag){
+		
+			if(scrollRedrawFlag){
 
-				//if(timerObj) clearTimeout(timerObj);
+				viewIdx = viewIdx + (updown=='down' ? 1 : -1);
+				viewIdx = viewIdx < 1 ? 1 : viewIdx;
+			
+				var jumpFlag = false, scrIdx = 1; 
+				var scrIdxVal = sTop/scrollData.itemGroupTotalHeight; 
+				if(updown=='down'){
+					
+					scrIdx = Math.ceil(scrIdxVal);
+
+					if(scrIdx - viewIdx > 1){
+						scrIdx =  scrIdx > scrollData.maxViewItemIdx ? scrollData.maxViewItemIdx : scrIdx;
+						jumpFlag = true; 
+					}
+				}else if( updown=='up'){
+					scrIdx = Math.floor(scrIdxVal);
+					
+
+					if(viewIdx-scrIdx > 1){
+						//scrIdx = scrIdx +1;
+						jumpFlag = true; 	
+					}else{
+						scrIdx = scrIdx -1; 
+					}
+				}
+
+				//console.log('scroll--------- ',jumpFlag, updown, scrIdx ,  viewIdx)
+				//console.log('-------------	##################-------------------------------------')
 				
-				//timerObj = setTimeout(function(){ 
-					
-						
-						viewIdx = viewIdx + (updown=='down' ? 1 : -1);
-						viewIdx = viewIdx < 1 ? 1 : viewIdx;
-
-						var scrIdx = Math.ceil(sTop/(_opt.bigData.gridCount* _this.config.totalColHeight));
-						
-						scrIdx = scrIdx < 1 ? 1 :scrIdx;
-					
+				if(_conf.scroll.viewItemIdx==viewIdx || viewIdx==scrIdx) return ; 
 				
-						var jumpFlag = false; 
-						if(updown=='down' && scrIdx - viewIdx > 1){
-
-							var maxScrIdx = Math.ceil(_opt.tbodyItem.length / _opt.bigData.gridCount)-2;
-							scrIdx =  scrIdx > maxScrIdx ? maxScrIdx : scrIdx;
-							
-							jumpFlag = true; 
-						}else if( updown=='up' && viewIdx-scrIdx > 1){
-							jumpFlag = true; 	
-						}
-
-						console.log('#############',jumpFlag,scrIdx, viewIdx ,sTop,scrollData);
-						
-						if(viewIdx==scrIdx) return ; 
-
-						if(jumpFlag){
-							_conf.scroll.viewItemIdx = scrIdx < 1 ? 1 :scrIdx;
-
-							_this.drawGrid('scrollRedraw');
-						}else{
-							_conf.scroll.viewItemIdx = viewIdx;
-							_this.drawGrid('scroll');
-						}
+				if(jumpFlag){
+					_conf.scroll.viewItemIdx = scrIdx < 1 ? 1 :scrIdx;
+					_this.drawGrid('scrollRedraw');
+				}else{
+					_conf.scroll.viewItemIdx = viewIdx;
+					_this.drawGrid('scroll');
+				}
 					
-					
-				//}, 1);
 			}
 
 			return true; 
 		});
 	}
 	,_getScrollOverHeight : function (idx , updown){
-		//return idx* (this.options.bigData.gridCount+(updown=='up'? this.options.bigData.gridCount/2 : 0))* this.config.totalColHeight;
 		return idx* (this.options.bigData.gridCount)* this.config.totalColHeight;
 	}
 	/**
