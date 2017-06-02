@@ -205,8 +205,13 @@ $(document).ready(function (){
 				return '<span  style="color:'+sItem.item.STYLE+'">'+sItem.text+'</span>';
 			}
 		}
+		,compleateTargetMove : function (addItem){
+			alert(addItem);
+		}
+		,compleateSourceMove : function (delItem){
+			console.log(delItem);
+		}
 	}); 
-
 
 	selectObj.setItem('target',paramTargetItem);
 

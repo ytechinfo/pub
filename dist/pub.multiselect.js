@@ -71,8 +71,10 @@ if (!Object.keys) {
 			,beforeMove : false 
 			,beforeItemMove : false 
 			,afterSourceMove : false
+			,compleateSourceMove : false
 			,beforeTargetMove : false
 			,afterTargetMove : false
+			,compleateTargetMove : false
 		};
         
     function Plugin(sourceSelector, options) {
@@ -618,6 +620,8 @@ if (!Object.keys) {
 
 				_this.targetElement.find('.empty-message').remove();
 
+				var addItemKey = [];
+
 				selectVal.each(function (i, item){
 					tmpObj = $(item);
 					tmpVal=_this.getItemVal(tmpObj); 
@@ -651,16 +655,23 @@ if (!Object.keys) {
 					var _addItem = $.extend(true , {}, selectItem);
 					_addItem['_CU'] = 'C';
 
+
+					addItemKey.push(tmpVal);
+
 					_this.addItemList[_this.config.currPage][tmpVal] =_addItem;
 
 					strHtm.push(_this.getItemHtml('target',tmpVal ,selectItem ));
 					
 					tmpObj.addClass(opts.addItemClass);
 										
-					if($.isFunction(opts.afterourceMove)){
+					if($.isFunction(opts.afterSourceMove)){
 						opts.afterSourceMove(tmpObj); 
 					}
 				});
+
+				if($.isFunction(opts.compleateSourceMove)){
+					opts.compleateSourceMove(addItemKey); 
+				}
 
 				if(returnFlag===true){
 					return strHtm.join('');
@@ -697,6 +708,7 @@ if (!Object.keys) {
 
 			if(selectVal.length >0){
 				var removeItem; 
+				var deleteItemKey = [];
 				selectVal.each(function (i, item){
 					var tmpKey = $(item).attr('data-val'); 
 					removeItem = _this.options.sourceItem.items[_this.config.itemKey.sourceIdx[tmpKey]];
@@ -721,6 +733,8 @@ if (!Object.keys) {
 						}
 					}
 					$(item).remove();
+
+					deleteItemKey.push(tmpKey);
 					
 					delete _this.addItemList[_this.config.currPage][tmpKey];
 					
@@ -729,10 +743,12 @@ if (!Object.keys) {
 					}
 				});
 
-				
-
 				if(Object.keys(_this.addItemList[_this.config.currPage]).length < 1){
 					_this.targetElement.empty().html(_this.getEmptyMessage());
+				}
+
+				if($.isFunction(_this.options.compleateTargetMove)){
+					_this.options.compleateTargetMove(deleteItemKey); 
 				}
 			}else{
 				if(_this.options.message.delEmpty !== false){

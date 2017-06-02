@@ -654,6 +654,25 @@ _$base.util = {
 		return this.dateFormat(a,format);
 	}
 	/**
+	 * @method convertCamel
+	 * @param camelStr 
+	 * @description char camel case 로 변경. user_name -> userName
+	 */	
+	,convertCamel : function (camelStr){
+		
+	    if(camelStr == '') {
+	        return camelStr;
+	    }
+	    camelStr = camelStr.toLowerCase();
+	    // conversion
+	    var returnStr = camelStr.replace(/_(\w)/g, function(word) {
+	        return word.toUpperCase();
+	    });
+	    returnStr = returnStr.replace(/_/g, "");
+	    
+	    return returnStr; 
+	}
+	/**
 	 * @method charFill
 	 * @param num 
 	 * @param width 
