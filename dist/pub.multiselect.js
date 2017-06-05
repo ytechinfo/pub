@@ -286,6 +286,9 @@ if (!Object.keys) {
 
 				var pageNumKey = _opts.pageInfo.pageNumKey;
 
+				_this.addItemList[_this.config.currPage] ={};
+				_this.config.pageNumInfo[_this.config.currPage] = [];
+
 				if(len > 0){
 					for(var i=0 ;i < len; i++){
 						tmpItem = tmpTargetItem.items[i];
