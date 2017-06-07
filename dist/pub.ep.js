@@ -60,6 +60,7 @@ _defaultOption ={
 			
 		}
 		,logWriteKey : 'all'
+		,enabled : false
 		/*
 		,logWriteKey:[
 		     'all'
@@ -360,7 +361,7 @@ _$base.page ={
 			url=_$base.util.replaceUrl(url,tmpInfo.replaceParam);
 		}
 		
-		if(options.logwrite !== false){
+		if(globalOption.log.enabled ===true && options.logwrite !== false){
 			_$base.logWrite(url, type, options);
 		}
 		
