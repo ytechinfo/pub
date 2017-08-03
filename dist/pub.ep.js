@@ -49,6 +49,7 @@ _defaultOption ={
 		,'popup':'popup'
 		,'location':'location'
 	}
+	,loadSelect : '.pub-loading-area'
 	,defaultPopupMethod:'get'
 	,useReplaceParam : true
 	,useLinkReplace : true
@@ -179,7 +180,7 @@ _$base.req ={
 	 */		
 	ajax:function (option){
 		
-		var loadSelector = option.loadSelector ?option.loadSelector :false; 
+		var loadSelector = option.loadSelector ?option.loadSelector : globalOption.loadSelect; 
 		
 		if(option.dataType == 'jsonp'){
 			option.timeout = option.timeout || 10000;
@@ -190,17 +191,17 @@ _$base.req ={
 			,cache: false
 			,dataType: "json"
 			,beforeSend : function( xhr ) {
-				if(loadSelector){
+				if($(loadSelector.loadSelect).length > 0){
 					$(loadSelector).centerLoading({
 						contentClear:false 
 					});
 				}
 			}
 			,error : function (data, status, err){
-				if(loadSelector) $(loadSelector).centerLoadingClose();
+				if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
 			}
 			,complete: function (data, status, err){
-				if(loadSelector) $(loadSelector).centerLoadingClose();
+				if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
 			}	
 		},option));
 	}
