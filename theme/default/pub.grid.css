@@ -15,6 +15,12 @@
 	box-sizing: content-box !important;
 }
 
+.pubGrid th, .pubGrid td{
+ -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
 .pubGrid-container {
 	position: relative;
 }
@@ -112,7 +118,7 @@
 
 .pubGrid-body td {
 	border: 1px solid #ddd;
-    border-bottom: 0px;
+  
 }
 
 .pubGrid-body [rowinfo="0"]>td {
@@ -146,7 +152,7 @@
    background: #F5F8F5;
 }
 .pubGrid-body tbody .pub-body-tr.tr1{
-   background: F000;
+   background: #fff;
 }
 
 .pubGrid-body .pub-body-tr > td > .pub-content {
