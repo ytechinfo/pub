@@ -153,6 +153,7 @@ Plugin.prototype ={
 		_this.element = $(element);
 		
 		_this.config = {totGridWidth : 0, scrollWidth :(scrollBarSize(_this.element)+1)};
+		
 		_this.options =$.extend(true, {}, _defaults);
 		_this.setOptions(options);
 		
@@ -164,8 +165,6 @@ Plugin.prototype ={
 		
 		_this.config.gridXScrollFlag = false;
 		_this.config.page = _this.options.page;
-		_this.config.totalColHeight = _this.options.rowOptions.colHeight+1;
-		_this.config.scroll = {top :0 , left:0, startRow :0, endRow :0, updown:'', viewItemIdx : 1, height:0, hScrollMoveFlag: false, viewArea :{top :true , mid:false , bottom:false}};
 
 		_this._setThead();
 		_this.setData(_this.options.tbodyItem , 'init');
@@ -201,6 +200,11 @@ Plugin.prototype ={
 		}
 
 		$.extend(true, _this.options, options);
+		
+		this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
+
+		_this.config.totalColHeight = _this.options.rowOptions.colHeight+1;
+		_this.config.scroll = {top :0 , left:0, startRow :0, endRow :0, updown:'', viewItemIdx : 1, height:0, hScrollMoveFlag: false, viewArea :{top :true , mid:false , bottom:false}};
 
 		if(_this.options.bigData === false){
 			_this.options.bigData ={
@@ -210,13 +214,12 @@ Plugin.prototype ={
 			};
 		}else{
 			if(_this.options.height =='auto'){
-				var gridCount =parseInt((_this.element.height() / _this.options.rowOptions.colHeight), 10 );
-				_this.options.bigData.gridCount = gridCount + parseInt(gridCount/2, 10);
+				_this._setBigDataCount(parseInt((_this.element.height() / _this.options.rowOptions.colHeight), 10 ));
+			}else{
+				_this._setBigDataCount(_this.options.bigData.gridCount);
 			}
 		}
-		
-		this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
-		
+				
 		this.config.horizontalEnabled = this.options.tColItem.length > _this.options.bigData.horizontalEnableCount ? true : false; 
 
 		var _cb = _this.options.rowContextMenu.callback; 
@@ -576,9 +579,7 @@ Plugin.prototype ={
 		_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
 		_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
 		
-		// item total height 값
-		_this.config.scroll.itemGroupTotalHeight = opt.bigData.gridCount* _this.config.totalColHeight; 
-		_this.config.scroll.maxViewItemIdx = Math.ceil(opt.tbodyItem.length / opt.bigData.gridCount)-2;
+		
 
 	}
 	,setPage : function (pageInfo){
@@ -681,7 +682,6 @@ Plugin.prototype ={
 				startCol=0;
 				endCol=tci.length-1;
 			}
-			
 			//console.log('startCol, endCol : ', startCol, endCol)
 			var tmpVal;
 			for(var i =startRow ; i < endRow; i++){
@@ -964,9 +964,7 @@ Plugin.prototype ={
 		_conf.bodyScroll.scroll(function (e){
 			_conf.headerWrapElement.scrollLeft($(this).scrollLeft());
 		});
-		
-		var timerObj = null; 
-		
+				
 		_conf.bodyScroll.on("scroll", function(event) {
 			event.preventDefault();
 			var scrollEle = $(this);
@@ -1032,8 +1030,8 @@ Plugin.prototype ={
 
 					if(scrollData.hScrollMoveFlag===true  && (updown =='down' || sTop > topViewHeight)){
 						scrollData.hScrollMoveFlag = false; 
-						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 						_this.drawGrid('scrollV_draw');
+						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 					}
 				}
 				
@@ -1074,19 +1072,19 @@ Plugin.prototype ={
 						}
 					}
 
-					//console.log('scroll--------- ',jumpFlag, sTop, updown, scrIdx ,_conf.scroll.viewItemIdx,  viewIdx)
-					//console.log('-------------	##################-------------------------------------')
-					
-					//if(scrIdx < 1) return ; 
-
-					if( !jumpFlag  &&  (_conf.scroll.viewItemIdx==viewIdx || viewIdx==scrIdx)) return ; 
-
 					if(scrollData.hScrollMoveFlag===true){
 						scrollData.hScrollMoveFlag = false; 
 						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 						_this.drawGrid('scrollV_draw');
 						return ; 
 					}
+
+					//console.log('scroll--------- ',jumpFlag, sTop, updown, scrIdx ,_conf.scroll.viewItemIdx,  viewIdx)
+					//console.log('-------------	##################-------------------------------------')
+					
+					//if(scrIdx < 1) return ; 
+
+					if( !jumpFlag  &&  (_conf.scroll.viewItemIdx==viewIdx || viewIdx==scrIdx)) return ; 
 					
 					if(jumpFlag){
 						_conf.scroll.viewItemIdx = scrIdx < 1 ? 1 :scrIdx;
@@ -1101,6 +1099,12 @@ Plugin.prototype ={
 
 			return true; 
 		});
+	}
+	,_setBigDataCount: function (gridCount){
+		this.options.bigData.gridCount = gridCount + parseInt(gridCount/2, 10);
+		// item total height 값
+		this.config.scroll.itemGroupTotalHeight = this.options.bigData.gridCount* this.config.totalColHeight; 
+		this.config.scroll.maxViewItemIdx = Math.ceil(this.options.tbodyItem.length / this.options.bigData.gridCount)-2;
 	}
 	,_getScrollOverHeight : function (idx , updown){
 		return idx* (this.options.bigData.gridCount)* this.config.totalColHeight;
@@ -1132,6 +1136,10 @@ Plugin.prototype ={
 			var bodyH = opt.height-_this.config.headerWrapElement.height(); 
 			bodyH = bodyH > 0?bodyH : _this.config.headerWrapElement.height()+5;
 			_this.config.bodyScroll.css('height',(bodyH)+'px');
+						
+			_this._setBigDataCount(parseInt((_this.element.height() / _this.options.rowOptions.colHeight), 10 ));
+			_this.drawGrid('scrollV_draw');
+			
 		}
 
 		if(_this.options.resizeGridWidthFixed === false){
