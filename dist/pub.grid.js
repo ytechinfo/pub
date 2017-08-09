@@ -38,7 +38,6 @@ var _initialized = false
 		,resize:{	// resize 여부
 			enabled : true
 			,cursor : 'col-resize'
-			,realTime : true	// resize 실시간으로 반영할지 여부. 
 		}
 		,colWidthFixed : false  // 넓이 고정 여부.
 		,colMinWidth : 50  // 컬럼 최소 넓이
@@ -484,9 +483,8 @@ Plugin.prototype ={
 			}
 		}
 		
-		console.log(this.config.horizontalEnabled , this.config.scroll.hScrollMoveFlag , startCol, endCol )
+		//console.log(this.config.horizontalEnabled , this.config.scroll.hScrollMoveFlag , startCol, endCol )
 		
-
 		for(var i=startCol ;i <endCol; i++){
 			thiItem = tci[i];
 			var tmpStyle = [];
@@ -633,9 +631,8 @@ Plugin.prototype ={
 			+'			<div id="'+_this.prefix+'pubGrid-header-container" class="pubGrid-header-container" style="display: table-row;">'
 			+'				<div style="display:table-cell;"><table id="'+_this.prefix+'pubGrid-header" style="width:'+_this.config.totGridWidth+'px;" class="pubGrid-header" onselectstart="return false">'
 			+'				#theaderHtmlArea#</table></div>'
-			+'				<div style="width:'+_this.config.scrollWidth+'px;display:table-cell;float:left;"></div>'
+			+'				<div style="width:'+(_this.config.scrollWidth+1)+'px;height:10px;display:table-cell;float:left;"></div>'
 			+'			</div>'	
-			
 			+'		</div>'
 			+'		<div id="pubGrid-body-wrapper" class="pubGrid-body-wrapper">'
 			+'			<div id="'+_this.prefix+'pubGrid-body-scroll" class="pubGrid-body-scroll" style="height:'+_this.options.height+'px;">'
@@ -685,7 +682,7 @@ Plugin.prototype ={
 				endCol=tci.length-1;
 			}
 			
-			console.log('startCol, endCol : ', startCol, endCol)
+			//console.log('startCol, endCol : ', startCol, endCol)
 			var tmpVal;
 			for(var i =startRow ; i < endRow; i++){
 				tbiItem = tbi[i];
@@ -818,7 +815,6 @@ Plugin.prototype ={
 			_this.config.pubGridBodyHeightElement = $('#'+_this.prefix +'pubGrid-body-height');
 			_this.config.pubGridBodyWidthElement = $('#'+_this.prefix +'pubGrid-body-width');
 			_this.config.pubGridLeftSpaceElement = $('#'+_this.prefix +'pubGrid-body-left-space');
-			
 			
 			_this.config.headerWrapElement = $('#'+_this.prefix +'pubGrid-header-wrapper');
 			_this.config.headerContainerElement = $('#'+_this.prefix +'pubGrid-header-container');
@@ -1083,14 +1079,14 @@ Plugin.prototype ={
 					
 					//if(scrIdx < 1) return ; 
 
+					if( !jumpFlag  &&  (_conf.scroll.viewItemIdx==viewIdx || viewIdx==scrIdx)) return ; 
+
 					if(scrollData.hScrollMoveFlag===true){
 						scrollData.hScrollMoveFlag = false; 
+						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 						_this.drawGrid('scrollV_draw');
 						return ; 
 					}
-
-
-					if( !jumpFlag  &&  (_conf.scroll.viewItemIdx==viewIdx || viewIdx==scrIdx)) return ; 
 					
 					if(jumpFlag){
 						_conf.scroll.viewItemIdx = scrIdx < 1 ? 1 :scrIdx;
@@ -1443,29 +1439,28 @@ Plugin.prototype ={
 
 		
 		var minFlag = false; 
-		if(_this.options.headerOptions.resize.realTime || mode=='end'){
-			if(w > _this.options.headerOptions.colMinWidth){
-	
-			}else{
+		if(mode=='end'){
+			if(w <= _this.options.headerOptions.colMinWidth){
 				w =_this.options.headerOptions.colMinWidth;
 				minFlag =true; 
 			}
 			
 			var totalWidth = drag.gridW+w;
 			
-			if(_this.config.totGridWidth != (drag.gridW+w)){
-				
-				_this.config.headerElement.css('width',(totalWidth)+'px');
-				_this.config.bodyElement.css('width',(drag.gridBodyW+w)+'px');
-				_this.config.pubGridBodyWidthElement.css('width',(totalWidth)+'px');
-			}
 			_this.config.totGridWidth = totalWidth; 
 			_this.config.gridBodyWidth = drag.gridBodyW+w; 
 			_this.options.tColItem[drag.colspanidx].width = w; 
-			drag.ele.removeAttr('style');
+			
 			drag.colHeader.css('width',w+'px');
 			drag.colHeader.attr('_width',w);
 			$('#'+_this.prefix+'colbody'+drag.colspanidx).css('width',w+'px');
+			
+			_this.config.headerElement.css('width',(totalWidth)+'px');
+			_this.config.bodyElement.css('width',(drag.gridBodyW+w)+'px');
+			
+			_this.config.pubGridBodyWidthElement.css('width',(totalWidth)+'px');
+			drag.ele.removeAttr('style');
+			
 		}else{
 			if(w > _this.options.headerOptions.colMinWidth){
 				drag.ele.css('left',w);
