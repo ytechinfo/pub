@@ -25,7 +25,8 @@ var _initialized = false
 		,number : {prefix :'$', suffix :'원' , fixed : 0}
 	}
 	,bigData : {
-		gridCount : 30		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+		enabled: true
+		,gridCount : 30		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
 		,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
 		,horizontalEnableCount : 20	// 컬럼 view 카운트. 20개 이상일경우 처리. 
 	}
@@ -155,19 +156,16 @@ Plugin.prototype ={
 		_this.config = {totGridWidth : 0, scrollWidth :(scrollBarSize(_this.element)+1)};
 		
 		_this.options =$.extend(true, {}, _defaults);
-		_this.setOptions(options);
+		_this.setOptions(options, true);
 		
-
 		_this.drag ={};
-		_this._setGridWidth('init');
-
 		_this.addStyleTag();
-		
-		_this.config.gridXScrollFlag = false;
-		_this.config.page = _this.options.page;
 
 		_this._setThead();
 		_this.setData(_this.options.tbodyItem , 'init');
+		
+		_this.config.gridXScrollFlag = false;
+		_this.config.page = _this.options.page;
 
 		_this._windowResize();
 
@@ -180,19 +178,13 @@ Plugin.prototype ={
 	,_setGridWidth : function (mode){
 		var _this = this;
 		
-		if(mode != 'init'){
-			_this.config.pubGridElement.hide();
-		}
-			
-		_this.config.gridElementWidth = _this.element.innerWidth(); // border 값 빼주기.
-			
-		if(mode != 'init') _this.config.pubGridElement.show();
+		_this.config.gridElementWidth = _this.element.innerWidth()-1; // border 값 빼주기.			
 	}
 	/**
      * @method setOptions
      * @description 옵션 셋팅.
      */
-	,setOptions : function(options){
+	,setOptions : function(options , firstFlag){
 		var _this = this; 
 		
 		if($.isArray(options.tbodyItem)){
@@ -204,11 +196,15 @@ Plugin.prototype ={
 		this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
 
 		_this.config.totalColHeight = _this.options.rowOptions.colHeight+1;
-		_this.config.scroll = {top :0 , left:0, startRow :0, endRow :0, updown:'', viewItemIdx : 1, height:0, hScrollMoveFlag: false, viewArea :{top :true , mid:false , bottom:false}};
 
-		if(_this.options.bigData === false){
+		_this.config.scroll = {top :0 , left:0, startCol:0, endCol:this.options.tbodyItem.length,startRow :0
+			, endRow :0, updown:'', viewItemIdx : 1, height:0, hScrollMoveFlag: false,viewArea :{top :true , mid:false , bottom:false}};
+		_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
+		
+		if(_this.options.bigData === false || _this.options.bigData.enabled === false){
 			_this.options.bigData ={
-				gridCount : 1000
+				enabled :false
+				,gridCount : 1000
 				,spaceUnitHeight : 100000
 				,horizontalEnableCount : 50 
 			};
@@ -236,6 +232,13 @@ Plugin.prototype ={
 		}else{
 			_this.options.rowContextMenu =false; 
 		}
+		
+		_this._setGridWidth();
+
+		if(firstFlag !== true){
+			_this._calcElementWidth();
+		}
+		
 	}
 	/**
      * @method addStyleTag
@@ -394,11 +397,13 @@ Plugin.prototype ={
 			,tciLen = tci.length;
 
 		//console.log(_this.config.totGridWidth)
-		var _schLeft = 0;
+		
 		if(_this.config.bodyScroll){
-			_schLeft = _this.config.bodyScroll.scrollLeft();
+			_this.scrollColumnPosition(_this.config.bodyScroll.scrollTop(), _this.config.bodyScroll.scrollLeft());
+		}else{
+			_this.scrollColumnPosition(0,0);
 		}
-		_this.scrollColumnPosition(_schLeft);
+		
 
 		_w = _this.config.totGridWidth;
 		_containerWidth = (_w+_this.config.scrollWidth);
@@ -546,9 +551,9 @@ Plugin.prototype ={
 		}
 
 		if(gridMode=='init'){
-			_this.drawGrid();
+			_this.drawGrid('init',true);
 		}else{
-			_this.drawGrid('tbody', gridMode);
+			_this.drawGrid('tbody',true);
 		}
 
 		if(gridMode != 'sort'){
@@ -624,8 +629,8 @@ Plugin.prototype ={
 	,getHeaderHtml : function (){
 		var _this = this; 
 
-		return '<div class="pubGrid-wrapper">'
-			+' <div class="pubGrid-width-size" style="width:100%;height:0px;"></div>'
+		return '<div id="'+_this.prefix+'pubGrid-width-size" class="pubGrid-width-size" style="width:100%;height:0px;"></div>'
+			+' <div class="pubGrid-wrapper">'
 			+'  <div id="'+_this.prefix+'pubGrid" class="pubGrid" style="width:'+_this.config.gridElementWidth+'px;">'
 			+'	<div id="'+_this.prefix+'pubGrid-container" class="pubGrid-container">'
 			+'		<div id="'+_this.prefix+'pubGrid-header-wrapper" class="pubGrid-header-wrapper">'
@@ -682,7 +687,9 @@ Plugin.prototype ={
 				startCol=0;
 				endCol=tci.length-1;
 			}
-			//console.log('startCol, endCol : ', startCol, endCol)
+			
+			console.log('startRow : '+startRow, 'endRow : '+endRow , 'startCol : '+startCol, 'endCol : '+endCol, 'itemIdx: '+itemIdx)
+			
 			var tmpVal;
 			for(var i =startRow ; i < endRow; i++){
 				tbiItem = tbi[i];
@@ -741,19 +748,13 @@ Plugin.prototype ={
 	 * @param  type {String} 그리드 타입.
      * @description foot 데이타 셋팅
      */
-	,drawGrid : function (drawMode, gridMode){
+	,drawGrid : function (drawMode, unconditionallyFlag){
 		var _this = this
 			,opt = _this.options
 			,ci = _this.config
 			,tci = opt.tColItem
 			,tbi = opt.tbodyItem
 			,hederOpt=opt.headerOptions;
-
-		drawMode = drawMode ? drawMode :'all';
-
-		if(gridMode != 'sort'){
-			$('.label-wrapper.sortasc,.label-wrapper.sortdesc').removeClass('sortasc sortdesc')
-		}
 		
 		// header html 만들기
 		function theadHtml(){
@@ -806,7 +807,7 @@ Plugin.prototype ={
 			return strHtm.join('');
 		}
 
-		if(drawMode =='all'){
+		if(drawMode =='init'){
 			
 			_this.element.empty().html(_this.getHeaderHtml().replace('#theaderHtmlArea#',theadHtml()));
 			
@@ -840,13 +841,25 @@ Plugin.prototype ={
 			,viewItemIdx=scrollData.viewItemIdx
 			,updown = scrollData.updown
 			,bigDataGridCount = _this.options.bigData.gridCount
-			,topIdx =viewItemIdx ,middleIdx=viewItemIdx+1 , bottomIdx = viewItemIdx+2; 
-
+			,topIdx =viewItemIdx ,middleIdx=viewItemIdx+1 , bottomIdx = viewItemIdx+2;
 		
+		if(unconditionallyFlag != true && _this.config.drawBeforeData.viewItemIdx==viewItemIdx
+			&& _this.config.drawBeforeData.startCol==scrollData.startCol
+			&& _this.config.drawBeforeData.endCol==scrollData.endCol	
+		){
+			return ;
+		}else{
+			_this.config.drawBeforeData = {
+				viewItemIdx :viewItemIdx	
+				,startCol : scrollData.startCol
+				,endCol : scrollData.endCol	
+			}
+		}
+
 		if(_this._isHorizontalCheck()){
 			_this.config.pubGridLeftSpaceElement.css('width','0px');	
 		}else{
-			_this.config.pubGridLeftSpaceElement.css('width',scrollData.leftWidth[scrollData.startCol]+'px');
+			_this.config.pubGridLeftSpaceElement.css('width',scrollData.leftWidth[scrollData.startCol||0]+'px');
 		}
 		//console.log('scroll top start : ',updown , viewItemIdx, $('.pubGrid-body-scroll').scrollTop());
 
@@ -911,44 +924,56 @@ Plugin.prototype ={
 
 		//console.log('----------------)))))))))))', drawMode,overHeight,  $('.pubGrid-body-scroll').scrollTop());
 
-		if(drawMode=='all'){
+		if(drawMode=='init'){
 			_this._setBodyEvent();
 		}
 	}
-	,scrollColumnPosition : function (sLeft){
+	,scrollColumnPosition : function (sTop, sLeft, pType){
 		var tci = this.options.tColItem; 
+		
+		//console.log(this.config.scroll.beforeTop ,sTop, sLeft)
 
 		var gridW = sLeft+this.config.gridElementWidth; 
-		var itemLeftVal=0; 
+		var itemLeftVal=0;
 		var startCol = 0, endCol =tci.length;
-
 		var leftWidth ={};
-		for(var i =0 ;i <tci.length ;i++){
-			var thiItem = tci[i];
-
-			leftWidth[i] =itemLeftVal; 
-			itemLeftVal +=thiItem.width; 
+		if(pType === 'vscroll'){
+			leftWidth = this.config.scroll.leftWidth;
+			startCol = this.config.scroll.startCol;
+			endCol = this.config.scroll.endCol;
+		}else{
 			
-			//console.log(thiItem.width, itemLeftVal)
-			if(itemLeftVal < sLeft){
-				startCol = i; 
-				continue; 
-			}
+			for(var i =0 ;i <tci.length ;i++){
+				var thiItem = tci[i];
 
-			if( itemLeftVal >gridW){
-				endCol = i ; 
-				break; 
+				leftWidth[i] =itemLeftVal; 
+				itemLeftVal +=thiItem.width; 
+				
+				//console.log(thiItem.width, itemLeftVal)
+				if(itemLeftVal < sLeft){
+					startCol = i-1; 
+					continue; 
+				}
+
+				if( itemLeftVal >gridW){
+					endCol = i+1; 
+					break; 
+				}
 			}
 		}
-		
-		startCol = startCol-1;
-		startCol = startCol > 0? startCol:0;
-		endCol = endCol+1;
-		endCol = endCol >= tci.length? tci.length-1:endCol;
-		
+		if(this.config.scroll.beforeTop != sTop ){
+			var viewIdx = this.config.scroll.viewItemIdx
+				,topViewHeight = this._getScrollOverHeight(viewIdx)
+				,midViewHeight = this._getScrollOverHeight(viewIdx+1)
+
+			this.config.scroll.viewArea.top = sTop < topViewHeight?true:false; 
+			this.config.scroll.viewArea.mid = (sTop + this.config.height > topViewHeight)?true:false; 
+			this.config.scroll.viewArea.bottom = (sTop+this.config.height > midViewHeight)?true:false; 
+		}
+		this.config.scroll.beforeTop = sTop; 
 		this.config.scroll.leftWidth = leftWidth; 
-		this.config.scroll.startCol = startCol; 
-		this.config.scroll.endCol = endCol;
+		this.config.scroll.startCol = ( startCol > 0? startCol:0 ); 
+		this.config.scroll.endCol = ( endCol >= tci.length? tci.length-1:endCol );
 	}
 	/**
      * @method scroll
@@ -960,17 +985,11 @@ Plugin.prototype ={
 			,_conf = _this.config
 			,colHeight = _opt.rowOptions.colHeight; 
 		
-		// horizontal scroll control
-		_conf.bodyScroll.scroll(function (e){
-			_conf.headerWrapElement.scrollLeft($(this).scrollLeft());
-		});
-				
 		_conf.bodyScroll.on("scroll", function(event) {
 			event.preventDefault();
 			var scrollEle = $(this);
 
-			var e = event.originalEvent
-				,scrollData = _conf.scroll
+			var scrollData = _conf.scroll
 				,sTop  = scrollEle.scrollTop()
 				,sLeft = scrollEle.scrollLeft();
 
@@ -993,26 +1012,30 @@ Plugin.prototype ={
 			scrollData.updown= updown;
 			scrollData.leftright= lr;
 			
-			_conf.scroll = scrollData;
-			
-			var scrollRedrawFlag = false;
-
+			var currentStartCol = scrollData.startCol, currentEndCol = scrollData.endCol;
+						
 			if(updown == ''){
-				var currentStartCol = scrollData.startCol,
-					currentEndCol = scrollData.endCol;
-				_this.scrollColumnPosition(sLeft);
-
-				//console.log(currentStartCol, scrollData.endCol)
-				
+				_this.scrollColumnPosition(sTop , sLeft , 'hscroll');
+				_conf.headerWrapElement.scrollLeft(sLeft);
+								
 				if(scrollData.startCol != currentStartCol || scrollData.endCol != currentEndCol){
 					if(!_this._isHorizontalCheck() || scrollData.hScrollMoveFlag !== true){
 						scrollData.hScrollMoveFlag = true;
 						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
-						_this.drawGrid('scrollH_draw');
+						_this.drawGrid('scrollH_draw', true);
 					}					 
 				}
 			}else{
-			
+				var scrollRedrawFlag = false;
+				if(scrollData.hScrollMoveFlag===true){
+					scrollData.hScrollMoveFlag = false; 
+					_this.scrollColumnPosition(sTop , sLeft , 'vscroll');
+					$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
+
+					_this.drawGrid('scrollV_draw', true);
+					return ; 
+				}
+
 				var viewIdx = _conf.scroll.viewItemIdx
 					,topViewHeight = _this._getScrollOverHeight(viewIdx)
 					,midViewHeight = _this._getScrollOverHeight(viewIdx+1)
@@ -1022,31 +1045,8 @@ Plugin.prototype ={
 				}else if(updown =='down'){
 					scrollRedrawFlag = sTop > midViewHeight ?true:false;
 				}
-				
-				scrollData.beforeViewArea = $.extend(true , {}, scrollData.viewArea);
-				scrollData.viewArea = {top :false , mid:false , bottom:false};
-				if(sTop < topViewHeight){
-					scrollData.viewArea.top = true; 
-
-					if(scrollData.hScrollMoveFlag===true  && (updown =='down' || sTop > topViewHeight)){
-						scrollData.hScrollMoveFlag = false; 
-						_this.drawGrid('scrollV_draw');
-						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
-					}
-				}
-				
-				if((sTop + _this.config.height > topViewHeight)){
-					scrollData.viewArea.mid = true; 
-				}
-
-				if(sTop+_this.config.height > midViewHeight){
-					scrollData.viewArea.bottom = true; 
-				}
-
-				//console.log(viewIdx, sTop, topViewHeight, midViewHeight , _this._getScrollOverHeight(viewIdx+2))
-			
+							
 				if(scrollRedrawFlag){
-
 					viewIdx = viewIdx + (updown=='down' ? 1 : -1);
 					viewIdx = viewIdx < 1 ? 1 : viewIdx;
 				
@@ -1063,23 +1063,13 @@ Plugin.prototype ={
 					}else if( updown=='up'){
 						scrIdx = Math.floor(scrIdxVal);
 						
-
 						if(viewIdx-scrIdx > 1){
-							
 							jumpFlag = true; 	
 						}else{
 							scrIdx = scrIdx -1; 
 						}
 					}
 
-					if(scrollData.hScrollMoveFlag===true){
-						scrollData.hScrollMoveFlag = false; 
-						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
-						_this.drawGrid('scrollV_draw');
-						return ; 
-					}
-
-					//console.log('scroll--------- ',jumpFlag, sTop, updown, scrIdx ,_conf.scroll.viewItemIdx,  viewIdx)
 					//console.log('-------------	##################-------------------------------------')
 					
 					//if(scrIdx < 1) return ; 
@@ -1088,9 +1078,13 @@ Plugin.prototype ={
 					
 					if(jumpFlag){
 						_conf.scroll.viewItemIdx = scrIdx < 1 ? 1 :scrIdx;
+
+						_this.scrollColumnPosition(sTop , sLeft , 'vscroll');
 						_this.drawGrid('scrollV_draw');
 					}else{
 						_conf.scroll.viewItemIdx = viewIdx;
+
+						_this.scrollColumnPosition(sTop , sLeft , 'vscroll');
 						_this.drawGrid('scroll');																	
 					}
 						
@@ -1120,28 +1114,16 @@ Plugin.prototype ={
 		
 		opt = $.extend(true, {width : _this.element.innerWidth(), height : _this.element.height()}, (isOpt ? {} :opt));
 		
-		if(_this.config.gridElementWidth == opt.width && _this.config.height == opt.height){
-			return  false; 
-		}
-		
 		if(!isOpt){
-			_this.element.css('width',opt.width);
-			_this.element.css('height',opt.height);
+			_this.element.css({
+				'width':opt.width
+				,'height':opt.height
+			});
 		}
 		
 		_this._setGridWidth();
 		_this.config.pubGridElement.css('width',(_this.config.gridElementWidth)+'px');
-
-		if(_this.options.height =='auto'){
-			var bodyH = opt.height-_this.config.headerWrapElement.height(); 
-			bodyH = bodyH > 0?bodyH : _this.config.headerWrapElement.height()+5;
-			_this.config.bodyScroll.css('height',(bodyH)+'px');
-						
-			_this._setBigDataCount(parseInt((_this.element.height() / _this.options.rowOptions.colHeight), 10 ));
-			_this.drawGrid('scrollV_draw');
-			
-		}
-
+		
 		if(_this.options.resizeGridWidthFixed === false){
 			_this._calcElementWidth('resize');
 			_this.config.headerElement.css('width',(_this.config.totGridWidth)+'px');
@@ -1150,11 +1132,25 @@ Plugin.prototype ={
 			_this.config.pubGridBodyWidthElement.css('width',(_this.config.gridElementWidth)+'px');
 
 			$('#'+_this.prefix+"colgroup_head").empty().html(_this._getColGroup(_this.prefix+'colHeader'));
-			$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
+			
+		}else{
+			if(_this.options.height =='auto'){
+				var bodyH = opt.height-_this.config.headerWrapElement.height(); 
+				bodyH = bodyH > 0?bodyH : bodyH+5;
+				_this.config.bodyScroll.css('height',(bodyH)+'px');
+				
+		
+				if(_this.options.bigData.enabled === true){
+					setTimeout(function (){
+						_this._setBigDataCount(parseInt((opt.height / _this.options.rowOptions.colHeight), 10 ));
+						_this.scrollColumnPosition(_this.config.bodyScroll.scrollTop(),_this.config.bodyScroll.scrollLeft());
+
+						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
+						_this.drawGrid('scrollV_draw');
+					}, 10);
+				}
+			}
 		}
-
-		//_this._headerResize(_this.options.headerOptions.resize.enabled);
-
 	}
 	/**
      * @method resizeEnable
@@ -1172,13 +1168,20 @@ Plugin.prototype ={
 	}
 	,_windowResize :function (){
 		var _this = this; 
+		
+		if(_this.config.windowResize == 'init'){
+			return false; 
+		}
 		if(_this.options.autoResize !== true) return false; 
-
+		
+		_this.config.windowResize = 'init';
+		
 		var _evt = $.event,
 			_special,
-			resizeTimeout;
+			resizeTimeout,
+			eventName = _this.prefix+"pubgridResize"; 
 
-		_special = _evt.special.pubgridResize = {
+		_special = _evt.special[eventName] = {
 			setup: function() {
 				$( this ).on( "resize.pubGrid", _special.handler );
 			},
@@ -1191,7 +1194,7 @@ Plugin.prototype ={
 					args = arguments,
 					dispatch = function() {
 						// set correct event type
-						event.type = "pubgridResize";
+						event.type = eventName;
 						_evt.dispatch.apply( context, args );
 					};
 
@@ -1203,10 +1206,11 @@ Plugin.prototype ={
 					dispatch() :
 					resizeTimeout = setTimeout( dispatch, _special.threshold );
 			},
-			threshold: 150
+			threshold:10
 		};
-
-		$(window).on("pubgridResize", function( event ) {
+		
+		$(window).on(eventName, function( event ) {
+			console.log('111111111');
 			_this.resizeDraw();
 		});
 	}
@@ -1685,7 +1689,9 @@ Plugin.prototype ={
      * @description 해제.
      */
 	,destory:function (){
+		$(window).off(this.prefix+"pubgridResize")
 		delete _datastore[this.selector];
+		$(this.selector).empty(); 
 		//this = {};
 	}
 	,getDataStore :function (){
@@ -1698,14 +1704,14 @@ $.pubGrid = function (selector,options, args) {
 	if(!selector || $(selector).length < 1){
 		return '['+selector + '] selector  not found '; 
 	}
+	
+	var _cacheObject = _datastore[selector]; 
 
 	if(typeof options === 'undefined'){
-		return _datastore[selector]||{}; 
+		return _cacheObject||{}; 
 	}
-
-	var _cacheObject = _datastore[selector]; 
 	
-	if(!_cacheObject){
+	if(typeof _cacheObject === 'undefined'){
 		_cacheObject = new Plugin(selector, options);
 		_datastore[selector] = _cacheObject;
 		return _cacheObject; 
@@ -1714,11 +1720,11 @@ $.pubGrid = function (selector,options, args) {
 			,reDrawFlag = typeof headerOpt.redraw==='boolean' ? headerOpt.redraw : _cacheObject.options.headerOptions.redraw; 
 
 		if(reDrawFlag===true){
+			_cacheObject.destory();
 			_cacheObject = new Plugin(selector, options);
 			_datastore[selector] = _cacheObject;
 		}else{
 			_cacheObject.setOptions(options);
-			_cacheObject.drawGrid('tbody');
 		}
 		return _cacheObject; 
 	}
