@@ -18,7 +18,7 @@ var _initialized = false
 	,scrollWidth : 18	// 스크롤바 넓이
 	,minWidth : 38
 	,rowOptions:{
-		colHeight:20	// cell 높이
+		height:20	// cell 높이
 	}
 	,formatter :{
 		money :{prefix :'$', suffix :'원' , fixed : 0}	// money 설정 prefix 앞에 붙일 문구 , suffix : 마지막에 뭍일것 , fixed : 소수점 
@@ -26,7 +26,7 @@ var _initialized = false
 	}
 	,bigData : {
 		enabled: true
-		,gridCount : 30		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+		,gridCount : 30		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다.  auto 일 경우 화면 height 체크 해서 처리 한다. 
 		,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
 		,horizontalEnableCount : 20	// 컬럼 view 카운트. 20개 이상일경우 처리. 
 	}
@@ -195,10 +195,11 @@ Plugin.prototype ={
 		
 		this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
 
-		_this.config.totalColHeight = _this.options.rowOptions.colHeight+1;
+		//_this.config.rowHeight = _this.options.rowOptions.height+1;	// border-box 수정. 2017-08-11
+		_this.config.rowHeight = _this.options.rowOptions.height;
 
 		_this.config.scroll = {top :0 , left:0, startCol:0, endCol:this.options.tbodyItem.length,startRow :0
-			, endRow :0, updown:'', viewItemIdx : 1, height:0, hScrollMoveFlag: false,viewArea :{top :true , mid:false , bottom:false}};
+			, endRow :0, updown:'', viewItemIdx : 1, height:0, hScrollMoveFlag: false,viewArea :{area0 :true , area1:false , area2:false}};
 		_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 		
 		if(_this.options.bigData === false || _this.options.bigData.enabled === false){
@@ -209,8 +210,8 @@ Plugin.prototype ={
 				,horizontalEnableCount : 50 
 			};
 		}else{
-			if(_this.options.height =='auto'){
-				_this._setBigDataCount(parseInt((_this.element.height() / _this.options.rowOptions.colHeight), 10 ));
+			if(_this.options.bigData.gridCount=='auto'){
+				_this._setBigDataCount(parseInt((_this.element.height() / _this.options.rowOptions.height), 10 ));				
 			}else{
 				_this._setBigDataCount(_this.options.bigData.gridCount);
 			}
@@ -235,10 +236,6 @@ Plugin.prototype ={
 		
 		_this._setGridWidth();
 
-		if(firstFlag !== true){
-			_this._calcElementWidth();
-		}
-		
 	}
 	/**
      * @method addStyleTag
@@ -251,10 +248,11 @@ Plugin.prototype ={
 		
 		var cssStr = [];
 		
-		if(!isNaN(_this.options.rowOptions.colHeight)){
-			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td{height:'+_this.options.rowOptions.colHeight+'px;padding: 0px;margin:0px;}');
-			cssStr.push('#'+_this.prefix+'pubGrid .pub-content-ellipsis{height:'+(_this.options.rowOptions.colHeight-4)+'px;padding: 0px;margin:0px;}');
-			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td> .pub-content{height:'+_this.options.rowOptions.colHeight+'px;}');
+		var rowOptHeight = _this.options.rowOptions.height; 
+		if(!isNaN(rowOptHeight)){
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td{height:'+rowOptHeight+'px;padding: 0px;margin:0px;}');
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-content-ellipsis{height:'+(rowOptHeight-4)+'px;padding: 0px;margin:0px;}');
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td> .pub-content{height:'+rowOptHeight+'px;}');
 		}
 
 		var styleTag = _d.createElement('style');
@@ -398,13 +396,6 @@ Plugin.prototype ={
 
 		//console.log(_this.config.totGridWidth)
 		
-		if(_this.config.bodyScroll){
-			_this.scrollColumnPosition(_this.config.bodyScroll.scrollTop(), _this.config.bodyScroll.scrollLeft());
-		}else{
-			_this.scrollColumnPosition(0,0);
-		}
-		
-
 		_w = _this.config.totGridWidth;
 		_containerWidth = (_w+_this.config.scrollWidth);
 		tciLen = tci.length;
@@ -562,7 +553,7 @@ Plugin.prototype ={
 			}
 		}
 
-		var itemHeight = _this.options.tbodyItem.length* _this.config.totalColHeight
+		var itemHeight = _this.options.tbodyItem.length* _this.config.rowHeight
 			,unitHeight = _this.options.bigData.spaceUnitHeight
 			,loopCnt = Math.floor(itemHeight/unitHeight);
 		
@@ -583,7 +574,6 @@ Plugin.prototype ={
 		
 		_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
 		_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
-		
 		
 
 	}
@@ -647,10 +637,7 @@ Plugin.prototype ={
 			+'				<div style="display: table-row;">'
 			+'					<div id="'+_this.prefix+'pubGrid-body-left-space" style="float:left;display: table-cell;"></div>'
 			+'					<div style="display: table-cell;"><table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body">'
-			+'						<colgroup id="'+_this.prefix+'colgroup_body">'+_this._getColGroup(_this.prefix+'colbody', 'body')+'</colgroup>'
-			+'						<tbody class="pub-cont-tbody-top"></tbody>'
-			+'						<tbody class="pub-cont-tbody-middle"></tbody>'
-			+'						<tbody class="pub-cont-tbody-bottom"></tbody>'
+			+'						<colgroup id="'+_this.prefix+'colgroup_body"></colgroup>'
 			+'					</table></div>'	
 			+'				</div>'
 			+'				<div id="'+_this.prefix+'pubGrid-body-height" class="pubGrid-body-height" style="position:absolute;z-index:-1;top:0px;width: 1px;padding:0px;"></div>'
@@ -743,6 +730,34 @@ Plugin.prototype ={
 	,_isHorizontalCheck : function (){
 		return this.config.horizontalEnabled===true ?false : (this.config.horizontalEnabled===false && this.config.scroll.hScrollMoveFlag ===true);
 	}
+	,_setTbodyAppend : function (){
+		
+		console.log('_setTbodyAppend :');
+		this.config.bodyCount= this.config.bodyCount||-1;
+
+		var viewItemCount = parseInt(this.config.gridBodyHeight/ this.options.rowOptions.height, 10 );
+		var bodyCount = 2 + parseInt(viewItemCount/this.options.bigData.gridCount,10); 
+		bodyCount = bodyCount < 2 ? 2 :bodyCount;
+		
+		
+		if(this.config.bodyCount != bodyCount){
+			
+			if(this.config.bodyCount > bodyCount){
+				for(var i =bodyCount+1; i<= this.config.bodyCount; i++){
+					this.config.bodyElement.find('.pub-cont-tbody-'+(i)).remove();
+				}
+			}else{
+				var bodyHtm ='';
+				for(var i =this.config.bodyCount+1; i<= bodyCount; i++){
+					bodyHtm += '<tbody class="pub-cont-tbody-'+i+'"></tbody>';
+				}
+				this.config.bodyElement.append(bodyHtm);
+
+				
+			}
+			this.config.bodyCount = bodyCount; 
+		}
+	}
 	/**
      * @method drawGrid
 	 * @param  type {String} 그리드 타입.
@@ -784,7 +799,6 @@ Plugin.prototype ={
 				}
 			}
 			strHtm.push("</thead>");
-			strHtm.push("<tbody></tbody>");
 			return strHtm.join('');
 		}
 
@@ -834,9 +848,15 @@ Plugin.prototype ={
 			_this._headerResize(hederOpt.resize.enabled);
 			_this.scroll();
 			_this._initBodyEvent();
+			_this._setBodyEvent();
+			_this.config.gridBodyHeight = _this.config.bodyScroll.height();
 
+			_this._setTbodyAppend();
+			_this.scrollColumnPosition(0,0);
+
+			$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 		}
-		
+	
 		var scrollData = _this.config.scroll
 			,viewItemIdx=scrollData.viewItemIdx
 			,updown = scrollData.updown
@@ -854,57 +874,56 @@ Plugin.prototype ={
 				,startCol : scrollData.startCol
 				,endCol : scrollData.endCol	
 			}
+
+			$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 		}
 
 		if(_this._isHorizontalCheck()){
 			_this.config.pubGridLeftSpaceElement.css('width','0px');	
 		}else{
-			_this.config.pubGridLeftSpaceElement.css('width',scrollData.leftWidth[scrollData.startCol||0]+'px');
+			_this.config.pubGridLeftSpaceElement.css('width',(scrollData.leftWidth[scrollData.startCol]||0)+'px');
 		}
 		//console.log('scroll top start : ',updown , viewItemIdx, $('.pubGrid-body-scroll').scrollTop());
 
 		if(drawMode=='scroll'){
 			if(updown =='down'){
-				var topEle = _this.config.bodyElement.find('.pub-cont-tbody-top').addClass('pub-cont-tbody-top-temp').removeClass('pub-cont-tbody-top');
-				_this.config.bodyElement.find('.pub-cont-tbody-middle').addClass('pub-cont-tbody-top').removeClass('pub-cont-tbody-middle');
-				_this.config.bodyElement.find('.pub-cont-tbody-bottom').addClass('pub-cont-tbody-middle').removeClass('pub-cont-tbody-bottom');
+				var topEle = _this.config.bodyElement.find('.pub-cont-tbody-0').addClass('pub-cont-tbody-temp').removeClass('pub-cont-tbody-0');
 
-				topEle.addClass('pub-cont-tbody-bottom').removeClass('pub-cont-tbody-top-temp');
-				_this.config.bodyElement.find('.pub-cont-tbody-middle').after(topEle);
-				topEle.empty().html(tbodyHtml(bottomIdx));
+				for(var i =1 ; i <= _this.config.bodyCount; i++){
+					_this.config.bodyElement.find('.pub-cont-tbody-'+(i)).addClass('pub-cont-tbody-'+(i-1)).removeClass('pub-cont-tbody-'+(i));
+				}
+								
+				topEle.addClass('pub-cont-tbody-'+(_this.config.bodyCount)).removeClass('pub-cont-tbody-temp');
+				_this.config.bodyElement.find('.pub-cont-tbody-'+(_this.config.bodyCount-1)).after(topEle);
+
+				topEle.empty().html(tbodyHtml(viewItemIdx+_this.config.bodyCount));
 			}else if(updown =='up'){
-				var bottomEle = _this.config.bodyElement.find('.pub-cont-tbody-bottom').addClass('pub-cont-tbody-bottom-temp').removeClass('pub-cont-tbody-bottom');
-				_this.config.bodyElement.find('.pub-cont-tbody-middle').addClass('pub-cont-tbody-bottom').removeClass('pub-cont-tbody-middle');
-				_this.config.bodyElement.find('.pub-cont-tbody-top').addClass('pub-cont-tbody-middle').removeClass('pub-cont-tbody-top');
+
+				var bottomEle = _this.config.bodyElement.find('.pub-cont-tbody-'+_this.config.bodyCount).addClass('pub-cont-tbody-temp').removeClass('pub-cont-tbody-'+_this.config.bodyCount);
+
+				for(var i =_this.config.bodyCount-1 ; i >=0; i--){
+					_this.config.bodyElement.find('.pub-cont-tbody-'+(i)).addClass('pub-cont-tbody-'+(i+1)).removeClass('pub-cont-tbody-'+(i));
+				}
 				
-				bottomEle.addClass('pub-cont-tbody-top').removeClass('pub-cont-tbody-bottom-temp');
-				_this.config.bodyElement.find('.pub-cont-tbody-middle').before(bottomEle);
-				bottomEle.empty().html(tbodyHtml(topIdx));
+				bottomEle.addClass('pub-cont-tbody-0').removeClass('pub-cont-tbody-temp');
+				_this.config.bodyElement.find('.pub-cont-tbody-1').before(bottomEle);
+				bottomEle.empty().html(tbodyHtml(viewItemIdx));
 			}
 			
 		}else if(drawMode == 'scrollH_draw' ||drawMode == 'scrollV_draw'){
-			if( drawMode != 'scrollH_draw'||(drawMode=='scrollH_draw' && scrollData.viewArea.top)){
-				_this.config.bodyElement.find('.pub-cont-tbody-top').empty().html(tbodyHtml(topIdx));
-			}
 
-			if(tbi.length > 0){
-				if( drawMode != 'scrollH_draw' ||(drawMode=='scrollH_draw' && scrollData.viewArea.mid)){
-					_this.config.bodyElement.find('.pub-cont-tbody-middle').empty().html(tbodyHtml(middleIdx));
-				}
-
-				if( drawMode != 'scrollH_draw' ||(drawMode=='scrollH_draw' && scrollData.viewArea.bottom)){
-					_this.config.bodyElement.find('.pub-cont-tbody-bottom').empty().html(tbodyHtml(bottomIdx));
+			for(var i =0 ; i <= _this.config.bodyCount; i++){
+				var tmpArea = 'area'+i;
+				if( drawMode != 'scrollH_draw'||(drawMode=='scrollH_draw' && scrollData.viewArea[tmpArea])){
+					_this.config.bodyElement.find('.pub-cont-tbody-'+i).empty().html(tbodyHtml(viewItemIdx+i));
 				}
 			}
 		}else{
-			_this.config.bodyElement.find('.pub-cont-tbody-top').empty().html(tbodyHtml(topIdx));
-			
-			if(tbi.length > 0){
-				_this.config.bodyElement.find('.pub-cont-tbody-middle').empty().html(tbodyHtml(middleIdx));
-				_this.config.bodyElement.find('.pub-cont-tbody-bottom').empty().html(tbodyHtml(bottomIdx));
+			for(var i =0 ; i <= _this.config.bodyCount; i++){
+				_this.config.bodyElement.find('.pub-cont-tbody-'+i).empty().html(tbodyHtml(viewItemIdx+1));
 			}
 		}
-		
+				
 		var topSpaceHeight = (viewItemIdx -1)*scrollData.itemGroupTotalHeight; 
 
 		var spaceItemCount = Math.floor(topSpaceHeight /_this.options.bigData.spaceUnitHeight)
@@ -918,20 +937,20 @@ Plugin.prototype ={
 			}
 		}
 		
+		console.log(scrollData.itemGroupTotalHeight, spaceItemCount , topSpaceHeight,_this.options.bigData.spaceUnitHeight, overHeight, _this.options.bigData.spaceUnitHeight )
+
 		_this.config.bodyElement.css('width',_this.config.gridBodyWidth+'px');
 		_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+spaceItemCount+'"]').css('height', overHeight);
 
 
 		//console.log('----------------)))))))))))', drawMode,overHeight,  $('.pubGrid-body-scroll').scrollTop());
 
-		if(drawMode=='init'){
-			_this._setBodyEvent();
-		}
+		
 	}
 	,scrollColumnPosition : function (sTop, sLeft, pType){
 		var tci = this.options.tColItem; 
 		
-		//console.log(this.config.scroll.beforeTop ,sTop, sLeft)
+		console.log('scrollColumnPosition : ', this.config.scroll.beforeTop ,sTop, sLeft)
 
 		var gridW = sLeft+this.config.gridElementWidth; 
 		var itemLeftVal=0;
@@ -949,7 +968,7 @@ Plugin.prototype ={
 				leftWidth[i] =itemLeftVal; 
 				itemLeftVal +=thiItem.width; 
 				
-				//console.log(thiItem.width, itemLeftVal)
+				console.log(thiItem.width, itemLeftVal)
 				if(itemLeftVal < sLeft){
 					startCol = i-1; 
 					continue; 
@@ -961,15 +980,19 @@ Plugin.prototype ={
 				}
 			}
 		}
-		if(this.config.scroll.beforeTop != sTop ){
-			var viewIdx = this.config.scroll.viewItemIdx
-				,topViewHeight = this._getScrollOverHeight(viewIdx)
-				,midViewHeight = this._getScrollOverHeight(viewIdx+1)
 
-			this.config.scroll.viewArea.top = sTop < topViewHeight?true:false; 
-			this.config.scroll.viewArea.mid = (sTop + this.config.height > topViewHeight)?true:false; 
-			this.config.scroll.viewArea.bottom = (sTop+this.config.height > midViewHeight)?true:false; 
+		var viewIdx = this.config.scroll.viewItemIdx
+			,beforeHeight = this._getScrollOverHeight(viewIdx);
+			
+		this.config.scroll.viewArea['area0'] = sTop < beforeHeight?true:false; 
+
+		for(var i =1 ; i <= this.config.bodyCount; i++){
+			var tmpArea = 'area'+i; 
+			var currHeight = this._getScrollOverHeight(viewIdx+i);
+			this.config.scroll.viewArea[tmpArea] = (beforeHeight > sTop + this.config.gridBodyHeight) || (sTop > currHeight)?false : true; 
+			beforeHeight = currHeight; 	
 		}
+
 		this.config.scroll.beforeTop = sTop; 
 		this.config.scroll.leftWidth = leftWidth; 
 		this.config.scroll.startCol = ( startCol > 0? startCol:0 ); 
@@ -981,10 +1004,8 @@ Plugin.prototype ={
      */
 	,scroll : function (){
 		var _this = this
-			,_opt = _this.options
-			,_conf = _this.config
-			,colHeight = _opt.rowOptions.colHeight; 
-		
+			,_conf = _this.config;
+			
 		_conf.bodyScroll.on("scroll", function(event) {
 			event.preventDefault();
 			var scrollEle = $(this);
@@ -1015,13 +1036,14 @@ Plugin.prototype ={
 			var currentStartCol = scrollData.startCol, currentEndCol = scrollData.endCol;
 						
 			if(updown == ''){
-				_this.scrollColumnPosition(sTop , sLeft , 'hscroll');
 				_conf.headerWrapElement.scrollLeft(sLeft);
+
+				_this.scrollColumnPosition(sTop , sLeft , 'hscroll');
+				
 								
 				if(scrollData.startCol != currentStartCol || scrollData.endCol != currentEndCol){
 					if(!_this._isHorizontalCheck() || scrollData.hScrollMoveFlag !== true){
 						scrollData.hScrollMoveFlag = true;
-						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 						_this.drawGrid('scrollH_draw', true);
 					}					 
 				}
@@ -1030,8 +1052,7 @@ Plugin.prototype ={
 				if(scrollData.hScrollMoveFlag===true){
 					scrollData.hScrollMoveFlag = false; 
 					_this.scrollColumnPosition(sTop , sLeft , 'vscroll');
-					$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
-
+					
 					_this.drawGrid('scrollV_draw', true);
 					return ; 
 				}
@@ -1097,11 +1118,12 @@ Plugin.prototype ={
 	,_setBigDataCount: function (gridCount){
 		this.options.bigData.gridCount = gridCount + parseInt(gridCount/2, 10);
 		// item total height 값
-		this.config.scroll.itemGroupTotalHeight = this.options.bigData.gridCount* this.config.totalColHeight; 
+		this.config.scroll.itemGroupTotalHeight = this.options.bigData.gridCount* this.config.rowHeight; 
 		this.config.scroll.maxViewItemIdx = Math.ceil(this.options.tbodyItem.length / this.options.bigData.gridCount)-2;
+	
 	}
 	,_getScrollOverHeight : function (idx , updown){
-		return idx* (this.options.bigData.gridCount)* this.config.totalColHeight;
+		return idx* (this.options.bigData.gridCount)* this.config.rowHeight;
 	}
 	/**
      * @method resizeDraw
@@ -1112,15 +1134,13 @@ Plugin.prototype ={
 		
 		var isOpt =typeof opt==='undefined'; 
 		
+		_this.config.drawBeforeData.bodyHeight = _this.config.gridBodyHeight; 
 		opt = $.extend(true, {width : _this.element.innerWidth(), height : _this.element.height()}, (isOpt ? {} :opt));
 		
 		if(!isOpt){
-			_this.element.css({
-				'width':opt.width
-				,'height':opt.height
-			});
+			_this.element.css('width',opt.width);
 		}
-		
+
 		_this._setGridWidth();
 		_this.config.pubGridElement.css('width',(_this.config.gridElementWidth)+'px');
 		
@@ -1135,17 +1155,17 @@ Plugin.prototype ={
 			
 		}else{
 			if(_this.options.height =='auto'){
+				_this.element.css('height',opt.height);
+
 				var bodyH = opt.height-_this.config.headerWrapElement.height(); 
 				bodyH = bodyH > 0?bodyH : bodyH+5;
 				_this.config.bodyScroll.css('height',(bodyH)+'px');
-				
+				_this.config.gridBodyHeight = bodyH;
+				_this._setTbodyAppend();
 		
 				if(_this.options.bigData.enabled === true){
 					setTimeout(function (){
-						_this._setBigDataCount(parseInt((opt.height / _this.options.rowOptions.colHeight), 10 ));
 						_this.scrollColumnPosition(_this.config.bodyScroll.scrollTop(),_this.config.bodyScroll.scrollLeft());
-
-						$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 						_this.drawGrid('scrollV_draw');
 					}, 10);
 				}
@@ -1210,7 +1230,6 @@ Plugin.prototype ={
 		};
 		
 		$(window).on(eventName, function( event ) {
-			console.log('111111111');
 			_this.resizeDraw();
 		});
 	}
