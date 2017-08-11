@@ -968,7 +968,7 @@ Plugin.prototype ={
 				leftWidth[i] =itemLeftVal; 
 				itemLeftVal +=thiItem.width; 
 				
-				console.log(thiItem.width, itemLeftVal)
+				//console.log(thiItem.width, itemLeftVal)
 				if(itemLeftVal < sLeft){
 					startCol = i-1; 
 					continue; 
@@ -1135,7 +1135,8 @@ Plugin.prototype ={
 		var isOpt =typeof opt==='undefined'; 
 		
 		_this.config.drawBeforeData.bodyHeight = _this.config.gridBodyHeight; 
-		opt = $.extend(true, {width : _this.element.innerWidth(), height : _this.element.height()}, (isOpt ? {} :opt));
+
+		opt = $.extend(true, {width : _this.element.innerWidth(), height : _this.element.parent().height()}, (isOpt ? {} :opt));
 		
 		if(!isOpt){
 			_this.element.css('width',opt.width);
@@ -1155,6 +1156,7 @@ Plugin.prototype ={
 			
 		}else{
 			if(_this.options.height =='auto'){
+				console.log('resizeDraw : '+opt.height)
 				_this.element.css('height',opt.height);
 
 				var bodyH = opt.height-_this.config.headerWrapElement.height(); 
