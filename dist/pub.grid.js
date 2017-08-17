@@ -18,7 +18,9 @@ var _initialized = false
 	,scrollWidth : 18	// 스크롤바 넓이
 	,minWidth : 38
 	,rowOptions:{
-		height:20	// cell 높이
+		height: 22	// cell 높이
+		,click : false //row(tr) click event
+		,contextMenu : false // row(tr) contextmenu event
 	}
 	,formatter :{
 		money :{prefix :'$', suffix :'원' , fixed : 0}	// money 설정 prefix 앞에 붙일 문구 , suffix : 마지막에 뭍일것 , fixed : 소수점 
@@ -30,7 +32,10 @@ var _initialized = false
 		,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
 		,horizontalEnableCount : 20	// 컬럼 view 카운트. 20개 이상일경우 처리. 
 	}
-	,autoResize : true
+	,autoResize : {
+		enabled:true
+		,threshold :150
+	}
 	,resizeGridWidthFixed : true	// 리사이즈시 그리드 리사이즈 여부.
 	,headerOptions : {
 		view : true	// header 보기 여부
@@ -43,15 +48,23 @@ var _initialized = false
 		,colWidthFixed : false  // 넓이 고정 여부.
 		,colMinWidth : 50  // 컬럼 최소 넓이
 	}
+	,scroll :{
+		lazyLoad : false // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
+		,lazyLoadTime : 30 // scroll 로드 타임. 
+	}
 	,height: 200
 	,tColItem : [] //head item
  	,theadGroup : [] // head group 
 	,tbodyItem : []  // body item
 	,tbodyGroup : [] // body group 
 	,tfootItem : []  // foot item
-	,rowClick : false //row(tr) click event
-	,rowContextMenu : false // row(tr) contextmenu event
 	,page : false	// paging info
+	,message : {
+		emtpy : 'no data'
+		,pageStatus : function (status){
+			return status.currStart +' - ' + status.currEnd+' of '+ status.total;
+		}
+	}
 }
 ,agt = navigator.userAgent.toLowerCase()
 ,_broswer = ((function (){
@@ -165,8 +178,6 @@ Plugin.prototype ={
 		_this.setData(_this.options.tbodyItem , 'init');
 		
 		_this.config.gridXScrollFlag = false;
-		_this.config.page = _this.options.page;
-
 		_this._windowResize();
 
 		return this;
@@ -196,46 +207,50 @@ Plugin.prototype ={
 		this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
 
 		//_this.config.rowHeight = _this.options.rowOptions.height+1;	// border-box 수정. 2017-08-11
-		_this.config.rowHeight = _this.options.rowOptions.height;
+		_this.config.rowHeight = _this.options.rowOptions.height+1;
 
-		_this.config.scroll = {top :0 , left:0, startCol:0, endCol:this.options.tbodyItem.length,startRow :0
-			, endRow :0, updown:'', viewItemIdx : 1, height:0, hScrollMoveFlag: false,viewArea :{area0 :true , area1:false , area2:false}};
-		_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
-		
-		if(_this.options.bigData === false || _this.options.bigData.enabled === false){
-			_this.options.bigData ={
-				enabled :false
-				,gridCount : 1000
-				,spaceUnitHeight : 100000
-				,horizontalEnableCount : 50 
-			};
+		var bigDataGridCount = 0 ; 
+		if(_this.options.bigData.enabled === false){
+			_this.options.bigData ={ enabled :false	,gridCount : 1000 ,spaceUnitHeight : 100000	,horizontalEnableCount : 50 };
+			bigDataGridCount = _this.options.bigData.gridCount; 
 		}else{
 			if(_this.options.bigData.gridCount=='auto'){
-				_this._setBigDataCount(parseInt((_this.element.height() / _this.options.rowOptions.height), 10 ));				
+				var gc = parseInt((_this.element.height() / _this.options.rowOptions.height), 10 ); 
+				bigDataGridCount = gc + parseInt(gc/2, 10);
 			}else{
-				_this._setBigDataCount(_this.options.bigData.gridCount);
+				bigDataGridCount = _this.options.bigData.gridCount;
 			}
 		}
+
+		_this.config.scroll = _this.initScrollData(bigDataGridCount);
+		_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 				
 		this.config.horizontalEnabled = this.options.tColItem.length > _this.options.bigData.horizontalEnableCount ? true : false; 
 
-		var _cb = _this.options.rowContextMenu.callback; 
+		var _cb = _this.options.rowOptions.contextMenu.callback; 
 
-		if(_this.options.rowContextMenu !== false && typeof _this.options.rowContextMenu == 'object'){
-			var _cb = _this.options.rowContextMenu.callback; 
+		if(_this.options.rowOptions.contextMenu !== false && typeof _this.options.rowOptions.contextMenu == 'object'){
+			var _cb = _this.options.rowOptions.contextMenu.callback; 
 			
 			if(_cb){
-				_this.options.rowContextMenu.callback = function(key,sObj) {
+				_this.options.rowOptions.contextMenu.callback = function(key,sObj) {
 					this.gridItem = _this.getItems(this.element.attr('rowInfo'));
 					_cb.call(this,key,sObj);
 				}
 			}
 		}else{
-			_this.options.rowContextMenu =false; 
+			_this.options.rowOptions.contextMenu =false; 
 		}
-		
 		_this._setGridWidth();
+	}
+	,initScrollData : function (gridCount){
+		var scrollData =  {top :0 , left:0, startCol:0, endCol : (this.options.tColItem.length-1)
+				, endRow :0, updown:'', viewItemIdx : 1, height:0, hScrollMoveFlag: false, leftWidth :{}, viewArea :{area0 :true , area1:false , area2:false}};
 
+		scrollData.itemGroupTotalHeight = gridCount * this.config.rowHeight; 
+		scrollData.maxViewItemIdx = Math.ceil(this.options.tbodyItem.length / gridCount)-2;
+
+		return scrollData; 
 	}
 	/**
      * @method addStyleTag
@@ -510,11 +525,21 @@ Plugin.prototype ={
 			,opt = _this.options
 			,tci = opt.tColItem;
 		var data = pdata;
-		var pageInfo = {};
+		var pageInfo = opt.page;
+
+		gridMode = gridMode||'reDraw';
 		if(!$.isArray(pdata)){
 			data = pdata.items;
 			pageInfo = pdata.page; 
+		}
 
+		if(gridMode=='reDraw'){
+			_this.config.scroll = _this.initScrollData(_this.options.bigData.gridCount);
+			_this.config.bodyScroll.scrollTop(0);
+			_this.scrollColumnPosition(0, _this.config.bodyScroll.scrollLeft());
+
+			
+			_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 		}
 
 		if(data){
@@ -540,46 +565,23 @@ Plugin.prototype ={
 			
 			if(_idx != -1) _this.getSortList(_idx, _sortType);
 		}
-
-		if(gridMode=='init'){
-			_this.drawGrid('init',true);
-		}else{
-			_this.drawGrid('tbody',true);
-		}
-
-		if(gridMode != 'sort'){
-			if(_this.config.page){
-				_this.setPage(pageInfo);
-			}
-		}
-
-		var itemHeight = _this.options.tbodyItem.length* _this.config.rowHeight
-			,unitHeight = _this.options.bigData.spaceUnitHeight
-			,loopCnt = Math.floor(itemHeight/unitHeight);
 		
-		var itemHeightHtm = [], topHeightHtm = [];
+		_this.drawGrid(gridMode,true);
 
-		for(var i =0 ;i <loopCnt ;i++ ){
-			itemHeightHtm.push('<div _idx="'+i+'" style="height:'+unitHeight+'px;"></div>');
-			topHeightHtm.push('<div data-top-idx="'+i+'" style="height:0px;"></div>');
-		}
-
-		if(itemHeight%unitHeight != 0){
-			itemHeightHtm.push('<div style="height:'+itemHeight%unitHeight+'px;"></div>');
-			topHeightHtm.push('<div data-top-idx="'+(loopCnt)+'" style="height:0px;"></div>');
-			loopCnt+=1;
-		}
-
-		_this.config.scroll.spaceCount = loopCnt;
+		_this.setPage(_this.options.page);
 		
-		_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
-		_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
-		
-
 	}
 	,setPage : function (pageInfo){
-		var _this =this; 
-		_this.pageNav(pageInfo);
+		var _this =this;
+
+		if(pageInfo === false){
+			$('#'+_this.prefix+'pubGrid-footer-wrapper').hide();
+			return ; 
+		}
+
+		if(typeof pageInfo ==='object'){
+			_this.pageNav(pageInfo);
+		}
 	}
 	,initStyle : function (){
 	
@@ -630,22 +632,25 @@ Plugin.prototype ={
 			+'				<div style="width:'+(_this.config.scrollWidth+1)+'px;height:10px;display:table-cell;float:left;"></div>'
 			+'			</div>'	
 			+'		</div>'
-			+'		<div id="pubGrid-body-wrapper" class="pubGrid-body-wrapper">'
-			+'			<div id="'+_this.prefix+'pubGrid-body-scroll" class="pubGrid-body-scroll" style="height:'+_this.options.height+'px;">'
-			+'			  <div id="'+_this.prefix+'pubGrid-body-container" class="pubGrid-body-container">'
-			+'				<div id="'+_this.prefix+'pubGrid-body-top-space" class="pubGrid-body-top-space" style="width: 1px; padding:0px;height:100%;"></div>'
-			+'				<div style="display: table-row;">'
-			+'					<div id="'+_this.prefix+'pubGrid-body-left-space" style="float:left;display: table-cell;"></div>'
-			+'					<div style="display: table-cell;"><table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body">'
-			+'						<colgroup id="'+_this.prefix+'colgroup_body"></colgroup>'
-			+'					</table></div>'	
+			+'		<div id="'+_this.prefix+'pubGrid-body-wrapper" class="pubGrid-body-wrapper">'
+			+'			<div id="'+_this.prefix+'pubGrid-body-scroll" class="pubGrid-body-scroll">'
+			+'			  <div id="'+_this.prefix+'pubGrid-body-container" class="pubGrid-body-container" style="style="display: table-row;"">'
+			
+			+'				<div id="'+_this.prefix+'pubGrid-body-height" class="pubGrid-body-height" style="position:absolute;top:0px;left:0px;width: 1px;padding:0px;display: table-cell;float:left;"></div>'
+			+'				<div style="display:table-cell;float:left;">'
+			+'					<div id="'+_this.prefix+'pubGrid-body-top-space" class="pubGrid-body-top-space" style="width: 1px; padding:0px;height:100%;"></div>'
+			+'					<div style="display: table-row;">'
+			+'						<div id="'+_this.prefix+'pubGrid-body-left-space" style="float:left;display: table-cell;"></div>'
+			+'						<div style="display: table-cell;"><table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body">'
+			+'							<colgroup id="'+_this.prefix+'colgroup_body"></colgroup>'
+			+'						</table></div>'	
+			+'					</div>'
 			+'				</div>'
-			+'				<div id="'+_this.prefix+'pubGrid-body-height" class="pubGrid-body-height" style="position:absolute;z-index:-1;top:0px;width: 1px;padding:0px;"></div>'
 			+'				<div id="'+_this.prefix+'pubGrid-body-width" class="pubGrid-body-width" style="position:absolute;z-index:-1;height:1px;top:0px;padding:0px;width:'+_this.config.totGridWidth+'px;"></div>'
 			+'			  </div>'
 			+'			</div>'
 			+'		</div>'
-			+'		<div id="'+_this.prefix+'pubGrid-pageNav"></div>'
+			+'		<div id="'+_this.prefix+'pubGrid-footer-wrapper" class="pubGrid-footer-wrapper" style="position:relative;"><div id="'+_this.prefix+'pubGrid-pageNav" class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'pubGrid-page-status" class="pubgGrid-count-info"></div></div>'
 			+'		<div id="'+_this.prefix+'hiddenArea" style="display:none;"></div>'
 			+'	</div>'
 			+'  </div>'
@@ -653,7 +658,7 @@ Plugin.prototype ={
 
 	}
 	//body html  만들기
-	,getTbodyHtml : function(tbi, tci , itemIdx){
+	,getTbodyHtml : function(tbi, tci , itemIdx, tbodyIdx){
 		var strHtm = [], thiItem;
 		
 		if(tbi.length > 0){
@@ -675,9 +680,10 @@ Plugin.prototype ={
 				endCol=tci.length-1;
 			}
 			
-			console.log('startRow : '+startRow, 'endRow : '+endRow , 'startCol : '+startCol, 'endCol : '+endCol, 'itemIdx: '+itemIdx)
+			//console.log('startRow : '+startRow, 'endRow : '+endRow , 'startCol : '+startCol, 'endCol : '+endCol, 'itemIdx: '+itemIdx)
 			
 			var tmpVal;
+						
 			for(var i =startRow ; i < endRow; i++){
 				tbiItem = tbi[i];
 				strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
@@ -692,8 +698,13 @@ Plugin.prototype ={
 		}else{
 			strHtm.push('<tr><td colspan="'+tci.length+'"><div class="text-center">NO DATA</div></td></tr>');
 		}
-		
-		return strHtm.join('');
+
+		if(!isNaN(tbodyIdx)){
+			return '<tbody class="pub-cont-tbody-'+tbodyIdx+'">' +strHtm.join('')+'</tbody>';
+		}else{
+			return strHtm.join('');
+		}
+
 	}
 	/**
      * @method valueFormatter
@@ -727,36 +738,62 @@ Plugin.prototype ={
 
 		return itemVal; 
 	}
+	/**
+     * @method _isHorizontalCheck
+     * @description 가로 스크롤 체크.
+     */
 	,_isHorizontalCheck : function (){
 		return this.config.horizontalEnabled===true ?false : (this.config.horizontalEnabled===false && this.config.scroll.hScrollMoveFlag ===true);
 	}
+	/**
+     * @method _setTbodyAppend
+     * @description tbody 추가 , 삭제 .
+     */
 	,_setTbodyAppend : function (){
-		
-		console.log('_setTbodyAppend :');
-		this.config.bodyCount= this.config.bodyCount||-1;
+		if(this.options.bigData.enabled === false){
+			this.config.bodyElement.append('<tbody class="pub-cont-tbody-0"></tbody>');
+			this.config.bodyCount = 0; 
+		}else{
+			this.config.bodyCount= this.config.bodyCount||-1;
 
-		var viewItemCount = parseInt(this.config.gridBodyHeight/ this.options.rowOptions.height, 10 );
-		var bodyCount = 2 + parseInt(viewItemCount/this.options.bigData.gridCount,10); 
-		bodyCount = bodyCount < 2 ? 2 :bodyCount;
-		
-		
-		if(this.config.bodyCount != bodyCount){
-			
-			if(this.config.bodyCount > bodyCount){
-				for(var i =bodyCount+1; i<= this.config.bodyCount; i++){
-					this.config.bodyElement.find('.pub-cont-tbody-'+(i)).remove();
-				}
-			}else{
-				var bodyHtm ='';
-				for(var i =this.config.bodyCount+1; i<= bodyCount; i++){
-					bodyHtm += '<tbody class="pub-cont-tbody-'+i+'"></tbody>';
-				}
-				this.config.bodyElement.append(bodyHtm);
-
+			var viewItemCount = parseInt(this.config.gridBodyHeight/ this.options.rowOptions.height, 10 );
+			var bodyCount = 2 + parseInt(viewItemCount/this.options.bigData.gridCount,10); 
+			bodyCount = bodyCount < 2 ? 2 :bodyCount;
+					
+			if(this.config.bodyCount != bodyCount){
 				
+				if(this.config.bodyCount > bodyCount){
+					for(var i =bodyCount+1; i<= this.config.bodyCount; i++){
+						this.config.bodyElement.find('.pub-cont-tbody-'+(i)).remove();
+					}
+				}else{
+					var bodyHtm ='';
+					for(var i =this.config.bodyCount+1; i<= bodyCount; i++){
+						bodyHtm += '<tbody class="pub-cont-tbody-'+i+'"></tbody>';
+					}
+					this.config.bodyElement.append(bodyHtm);
+
+					
+				}
+				this.config.bodyCount = bodyCount; 
 			}
-			this.config.bodyCount = bodyCount; 
 		}
+	}
+	/**
+     * @method _getBodyHeight
+     * @description get body content height
+     */
+	,_getBodyHeight : function (){
+		var footerHeight = 0 ; 
+		if(this.options.page !== false){
+			footerHeight = this.config.footerWrapElement.height();
+		}
+		
+		var bodyH = this.config.height-this.config.headerWrapElement.height() - footerHeight; 
+		bodyH = bodyH > 0 ? bodyH : _this.config.headerWrapElement.height+5
+		this.config.gridBodyHeight = bodyH;
+		
+		return bodyH ;
 	}
 	/**
      * @method drawGrid
@@ -770,6 +807,14 @@ Plugin.prototype ={
 			,tci = opt.tColItem
 			,tbi = opt.tbodyItem
 			,hederOpt=opt.headerOptions;
+
+
+		if(drawMode ==='sort'){
+			for(var i =0 ; i <= _this.config.bodyCount; i++){
+				_this.config.bodyElement.find('.pub-cont-tbody-'+i).empty().html(tbodyHtml(_this.config.scroll.viewItemIdx+i));
+			}
+			return ; 
+		}
 		
 		// header html 만들기
 		function theadHtml(){
@@ -802,8 +847,8 @@ Plugin.prototype ={
 			return strHtm.join('');
 		}
 
-		function tbodyHtml(itemIdx){
-			return _this.getTbodyHtml(tbi, tci , itemIdx);
+		function tbodyHtml(itemIdx, tbodyIdx){
+			return _this.getTbodyHtml(tbi, tci, itemIdx, tbodyIdx);
 		}
 		
 		// foot html 만들기
@@ -837,31 +882,55 @@ Plugin.prototype ={
 			_this.config.bodyElement = $('#'+_this.prefix +'pubGrid-body');
 			_this.config.bodyScroll = $('#'+_this.prefix +'pubGrid-body-scroll');
 			_this.config.hiddenArea = $('#'+_this.prefix +'hiddenArea');
+			_this.config.footerWrapElement = $('#'+_this.prefix+'pubGrid-footer-wrapper');
+			_this.config.footerPageStatusElement = $('#'+_this.prefix+'pubGrid-page-status');
 			
-			if(opt.height =='auto'){
-				var bodyH = _this.config.height-_this.config.headerWrapElement.height(); 
-				bodyH = bodyH > 0?bodyH : _this.config.headerWrapElement.height+5 ; 
-				_this.config.bodyScroll.css('height',(bodyH)+'px');
-			}
+			_this.element.css('height',this.config.height);
+
+			var bodyH = _this._getBodyHeight();
+			_this.config.bodyScroll.css('height',(bodyH)+'px');
+						
 			// resize 설정
 			_this._initHeaderEvent();
 			_this._headerResize(hederOpt.resize.enabled);
 			_this.scroll();
 			_this._initBodyEvent();
 			_this._setBodyEvent();
-			_this.config.gridBodyHeight = _this.config.bodyScroll.height();
-
+			
 			_this._setTbodyAppend();
 			_this.scrollColumnPosition(0,0);
 
 			$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
+			
+			_this._setFooterStatusMessage(0);
+
+			var itemHeight = _this.options.tbodyItem.length* _this.config.rowHeight
+			,unitHeight = _this.options.bigData.spaceUnitHeight
+			,loopCnt = Math.floor(itemHeight/unitHeight);
+		
+			var itemHeightHtm = [], topHeightHtm = [];
+
+			for(var i =0 ;i <loopCnt ;i++ ){
+				itemHeightHtm.push('<div _idx="'+i+'" style="height:'+unitHeight+'px;"></div>');
+				topHeightHtm.push('<div data-top-idx="'+i+'" style="height:0px;"></div>');
+			}
+
+			if(itemHeight%unitHeight != 0){
+				itemHeightHtm.push('<div style="height:'+itemHeight%unitHeight+'px;"></div>');
+				topHeightHtm.push('<div data-top-idx="'+(loopCnt)+'" style="height:0px;"></div>');
+				loopCnt+=1;
+			}
+
+			_this.config.scroll.spaceCount = loopCnt;
+			
+			_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
+			_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
+
 		}
 	
 		var scrollData = _this.config.scroll
 			,viewItemIdx=scrollData.viewItemIdx
-			,updown = scrollData.updown
-			,bigDataGridCount = _this.options.bigData.gridCount
-			,topIdx =viewItemIdx ,middleIdx=viewItemIdx+1 , bottomIdx = viewItemIdx+2;
+			,updown = scrollData.updown;
 		
 		if(unconditionallyFlag != true && _this.config.drawBeforeData.viewItemIdx==viewItemIdx
 			&& _this.config.drawBeforeData.startCol==scrollData.startCol
@@ -883,8 +952,7 @@ Plugin.prototype ={
 		}else{
 			_this.config.pubGridLeftSpaceElement.css('width',(scrollData.leftWidth[scrollData.startCol]||0)+'px');
 		}
-		//console.log('scroll top start : ',updown , viewItemIdx, $('.pubGrid-body-scroll').scrollTop());
-
+	
 		if(drawMode=='scroll'){
 			if(updown =='down'){
 				var topEle = _this.config.bodyElement.find('.pub-cont-tbody-0').addClass('pub-cont-tbody-temp').removeClass('pub-cont-tbody-0');
@@ -910,20 +978,18 @@ Plugin.prototype ={
 				bottomEle.empty().html(tbodyHtml(viewItemIdx));
 			}
 			
-		}else if(drawMode == 'scrollH_draw' ||drawMode == 'scrollV_draw'){
-
-			for(var i =0 ; i <= _this.config.bodyCount; i++){
-				var tmpArea = 'area'+i;
-				if( drawMode != 'scrollH_draw'||(drawMode=='scrollH_draw' && scrollData.viewArea[tmpArea])){
+		}else{
+			if(updown =='down'){
+				for(var i =_this.config.bodyCount; i >=0; i--){
+					_this.config.bodyElement.find('.pub-cont-tbody-'+i).empty().html(tbodyHtml(viewItemIdx+i));
+				}
+			}else{
+				for(var i =0 ; i <= _this.config.bodyCount; i++){
 					_this.config.bodyElement.find('.pub-cont-tbody-'+i).empty().html(tbodyHtml(viewItemIdx+i));
 				}
 			}
-		}else{
-			for(var i =0 ; i <= _this.config.bodyCount; i++){
-				_this.config.bodyElement.find('.pub-cont-tbody-'+i).empty().html(tbodyHtml(viewItemIdx+1));
-			}
 		}
-				
+
 		var topSpaceHeight = (viewItemIdx -1)*scrollData.itemGroupTotalHeight; 
 
 		var spaceItemCount = Math.floor(topSpaceHeight /_this.options.bigData.spaceUnitHeight)
@@ -937,31 +1003,34 @@ Plugin.prototype ={
 			}
 		}
 		
-		console.log(scrollData.itemGroupTotalHeight, spaceItemCount , topSpaceHeight,_this.options.bigData.spaceUnitHeight, overHeight, _this.options.bigData.spaceUnitHeight )
-
+		//console.log($('.pubGrid-body-scroll').scrollTop(), scrollData.itemGroupTotalHeight, spaceItemCount , topSpaceHeight,_this.options.bigData.spaceUnitHeight, overHeight, _this.options.bigData.spaceUnitHeight )
+		
 		_this.config.bodyElement.css('width',_this.config.gridBodyWidth+'px');
-		_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+spaceItemCount+'"]').css('height', overHeight);
+		_this.config.pubGridTopSpaceElement.find('[data-top-idx="'+spaceItemCount+'"]').css('height', overHeight +'px');
 
-
-		//console.log('----------------)))))))))))', drawMode,overHeight,  $('.pubGrid-body-scroll').scrollTop());
-
-		
 	}
+	/**
+     * @method scrollColumnPosition
+	 * @param  sTop {int} scroll top value
+	 * @param  sLeft {int} scroll left value
+	 * @param  pType {String} scroll type
+     * @description foot 데이타 셋팅
+     */
 	,scrollColumnPosition : function (sTop, sLeft, pType){
-		var tci = this.options.tColItem; 
-		
-		console.log('scrollColumnPosition : ', this.config.scroll.beforeTop ,sTop, sLeft)
 
-		var gridW = sLeft+this.config.gridElementWidth; 
-		var itemLeftVal=0;
-		var startCol = 0, endCol =tci.length;
-		var leftWidth ={};
-		if(pType === 'vscroll'){
-			leftWidth = this.config.scroll.leftWidth;
-			startCol = this.config.scroll.startCol;
-			endCol = this.config.scroll.endCol;
-		}else{
-			
+		if(this.options.bigData.enabled === false){
+			return ;
+		}
+		
+		
+		console.log(sTop, sLeft, pType)
+		
+		if(pType !== 'vscroll'){
+			var tci = this.options.tColItem; 
+			var gridW = sLeft+this.config.gridElementWidth; 
+			var itemLeftVal=0;
+			var startCol = 0, endCol =tci.length;
+			var leftWidth ={};
 			for(var i =0 ;i <tci.length ;i++){
 				var thiItem = tci[i];
 
@@ -979,6 +1048,9 @@ Plugin.prototype ={
 					break; 
 				}
 			}
+			this.config.scroll.leftWidth = leftWidth; 
+			this.config.scroll.startCol = ( startCol > 0? startCol:0 ); 
+			this.config.scroll.endCol = ( endCol >= tci.length? tci.length-1:endCol );
 		}
 
 		var viewIdx = this.config.scroll.viewItemIdx
@@ -992,11 +1064,6 @@ Plugin.prototype ={
 			this.config.scroll.viewArea[tmpArea] = (beforeHeight > sTop + this.config.gridBodyHeight) || (sTop > currHeight)?false : true; 
 			beforeHeight = currHeight; 	
 		}
-
-		this.config.scroll.beforeTop = sTop; 
-		this.config.scroll.leftWidth = leftWidth; 
-		this.config.scroll.startCol = ( startCol > 0? startCol:0 ); 
-		this.config.scroll.endCol = ( endCol >= tci.length? tci.length-1:endCol );
 	}
 	/**
      * @method scroll
@@ -1005,16 +1072,11 @@ Plugin.prototype ={
 	,scroll : function (){
 		var _this = this
 			,_conf = _this.config;
-			
-		_conf.bodyScroll.on("scroll", function(event) {
-			event.preventDefault();
-			var scrollEle = $(this);
 
-			var scrollData = _conf.scroll
-				,sTop  = scrollEle.scrollTop()
-				,sLeft = scrollEle.scrollLeft();
+		function scrollEvent (scrollData, sTop, sLeft){
 
 			var updown = '';
+		
 			if(sTop > scrollData.top){
 				updown = 'down';
 			}else if(sTop < scrollData.top){
@@ -1032,15 +1094,12 @@ Plugin.prototype ={
 			scrollData.left= sLeft;
 			scrollData.updown= updown;
 			scrollData.leftright= lr;
-			
+
 			var currentStartCol = scrollData.startCol, currentEndCol = scrollData.endCol;
 						
 			if(updown == ''){
-				_conf.headerWrapElement.scrollLeft(sLeft);
-
 				_this.scrollColumnPosition(sTop , sLeft , 'hscroll');
-				
-								
+												
 				if(scrollData.startCol != currentStartCol || scrollData.endCol != currentEndCol){
 					if(!_this._isHorizontalCheck() || scrollData.hScrollMoveFlag !== true){
 						scrollData.hScrollMoveFlag = true;
@@ -1048,31 +1107,26 @@ Plugin.prototype ={
 					}					 
 				}
 			}else{
-				var scrollRedrawFlag = false;
-				if(scrollData.hScrollMoveFlag===true){
-					scrollData.hScrollMoveFlag = false; 
-					_this.scrollColumnPosition(sTop , sLeft , 'vscroll');
-					
-					_this.drawGrid('scrollV_draw', true);
-					return ; 
-				}
+				scrollData.hScrollMoveFlag = false; 
 
-				var viewIdx = _conf.scroll.viewItemIdx
-					,topViewHeight = _this._getScrollOverHeight(viewIdx)
-					,midViewHeight = _this._getScrollOverHeight(viewIdx+1)
+				var viewIdx = _conf.scroll.viewItemIdx;
 
+				var scrollRedrawFlag = false;	
+				
 				if(updown =='up'){
-					scrollRedrawFlag = sTop < topViewHeight ?true:false;
+					scrollRedrawFlag = sTop < _this._getScrollOverHeight(viewIdx) ?true:false;
 				}else if(updown =='down'){
-					scrollRedrawFlag = sTop > midViewHeight ?true:false;
+					scrollRedrawFlag = sTop > _this._getScrollOverHeight(viewIdx+1) ?true:false;
 				}
-							
+											
 				if(scrollRedrawFlag){
 					viewIdx = viewIdx + (updown=='down' ? 1 : -1);
 					viewIdx = viewIdx < 1 ? 1 : viewIdx;
 				
-					var jumpFlag = false, scrIdx = 1; 
-					var scrIdxVal = sTop/scrollData.itemGroupTotalHeight; 
+					var jumpFlag = false
+						, scrIdx = 1
+						,scrIdxVal = sTop/scrollData.itemGroupTotalHeight; 
+
 					if(updown=='down'){
 						
 						scrIdx = Math.ceil(scrIdxVal);
@@ -1090,12 +1144,15 @@ Plugin.prototype ={
 							scrIdx = scrIdx -1; 
 						}
 					}
-
+					
 					//console.log('-------------	##################-------------------------------------')
 					
 					//if(scrIdx < 1) return ; 
 
 					if( !jumpFlag  &&  (_conf.scroll.viewItemIdx==viewIdx || viewIdx==scrIdx)) return ; 
+
+
+					console.log('111111  '+scrollData.hScrollMoveFlag, jumpFlag, viewIdx)
 					
 					if(jumpFlag){
 						_conf.scroll.viewItemIdx = scrIdx < 1 ? 1 :scrIdx;
@@ -1108,19 +1165,46 @@ Plugin.prototype ={
 						_this.scrollColumnPosition(sTop , sLeft , 'vscroll');
 						_this.drawGrid('scroll');																	
 					}
-						
 				}
 			}
+		}
+		
 
-			return true; 
+		var scrollTimeout; 
+		_conf.bodyScroll.on("scroll", function(event) {
+			event.preventDefault();
+			var scrollEle = $(this)
+				, sTop = scrollEle.scrollTop()
+				, sLeft = scrollEle.scrollLeft();
+			
+			_conf.headerWrapElement.scrollLeft(scrollEle.scrollLeft());
+			_this._setFooterStatusMessage(sTop);
+
+			if(_this.options.bigData.enabled === false){
+				return ;
+			}
+
+			if(_this.options.scroll.lazyLoad === true){
+				if ( scrollTimeout ) {
+					clearTimeout( scrollTimeout );
+				}
+
+				scrollTimeout = setTimeout( function (){
+					scrollEvent(_conf.scroll, sTop, sLeft);
+				}, _this.options.scroll.lazyLoadTime );
+			}else{
+				scrollEvent(_conf.scroll,  sTop, sLeft);
+			}
+			
+			return false; 
 		});
 	}
-	,_setBigDataCount: function (gridCount){
-		this.options.bigData.gridCount = gridCount + parseInt(gridCount/2, 10);
-		// item total height 값
-		this.config.scroll.itemGroupTotalHeight = this.options.bigData.gridCount* this.config.rowHeight; 
-		this.config.scroll.maxViewItemIdx = Math.ceil(this.options.tbodyItem.length / this.options.bigData.gridCount)-2;
-	
+	,_setFooterStatusMessage : function (sTop){
+		this.config.footerPageStatusElement.empty().html(this.options.message.pageStatus({
+			currStart : Math.round(sTop / this.config.rowHeight)
+			,currEnd : Math.floor((sTop+this.config.gridBodyHeight) / this.config.rowHeight)
+			,total : this.options.tbodyItem.length
+		}))
 	}
 	,_getScrollOverHeight : function (idx , updown){
 		return idx* (this.options.bigData.gridCount)* this.config.rowHeight;
@@ -1141,9 +1225,10 @@ Plugin.prototype ={
 		if(!isOpt){
 			_this.element.css('width',opt.width);
 		}
-
+		
 		_this._setGridWidth();
 		_this.config.pubGridElement.css('width',(_this.config.gridElementWidth)+'px');
+		_this.scrollColumnPosition(_this.config.bodyScroll.scrollTop(),_this.config.bodyScroll.scrollLeft());
 		
 		if(_this.options.resizeGridWidthFixed === false){
 			_this._calcElementWidth('resize');
@@ -1156,21 +1241,19 @@ Plugin.prototype ={
 			
 		}else{
 			if(_this.options.height =='auto'){
-				console.log('resizeDraw : '+opt.height)
+				_this.config.height = opt.height; 
 				_this.element.css('height',opt.height);
 
-				var bodyH = opt.height-_this.config.headerWrapElement.height(); 
-				bodyH = bodyH > 0?bodyH : bodyH+5;
+				var bodyH =_this._getBodyHeight();
+
 				_this.config.bodyScroll.css('height',(bodyH)+'px');
-				_this.config.gridBodyHeight = bodyH;
+			}
+
+			if(_this.options.bigData.enabled === true){
 				_this._setTbodyAppend();
-		
-				if(_this.options.bigData.enabled === true){
-					setTimeout(function (){
-						_this.scrollColumnPosition(_this.config.bodyScroll.scrollTop(),_this.config.bodyScroll.scrollLeft());
-						_this.drawGrid('scrollV_draw');
-					}, 10);
-				}
+				setTimeout(function (){
+					_this.drawGrid('scrollV_draw');
+				}, 100);
 			}
 		}
 	}
@@ -1194,7 +1277,7 @@ Plugin.prototype ={
 		if(_this.config.windowResize == 'init'){
 			return false; 
 		}
-		if(_this.options.autoResize !== true) return false; 
+		if(_this.options.autoResize ===false || _this.options.autoResize.enabled === false) return false; 
 		
 		_this.config.windowResize = 'init';
 		
@@ -1228,7 +1311,7 @@ Plugin.prototype ={
 					dispatch() :
 					resizeTimeout = setTimeout( dispatch, _special.threshold );
 			},
-			threshold:10
+			threshold: _this.options.autoResize.threshold
 		};
 		
 		$(window).on(eventName, function( event ) {
@@ -1314,8 +1397,7 @@ Plugin.prototype ={
 			}
 		});
 		
-
-		if(_this.options.rowClick !== false && typeof _this.options.rowClick == 'function'){
+		if(_this.options.rowOptions.click !== false && typeof _this.options.rowOptions.click == 'function'){
 			rowClickFlag =true; 
 
 			var beforeRow; 
@@ -1329,7 +1411,7 @@ Plugin.prototype ={
 				selRow.addClass('active');
 				beforeRow = selRow; 
 				
-				_this.options.rowClick.call(selRow ,rowinfo , selItem);							
+				_this.options.rowOptions.click.call(selRow ,rowinfo , selItem);							
 			});
 		}
 	}
@@ -1338,8 +1420,8 @@ Plugin.prototype ={
      * @description body event setting
      */
 	,_setBodyEvent : function (){
-		if(this.options.rowContextMenu !== false){
-			$.pubContextMenu($('#'+this.prefix+'pubGrid-container .pub-body-tr'),this.options.rowContextMenu);
+		if(this.options.rowOptions.contextMenu !== false){
+			$.pubContextMenu($('#'+this.prefix+'pubGrid-container .pub-body-tr'),this.options.rowOptions.contextMenu);
 		}
 	}
 	/**
@@ -1508,8 +1590,6 @@ Plugin.prototype ={
 	,pageNav : function(options) {
 		var _this =this; 
 
-		var navPosition = _this.config.page.position || 'left';
-		
 		var pagingInfo = _this.getPageInfo(options.totalCount , options.currPage , options.countPerPage, options.unitPage);
 		
 		var currP = pagingInfo.currPage;
@@ -1522,7 +1602,7 @@ Plugin.prototype ={
 		var nextO = 1 * currP + 1;
 		var preO = currP - 1;
 		var strHTML = new Array();
-		strHTML.push('<div class="pubGrid-page-navigation page-'+navPosition+'"><ul>');
+		strHTML.push('<ul>');
 		if (new Boolean(preP_is) == true) {
 			strHTML.push(' <li><a href="javascript:" class="page-click" pageno="'+preO+'">&laquo;</a></li>');
 		} else {
@@ -1537,27 +1617,32 @@ Plugin.prototype ={
 			if (no == currP) {
 				strHTML.push(' <li class="active"><a href="javascript:">'+ no + '</a></li>');
 			} else {
-				strHTML.push(' <li><a href="javascript:" class="page-click" pageno="'+no+'">'+ no + '</a></li>');
+				strHTML.push(' <li class="page-click" pageno="'+no+'"><a href="javascript:" >'+ no + '</a></li>');
 			}
 		}
 
 		if (new Boolean(nextP_is) == true) {
-			strHTML.push(' <li><a href="javascript:" class="page-click" pageno="'+nextO+'">&raquo;</a></li>');
+			strHTML.push(' <li class="page-click" pageno="'+nextO+'"><a href="javascript:" >&raquo;</a></li>');
 		} else {
 			if (currP == currE) {
 				strHTML.push(' <li class="disabled"><a href="javascript:">&raquo;</a></li>');
 			} else {
-				strHTML.push(' <li><a href="javascript:" class="page-click" pageno="'+nextO+'">&raquo;</a></li>');
+				strHTML.push(' <li class="page-click" pageno="'+nextO+'"><a href="javascript:" >&raquo;</a></li>');
 			}
 		}
-		strHTML.push('</ul></div>');
-
+		strHTML.push('</ul>');
+		
+		$('#'+_this.prefix+'pubGrid-pageNav').addClass('page-'+(options.position || 'center'))
 		$('#'+_this.prefix+'pubGrid-pageNav').empty().html(strHTML.join(''));
 		
 		$('#'+_this.prefix+'pubGrid-pageNav .page-click').on('click', function() {
 			var pageno = $(this).attr('pageno');
-			if (typeof _this.config.page.callback == 'function') {
-				_this.config.page.callback(pageno);
+			
+			$('#'+_this.prefix+'pubGrid-pageNav').find('li.active').removeClass('active');
+			$('#'+_this.prefix+'pubGrid-pageNav').find('[pageno="'+pageno+'"]').addClass('active');
+
+			if (typeof options.callback == 'function') {
+				options.callback(pageno);
 			}
 		});
 		
@@ -1729,7 +1814,7 @@ $.pubGrid = function (selector,options, args) {
 	var _cacheObject = _datastore[selector]; 
 
 	if(typeof options === 'undefined'){
-		return _cacheObject||{}; 
+		return _cacheObject; 
 	}
 	
 	if(typeof _cacheObject === 'undefined'){
@@ -1746,6 +1831,7 @@ $.pubGrid = function (selector,options, args) {
 			_datastore[selector] = _cacheObject;
 		}else{
 			_cacheObject.setOptions(options);
+			_cacheObject.setData(_this.options.tbodyItem , 'reDraw');
 		}
 		return _cacheObject; 
 	}
