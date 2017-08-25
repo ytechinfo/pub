@@ -161,38 +161,40 @@
 .pubGrid-body tbody .pub-body-tr:hover {background: #F5F8F5;}
 */
 
-.pubGrid-body tbody .pub-body-tr.tr0{
+.pubGrid-body .pub-body-tr.tr0{
    background: #f3f6fa;
 }
-.pubGrid-body tbody .pub-body-tr.tr1{
+.pubGrid-body .pub-body-tr.tr1{
    background: #fff;
 }
 
-.pubGrid-body .pub-body-tr > td > .pub-content {
-	display: table;
-    table-layout: fixed;
-    width: 100%;
-}
-
-.pubGrid-body .pub-body-tr > td .pub-content-cell {
-    display: table-cell;
-    height: 100%;
+.pubGrid-body .pub-body-td{
+	display:inline-block;
+	 height: 100%;
     vertical-align: middle;
 	padding:1px 2px 1px 2px;
+	margin-left:1px solid #bcbcbd;
+	border-collapse:collapse;
+	border-right:1px solid #bcbcbd;
+	border-bottom:1px solid #bcbcbd;
+	border-collapse:collapse;
+	-moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
 }
 
-.pubGrid-body .pub-body-tr > td .pub-content-ellipsis ,.pubGrid-body .pub-body-tr > td .pub-content-ellipsis >*{
+.pubGrid-body .pub-body-td .pub-content-ellipsis {
+	display: inline-block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-	padding: 0px;margin:0px;
+	word-wrap: normal;
+	max-width: calc(100%);	
+
 }
 
 .pubGrid-body .pub-body-td.col-active .pub-content-cell{
 	background: #FEF1EC;
-	-moz-box-sizing:border-box;
-    -webkit-box-sizing:border-box;
-    box-sizing:border-box;
 }
 .pubGrid-header .label-wrapper > .pub-header-resizer {
 	position: absolute;
@@ -207,6 +209,7 @@
 .pubGrid-footer-wrapper {
 	border-top:1px solid #bcbcbd;
 	position:relative;
+	display:none;
 	margin: 0;
     padding: 0;
     color: #000;

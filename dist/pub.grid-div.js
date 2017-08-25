@@ -187,6 +187,8 @@ Plugin.prototype ={
 		_this.addStyleTag();
 
 		_this._setThead();
+
+		_this.addWidthStyle();
 		_this.setData(_this.options.tbodyItem , 'init');
 		
 		_this.config.gridXScrollFlag = false;
@@ -219,7 +221,7 @@ Plugin.prototype ={
 		this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
 
 		//_this.config.rowHeight = _this.options.rowOptions.height+1;	// border-box 수정. 2017-08-11
-		_this.config.rowHeight = _this.options.rowOptions.height+1;
+		_this.config.rowHeight = _this.options.rowOptions.height;
 
 		var bigDataGridCount = 0 ; 
 		if(_this.options.bigData.enabled === false){
@@ -278,6 +280,8 @@ Plugin.prototype ={
 		var rowOptHeight = _this.options.rowOptions.height; 
 		if(!isNaN(rowOptHeight)){
 			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td{height:'+rowOptHeight+'px;padding: 0px;margin:0px;}');
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-content-ellipsis{height:'+(rowOptHeight-4)+'px;padding: 0px;margin:0px;}');
+			cssStr.push('#'+_this.prefix+'pubGrid .pub-body-td> .pub-content{height:'+rowOptHeight+'px;}');
 		}
 
 		var styleTag = _d.createElement('style');
@@ -582,27 +586,6 @@ Plugin.prototype ={
 		
 		_this.drawGrid(gridMode,true);
 
-		var itemHeight = _this.options.tbodyItem.length* _this.config.rowHeight
-			,unitHeight = _this.options.bigData.spaceUnitHeight
-			,loopCnt = Math.floor(itemHeight/unitHeight);
-		
-		var itemHeightHtm = [], topHeightHtm = [];
-
-		for(var i =0 ;i <loopCnt ;i++ ){
-			itemHeightHtm.push('<div _idx="'+i+'" style="height:'+unitHeight+'px;"></div>');
-			topHeightHtm.push('<div data-top-idx="'+i+'" style="height:0px;"></div>');
-		}
-
-		if(itemHeight%unitHeight != 0){
-			itemHeightHtm.push('<div style="height:'+itemHeight%unitHeight+'px;"></div>');
-			topHeightHtm.push('<div data-top-idx="'+(loopCnt)+'" style="height:0px;"></div>');
-			loopCnt+=1;
-		}
-
-		_this.config.scroll.spaceCount = loopCnt;
-		_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
-		_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
-
 		_this.setPage(_this.options.page);
 		
 	}
@@ -618,36 +601,34 @@ Plugin.prototype ={
 			_this.pageNav(pageInfo);
 		}
 	}
-	,initStyle : function (){
+	,addWidthStyle : function (){
 	
 		var _this = this
-			,opt = _this.options
-			,tci = opt.tColItem
-			,thiItem;
+			,tci = _this.options.tColItem
 
 		var strCss = [];
-		for(var i=0 ;i <tci.length; i++){
-			thiItem = tci[i];
-			var tmpStyle = [];
-			tmpStyle.push('width:'+thiItem.width+'px;');
-			if(thiItem.hidden===true){
-				tmpStyle.push('display:none;');
-			}
-
-			strCss.push('#'+_this.prefix+'pubGrid .table-column-'+i+'{'+tmpStyle.join('')+'}');
+		
+		for(var i= 0 ;i <tci.length; i++){
+			var tciItem = tci[i];
+			strCss.push('#'+_this.prefix+'pubGrid [data-body-col="'+i+'"]{width:'+tciItem.width+'px;}');
 		}
+		
+		if($('#'+_this.prefix+'pubGridStyle').length > 0){
+			$('#'+_this.prefix+'pubGridStyle').text(strCss.join(''));
+		}else{
+			var d = document;
+			var tag = d.createElement('style');
 
-		var d = document;
-        var tag = d.createElement('style');
+			d.getElementsByTagName('head')[0].appendChild(tag);
+			tag.setAttribute('type', 'text/css');
+			tag.setAttribute('id', _this.prefix+'pubGridStyle');
 
-        d.getElementsByTagName('head')[0].appendChild(tag);
-        tag.setAttribute('type', 'text/css');
-
-        if (tag.styleSheet) {
-            tag.styleSheet.cssText = strCss.join('');
-        } else {
-            tag.appendChild(document.createTextNode(strCss.join('')));
-        }
+			if (tag.styleSheet) {
+				tag.styleSheet.cssText = strCss.join('');
+			} else {
+				tag.appendChild(document.createTextNode(strCss.join('')));
+			}
+		}
 	}
 	/**
      * @method getHeaderHtml
@@ -676,8 +657,8 @@ Plugin.prototype ={
 			+'					<div id="'+_this.prefix+'pubGrid-body-top-space" class="pubGrid-body-top-space" style="width: 1px; padding:0px;height:100%;"></div>'
 			+'					<div style="display: table-row;">'
 			+'						<div id="'+_this.prefix+'pubGrid-body-left-space" style="float:left;display: table-cell;"></div>'
-			+'						<div style="display: table-cell;"><table id="'+_this.prefix+'pubGrid-body" class="pubGrid-body">'
-			+'						</table></div>'	
+			+'						<div style="display: table-cell;"><div id="'+_this.prefix+'pubGrid-body" class="pubGrid-body">'
+			+'						</div></div>'	
 			+'					</div>'
 			+'				</div>'
 			+'				<div id="'+_this.prefix+'pubGrid-body-width" class="pubGrid-body-width" style="position:absolute;z-index:-1;height:1px;top:0px;padding:0px;width:'+_this.config.totGridWidth+'px;"></div>'
@@ -721,16 +702,16 @@ Plugin.prototype ={
 						
 			for(var i =startRow ; i < endRow; i++){
 				tbiItem = tbi[i];
-				strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
+				strHtm.push('<div class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" data-body-row="'+i+'" style="width:100%;margin-left:1px;">');
 
 				for(var j=startCol ;j <=endCol; j++){
 					thiItem = tci[j];
 					clickFlag = thiItem.colClick;
 					tmpVal = this.valueFormatter( i, thiItem,tbiItem); 
-					strHtm.push('<td scope="col" class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-colinfo="'+i+','+j+'"><div class="pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'" title="'+tmpVal+'" >'+tmpVal+'</div></td>');
+					strHtm.push('<div class=" pub-body-td '+ (clickFlag?'pub-body-td-click':'') +' '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-body-col="'+j+'" title="'+tmpVal+'" ><div class="pub-content-ellipsis">'+tmpVal+'</div></div>');
 				}
 
-				strHtm.push('</tr>');
+				strHtm.push('</div>');
 			}
 		}else{
 			if(tbodyIdx==0){
@@ -786,7 +767,7 @@ Plugin.prototype ={
 	,_setTbodyAppend : function (mode){
 		
 		if(this.options.bigData.enabled === false){
-			var bodyHtm = this._getColGroup(this.prefix+'colbody', 'body')+'<tbody class="pub-cont-tbody-0"></tbody>';
+			var bodyHtm = this._getColGroup(this.prefix+'colbody', 'body')+'<div class="pub-cont-tbody-0"></div>';
 			this.config.bodyElement.empty().html(bodyHtm);
 			this.config.bodyCount = 0; 
 		}else{
@@ -804,12 +785,9 @@ Plugin.prototype ={
 					}
 				}else{
 					var bodyHtm ='';
-					if(mode == 'init'){
-						bodyHtm = this._getColGroup(this.prefix+'colbody', 'body');
-					}
-					
+										
 					for(var i =this.config.bodyCount+1; i<= bodyCount; i++){
-						bodyHtm += '<tbody class="pub-cont-tbody-'+i+'"></tbody>';
+						bodyHtm += '<div class="pub-cont-tbody-'+i+'"></div>';
 					}
 					this.config.bodyElement.append(bodyHtm);
 				}
@@ -828,7 +806,7 @@ Plugin.prototype ={
 		}
 		
 		var bodyH = this.config.height-this.config.headerWrapElement.height() - footerHeight; 
-		bodyH = bodyH > 0 ? bodyH : this.config.headerWrapElement.height+5
+		bodyH = bodyH > 0 ? bodyH : _this.config.headerWrapElement.height+5
 		this.config.gridBodyHeight = bodyH;
 		
 		return bodyH ;
@@ -924,6 +902,27 @@ Plugin.prototype ={
 			
 			_this._setFooterStatusMessage(0);
 
+			var itemHeight = _this.options.tbodyItem.length* _this.config.rowHeight
+			,unitHeight = _this.options.bigData.spaceUnitHeight
+			,loopCnt = Math.floor(itemHeight/unitHeight);
+		
+			var itemHeightHtm = [], topHeightHtm = [];
+
+			for(var i =0 ;i <loopCnt ;i++ ){
+				itemHeightHtm.push('<div _idx="'+i+'" style="height:'+unitHeight+'px;"></div>');
+				topHeightHtm.push('<div data-top-idx="'+i+'" style="height:0px;"></div>');
+			}
+
+			if(itemHeight%unitHeight != 0){
+				itemHeightHtm.push('<div style="height:'+itemHeight%unitHeight+'px;"></div>');
+				topHeightHtm.push('<div data-top-idx="'+(loopCnt)+'" style="height:0px;"></div>');
+				loopCnt+=1;
+			}
+
+			_this.config.scroll.spaceCount = loopCnt;
+			_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
+			_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
+
 		}
 	
 		var scrollData = _this.config.scroll
@@ -941,6 +940,8 @@ Plugin.prototype ={
 				,startCol : scrollData.startCol
 				,endCol : scrollData.endCol	
 			}
+
+			//$('#'+_this.prefix+"colgroup_body").empty().html(_this._getColGroup(_this.prefix+'colbody', 'body'));
 		}
 
 		if(_this._isHorizontalCheck()){
@@ -979,7 +980,7 @@ Plugin.prototype ={
 			bodyHtm +=_this._getColGroup(_this.prefix+'colbody', 'body');
 
 			for(var i =0 ; i <= _this.config.bodyCount; i++){
-				bodyHtm +='<tbody class="pub-cont-tbody-'+i+'">'+tbodyHtml(viewItemIdx, i)+'</tbody>';
+				bodyHtm +='<div class="pub-cont-tbody-'+i+'">'+tbodyHtml(viewItemIdx, i)+'</div>';
 			}
 
 			document.getElementById(_this.prefix +'pubGrid-body').innerHTML = bodyHtm;
@@ -1553,6 +1554,8 @@ Plugin.prototype ={
 			
 			_this.config.pubGridBodyWidthElement.css('width',(totalWidth)+'px');
 			drag.ele.removeAttr('style');
+
+			//_this.addWidthStyle();
 			
 		}else{
 			if(w > _this.options.headerOptions.colMinWidth){
@@ -1728,8 +1731,6 @@ Plugin.prototype ={
         cssText += '</style>';
 		
 		downloadInfo = downloadInfo.replace('<tbody></tbody>', this.getTbodyHtml(this.options.tbodyItem, this.options.tColItem,'all', 0));
-
-		console.log(downloadInfo);
 		
 		downloadInfo = cssText+downloadInfo;
 		if(typeof opt !=='undefined'){

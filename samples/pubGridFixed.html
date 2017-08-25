@@ -1,14 +1,14 @@
 <!doctype html>
 <HTML>
 <HEAD>
-<TITLE>pub GRID-예제</TITLE>
+<TITLE>pub GRID-fixed-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link href="../theme/default/pub.example.css" rel="stylesheet">
-<link href="../theme/default/pub.grid.css" rel="stylesheet">
+<link href="../theme/default/pub.grid.fixed.css" rel="stylesheet">
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
 <script src="../dist/pub.context.js"></script>
-<script src="../dist/pub.grid.js"></script>
+<script src="../dist/pub.grid.fixed.js"></script>
 <style>
 html , body {
 	height:100%;
@@ -67,7 +67,7 @@ function getItem (type){
 		]
 	}else{
 
-		for(var i =0 ;i <1000; i++){
+		for(var i =0 ;i <100; i++){
 			var tmpItem = {};
 
 			for(var j =0 ; j< 150 ;j++){
@@ -81,12 +81,15 @@ function getItem (type){
 		
 		colFirstItem = aaa[0];
 		
+		var keyIdx =0; 
 		for(var key in colFirstItem){
 			colItem.push( {
 				key :key
-				,label:key
+				,label:'asdfasdf '+key
 				,width:100
-			})
+			});
+
+			keyIdx++;
 		}
 	}
 
@@ -113,7 +116,7 @@ function fn_init(){
 			}
 		}
 		,height : 'auto'
-		,height1 : 200
+		,height1:400
 		,scroll :{
 			lazyLoad : true // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
 			,lazyLoadTime : 30 // scroll 로드 타임. 

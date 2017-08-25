@@ -77,8 +77,35 @@ function init(){
 
 	$.pubTree("#treeDiv", {useIcon :{
 			line : true
-			,icon : false
+			,icon : true
 		},source:treeItem, topMenuView:false}); // 트리 객체 네임  div명
+
+
+	var sortableDefaultOpt = {
+		cursor: 'move'
+		,connectWith: '.sub-node-wrapper'
+		,handle : 'li[data-tree-id]'
+		,helper: "clone"
+		,start : function (event, ui){
+			var uiItem = $(ui.item[0]);
+
+			//ui.placeholder.css('width',(uiItem.width())+'px').css('height' ,(uiItem.height())+'px');
+			//console.log()
+		}
+		,update : function(event, ui){
+			
+		}
+		,change:function (event, ui) {
+			
+		}
+		,stop : function(event, ui) {
+			
+		}
+	}
+
+	
+	$('.sub-node-wrapper').sortable(sortableDefaultOpt);
+	$('.sub-node-wrapper').sortable("disable");
 }
 
 

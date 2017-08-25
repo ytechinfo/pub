@@ -84,7 +84,7 @@ function getItem (type){
 		for(var key in colFirstItem){
 			colItem.push( {
 				key :key
-				,label:key
+				,label:colFirstItem[key]
 				,width:100
 			})
 		}
@@ -160,8 +160,7 @@ function fn_init(){
 		,tbodyItem :aaa
 		,tfootItem :['asdf']
 		,rowOptions :{
-			height:50
-			,click : function (idx, item){
+			click : function (idx, item){
 				console.log(idx, item);
 			}
 			,contextMenu :{
