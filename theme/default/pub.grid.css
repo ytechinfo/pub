@@ -224,9 +224,9 @@
 }
 /* --/header end */
 
-.pubGrid-body .al{text-align:left;}
-.pubGrid-body .ar{text-align:right;}
-.pubGrid-body .ac{text-align:center;}
+.pubGrid-body .alignleft{text-align:left;}
+.pubGrid-body .alignright{text-align:right;}
+.pubGrid-body .aligncenter{text-align:center;}
 
 
 .pubGrid-page-navigation>ul {

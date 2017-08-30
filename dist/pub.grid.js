@@ -62,7 +62,7 @@ var _initialized = false
 	,message : {
 		emtpy : 'no data'
 		,pageStatus : function (status){
-			return status.currStart +' - ' + status.currEnd+' of '+ status.total;
+			return status.currStart +' - ' + (status.currEnd||0)+' of '+ status.total;
 		}
 	}
 }
@@ -544,7 +544,7 @@ Plugin.prototype ={
 		gridMode = gridMode||'reDraw';
 		if(!$.isArray(pdata)){
 			data = pdata.items;
-			pageInfo = pdata.page; 
+			pageInfo = $.extend(true ,opt.page , pdata.page); 
 		}
 
 		if(gridMode=='reDraw'){
@@ -603,7 +603,7 @@ Plugin.prototype ={
 		_this.config.pubGridTopSpaceElement.empty().html(topHeightHtm.join(''));
 		_this.config.pubGridBodyHeightElement.empty().html(itemHeightHtm.join(''));
 
-		_this.setPage(_this.options.page);
+		_this.setPage(pageInfo);
 		
 	}
 	,setPage : function (pageInfo){
@@ -717,8 +717,8 @@ Plugin.prototype ={
 			
 			//console.log('startRow : '+startRow, 'endRow : '+endRow , 'startCol : '+startCol, 'endCol : '+endCol, 'itemIdx: '+itemIdx)
 			
-			var tmpVal;
-						
+			var tmpVal, tmpAlign;
+
 			for(var i =startRow ; i < endRow; i++){
 				tbiItem = tbi[i];
 				strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
@@ -726,8 +726,10 @@ Plugin.prototype ={
 				for(var j=startCol ;j <=endCol; j++){
 					thiItem = tci[j];
 					clickFlag = thiItem.colClick;
+					tmpAlign = thiItem.align?('align'+thiItem.align) : (thiItem.type =='number' || thiItem.type =='money' ?'alignleft' :'aligncenter');
+				
 					tmpVal = this.valueFormatter( i, thiItem,tbiItem); 
-					strHtm.push('<td scope="col" class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-colinfo="'+i+','+j+'"><div class="pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'" title="'+tmpVal+'" >'+tmpVal+'</div></td>');
+					strHtm.push('<td scope="col" class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-colinfo="'+i+','+j+'"><div class="pub-content-ellipsis '+tmpAlign+' '+ (clickFlag?'pub-body-td-click':'') +'" title="'+(thiItem.render!='html'?tmpVal:'')+'" >'+tmpVal+'</div></td>');
 				}
 
 				strHtm.push('</tr>');
@@ -907,7 +909,7 @@ Plugin.prototype ={
 			_this.config.footerWrapElement = $('#'+_this.prefix+'pubGrid-footer-wrapper');
 			_this.config.footerPageStatusElement = $('#'+_this.prefix+'pubGrid-page-status');
 			
-			_this.element.css('height',this.config.height);
+			_this.config.pubGridElement.css('height',this.config.height);
 
 			var bodyH = _this._getBodyHeight();
 			_this.config.bodyScroll.css('height',(bodyH)+'px');
@@ -921,10 +923,9 @@ Plugin.prototype ={
 			
 			_this._setTbodyAppend('init');
 			_this.scrollColumnPosition(0,0);
-			
-			_this._setFooterStatusMessage(0);
-
 		}
+
+		_this._setFooterStatusMessage(drawMode =='init' ? 0 : _this.config.scroll.top);
 	
 		var scrollData = _this.config.scroll
 			,viewItemIdx=scrollData.viewItemIdx
@@ -1183,11 +1184,14 @@ Plugin.prototype ={
 		});
 	}
 	,_setFooterStatusMessage : function (sTop){
-		this.config.footerPageStatusElement.empty().html(this.options.message.pageStatus({
+		var statusInfo = {
 			currStart : Math.round(sTop / this.config.rowHeight)
 			,currEnd : Math.floor((sTop+this.config.gridBodyHeight) / this.config.rowHeight)
 			,total : this.options.tbodyItem.length
-		}))
+		};
+
+		statusInfo.currEnd = statusInfo.total > statusInfo.currEnd ? statusInfo.currEnd : statusInfo.total;
+		this.config.footerPageStatusElement.empty().html(this.options.message.pageStatus(statusInfo))
 	}
 	,_getScrollOverHeight : function (idx , updown){
 		return idx* (this.options.bigData.gridCount)* this.config.rowHeight;
@@ -1203,7 +1207,7 @@ Plugin.prototype ={
 		
 		_this.config.drawBeforeData.bodyHeight = _this.config.gridBodyHeight; 
 
-		opt = $.extend(true, {width : _this.element.innerWidth(), height : _this.element.parent().height()}, (isOpt ? {} :opt));
+		opt = $.extend(true, {width : _this.element.innerWidth(), height : _this.element.height()}, (isOpt ? {} :opt));
 		
 		if(!isOpt){
 			_this.element.css('width',opt.width);
@@ -1225,7 +1229,7 @@ Plugin.prototype ={
 		}else{
 			if(_this.options.height =='auto'){
 				_this.config.height = opt.height; 
-				_this.element.css('height',opt.height);
+				_this.config.pubGridElement.css('height',opt.height);
 
 				var bodyH =_this._getBodyHeight();
 
@@ -1353,43 +1357,27 @@ Plugin.prototype ={
 			 ,rowClickFlag =false; 
 		
 		var beforeCol; 
-		_this.config.bodyElement.on('click.pubgridcol','.pub-body-td',function (e){
-			var sEle = $(this)
-				,selCol = sEle.attr('data-colinfo').split(',')
-				,selRow = selCol[0]
-				,colIdx = selCol[1]
-				,selItem = _this.options.tbodyItem[selRow];
-			
-			if(beforeCol) beforeCol.removeClass('col-active');
-			sEle.addClass('col-active');
+		if(_this.options.rowOptions.click !== false && typeof _this.options.rowOptions.click == 'function'){
+			_this.config.bodyElement.on('click.pubgridcol','.pub-body-td',function (e){
+				var sEle = $(this)
+					,selCol = sEle.attr('data-colinfo').split(',')
+					,selRow = selCol[0]
+					,colIdx = selCol[1]
+					,selItem = _this.options.tbodyItem[selRow];
+				
+				if(beforeCol) beforeCol.removeClass('col-active');
+				sEle.addClass('col-active');
 
-			beforeCol = sEle; 
+				beforeCol = sEle; 
 
-			if($.isFunction(_this.options.tColItem[colIdx].colClick)){
-				_this.options.tColItem[colIdx].colClick.call(this,colIdx,{
+				_this.options.rowOptions.click.call(sEle ,_this.options.tColItem[colIdx].key,{
 					r:selRow
 					,c:colIdx
 					,item:selItem
-				});
+				});				
+				
 				return false; 
-			}
-		});
-		
-		if(_this.options.rowOptions.click !== false && typeof _this.options.rowOptions.click == 'function'){
-			rowClickFlag =true; 
-
-			var beforeRow; 
-			_this.config.bodyElement.on('click.pubgridrow','.pub-body-tr',function (e){
-				var selRow = $(this)
-					,rowinfo=selRow.attr('rowinfo')
-					,selItem = _this.options.tbodyItem[rowinfo];
 				
-				if(beforeRow) beforeRow.removeClass('active');
-
-				selRow.addClass('active');
-				beforeRow = selRow; 
-				
-				_this.options.rowOptions.click.call(selRow ,rowinfo , selItem);							
 			});
 		}
 	}
@@ -1569,7 +1557,9 @@ Plugin.prototype ={
 		var _this =this; 
 
 		var pagingInfo = _this.getPageInfo(options.totalCount , options.currPage , options.countPerPage, options.unitPage);
-		
+	
+		_this.config.pageNo = options.currPage;
+
 		var currP = pagingInfo.currPage;
 		if (currP == "0") currP = 1;
 		var preP_is = pagingInfo.prePage_is;
@@ -1620,11 +1610,15 @@ Plugin.prototype ={
 			$('#'+_this.prefix+'pubGrid-pageNav').find('[pageno="'+pageno+'"]').addClass('active');
 
 			if (typeof options.callback == 'function') {
+				_this.config.pageNo = pageno;
 				options.callback(pageno);
 			}
 		});
 		
 		return this; 
+	}
+	,getPageNo : function (){
+		return this.config.pageNo;
 	}
 	/**
      * @method getPageInfo
@@ -1647,7 +1641,8 @@ Plugin.prototype ={
 				countPerPage += unitCount;
 			}
 		}
-
+		
+		countPerPage = parseInt(countPerPage,10);
 		function getMaxNum( allPage, list_num) {
 			if (allPage % list_num == 0) {
 				return allPage / list_num;
@@ -1655,7 +1650,7 @@ Plugin.prototype ={
 			return allPage / list_num + 1;
 		}
 
-		var totalPage = getMaxNum(totalCount, countPerPage);
+		var totalPage = parseInt(getMaxNum(totalCount, countPerPage),10);
 
 		if (totalPage < currPage)
 			currPage = totalPage;
@@ -1677,10 +1672,13 @@ Plugin.prototype ={
 		} else {
 			if(currPage < (unitPage /2)){
 				currEndPage = (currPage - 1) / unitPage * unitPage + unitPage;
+				currEndPage = parseInt(currEndPage,10);
 				currStartPage = currEndPage - unitPage + 1;
 			}else{
 				currEndPage = (currPage + unitPage /2);
 				
+				currEndPage = parseInt(currEndPage,10);
+
 				if(currEndPage > totalPage){
 					currEndPage =totalPage;
 				}

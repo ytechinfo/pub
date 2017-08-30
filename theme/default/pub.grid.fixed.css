@@ -456,6 +456,15 @@
 	background:#fff;
 }
 
+[data-start-idx="0"]>.tr0 , [data-start-idx="1"]>.tr1{
+   background: #f3f6fa;
+}
+
+[data-start-idx="0"]>.tr1, [data-start-idx="1"]>.tr0{
+   background: #fff;
+}
+
+
 /* footer */
 .pubGrid-footer-container{
 	display: none;
@@ -484,8 +493,6 @@
 	position:absolute;
 	bottom:0px;
 	background:#fff;
-	border:1px solid #cac3c3;
-	border-bottom: 0px solid #cac3c3;
 	z-index:2;
 }
 .pubGrid-hscroll-left{
@@ -498,6 +505,9 @@
 	position : relative;
 	height:100%; 
 	width:100%;
+	border:1px solid #cac3c3;
+	border-bottom: 0px solid #cac3c3;
+	border-right: 0px solid #cac3c3;
 }
 .pubGrid-hscroll-bar{
 	position:absolute;
@@ -518,7 +528,9 @@
 	top:0px;
 	z-index: 3;
 	background:#fff;
-	border:1px solid #cac3c3;
+	border: 1px solid #cac3c3;
+	border-right: 0px solid #cac3c3;
+	border-bottom: 0px solid #cac3c3;
 }
 .pubGrid-vscroll-up{
 	position:absolute; top:0px; left:0px;
@@ -531,6 +543,8 @@
 	position : relative;
 	height:100%; 
 	width:100%;
+	border-bottom: 1px solid #cac3c3;
+	
 }
 .pubGrid-vscroll-bar{
 	position:absolute;
@@ -538,7 +552,6 @@
 	height:100px; 
 	background:#989191;
 	box-sizing: border-box;
-    border: 1px solid #aaa;
     border-radius: 0.5em;
     touch-action: none;
 }

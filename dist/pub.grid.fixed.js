@@ -165,6 +165,10 @@ function Plugin(element, options) {
 	return this; 
 }
 
+function $pubSelect(selector){
+	return document.querySelector(selector);
+}
+
 Plugin.prototype ={
 	/**
      * @method _initialize
@@ -186,7 +190,7 @@ Plugin.prototype ={
 			, header :{height : 0, width : 0}
 			, footer :{height : 0, width : 0}
 			, navi :{height : 0, width : 0}
-			, scroll : {top :0 , left:0, startCol:0, endCol : 0,startRow : 0, endRow :0, viewIdx : 0, vBarPosition :0 , hBarPosition :0}
+			, scroll : {top :0 , left:0, startCol:0, endCol : 0,startRow : 0, endRow :0, viewIdx : 0, vBarPosition :0 , hBarPosition :0 , maxViewCount:0, viewCount : 0, verticalHeight:0,horizontalWidth:0}
 		};
 		
 		_this.options =$.extend(true, {}, _defaults);
@@ -537,11 +541,6 @@ Plugin.prototype ={
 		}
 
 		if(gridMode=='reDraw'){
-			_this.config.scroll = _this.initScrollData(_this.options.bigData.gridCount);
-			_this.config.bodyScroll.scrollTop(0);
-			_this.scrollColumnPosition(0, _this.config.bodyScroll.scrollLeft());
-
-			
 			_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 		}
 
@@ -665,7 +664,7 @@ Plugin.prototype ={
 
 	}
 	//body html  만들기
-	,getTbodyHtml : function(tci){
+	,getTbodyHtml : function(mode){
 		var strHtm = [];
 		
 		if(this.options.tbodyItem.length > 0){
@@ -674,25 +673,50 @@ Plugin.prototype ={
 				,tci = this.options.tColItem
 				,colLen = tci.length
 				,thiItem;
+
+			console.log(mode, this.config.scroll.maxViewCount);
 			
-			for(var i =0 ; i < this.config.scroll.viewCount; i++){
-				strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
+			for(var i =0 ; i < this.config.scroll.maxViewCount; i++){
 
-				for(var j=0 ;j < colLen; j++){
-					thiItem = tci[j];
-					clickFlag = thiItem.colClick;
-					
-					strHtm.push('<td scope="col" class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-grid-position="'+i+','+j+'"><div class="pub-content pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'"></div></td>');
+				if($('[rowinfo="'+i+'"]').length > 0){
+					if(i > this.config.scroll.viewCount){
+						$('[rowinfo="'+i+'"]').hide();
+					}else{
+						$('[rowinfo="'+i+'"]').show();
+					}
+				}else{
+					strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
+
+					for(var j=0 ;j < colLen; j++){
+						thiItem = tci[j];
+						clickFlag = thiItem.colClick;
+						
+						strHtm.push('<td scope="col" class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-grid-position="'+i+','+j+'"><div class="pub-content pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'"></div></td>');
+					}
+					strHtm.push('</tr>');
 				}
-				strHtm.push('</tr>');
 			}
-	
-		}else{
+			
+			if(mode=='init'){
+				var bodyHtm = '';
+				bodyHtm +=this._getColGroup(this.prefix+'colbody', 'body');
+				bodyHtm += '<tbody class="pubGrid-body-tbody" data-start-idx="0">'+strHtm.join('')+'</tbody>';
 
+				strHtm = bodyHtm; 
+				this.element.body.find('.pubGrid-body-cont').empty().html(strHtm);
+				
+			}else{
+				strHtm = strHtm.join('');
+				if(strHtm != ''){
+					this.element.body.find('.pubGrid-body-cont').append(strHtm);
+				}
+				return true; 
+			}
+		}else{
 			
 		}
-
-		return strHtm.join('');
+		return false; 
+		
 	}
 	/**
      * @method valueFormatter
@@ -786,10 +810,6 @@ Plugin.prototype ={
 			return strHtm.join('');
 		}
 
-		function tbodyHtml(){
-			return _this.getTbodyHtml();
-		}
-	
 		if(drawMode =='init'){
 			
 			_this.gridElement.empty().html(_this.getTemplateHtml().replace('#theaderHtmlArea#',theadHtml()));
@@ -815,15 +835,11 @@ Plugin.prototype ={
 			_this.scroll();
 			_this._initBodyEvent();
 			_this._setBodyEvent();
-			_this.scrollColumnPosition(0,0);
-			
-			var bodyHtm = '';
-			bodyHtm +=_this._getColGroup(_this.prefix+'colbody', 'body');
-			bodyHtm += '<tbody class="pubGrid-body-tbody">'+tbodyHtml()+'</tbody>';
-						
-			_this.element.body.find('.pubGrid-body-cont').empty().html(bodyHtm);
+
+			_this.getTbodyHtml('init');
 
 		}
+
 		var itemIdx = _this.config.scroll.viewIdx;
 		var viewCount = _this.config.scroll.viewCount - (_this.config.scroll.endFlag ? 1:0);
 
@@ -831,14 +847,19 @@ Plugin.prototype ={
 			, endCol=this.config.scroll.endCol;
 			
 		var tbiItem , thiItem;
+				
+		//$pubSelect('.pubGrid-body-tbody').setAttribute('data-start-idx', (itemIdx %2));
+
+		console.log(startCol, endCol)
+
 		for(var i =0 ; i < viewCount; i++){
 			tbiItem = tbi[itemIdx];
 		
 			for(var j=startCol ;j <= endCol; j++){
 				thiItem = tci[j];
-				
+
 				var tmpVal = this.valueFormatter( i, thiItem,tbiItem); 
-				document.querySelector('[data-grid-position="'+i+','+j+'"]>.pub-content').innerHTML = tmpVal;
+				$pubSelect('[data-grid-position="'+i+','+j+'"]>.pub-content').innerHTML = tmpVal;
 			}
 			itemIdx++;
 		}
@@ -849,7 +870,7 @@ Plugin.prototype ={
 	,setElementDimension : function (){
 		this.config.header.height = this.element.header.outerHeight();
 		this.config.navi.height = this.element.navi.outerHeight();
-		this.config.scroll.hScrollHeight =  $('#'+this.prefix+'-hscroll').outerHeight();
+		this.config.scroll.hScrollHeight =  $('#'+this.prefix+'_hscroll').outerHeight();
 		
 		if(false){ //todo footer 구현시 처리. 
 			this.config.footer.height = this.element.footer.outerHeight();
@@ -863,85 +884,88 @@ Plugin.prototype ={
 		
 		_this.config.drawBeforeData.bodyHeight = _this.config.body.height; 
 
-
 		opt = opt||{height : (_this.options.height =='auto' ? _this.gridElement.parent().height() : _this.config.body.height )}
 
 		opt = $.extend(true, {width : _this.gridElement.innerWidth(), height : _this.gridElement.parent().height()},opt);
 		
-		_this.config.body.width = opt.width; 
-		_this.config.body.height = opt.height; 
+		_this.config.body.width = opt.width;
+		_this.config.body.height = opt.height;
 	
 		_this.gridElement.css('height',_this.config.body.height);
 		_this.element.header.find('.pubGrid-header-cont').css('width',(_this.config.totGridWidth)+'px');
 		_this.element.body.find('.pubGrid-body-cont').css('width',(_this.config.totGridWidth)+'px');
 		
-
 		var mainHeight = opt.height - this.config.navi.height;
 		_this.element.main.css('height',mainHeight);
 
-		var bodyH = mainHeight - this.config.header.height - this.config.footer.height -this.config.scroll.hScrollHeight;
+		var hScrollFlag = _this.config.totGridWidth > _this.config.body.width  ? true : false
+			, bodyH = mainHeight - this.config.header.height - this.config.footer.height - (hScrollFlag?this.config.scroll.hScrollHeight:0)
+			, itemTotHeight = _this.options.tbodyItem.length * _this.options.rowOptions.height
+			, vScrollFlag = itemTotHeight > bodyH ? true :false;
+			 
 		
-		var barHeight = (bodyH*(bodyH/(_this.options.tbodyItem.length * _this.options.rowOptions.height)*100))/100; 
-
-		var scrollH = $('#'+_this.prefix+'_vscroll').find('.pubGrid-vscroll-bar-area').height();
-		
-		if(barHeight > bodyH){
-			 $('#'+_this.prefix+'_vscroll').hide();
-		}else{
+		if(vScrollFlag){
+			_this.config.scroll.vUse = true;
+			$('#'+_this.prefix+'_vscroll').css('padding-bottom',(hScrollFlag?11:0));
 			$('#'+_this.prefix+'_vscroll').show();
-
+			
+			var scrollH = $('#'+_this.prefix+'_vscroll').find('.pubGrid-vscroll-bar-area').height();
+			var barHeight = (bodyH*(bodyH/(itemTotHeight)*100))/100; 
 			barHeight = barHeight < 25 ? 25 :barHeight;	
-
 			_this.config.scroll.verticalHeight = scrollH - barHeight;
 			_this.config.scroll.oneRowMove = _this.config.scroll.verticalHeight/_this.options.tbodyItem.length;
-			
-			
+						
 			var topVal = _this.config.scroll.verticalHeight* _this.config.scroll.vBarPosition/100;
 
-			_this._setScrollBarTopPosition(topVal);
+			//_this._setScrollBarTopPosition(topVal);
+			_this.moveVScroll(topVal);
 			_this.element.vScrollBar.css('height',barHeight);
+			
+			 
+		}else{
+			_this.config.scroll.vUse = false; 
+			$('#'+_this.prefix+'_vscroll').hide();
 		}
+		
+		var leftVal =0;
+		if(hScrollFlag){
+			_this.config.scroll.hUse = true; 
+			$('#'+_this.prefix+'_hscroll').css('padding-right',(vScrollFlag?12:0));
+			$('#'+_this.prefix+'_hscroll').show();
+			var barWidth = (_this.config.body.width*(_this.config.body.width/_this.config.totGridWidth*100))/100; 
+			barWidth = barWidth < 25 ? 25 :barWidth;
+			_this.config.scroll.horizontalWidth =$('#'+_this.prefix+'_hscroll').find('.pubGrid-hscroll-bar-area').width() - barWidth;
+
+			
+
+			_this.config.scroll.oneColMove = _this.config.totGridWidth/_this.config.scroll.horizontalWidth;
+
+			console.log(_this.config.scroll.oneColMove)
+
+			leftVal = _this.config.scroll.horizontalWidth* _this.config.scroll.hBarPosition/100;
+			
+			_this._setScrollBarLeftPosition(leftVal);
+			_this.element.hScrollBar.css('width',barWidth)
+		}else{
+			_this.config.scroll.hUse= false; 
+			$('#'+_this.prefix+'_hscroll').hide();
+		}
+
+		_this.calcViewCol(leftVal);
+		
 		var beforeViewCount = _this.config.scroll.viewCount ; 
-		_this.config.scroll.viewCount = Math.ceil(bodyH / this.config.rowHeight);
+		_this.config.scroll.viewCount = itemTotHeight > bodyH ? Math.ceil(bodyH / this.config.rowHeight) : _this.options.tbodyItem.length;
+
 		_this.config.scroll.viewOverflow = bodyH % this.config.rowHeight > 0 ?true :false; 
 
 		if(_this.config.scroll.maxViewCount <_this.config.scroll.viewCount  ) _this.config.scroll.maxViewCount = _this.config.scroll.viewCount;
 
-		if(beforeViewCount != _this.config.scroll.viewCount){
-			
+		if(beforeViewCount !=0 && ( beforeViewCount != _this.config.scroll.viewCount )){
+			var drawFlag = _this.getTbodyHtml(); 
+			if(drawFlag){
+				_this.drawGrid();
+			}
 		}
-		
-		if(_this.config.body.width < _this.config.totGridWidth){
-			$('#'+_this.prefix+'_hscroll').show();
-			var barWidth = (_this.config.body.width*(_this.config.body.width/_this.config.totGridWidth*100))/100; 
-			barWidth = barWidth < 25 ? 25 :barWidth;	
-			_this.config.scroll.horizontalWidth =$('#'+_this.prefix+'_hscroll').find('.pubGrid-hscroll-bar-area').width() - barWidth;
-
-			var leftVal = _this.config.scroll.horizontalWidth* _this.config.scroll.hBarPosition/100;
-			
-			_this._setScrollBarLeftPosition(leftVal);
-			_this.element.hScrollBar.css('width',barWidth)
-			
-		}else{
-			$('#'+_this.prefix+'_hscroll').hide();
-		}		
-	}
-	/**
-     * @method scrollColumnPosition
-	 * @param  sTop {int} scroll top value
-	 * @param  sLeft {int} scroll left value
-	 * @param  pType {String} scroll type
-     * @description foot 데이타 셋팅
-     */
-	,scrollColumnPosition : function (sTop, sLeft, pType){
-
-		if(this.options.bigData.enabled === false){
-			return ;
-		}
-
-		return ; 
-		
-		
 	}
 	/**
      * @method scroll
@@ -961,9 +985,17 @@ Plugin.prototype ={
 			}else{
 				delta = oe.wheelDelta;
 			};
-			var topVal = (delta > 0?-1:1) * _this.config.scroll.oneRowMove; //delta > 0--up
 			
-			_this.moveVScroll(_this.config.scroll.top+topVal)
+			//delta > 0--up
+			if(_this.config.scroll.vUse){
+				_this.moveVScroll(_this.config.scroll.top+((delta > 0?-1:1) * _this.config.scroll.oneRowMove));
+			}else{
+				if(_this.config.scroll.hUse){
+					_this.moveHScroll(_this.config.scroll.left+((delta > 0?-1:1) * _this.config.scroll.oneColMove));
+				}
+			}
+
+			
 		});
 
 		$('.pubGrid-hscroll-bar').on('touchstart.pubhscroll mousedown.pubhscroll',function (e){
@@ -1018,12 +1050,18 @@ Plugin.prototype ={
 	*/
 	,moveVScroll : function (topVal){
 
-		topVal= topVal > 0 ? (topVal >= this.config.scroll.verticalHeight ? this.config.scroll.verticalHeight : topVal) : 0 ; 
+		topVal= topVal > 0 ? (topVal >= this.config.scroll.verticalHeight ? this.config.scroll.verticalHeight : topVal) : 0 ;
+
+		if(topVal ==0){
+			this.config.scroll.vBarPosition = 0 ; 
+		}else{
+			this.config.scroll.vBarPosition = topVal/this.config.scroll.verticalHeight*100; 
+		}
 
 		this._setScrollBarTopPosition(topVal);
-		this.config.scroll.vBarPosition = topVal/this.config.scroll.verticalHeight*100; 
+		
 
-		var itemIdx = ((this.options.tbodyItem.length * this.options.rowOptions.height) *(topVal/this.config.scroll.verticalHeight* 100) /100/this.options.rowOptions.height);
+		var itemIdx = ((this.options.tbodyItem.length * this.options.rowOptions.height) *(this.config.scroll.vBarPosition* 100) /100/this.options.rowOptions.height);
 		itemIdx  = Math.round(itemIdx); 
 		
 		var beforeEndFlag = this.config.scroll.endFlag; 
@@ -1041,6 +1079,9 @@ Plugin.prototype ={
 				$('[rowinfo="'+(this.config.scroll.viewCount-1)+'"]').show();
 			}
 		}
+
+
+		console.log(topVal, itemIdx, this.config.scroll.viewIdx , this.options.tbodyItem.length * this.options.rowOptions.height,this.config.scroll.verticalHeight );
 		
 		if(this.config.scroll.viewIdx ==itemIdx) return ;
 
@@ -1073,8 +1114,9 @@ Plugin.prototype ={
 	* 가로 스크롤 이동.
 	*/
 	,moveHScroll : function (leftVal){
+
 		leftVal = leftVal > 0 ? (leftVal >= this.config.scroll.horizontalWidth ? this.config.scroll.horizontalWidth : leftVal) : 0 ; 
-			
+
 		var headerLeft  = ((this.config.totGridWidth - this.config.body.width)*(leftVal/this.config.scroll.horizontalWidth*100))/100; 
 
 		this._setScrollBarLeftPosition(leftVal);
@@ -1098,14 +1140,14 @@ Plugin.prototype ={
 		var tci = this.options.tColItem; 
 		var gridW = leftVal+this.config.body.width; 
 		var itemLeftVal=0;
-		var startCol = 0, endCol =tci.length;
+		var startCol = 0, endCol =tci.length-1;
 		var startFlag = true; 
 		for(var i =0 ;i <tci.length ;i++){
 			var thiItem = tci[i];
 
 			itemLeftVal +=thiItem.width; 
 			
-			//console.log(thiItem.width, itemLeftVal)
+			
 			if(startFlag && itemLeftVal > leftVal){
 				startCol = i; 
 				startFlag = false; 
@@ -1117,9 +1159,11 @@ Plugin.prototype ={
 				break; 
 			}
 		}
+		
 
 		this.config.scroll.startCol = ( startCol > 0? startCol:0 ); 
 		this.config.scroll.endCol = ( endCol >= tci.length? tci.length:endCol );
+
 	}
 	,_statusMessage : function (viewCnt){
 		var startVal = this.config.scroll.viewIdx +1
@@ -1138,13 +1182,9 @@ Plugin.prototype ={
      * @description resize 하기
      */
 	,resizeDraw :function (opt){
-		var _this = this;
+		this.calcDimension(opt);
 		
-		_this.calcDimension(opt);
-
 		return ; 
-
-		_this.scrollColumnPosition(_this.config.bodyScroll.scrollTop(),_this.config.bodyScroll.scrollLeft());
 	}
 	/**
      * @method resizeEnable
@@ -1637,7 +1677,7 @@ Plugin.prototype ={
         cssText += 'td {border:thin   solid #524848;border-collapse: collapse;}';
         cssText += '</style>';
 		
-		downloadInfo = downloadInfo.replace('<tbody></tbody>', this.getTbodyHtml(this.options.tbodyItem, this.options.tColItem,'all', 0));
+		downloadInfo = downloadInfo.replace('<tbody></tbody>', this.getTbodyHtml('all'));
 
 		console.log(downloadInfo);
 		
