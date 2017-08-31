@@ -34,6 +34,7 @@ var _initialized = false
 	}
 	,autoResize : {
 		enabled:true
+		,responsive : false // 리사이즈시 그리드 리사이즈 여부.
 		,threshold :150
 	}
 	,resizeGridWidthFixed : true	// 리사이즈시 그리드 리사이즈 여부.
@@ -51,6 +52,8 @@ var _initialized = false
 	,scroll :{
 		lazyLoad : false // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
 		,lazyLoadTime : 30 // scroll 로드 타임. 
+		,verticalWidth : 10
+		,horizontalHeight: 10
 	}
 	,height: 200
 	,tColItem : [] //head item
@@ -190,7 +193,7 @@ Plugin.prototype ={
 			, header :{height : 0, width : 0}
 			, footer :{height : 0, width : 0}
 			, navi :{height : 0, width : 0}
-			, scroll : {top :0 , left:0, startCol:0, endCol : 0,startRow : 0, endRow :0, viewIdx : 0, vBarPosition :0 , hBarPosition :0 , maxViewCount:0, viewCount : 0, verticalHeight:0,horizontalWidth:0}
+			, scroll : {before:{},top :0 , left:0, startCol:0, endCol : 0,startRow : 0, endRow :0, viewIdx : 0, vBarPosition :0 , hBarPosition :0 , maxViewCount:0, viewCount : 0, verticalHeight:0,horizontalWidth:0}
 		};
 		
 		_this.options =$.extend(true, {}, _defaults);
@@ -232,22 +235,9 @@ Plugin.prototype ={
 		this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
 
 		//_this.config.rowHeight = _this.options.rowOptions.height+1;	// border-box 수정. 2017-08-11
-		_this.config.rowHeight = _this.options.rowOptions.height+1;
+		_this.config.rowHeight = _this.options.rowOptions.height;
 
-		var bigDataGridCount = 0 ; 
-		if(_this.options.bigData.enabled === false){
-			_this.options.bigData ={ enabled :false	,gridCount : 1000 ,spaceUnitHeight : 100000	,horizontalEnableCount : 50 };
-			bigDataGridCount = _this.options.bigData.gridCount; 
-		}else{
-			if(_this.options.bigData.gridCount=='auto'){
-				var gc = parseInt((_this.gridElement.height() / _this.options.rowOptions.height), 10 ); 
-				bigDataGridCount = gc + parseInt(gc/2, 10);
-			}else{
-				bigDataGridCount = _this.options.bigData.gridCount;
-			}
-		}
 
-		_this.config.scroll = _this.initScrollData(bigDataGridCount);
 		_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 				
 		this.config.horizontalEnabled = this.options.tColItem.length > _this.options.bigData.horizontalEnableCount ? true : false; 
@@ -425,51 +415,43 @@ Plugin.prototype ={
 
 		var _this = this
 			,_containerWidth ,_w
-			,gridElementWidth = _this.config.body.width
 			,opt = _this.options
+			,_gw = _this.config.body.width -opt.scroll.verticalWidth
 			,tci = opt.tColItem
 			,tciLen = tci.length;
 
 		//console.log(_this.config.totGridWidth)
 		
-		_w = _this.config.totGridWidth;
-		_containerWidth = (_w+_this.config.scrollWidth);
-		tciLen = tci.length;
-		var totGridWidth = 0; 
-		if( _containerWidth > gridElementWidth){
-			_this.config.gridXScrollFlag = true;
+		var _totW = _this.config.totGridWidth;
+		
+		if(opt.headerOptions.colWidthFixed !== true){
+			var resizeFlag = _totW  < _gw ? true : false;
+			var remainderWidth = (_gw -_totW)/tciLen
+				, lastSpaceW = (_gw -_totW)%tciLen; 
 
-			if(mode=='resize'){				
- 				var remainderWidth = Math.floor((_containerWidth-gridElementWidth)/tciLen);
+			if(opt.autoResize.responsive ===true){
+				resizeFlag = true; 
 
-				for(var j=0; j<tciLen; j++){
-					opt.tColItem[j].width -= remainderWidth;
-					totGridWidth +=opt.tColItem[j].width;
+				if(_this.config.body.width != 0){
+					var resizeW = (_gw-(_this.config.drawBeforeData.bodyWidth||0)); 
+					remainderWidth  = resizeW/tciLen;
+					lastSpaceW =resizeW%tciLen;
 				}
-				totGridWidth =totGridWidth-opt.tColItem[tciLen-1].width;
-				opt.tColItem[tciLen-1].width -=( (_containerWidth-gridElementWidth)%tciLen);
-				totGridWidth +=opt.tColItem[tciLen-1].width;
-			}else{
-				totGridWidth = _w; 
 			}
-		}else{
-			if(opt.headerOptions.colWidthFixed !== true){
-				// 동적으로 width 계산할 경우 colwidth 처리.
-				var _gw = gridElementWidth- _this.config.scrollWidth; 
-				var remainderWidth = Math.floor((_gw -_w)/tciLen);
 
+			if(resizeFlag){
+				var totGridWidth = 0;  
 				for(var j=0; j<tciLen; j++){
+					
 					opt.tColItem[j].width += remainderWidth;
+					opt.tColItem[j].width = Math.max(opt.tColItem[j].width, opt.headerOptions.colMinWidth);
 					totGridWidth +=opt.tColItem[j].width;
 				}
-
-				totGridWidth = totGridWidth-opt.tColItem[tciLen-1].width;
-				opt.tColItem[tciLen-1].width +=( (_gw -_w)%tciLen);
-				totGridWidth +=opt.tColItem[tciLen-1].width;
+				opt.tColItem[tciLen-1].width +=lastSpaceW;
+				_this.config.totGridWidth =totGridWidth+lastSpaceW; 
 			}
 		}
 
-		_this.config.totGridWidth = totGridWidth;
 		_this.config.body.height = opt.height;
 		
 		//console.log(_this.config.gridWidth, gridElementWidth, _w );
@@ -570,7 +552,7 @@ Plugin.prototype ={
 		
 		_this.drawGrid(gridMode,true);
 
-		_this.setPage(_this.options.page);
+		_this.setPage(pageInfo);
 		
 	}
 	,setPage : function (pageInfo){
@@ -625,20 +607,23 @@ Plugin.prototype ={
 
 		return '<div id="'+_this.prefix+'pubGrid" class="pubGrid" style="overflow:hidden;">'
 			+' 	<div id="'+_this.prefix+'_main" class="pubGrid-main" style="overflow:hidden;">'
-			+' 		<div id="'+_this.prefix+'_headerContainer" class="pubGrid-header-container" style="width:'+_this.config.totGridWidth+'px;">'
+			+' 		<div class="pubGrid-header-container-warpper">'
+			+' 		<div id="'+_this.prefix+'_headerContainer" class="pubGrid-header-container">'
 			+' 			<div class="pubGrid-header-left"></div>'
 			+' 			<div class="pubGrid-header">'
 			+'				<div class="pubGrid-header-cont-wrapper" style="position:relative;"><table style="width:'+_this.config.totGridWidth+'px;" class="pubGrid-header-cont" onselectstart="return false">#theaderHtmlArea#</table></div>'
 			+' 			</div>'
 			+' 		</div>'
+			+' 		</div>'		
 
-			+' 		<div id="'+_this.prefix+'_bodyContainer" class="pubGrid-body-container">'
-			+' 			<div class="pubGrid-body-left"></div>'
-			+' 			<div class="pubGrid-body">'
+			+' 		<div style="position:relative;">'
+			+' 			<div id="'+_this.prefix+'_bodyContainer" class="pubGrid-body-container">'
+			+' 				<div class="pubGrid-body-left"></div>'
+			+' 				<div class="pubGrid-body">'
 			+'				<div class="pubGrid-body-cont-wrapper" style="position:relative;"><table style="width:'+_this.config.totGridWidth+'px;" class="pubGrid-body-cont"></table></div>'
-			+'			</div>'
-			+' 		</div>'
-					
+			+'				</div>'
+			+' 			</div>'
+			+' 		</div>'		
 			+' 		<div id="'+_this.prefix+'_footerContainer" class="pubGrid-footer-container">'
 			+' 			<div class="pubGrid-footer-left"></div>'
 			+' 			<div class="pubGrid-footer">'
@@ -674,7 +659,7 @@ Plugin.prototype ={
 				,colLen = tci.length
 				,thiItem;
 
-			console.log(mode, this.config.scroll.maxViewCount);
+			//console.log(mode, this.config.scroll.maxViewCount);
 			
 			for(var i =0 ; i < this.config.scroll.maxViewCount; i++){
 
@@ -841,17 +826,19 @@ Plugin.prototype ={
 		}
 
 		var itemIdx = _this.config.scroll.viewIdx;
-		var viewCount = _this.config.scroll.viewCount - (_this.config.scroll.endFlag ? 1:0);
+		var viewCount = _this.config.scroll.viewCount;
 
 		var startCol=this.config.scroll.startCol 
 			, endCol=this.config.scroll.endCol;
-			
+		
 		var tbiItem , thiItem;
-				
-		//$pubSelect('.pubGrid-body-tbody').setAttribute('data-start-idx', (itemIdx %2));
+		var viewCount = _this.config.scroll.viewCount
+			,idx = 0; 
 
-		console.log(startCol, endCol)
-
+		if(_this.config.scroll.endFlag){
+			//viewCount = _this.config.scroll.viewCount -1;
+		}
+		
 		for(var i =0 ; i < viewCount; i++){
 			tbiItem = tbi[itemIdx];
 		
@@ -859,7 +846,7 @@ Plugin.prototype ={
 				thiItem = tci[j];
 
 				var tmpVal = this.valueFormatter( i, thiItem,tbiItem); 
-				$pubSelect('[data-grid-position="'+i+','+j+'"]>.pub-content').innerHTML = tmpVal;
+				$pubSelect('[data-grid-position="'+(i)+','+j+'"]>.pub-content').innerHTML = tmpVal;
 			}
 			itemIdx++;
 		}
@@ -870,14 +857,17 @@ Plugin.prototype ={
 	,setElementDimension : function (){
 		this.config.header.height = this.element.header.outerHeight();
 		this.config.navi.height = this.element.navi.outerHeight();
-		this.config.scroll.hScrollHeight =  $('#'+this.prefix+'_hscroll').outerHeight();
 		
 		if(false){ //todo footer 구현시 처리. 
 			this.config.footer.height = this.element.footer.outerHeight();
 			this.element.footer.addClass('on');
 		}
 
+		$('#'+this.prefix+'_vscroll').css('width', this.options.scroll.verticalWidth);
+		$('#'+this.prefix+'_hscroll').css('height', this.options.scroll.horizontalHeight);
+
 		this.calcViewCol(0);
+
 	}
 	, calcDimension : function (opt){
 		var _this = this; 
@@ -899,30 +889,38 @@ Plugin.prototype ={
 		_this.element.main.css('height',mainHeight);
 
 		var hScrollFlag = _this.config.totGridWidth > _this.config.body.width  ? true : false
-			, bodyH = mainHeight - this.config.header.height - this.config.footer.height - (hScrollFlag?this.config.scroll.hScrollHeight:0)
-			, itemTotHeight = _this.options.tbodyItem.length * _this.options.rowOptions.height
+			, bodyH = mainHeight - this.config.header.height - this.config.footer.height - (hScrollFlag?this.options.scroll.horizontalHeight:0)
+			, itemTotHeight = _this.options.tbodyItem.length * _this.config.rowHeight
 			, vScrollFlag = itemTotHeight > bodyH ? true :false;
 			 
 		
+		//console.log(vScrollFlag,mainHeight , this.config.header.height , this.config.footer.height ,hScrollFlag, (hScrollFlag?this.options.scroll.horizontalHeight:0))
+		
+		var beforeViewCount = _this.config.scroll.viewCount ; 
+		_this.config.scroll.viewCount = itemTotHeight > bodyH ? Math.ceil(bodyH / this.config.rowHeight) : _this.options.tbodyItem.length;
+		_this.config.scroll.overflowVal = bodyH % this.config.rowHeight; 
+
+
 		if(vScrollFlag){
 			_this.config.scroll.vUse = true;
-			$('#'+_this.prefix+'_vscroll').css('padding-bottom',(hScrollFlag?11:0));
+			$('#'+_this.prefix+'_vscroll').css('padding-bottom',(hScrollFlag?(_this.options.scroll.horizontalHeight-1):0));
 			$('#'+_this.prefix+'_vscroll').show();
 			
 			var scrollH = $('#'+_this.prefix+'_vscroll').find('.pubGrid-vscroll-bar-area').height();
 			var barHeight = (bodyH*(bodyH/(itemTotHeight)*100))/100; 
 			barHeight = barHeight < 25 ? 25 :barHeight;	
 			_this.config.scroll.verticalHeight = scrollH - barHeight;
-			_this.config.scroll.oneRowMove = _this.config.scroll.verticalHeight/_this.options.tbodyItem.length;
+			_this.config.scroll.oneRowMove = _this.config.scroll.verticalHeight/(_this.options.tbodyItem.length-this.config.scroll.viewCount+1);
 						
 			var topVal = _this.config.scroll.verticalHeight* _this.config.scroll.vBarPosition/100;
 
 			//_this._setScrollBarTopPosition(topVal);
-			_this.moveVScroll(topVal);
+			_this.moveVScroll(topVal, false);
 			_this.element.vScrollBar.css('height',barHeight);
 			
 			 
 		}else{
+			_this.moveVScroll(0, false);
 			_this.config.scroll.vUse = false; 
 			$('#'+_this.prefix+'_vscroll').hide();
 		}
@@ -930,41 +928,38 @@ Plugin.prototype ={
 		var leftVal =0;
 		if(hScrollFlag){
 			_this.config.scroll.hUse = true; 
-			$('#'+_this.prefix+'_hscroll').css('padding-right',(vScrollFlag?12:0));
+			$('#'+_this.prefix+'_hscroll').css('padding-right',(vScrollFlag?_this.options.scroll.verticalWidth:0));
 			$('#'+_this.prefix+'_hscroll').show();
 			var barWidth = (_this.config.body.width*(_this.config.body.width/_this.config.totGridWidth*100))/100; 
 			barWidth = barWidth < 25 ? 25 :barWidth;
 			_this.config.scroll.horizontalWidth =$('#'+_this.prefix+'_hscroll').find('.pubGrid-hscroll-bar-area').width() - barWidth;
 
-			
-
 			_this.config.scroll.oneColMove = _this.config.totGridWidth/_this.config.scroll.horizontalWidth;
-
-			console.log(_this.config.scroll.oneColMove)
 
 			leftVal = _this.config.scroll.horizontalWidth* _this.config.scroll.hBarPosition/100;
 			
-			_this._setScrollBarLeftPosition(leftVal);
+			_this.moveHScroll(leftVal, false);
 			_this.element.hScrollBar.css('width',barWidth)
 		}else{
+			_this.moveHScroll(0, false);
 			_this.config.scroll.hUse= false; 
 			$('#'+_this.prefix+'_hscroll').hide();
 		}
 
-		_this.calcViewCol(leftVal);
-		
-		var beforeViewCount = _this.config.scroll.viewCount ; 
-		_this.config.scroll.viewCount = itemTotHeight > bodyH ? Math.ceil(bodyH / this.config.rowHeight) : _this.options.tbodyItem.length;
-
-		_this.config.scroll.viewOverflow = bodyH % this.config.rowHeight > 0 ?true :false; 
-
+		//_this.calcViewCol(leftVal);
 		if(_this.config.scroll.maxViewCount <_this.config.scroll.viewCount  ) _this.config.scroll.maxViewCount = _this.config.scroll.viewCount;
-
+		
+		var drawFlag =false
 		if(beforeViewCount !=0 && ( beforeViewCount != _this.config.scroll.viewCount )){
-			var drawFlag = _this.getTbodyHtml(); 
-			if(drawFlag){
-				_this.drawGrid();
-			}
+			drawFlag = _this.getTbodyHtml(); 
+		}
+
+		if(this.config.scroll.startCol != this.config.scroll.before.startCol || this.config.scroll.before.endCol != this.config.scroll.endCol ){
+			drawFlag = true; 
+		}
+		
+		if(drawFlag){
+			_this.drawGrid();
 		}
 	}
 	/**
@@ -994,8 +989,6 @@ Plugin.prototype ={
 					_this.moveHScroll(_this.config.scroll.left+((delta > 0?-1:1) * _this.config.scroll.oneColMove));
 				}
 			}
-
-			
 		});
 
 		$('.pubGrid-hscroll-bar').on('touchstart.pubhscroll mousedown.pubhscroll',function (e){
@@ -1048,40 +1041,56 @@ Plugin.prototype ={
 	/**
 	* 세로 스크롤 이동.
 	*/
-	,moveVScroll : function (topVal){
-
-		topVal= topVal > 0 ? (topVal >= this.config.scroll.verticalHeight ? this.config.scroll.verticalHeight : topVal) : 0 ;
-
-		if(topVal ==0){
-			this.config.scroll.vBarPosition = 0 ; 
-		}else{
-			this.config.scroll.vBarPosition = topVal/this.config.scroll.verticalHeight*100; 
-		}
-
-		this._setScrollBarTopPosition(topVal);
-		
-
-		var itemIdx = ((this.options.tbodyItem.length * this.options.rowOptions.height) *(this.config.scroll.vBarPosition* 100) /100/this.options.rowOptions.height);
-		itemIdx  = Math.round(itemIdx); 
+	,moveVScroll : function (topVal, drawFlag){
 		
 		var beforeEndFlag = this.config.scroll.endFlag; 
-		if((itemIdx +this.config.scroll.viewCount) > this.options.tbodyItem.length){
-			itemIdx = this.options.tbodyItem.length -this.config.scroll.viewCount +(this.config.scroll.viewOverflow ? 1 : 0); 
-			this.config.scroll.endFlag = true; 
-		}else{
-			this.config.scroll.endFlag = false; 
+		var _topVal = topVal; 
+		this.config.scroll.endFlag = false; 
+		var barPos = 0 ; 
+		if(topVal < 0){
+			topVal=0;
+			barPos = 0 ; 
+		}else {
+			if(topVal >= this.config.scroll.verticalHeight ){
+				topVal = this.config.scroll.verticalHeight;
+				this.config.scroll.endFlag = true; 
+			}
+			barPos = topVal/this.config.scroll.verticalHeight*100; 
 		}
+		
+		this._setScrollBarTopPosition(topVal);
+		
+		var tmpRowHeight = this.config.rowHeight; 
 
+		//var itemIdx = (((this.options.tbodyItem.length * tmpRowHeight-(tmpRowHeight* (this.config.scroll.viewCount))) *(barPos)/100)/tmpRowHeight);
+		/**
+		+1 된거 처리 할것. ㅋㅋㅋㅎ 
+		ㅁㄴ
+		ㅇㄻ
+		ㄴㅇㄹ
+		ㅁㄴㅇㄹ
+		*/
+		var itemIdx = topVal/(this.config.scroll.verticalHeight / (this.options.tbodyItem.length-this.config.scroll.viewCount+1));
+
+		console.log('asdfasdf : ',this.config.scroll.verticalHeight, this.config.scroll.endFlag,_topVal,' : ', itemIdx, this.options.tbodyItem.length , tmpRowHeight,this.config.scroll.viewCount )
+
+		itemIdx  = Math.round(itemIdx); 
+	
 		if(this.config.scroll.endFlag){
-			$('[rowinfo="'+(this.config.scroll.viewCount-1)+'"]').hide();
+			this.element.body.css('top',(tmpRowHeight-this.config.scroll.overflowVal+3)*-1); // 아래 조금 띄우기 위에서 +3 해줌. 
 		}else{
 			if(beforeEndFlag && !this.config.scroll.endFlag){
-				$('[rowinfo="'+(this.config.scroll.viewCount-1)+'"]').show();
+				itemIdx+=1;
+				this.element.body.css('top',0);
 			}
 		}
+		
+		this.config.scroll.vBarPosition = barPos;
 
-
-		console.log(topVal, itemIdx, this.config.scroll.viewIdx , this.options.tbodyItem.length * this.options.rowOptions.height,this.config.scroll.verticalHeight );
+		if(drawFlag === false){
+			this.config.scroll.viewIdx = itemIdx; 
+			return ; 
+		}
 		
 		if(this.config.scroll.viewIdx ==itemIdx) return ;
 
@@ -1113,7 +1122,7 @@ Plugin.prototype ={
 	/**
 	* 가로 스크롤 이동.
 	*/
-	,moveHScroll : function (leftVal){
+	,moveHScroll : function (leftVal, drawFlag){
 
 		leftVal = leftVal > 0 ? (leftVal >= this.config.scroll.horizontalWidth ? this.config.scroll.horizontalWidth : leftVal) : 0 ; 
 
@@ -1126,16 +1135,22 @@ Plugin.prototype ={
 
 		this.element.header.find('.pubGrid-header-cont-wrapper').css('left','-'+headerLeft+'px');
 		this.element.body.find('.pubGrid-body-cont-wrapper').css('left','-'+headerLeft+'px');
-
-		this.drawGrid();
+		
+		if(drawFlag !== false){
+			this.drawGrid();
+		}
+		
 	}
 	/**
-	* 
+	* 가로 스크롤 바 이동 
 	*/
 	, _setScrollBarLeftPosition : function (leftVal){
 		this.config.scroll.left = leftVal; 
 		this.element.hScrollBar.css('left',leftVal);
 	}
+	/**
+	* view col 위치 구하기.
+	*/
 	,calcViewCol : function (leftVal){
 		var tci = this.options.tColItem; 
 		var gridW = leftVal+this.config.body.width; 
@@ -1146,8 +1161,7 @@ Plugin.prototype ={
 			var thiItem = tci[i];
 
 			itemLeftVal +=thiItem.width; 
-			
-			
+						
 			if(startFlag && itemLeftVal > leftVal){
 				startCol = i; 
 				startFlag = false; 
@@ -1159,7 +1173,9 @@ Plugin.prototype ={
 				break; 
 			}
 		}
-		
+
+		this.config.scroll.before.startCol = this.config.scroll.startCol; // 이전데이타 
+		this.config.scroll.before.endCol = this.config.scroll.endCol;
 
 		this.config.scroll.startCol = ( startCol > 0? startCol:0 ); 
 		this.config.scroll.endCol = ( endCol >= tci.length? tci.length:endCol );
@@ -1413,7 +1429,7 @@ Plugin.prototype ={
 				_this.drag.colspanidx = _this.drag.ele.attr('colspanidx');
 				_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.colspanidx);
 				
-				_this.drag.colW = _this.drag.colHeader.attr('_width')?parseInt(_this.drag.colHeader.attr('_width'),10):_this.drag.colHeader.width();
+				_this.drag.colW = _this.options.tColItem[_this.drag.colspanidx].width;
 				_this.drag.gridW = _this.config.totGridWidth - _this.options.tColItem[_this.drag.colspanidx].width;
 				_this.drag.gridBodyW = _this.config.body.width - _this.options.tColItem[_this.drag.colspanidx].width;
 								
@@ -1519,7 +1535,9 @@ Plugin.prototype ={
 		var _this =this; 
 
 		var pagingInfo = _this.getPageInfo(options.totalCount , options.currPage , options.countPerPage, options.unitPage);
-		
+	
+		_this.config.pageNo = options.currPage;
+
 		var currP = pagingInfo.currPage;
 		if (currP == "0") currP = 1;
 		var preP_is = pagingInfo.prePage_is;
@@ -1570,11 +1588,15 @@ Plugin.prototype ={
 			$('#'+_this.prefix+'pubGrid-pageNav').find('[pageno="'+pageno+'"]').addClass('active');
 
 			if (typeof options.callback == 'function') {
+				_this.config.pageNo = pageno;
 				options.callback(pageno);
 			}
 		});
 		
 		return this; 
+	}
+	,getPageNo : function (){
+		return this.config.pageNo;
 	}
 	/**
      * @method getPageInfo

@@ -67,10 +67,10 @@ function getItem (type){
 		]
 	}else{
 
-		for(var i =0 ;i <4; i++){
+		for(var i =0 ;i < 20; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 20 ;j++){
+			for(var j =0 ; j< 40 ;j++){
 				var colName = 'col'+j ; 
 				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
@@ -120,6 +120,8 @@ function fn_init(){
 		,scroll :{
 			lazyLoad : true // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
 			,lazyLoadTime : 30 // scroll 로드 타임. 
+			,verticalWidth: 10
+			,horizontalHeight: 10
 		}
 		,autoResize : true
 		//,bigData :false
