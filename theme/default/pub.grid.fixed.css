@@ -366,7 +366,7 @@
 }
 .pubGrid-header-cont .pub-header-tr .pub-header-cont .inner .centered {
   position: relative;
-  padding: 5px 2px;
+  padding: 0px 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -445,7 +445,7 @@
 .pubGrid-body-cont td{
 	border-collapse: collapse;
 	border:1px solid #bcbcbd;
-    padding: 0;
+    padding: 0px 2px 0px 2px;
     margin: 0;
     border-spacing: 0;
     border-collapse: collapse;
@@ -506,8 +506,10 @@
 	height:12px;
 	position:absolute;
 	bottom:0px;
-	background:#fff;
 	z-index:2;
+	background:#fbfbfb;
+	padding:1px;
+	border-top: 1px solid #cac3c3;
 }
 .pubGrid-hscroll-left{
 	position:absolute;left:0px;top:0px;
@@ -519,19 +521,18 @@
 	position : relative;
 	height:100%; 
 	width:100%;
-	border:1px solid #cac3c3;
-	border-bottom: 0px solid #cac3c3;
-	border-right: 0px solid #cac3c3;
 }
 .pubGrid-hscroll-bar{
 	position:absolute;
 	width:100px;
 	height:100%; 
 	background:#989191;
-    box-sizing: border-box;
     border: 1px solid #aaa;
 	border-radius: 0.5em;
     touch-action: none;
+	-webkit-box-sizing:  border-box; !important;
+	-moz-box-sizing: border-box; !important;
+	box-sizing: border-box !important;
 }
 
 .pubGrid-vscroll{
@@ -541,10 +542,9 @@
 	right:0px;
 	top:0px;
 	z-index: 3;
-	background:#fff;
-	border: 1px solid #cac3c3;
-	border-right: 0px solid #cac3c3;
-	border-bottom: 0px solid #cac3c3;
+	background:#fbfbfb;
+	padding:1px;
+	border-left: 1px solid #cac3c3;
 }
 .pubGrid-vscroll-up{
 	position:absolute; top:0px; left:0px;
@@ -565,14 +565,17 @@
 	width:100%;
 	height:100px; 
 	background:#989191;
-	box-sizing: border-box;
     border-radius: 0.5em;
     touch-action: none;
+	-webkit-box-sizing:  border-box; !important;
+	-moz-box-sizing: border-box; !important;
+	box-sizing: border-box !important;
 }
 
 /*navigation*/
 .pubGrid-navigation{
 	position : relative;
+	display:none;
 	width:100%;
 	height:30px;
 	background-image: -webkit-linear-gradient(#ffffff,#dadada);

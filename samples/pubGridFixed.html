@@ -26,6 +26,9 @@ html , body {
 <div class="asdfasdfWrapper">
 	<div id="asdfasdf" style="height:100%"></div>
 </div>
+<div class="asdfasdfWrapper">
+	<div id="asdfasdf1" style="height:100%"></div>
+</div>
 </BODY>
 </HTML>
 <script>
@@ -67,10 +70,10 @@ function getItem (type){
 		]
 	}else{
 
-		for(var i =0 ;i < 20; i++){
+		for(var i =0 ;i < 100; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 40 ;j++){
+			for(var j =0 ; j< 20 ;j++){
 				var colName = 'col'+j ; 
 				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
@@ -85,7 +88,7 @@ function getItem (type){
 		for(var key in colFirstItem){
 			colItem.push( {
 				key :key
-				,label:'asdfasdf '+key
+				,label:'한글'+key
 				,width:100
 			});
 
@@ -106,108 +109,116 @@ function fn_init(){
 
 	var aaa =item.aaa
 		,colItem  = item.colItem;
+	
+	gridDraw('#asdfasdf');
+	//gridDraw('#asdfasdf1');
 
-	var gridObj = $.pubGrid('#asdfasdf',{
-		headerOptions:{
-			view : true
-			,sort : true
-			,resize:{
-				enabled : true
-			}
-		}
-		,height : 'auto'
-		,height1:400
-		,scroll :{
-			lazyLoad : true // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
-			,lazyLoadTime : 30 // scroll 로드 타임. 
-			,verticalWidth: 10
-			,horizontalHeight: 10
-		}
-		,autoResize : true
-		//,bigData :false
-		,bigData : {
-			enabled : true 
-			,gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
-			,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
-			,horizontalEnableCount : 50
-		}
-		,page1 : false
-		,page :{
-			totalCount :1000
-			, currPage :1
-			, countPerPage :10
-			, unitPage :10
-			,position : 'left'
-			,callback : function (no){
-				console.log(no);
-				gridObj.setData(aaa);
-			}
-		}
-		,tColItem : colItem
-		
-		,theadGroup1 :[ 
-			[
-			{key :'a',label:'ac2<br/>asdf',colspan:4 , style:''}
-			,{key :'c',label:'rc2',rowspan: 3 }
-			]
-			,[
-				{label:'aaaa',colspan:2 , style:''}
-				,{label:'bbbb',colspan:2 , style:''}
-			]
-			,[
-				{key :'a'}
-				,{key :'b'}
-				,{key :'c'}
-				,{key :'d'}
-				,{label :'aaa'}
-			]
-		]
-		,tbodyItem :aaa
-		,tfootItem :['asdf']
-		,rowOptions :{
-			height:50
-			,click : function (idx, item){
-				console.log(idx, item);
-			}
-			,contextMenu :{
-				beforeSelect :function (){
-					$(this).trigger('click');
+	function gridDraw(selector){
+		var gridObj = $.pubGrid(selector,{
+			headerOptions:{
+				view : true
+				,sort : true
+				,resize:{
+					enabled : true
 				}
-				,callback: function(key,sObj) {
-					console.log(this,key,sObj);
+			}
+			,height : 'auto'
+			,height1:400
+			,scroll :{
+				lazyLoad : true // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
+				,lazyLoadTime : 30 // scroll 로드 타임. 
+				,verticalWidth: 10
+				,horizontalHeight: 10
+			}
+			,autoResize : true
+			//,bigData :false
+			,bigData : {
+				enabled : true 
+				,gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+				,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
+				,horizontalEnableCount : 50
+			}
+			,page1 : false
+			,page :{
+				enabeld :true
+				,status :true
+				,totalCount :1000
+				, currPage :1
+				, countPerPage :10
+				, unitPage :10
+				,position : 'left'
+				,callback : function (no){
+					console.log(no);
+					gridObj.setData(aaa);
 				}
-				,items: [
-					{key : "refresh" , "name": "새로고침"}
-					,{key : "sql_create", "name": "sql생성" 
-						,subMenu: [
-							{ key : "selectStar","name": "select *" , mode: "selectStar"}
-							,{ key : "select","name": "select column" ,mode:"select"}
-							,{ key : "insert","name": "insert" , mode:"insert"}
-							,{ key : "update","name": "update" ,mode:"update"}
-							,{ key : "delete","name": "delete" ,mode:"delete"}
-							,{ key : "drop","name": "drop" , mode:"drop"}
-						]
-					}
-					,{key : "create_ddl","name": "DDL 보기" 
-						
-					}
-					,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
-						,subMenu : [
-							{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
-							,{ key : "mybatis_update","name": "update" ,mode:"update" ,param_yn:'Y'}
-							,{ key : "mybatis_delete","name": "delete" ,mode:"delete",param_yn:'Y'}
-						]
-					}
-					,{key :'export', "name": "내보내기" 
-						,subMenu:[
-							{key : "export_data","name": "데이타 내보내기"}
-							,{key : "export_column","name": "컬럼정보 내보내기"}
-						]
-					}
+			}
+			,tColItem : colItem
+			
+			,theadGroup1 :[ 
+				[
+				{key :'a',label:'ac2<br/>asdf',colspan:4 , style:''}
+				,{key :'c',label:'rc2',rowspan: 3 }
 				]
+				,[
+					{label:'aaaa',colspan:2 , style:''}
+					,{label:'bbbb',colspan:2 , style:''}
+				]
+				,[
+					{key :'a'}
+					,{key :'b'}
+					,{key :'c'}
+					,{key :'d'}
+					,{label :'aaa'}
+				]
+			]
+			,tbodyItem :aaa
+			,tfootItem :['asdf']
+			,rowOptions :{
+				height : 50
+				,click : function (idx, item){
+					console.log(idx, item);
+				}
+				,contextMenu :{
+					beforeSelect :function (){
+						$(this).trigger('click');
+					}
+					,callback: function(key,sObj) {
+						console.log(this,key,sObj);
+					}
+					,items: [
+						{key : "refresh" , "name": "새로고침"}
+						,{key : "sql_create", "name": "sql생성" 
+							,subMenu: [
+								{ key : "selectStar","name": "select *" , mode: "selectStar"}
+								,{ key : "select","name": "select column" ,mode:"select"}
+								,{ key : "insert","name": "insert" , mode:"insert"}
+								,{ key : "update","name": "update" ,mode:"update"}
+								,{ key : "delete","name": "delete" ,mode:"delete"}
+								,{ key : "drop","name": "drop" , mode:"drop"}
+							]
+						}
+						,{key : "create_ddl","name": "DDL 보기" 
+							
+						}
+						,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
+							,subMenu : [
+								{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
+								,{ key : "mybatis_update","name": "update" ,mode:"update" ,param_yn:'Y'}
+								,{ key : "mybatis_delete","name": "delete" ,mode:"delete",param_yn:'Y'}
+							]
+						}
+						,{key :'export', "name": "내보내기" 
+							,subMenu:[
+								{key : "export_data","name": "데이타 내보내기"}
+								,{key : "export_column","name": "컬럼정보 내보내기"}
+							]
+						}
+					]
+				}
 			}
-		}
-	});
+		});
+	}
+	
 }
 
 (function($) {
