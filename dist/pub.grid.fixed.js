@@ -550,9 +550,18 @@ Plugin.prototype ={
 			data = pdata.items;
 			pageInfo = pdata.page; 
 		}
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> branch 'master' of https://github.com/ytechinfo/pub.git
 		if(data){
 			_this.options.tbodyItem = data
+		}
+		
+		if(gridMode=='reDraw'){
+			_this.calcDimension('init');
+			_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 		}
 
 		if(gridMode =='init'){
@@ -937,7 +946,10 @@ Plugin.prototype ={
 		opt = opt||{height : (_this.options.height =='auto' ? _this.gridElement.parent().height() : _this.config.body.height )}; 
 		opt = $.extend(true, {width : _this.gridElement.innerWidth(), height : _this.gridElement.parent().height()},opt);
 		
+<<<<<<< HEAD
 		
+=======
+>>>>>>> branch 'master' of https://github.com/ytechinfo/pub.git
 		if(type =='init'  ||  type =='resize'){
 			_this.element.pubGrid.css('height',opt.height+'px');
 			_this.element.pubGrid.css('width',opt.width+'px');
