@@ -29,10 +29,6 @@
      -moz-box-sizing: border-box;
           box-sizing: border-box;
 }
-.pubGrid-main{
-	position: relative;
-}
-
 
 .pub-content-ellipsis , .pub-content-ellipsis >*{
     white-space: nowrap;
@@ -309,7 +305,7 @@
 
 .pubGrid-main{
 	position:relative;
-	border-bottom:1px solid #bcbcbd;
+	border-bottom: 0px solid #bcbcbd;
 }
 
 /* header */
@@ -426,9 +422,14 @@
 }
 
 /* body */
+.pubGrid-body-container-warpper{
+	position:relative;
+	height:100%;
+}
 .pubGrid-body-container{
 	position: absolute;
 	width:100%;
+	height: 100%;
 	display: table-row;
 }
 
@@ -469,7 +470,47 @@
 	position:relative;
 	background:#fff;
 }
+.pubGrid-empty-msg-area{
+	position: relative; 
+	text-align:center;
+	display: block;
+}
 
+.pubGrid-empty-msg{
+	line-height:1.2;
+    font-size: 24px;
+    display: inline-block;
+    position: relative;
+	color:#ddd;
+}
+.pubGrid-empty-msg .empty-text{
+	padding-left: 10px;
+}
+.pubGrid-icon-info {
+	border: 2px solid;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    color: #ddd;
+    box-sizing: border-box;
+	border-radius: 50%;
+    width: 30px;
+    height: 30px;
+}
+
+.pubGrid-icon-info:after{
+	top: 7px;
+	content: '';
+    pointer-events: none;
+	width: 4px;
+    height: 3px;
+    box-shadow: inset 0 0 0 32px, 0 3px, 0 5px, 0 10px;
+    position: absolute;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
 [data-start-idx="0"]>.tr0 , [data-start-idx="1"]>.tr1{
    background: #f3f6fa;
 }
@@ -528,7 +569,7 @@
 	height:100%; 
 	background:#989191;
     border: 1px solid #aaa;
-	border-radius: 0.5em;
+	border-radius: 0.5em !important;
     touch-action: none;
 	-webkit-box-sizing:  border-box; !important;
 	-moz-box-sizing: border-box; !important;
@@ -565,7 +606,7 @@
 	width:100%;
 	height:100px; 
 	background:#989191;
-    border-radius: 0.5em;
+    border-radius: 0.5em !important;
     touch-action: none;
 	-webkit-box-sizing:  border-box; !important;
 	-moz-box-sizing: border-box; !important;
@@ -578,6 +619,7 @@
 	display:none;
 	width:100%;
 	height:30px;
+	border-top: 1px solid #bcbcbd;
 	background-image: -webkit-linear-gradient(#ffffff,#dadada);
     background-image: -moz-linear-gradient(#ffffff,#dadada);
     background-image: -ms-linear-gradient(#ffffff,#dadada);

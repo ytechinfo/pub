@@ -16,12 +16,23 @@ html , body {
 .asdfasdfWrapper {
     height: calc(100% - 20%) !important;
 }
+
 </style>
 </HEAD>
 <BODY>
 <div>
+	<i class="fa fa-address-book" aria-hidden="true"></i>
 	item generate count<div id="genCount"></div>
 	<button class="exceldown" type="button">excel download</button>
+	<button type="button" onclick="fn_init()">regrid</button>
+	<select id="itemCount">
+		<option value="10">10</option>
+		<option value="100">100</option>
+		<option value="500">500</option>
+		<option value="1000">1000</option>
+		<option value="10000">10000</option>
+		<option value="100000">100000</option>
+	</select>
 </div>
 <div class="asdfasdfWrapper">
 	<div id="asdfasdf" style="height:100%"></div>
@@ -45,7 +56,7 @@ $(document).ready(function (){
 function getItem (type){
 	var aaa = [];
 	var colItem = [];
-
+	var	itemCount = parseInt($('#itemCount').val(),10);
 	if(type ==1){
 		for(var i =0 ;i <100000; i++){
 			aaa.push({
@@ -69,8 +80,8 @@ function getItem (type){
 			//,{key :'d', label:'디', hidden:true}
 		]
 	}else{
-
-		for(var i =0 ;i < 100; i++){
+		
+		for(var i =0 ;i <itemCount; i++){
 			var tmpItem = {};
 
 			for(var j =0 ; j< 20 ;j++){
@@ -82,17 +93,19 @@ function getItem (type){
 			aaa.push(tmpItem)
 		}
 		
-		colFirstItem = aaa[0];
-		
-		var keyIdx =0; 
-		for(var key in colFirstItem){
-			colItem.push( {
-				key :key
-				,label:'한글'+key
-				,width:100
-			});
+		if(aaa.length > 0){
+			colFirstItem = aaa[0];
+			
+			var keyIdx =0; 
+			for(var key in colFirstItem){
+				colItem.push( {
+					key :key
+					,label:'한글'+key
+					,width:100
+				});
 
-			keyIdx++;
+				keyIdx++;
+			}
 		}
 	}
 
@@ -110,16 +123,24 @@ function fn_init(){
 	var aaa =item.aaa
 		,colItem  = item.colItem;
 	
-	gridDraw('#asdfasdf');
-	//gridDraw('#asdfasdf1');
-
-	function gridDraw(selector){
+	gridDraw('#asdfasdf',aaa, colItem);
+	//gridDraw('#asdfasdf1',aaa, colItem);
+}
+function gridDraw(selector, aaa, colItem){
 		var gridObj = $.pubGrid(selector,{
 			headerOptions:{
 				view : true
 				,sort : true
 				,resize:{
 					enabled : true
+				}
+				,contextMenu :{
+					callback: function(key,sObj) {
+						console.log('header context',this,key,sObj);
+					}
+					,items: [
+						{key : "refresh" , "name": "새로고침"}
+					]
 				}
 			}
 			,height : 'auto'
@@ -138,8 +159,14 @@ function fn_init(){
 				,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
 				,horizontalEnableCount : 50
 			}
-			,page1 : false
-			,page :{
+			,message :{
+				'asdf':''
+				,empty: '데이타 없음'
+				//,empty: function (){ return '데이타 없음'}
+				
+			}
+			,page : false
+			,page1 :{
 				enabeld :true
 				,status :true
 				,totalCount :1000
@@ -176,7 +203,7 @@ function fn_init(){
 			,rowOptions :{
 				height : 50
 				,click : function (idx, item){
-					console.log(idx, item);
+					//console.log(idx, item);
 				}
 				,contextMenu :{
 					beforeSelect :function (){
@@ -218,8 +245,6 @@ function fn_init(){
 			}
 		});
 	}
-	
-}
 
 (function($) {
 
