@@ -150,18 +150,6 @@ Plugin.prototype ={
 		$('#pub-context-area .pub-context-top').hide();
 		isContextView= false; 
 	}
-	,destory:function (){
-		$('#'+this.contextId+'_wrap').find('*').off();
-		
-		var contextMenu  = $('#'+this.contextId+'_wrap'); 
-
-		if(contextMenu.length > 0){
-			contextMenu.remove();
-		}
-		
-		$(document).off('mousedown.'+this.contextId).off('mouseenter.'+this.contextId);
-		$(document).off('contextmenu.pubcontext', this.element).off('click', '.context-event');
-	}
 	/**
 	*
 	* 컨텍스트 메뉴 이벤트 처리. 
@@ -265,6 +253,19 @@ Plugin.prototype ={
 			$dd.css(offset).fadeIn(defaults.fadeSpeed);
 		});
 	}
+	,destory:function (){
+		console.log(this.contextId)
+		$('#'+this.contextId+'_wrap').find('*').off();
+		
+		var contextMenu  = $('#'+this.contextId+'_wrap'); 
+
+		if(contextMenu.length > 0){
+			contextMenu.remove();
+		}
+		
+		$(document).off('mousedown.'+this.contextId).off('mouseenter.'+this.contextId);
+		$(document).off('contextmenu.pubcontext', this.element).off('click', '.context-event');
+	}
 };
 
 $[ pluginName ] = function (selector,options) {
@@ -272,20 +273,21 @@ $[ pluginName ] = function (selector,options) {
 	if(!selector){
 		return ; 
 	}
+	var jSelctor = (typeof selector=='object') ? selector.selector : selector;
 
-	var _cacheObject = _datastore[selector];
-	
+	var _cacheObject = _datastore[jSelctor];
+		
 	if(typeof options === 'undefined'){
 		return _cacheObject||{}; 
 	}
 	
 	if(!_cacheObject){
 		_cacheObject = new Plugin(selector, options);
-		_datastore[selector] = _cacheObject;
+		_datastore[jSelctor] = _cacheObject;
 		return _cacheObject; 
 	}else if(typeof options==='object'){
 		_cacheObject = new Plugin(selector, options);
-		_datastore[selector] = _cacheObject;
+		_datastore[jSelctor] = _cacheObject;
 		return _cacheObject; 
 	}
 

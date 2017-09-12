@@ -26,8 +26,10 @@ html , body {
 	<button class="exceldown" type="button">excel download</button>
 	<button type="button" onclick="fn_init()">regrid</button>
 	<select id="itemCount">
+		<option value="3">3</option>
+		<option value="0">0</option>
 		<option value="10">10</option>
-		<option value="100">100</option>
+		<option value="100" selected>100</option>
 		<option value="500">500</option>
 		<option value="1000">1000</option>
 		<option value="10000">10000</option>
@@ -58,7 +60,7 @@ function getItem (type){
 	var colItem = [];
 	var	itemCount = parseInt($('#itemCount').val(),10);
 	if(type ==1){
-		for(var i =0 ;i <100000; i++){
+		for(var i =0 ;i <itemCount; i++){
 			aaa.push({
 				a:'aaasdfasdfasdfasdfasdfasdfa'+i
 				,b:'ddd_'+i+'asdf'
@@ -84,7 +86,7 @@ function getItem (type){
 		for(var i =0 ;i <itemCount; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 20 ;j++){
+			for(var j =0 ; j< 150 ;j++){
 				var colName = 'col'+j ; 
 				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
@@ -131,6 +133,10 @@ function gridDraw(selector, aaa, colItem){
 			headerOptions:{
 				view : true
 				,sort : true
+				,displayLineNumber : true	 // 라인 넘버 보기.
+				,displayRowSelector : false	 // row selecotr checkbox 보기
+				,displayModifyInfo : false	 // 수정여부 보기
+				,colFixedIndex :1
 				,resize:{
 					enabled : true
 				}
