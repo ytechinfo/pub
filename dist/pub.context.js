@@ -226,7 +226,6 @@ Plugin.prototype ={
 				,eleW = $dd.width()
 				,evtX = e.pageX
 				,evtY=e.pageY;
-
 			
 			var bottom = $win.scrollTop() + $win.height(),
 				right = $win.scrollLeft() + $win.width(),
@@ -254,7 +253,7 @@ Plugin.prototype ={
 		});
 	}
 	,destory:function (){
-		console.log(this.contextId)
+		
 		$('#'+this.contextId+'_wrap').find('*').off();
 		
 		var contextMenu  = $('#'+this.contextId+'_wrap'); 

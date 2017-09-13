@@ -153,14 +153,37 @@ function getHashCode (str){
     }
     return ''+hash+'99';
 }
-function copyStringToClipboard (string) {
-	function handler (event){
-		event.clipboardData.setData('text/plain', string);
-		event.preventDefault();
-		document.removeEventListener('copy', handler, true);
+function copyStringToClipboard (prefix , copyText) {
+	var isRTL = document.documentElement.getAttribute('dir') == 'rtl';
+
+	if (typeof window.clipboardData !== "undefined" &&
+	  typeof window.clipboardData.setData !== "undefined") {
+		window.clipboardData.setData("Text", copyText);
+		return ; 
 	}
 
-	document.addEventListener('copy', handler, true);
+	var _id = prefix+'copyTextId'; 
+	var copyArea = document.getElementById(_id); 
+	if(!copyArea){
+		var fakeElem = document.createElement('textarea');
+		var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+		fakeElem.id =_id;
+		fakeElem.style = 'top:'+yPosition+'px;font-size : 12pt;border:0;padding:0;margin:0;position:absolute;' +(isRTL ? 'right' : 'left')+':-9999px';
+		fakeElem.setAttribute('readonly', '');
+
+		document.body.appendChild(fakeElem);
+		copyArea = document.getElementById(_id);
+	}
+
+	copyArea.value = copyText;
+	copyArea.select();
+	
+	function handler (event){
+		document.removeEventListener('copy', handler);
+		copyArea = null; 
+	}
+	document.addEventListener('copy', handler);
+
 	document.execCommand('copy');
 }
 
@@ -309,11 +332,12 @@ Plugin.prototype ={
 				,width : 10
 			});
 		}
+		_this.config.select = {isMouseDown:false,startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0};
 		_this.config.aside.items = asideItem; 
 		for(var i =0 ; i < asideItem.length ;i++){
 			_this.config.gridWidth.aside += asideItem[i].width; 
 		}
-
+		
 		_this._setGridWidth();
 	}
 	,initScrollData : function (gridCount){
@@ -722,7 +746,7 @@ Plugin.prototype ={
 	,getTemplateHtml : function (){
 		var _this = this;
 
-		return '<div id="'+_this.prefix+'_pubGrid" class="pubGrid" style="overflow:hidden;width:'+_this.config.body.width+'px;">'
+		return '<div id="'+_this.prefix+'_pubGrid" class="pubGrid pubGrid-noselect"  style="overflow:hidden;width:'+_this.config.body.width+'px;">'
 			+' 	<div id="'+_this.prefix+'_container" class="pubGrid-container" style="overflow:hidden;">'
 			+' 		<div class="pubGrid-header-container-warpper">'
 			+' 		  <div id="'+_this.prefix+'_headerContainer" class="pubGrid-header-container">'
@@ -735,7 +759,7 @@ Plugin.prototype ={
 			+' 		</div>'		
 
 			+' 		<div id="'+_this.prefix+'_bodyContainer" class="pubGrid-body-container-warpper">'
-			+' 			<div class="pubGrid-body-container" onselectstart="return false">'
+			+' 			<div class="pubGrid-body-container">'
 			+' 				<div class="pubGrid-body-aside"><table style="width:'+_this.config.gridWidth.aside+'px;" class="pubGrid-body-aside-cont"></table></div>'
 			+' 				<div class="pubGrid-body-left"><table style="width:'+_this.config.gridWidth.left+'px;" class="pubGrid-body-left-cont"></table></div>'
 			+' 				<div class="pubGrid-body">'
@@ -1077,7 +1101,7 @@ Plugin.prototype ={
 		startCol = startCol < colFixedIndex ? colFixedIndex : startCol;
 
 		//var selectFlag = (drawMode != 'init'&&selectCell.startIdx <= itemIdx && itemIdx <= selectCell.endIdx) ?true :false;
-		var selectFlag = (drawMode != 'init') ?true :false;
+		var selectFlag = (drawMode != 'init'  && drawMode != 'reDraw') ?true :false;
 
 		function setSelectCell(row , col, addEle){
 			addEle.parentElement.classList.remove( 'col-active' );
@@ -1090,7 +1114,7 @@ Plugin.prototype ={
 
 			return false; 
 		}
-	
+
 		for(var i =0 ; i < viewCount; i++){
 			tbiItem = tbi[itemIdx];
 		
@@ -1160,6 +1184,11 @@ Plugin.prototype ={
 
 		if(this._isFixedPostion(0)){
 			pubGridClass +=' left-cont-on';
+		}
+
+
+		if(this.options.tbodyItem.length < 1){
+			pubGridClass +=' pubGrid-no-item';
 		}
 
 		this.element.pubGrid.addClass(pubGridClass)
@@ -1275,10 +1304,12 @@ Plugin.prototype ={
 		if(this.config.scroll.startCol != this.config.scroll.before.startCol || this.config.scroll.before.endCol != this.config.scroll.endCol ){
 			drawFlag = true; 
 		}
+
+		_this.moveHScroll(leftVal, false);
+
 		if(beforeViewCount !=0 ){
 			_this.moveVScroll(topVal, false);
-			_this.moveHScroll(leftVal, false);
-
+			
 			if(type !='reDraw' && drawFlag){
 				_this.drawGrid();
 			}
@@ -1746,6 +1777,18 @@ Plugin.prototype ={
 			endRow = startRow;
 			startRow = tmp; 
 		}
+		
+		if(this.config.scroll.viewIdx >= startIdx){
+			startRow = 0;
+		}else{
+			startRow = startIdx-this.config.scroll.viewIdx;
+		}
+		
+		if(this.config.scroll.viewIdx+this.config.scroll.maxViewCount <= endIdx){
+			endRow = this.config.scroll.viewCount-1;
+		}else{
+			endRow = endIdx-this.config.scroll.viewIdx;
+		}
 
 		return {
 			startIdx : startIdx
@@ -1766,7 +1809,9 @@ Plugin.prototype ={
 		
 		var table = _this.element.body.find('.pubGrid-body-cont');
 		
-		var isMouseDown = false; 
+		_this.config.select.isMouseDown = false; 
+		
+		
 		_this.element.body.on('mousedown.pubgridcol','.pub-body-td',function (e){
 			var sEle = $(this)
 				,selCol = sEle.attr('data-grid-position').split(',')
@@ -1776,19 +1821,22 @@ Plugin.prototype ={
 			var selIdx = _this.config.scroll.viewIdx+parseInt(selRow,10);
 				
 			var selItem = _this.options.tbodyItem[selRow];
-
-			isMouseDown = true; 
-
+			
 			if (e.shiftKey) {
 				_this.config.select.endIdx=selIdx;
 				_this.config.select.endRow=selRow;
 				_this.config.select.endCol=colIdx;
 				selectTo();
 			} else {
-				_this.config.select = {startIdx : selIdx,endIdx : selIdx, startRow : selRow ,startCol : colIdx, endRow:selRow, endCol :colIdx};
+				_this.config.select = {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx};
 				_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
 				sEle.addClass('col-active');
 			}
+			
+			window.getSelection().removeAllRanges();
+		
+			//_this.element.body.attr("onselectstart", "return false");
+			_this.config.select.isMouseDown = true; 
 
 			if($.isFunction(_this.options.tColItem[colIdx].colClick)){
 				_this.options.tColItem[colIdx].colClick.call(this,colIdx,{
@@ -1796,13 +1844,14 @@ Plugin.prototype ={
 					,c:colIdx
 					,item:selItem
 				});
-				return false; 
+				return true; 
 			}
 			
-			return false;
+			return true;
 
 		}).on('mouseover.pubgridcol','.pub-body-td',function (e) {
-			if (!isMouseDown) return;
+			
+			if (!_this.config.select.isMouseDown) return;
 
 			var sEle = $(this)
 				,selCol = sEle.attr('data-grid-position').split(',')
@@ -1815,9 +1864,10 @@ Plugin.prototype ={
 
 			selectTo();
 		})
-
-		$(document).mouseup(function () {
-			isMouseDown = false;
+				
+		$(document).on('mouseup.'+_this.prefix,function () {
+			//_this.element.body.removeClass('pubGrid-noselect');
+			_this.config.select.isMouseDown = false;
 		});
 	
 		// col select
@@ -1842,6 +1892,7 @@ Plugin.prototype ={
 						addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont').querySelector('[data-grid-position="'+rowCol+'"]');
 					}
 					addEle.classList.add( 'col-active' );
+					
 					addEle = null; 
 				}
 			}
@@ -1891,28 +1942,31 @@ Plugin.prototype ={
 				_this.options.rowOptions.click.call(selRow ,rowinfo , selItem);							
 			});
 		}
-
+				
 		$(window).on("keydown." + _this.prefix, function (e) {
+				if(!_this.config.focus) return ; 
+
 			if (e.metaKey || e.ctrlKey) {
+				
 				if (e.which == 67) {
 					
 					var copyData = selectData();
 					try{
-						copyStringToClipboard(copyData);
+						copyStringToClipboard(_this.prefix, copyData);
 					}catch(e){
-						console.log('Unable to copy');					
-					}
-
-					if (typeof ClipboardEvent === "undefined" &&
-					  typeof window.clipboardData !== "undefined" &&
-					  typeof window.clipboardData.setData !== "undefined") {
-						window.clipboardData.setData("Text", copyData);
-					}else{
-						//console.log(e.originalEvent.clipboardData);
-						//e.originalEvent.clipboardData.setData("text/plain", copyData);
-					}
-					
+						console.log('Unable to copy', e);					
+					}					
 				}
+			}
+		});
+
+		$(document).on('mousedown.'+_this.prefix,'#'+_this.prefix+'_pubGrid',function (e){
+			_this.config.focus = true; 
+		})
+
+		$(document).on('mousedown.'+_this.prefix, 'html', function (e) {
+			if(e.which !==2 && $(e.target).closest('#'+_this.prefix+'_pubGrid').length < 1){
+				_this.config.focus = false; 
 			}
 		});
 	}
@@ -2322,7 +2376,11 @@ Plugin.prototype ={
 				$.pubContextMenu($('#'+this.prefix+'_bodyContainer .pub-body-tr')).destory();
 			}
 		}catch(e){};
-		$(window).off(this.prefix+"pubgridResize");
+
+		this.element.body.off('mousedown.pubgridcol mouseover.pubgridcol');
+		$(document).off('mouseup.'+this.prefix).off('mousedown.'+this.prefix);
+		$(window).off(this.prefix+"pubgridResize").off("keydown." + this.prefix);
+
 		this.gridElement.find('*').off();
 		$._removeData(this.gridElement)
 		delete _datastore[this.selector];

@@ -664,7 +664,10 @@
 
 .pubGrid-body-aside{
 	background: #f6f6f6;
-	
+}
+
+.pubGrid-no-item .pubGrid-body-aside{
+	border-right: 1px solid #f6f6f6;
 }
 
 .pubGrid-body-aside-cont th:last-child, .pubGrid-header-left-cont th:last-child,.pubGrid-body-left-cont td:last-child{
@@ -681,4 +684,14 @@
 .pubGrid-body-container .col-active{
     background: #8bbdf1;
     color: #000;
+}
+
+.pubGrid-noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }
