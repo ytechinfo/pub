@@ -332,7 +332,7 @@ Plugin.prototype ={
 				,width : 10
 			});
 		}
-		_this.config.select = {isMouseDown:false,startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0};
+		
 		_this.config.aside.items = asideItem; 
 		for(var i =0 ; i < asideItem.length ;i++){
 			_this.config.gridWidth.aside += asideItem[i].width; 
@@ -688,6 +688,7 @@ Plugin.prototype ={
 		}
 
 		if(gridMode=='reDraw'){
+			_this.config.select = {isMouseDown:false,startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0};
 			_this.calcDimension('reDraw');
 			_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 		}
@@ -866,11 +867,11 @@ Plugin.prototype ={
 			}else if(type=='cont'){
 				startCol = _this.options.headerOptions.colFixedIndex;
 			}
-
+			
 			for(var i =0 ; i < _this.config.scroll.maxViewCount; i++){
 
 				if(tmpeElementBody.find('[rowinfo="'+i+'"]').length > 0){
-					if(i > _this.config.scroll.viewCount){
+					if(i >= _this.config.scroll.viewCount){
 						tmpeElementBody.find('[rowinfo="'+i+'"]').hide();
 					}else{
 						tmpeElementBody.find('[rowinfo="'+i+'"]').show();
@@ -1441,7 +1442,7 @@ Plugin.prototype ={
 				_this.horizontalScroll(data,e, 'end');
 			});
 
-			return false; 
+			return true; 
 		});
 		
 		_this.element.vScrollBar.off('touchstart.pubvscroll mousedown.pubvscroll');
@@ -1461,7 +1462,7 @@ Plugin.prototype ={
 				_this.verticalScroll(data, e , 'end');
 			});
 
-			return false; 
+			return true; 
 		})
 	}
 	/**
@@ -1809,10 +1810,14 @@ Plugin.prototype ={
 		
 		var table = _this.element.body.find('.pubGrid-body-cont');
 		
-		_this.config.select.isMouseDown = false; 
-		
+		_this.config.select.isMouseDown = false; 		
 		
 		_this.element.body.on('mousedown.pubgridcol','.pub-body-td',function (e){
+
+			if(e.which ===3){
+				return true; 
+			}
+
 			var sEle = $(this)
 				,selCol = sEle.attr('data-grid-position').split(',')
 				,selRow = selCol[0]

@@ -1,0 +1,252 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub GRID-예제</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../theme/default/pub.example.css" rel="stylesheet">
+<link href="../theme/default/pub.grid.css" rel="stylesheet">
+
+<script src="../plugins/jquery-1.10.2.min.js"></script>
+<script src="../dist/pub.context.js"></script>
+<script src="../dist/pub.grid.js"></script>
+
+<style>
+::-webkit-scrollbar {
+    width: 12px;
+}
+ 
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    border-radius: 10px;
+}
+ 
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+
+* {
+  box-sizing: border-box;
+}
+</style>
+</HEAD>
+<BODY>
+<div>
+	<button class="exceldown" type="button">excel download</button>
+</div>
+<div id="asdfasdf" style="height:300px"></div>
+	
+</BODY>
+</HTML>
+<script>
+$(document).ready(function (){
+	//$.pubGrid('#asdfasdf').resizeDraw({});
+	fn_init();
+
+	$('.exceldown').on('click', function (){
+		$.pubGrid('#asdfasdf').excelExport({type:'download', fileName:'aaa.xls'});
+	})
+});
+
+function fn_init(){
+	var aaa = [];
+	for(var i =0 ;i <500; i++){
+		aaa.push({
+			a:'aaasdfasdfasdfasdfasdfasdfa'+i
+			,b:'ddd_'+i+'asdf'
+			,c: (i*10000)
+			,d:'ddd_'+i
+			,e1:'eee_'+i
+			,e2:'eee_'+i
+			,e3:'eee_'+i
+			,e4:'eee_'+i
+			,e5:'eee_'+i
+			,e6:'eee_'+i
+			,e7:'eee_'+i
+			,e8:'eee_'+i
+			,e9:'eee_'+i
+			,e0:'eee_'+i
+			,e11:'eee_'+i
+			,e12:'eee_'+i
+			,e1w:'eee_'+i
+			,e2e:'eee_'+i
+			,e3r:'eee_'+i
+			,e4r:'eee_'+i
+			,e1r:'eee_'+i
+			,e1g:'eee_'+i
+			,e1f:'eee_'+i
+			,e1s:'eee_'+i
+		})
+	}
+
+	$.pubGrid('#asdfasdf',{
+		headerOptions:{
+			view : true
+			,sort : true
+			,resize:{
+				enabled : true
+			}
+		}
+		,page :{
+			position : 'center'
+			,callback : function (no){
+				alert(no)
+			}
+
+		}
+		,resizeGridWidthFixed : true
+		,bigData : {
+			gridCount : 30		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+			,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
+		}
+		,tColItem : [
+			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
+			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)}}
+			,{key :'c', label:'씨',width:100, align:'center', type : 'money'}
+			,{key :'d', label:'디',width:100 ,type : 'number', formatter : function (rowInfo){
+				
+				var item  = rowInfo.item;
+				return rowInfo.formatter(item['c'],0);
+			}}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e2', label:'이',width:100}
+			,{key :'e3', label:'이',width:100}
+			,{key :'e4', label:'이',width:100}
+			,{key :'e5', label:'이',width:100}
+			,{key :'e6', label:'이',width:100}
+			,{key :'e7', label:'이',width:100}
+			,{key :'e8', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+			,{key :'e1', label:'이',width:100}
+
+			//,{key :'d', label:'디', hidden:true}
+		]
+		,theadGroup :[ 
+			[
+			{label:'번호',rowspan: 2 , style:''}
+			,{label:'글로벌ID(GID)',rowspan: 2 }
+			,{label:'중복',rowspan: 2 }
+			,{label:'로그시간',rowspan: 2 }
+			,{label:'건수',rowspan: 2 }
+			,{label:'구간별응답시간(ms)',colspan: 9 }
+			,{label:'상태',rowspan: 2 }
+			,{label:'연계상태',rowspan: 2 }
+			,{label:'최초유입기준',colspan: 5 }
+			,{label:'상품처리기준',colspan: 5 }
+			,{label:'지점',rowspan: 2 }
+			,{label:'채널',rowspan: 2 }
+			,{label:'조작자ID',rowspan: 2 }
+			,{label:'IP',rowspan: 2 }
+			,{label:'URL',rowspan: 2 }
+			,{label:'대외기관명',rowspan: 2 }
+			,{label:'최초발생 에러',colspan: 3 }
+			,{label:'최종발생 에러',colspan: 4 }
+			]
+			,[
+				{label:'SECTION_NAME1' }
+				,{label:'SECTION_NAME2' }
+				,{label:'SECTION_NAME3' }
+				,{label:'SECTION_NAME4' }
+				,{label:'SECTION_NAME5' }
+				,{label:'SECTION_NAME6' }
+				,{label:'SECTION_NAME7' }
+				,{label:'SECTION_NAME8' }
+				,{label:'SECTION_NAME9' }
+
+				,{label:'거래코드' }
+				,{label:'거래코드명' }
+				,{label:'업무그룹'}
+				,{label:'업무' }
+				,{label:'세부업무' }
+				,{label:'거래코드' }
+				,{label:'거래코드명' }
+				,{label:'업무그룹' }
+				,{label:'업무' }
+				,{label:'세부업무' }
+				,{label:'호스트명' }
+				,{label:'오류코드' }
+				,{label:'발생시각' }
+				,{label:'호스트명' }
+				,{label:'오류코드' }
+				,{label:'발생시각' }
+				,{label:'응답처리결과' }
+
+
+			]
+			
+		]
+		,tbodyItem : {
+			items:aaa
+			,page:{
+				totalCount:100, currPage :1 
+			}
+		}
+		,tfootItem :['asdf']
+		,rowClick : function (idx, item){
+			console.log(idx, item);
+		}
+		
+	});
+}
+
+(function($) {
+
+var _evt = $.event,
+	_special,
+	resizeTimeout;
+
+_special = _evt.special.pubgridResize = {
+	setup: function() {
+		$( this ).on( "resize", _special.handler );
+	},
+	teardown: function() {
+		$( this ).off( "resize", _special.handler );
+	},
+	handler: function( event, execAsap ) {
+		// Save the context
+		var context = this,
+			args = arguments,
+			dispatch = function() {
+				// set correct event type
+				event.type = "pubgridResize";
+				_evt.dispatch.apply( context, args );
+			};
+
+		if ( resizeTimeout ) {
+			clearTimeout( resizeTimeout );
+		}
+
+		execAsap ?
+			dispatch() :
+			resizeTimeout = setTimeout( dispatch, $special.threshold );
+	},
+	threshold: 150
+};
+
+})(jQuery);
+</script>
