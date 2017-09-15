@@ -1703,10 +1703,10 @@ Plugin.prototype ={
      * @description item 값 얻기.
      */
 	,getItems:function (idx){
-		if(idx){
-			return this.options.tbodyItem[idx]
-		}else{
+		if(isNaN(idx)){
 			return this.options.tbodyItem;
+		}else{
+			return this.options.tbodyItem[idx]
 		}
 	}
 	/**
