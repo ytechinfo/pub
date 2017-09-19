@@ -7,6 +7,13 @@
 	font-size: 0.9em;
 }
 
+.pub-calendar-default  div , .pub-calendar-default  td ,  .pub-calendar-default  th{
+	-webkit-box-sizing: content-box !important;
+	-moz-box-sizing: content-box !important;
+	box-sizing: content-box !important;
+
+}
+
 .pub-calendar-default .pub-calendar-red{
 	color : #FE0404;
 }
