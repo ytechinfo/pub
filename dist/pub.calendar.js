@@ -1566,7 +1566,7 @@ Plugin.prototype ={
 		if(useLunar){
 			var _year = viewDateArr[0].year; 
 			// 음력 정보 추출.
-			var _calInfo = getCalendarInfo(_year);
+			var _calInfo = pubCalendarYearInfo(_year);
 			lapseSeObj = _this._getLunElapseDay({year:_year, month:viewDateArr[0].month, day:viewDateArr[0].day}, _calInfo);
 		}
 
@@ -1639,7 +1639,7 @@ Plugin.prototype ={
 			,memorialDays1=_this.options.memorialDays;
 
 		var mday, tmpMday; 
-		var lunMonthInfo = getCalendarInfo(_this.options._date.yyyy); 
+		var lunMonthInfo = pubCalendarYearInfo(_this.options._date.yyyy); 
 		for (var i=0; i< memorialDays1.length ; i++){
 			//{date:'0101',desc : '신정' ,isLunar: false ,holiday :  true}
 			tmpMday = mday = memorialDays1[i];
@@ -2424,6 +2424,20 @@ $.pubCalendar = function (selector,options, args) {
 	return _cacheObject;	
 };
 
+$.pubCalendar.setMemorialDay = function(memorialDays){
+	_memorialDays = $.isArray(memorialDays)?_memorialDays.concat(memorialDays):_memorialDays;
+}
+
+$.pubCalendar.setLunarMonthTable = function(lunarMonth){
+	lunarMonthTable = $.extend(lunarMonthTable, lunarMonth);
+}
+
+$.pubCalendar.setYearLunarInfo = function(lunarInfo){
+	yearLunarInfo = $.extend(yearLunarInfo, lunarInfo);
+}
+
+
+
 
 if (!Object.keys) {
   Object.keys = function(obj) {
@@ -2577,8 +2591,6 @@ function getLunMonthDay(lunYear, lunMonth, lunLeapMonth){
 }
 
 
-}(jQuery, window, document));
-
 /*
 기념일 정보 셋팅.
 date : 기념일 날짜 (월일)
@@ -2607,7 +2619,7 @@ var _memorialDays = [
 	,{date:'0115',desc : '정월대보름' ,isLunar: true ,holiday :  false}
 	,{date:'0505',desc : '단오' ,isLunar: true ,holiday :  false}
 	,{date:'1001',desc : '국군의날' ,isLunar: false ,holiday :  false}
-	,{date:'1009',desc : '한글날' ,isLunar: false ,holiday :  false}
+	,{date:'1009',desc : '한글날' ,isLunar: false ,holiday :  true}
 	,{date:'0625',desc : '6·25전쟁일' ,isLunar: false ,holiday :  false}
 	,{date:'0214',desc : '발렌타인데이' ,isLunar: false ,holiday :  false}
 	,{date:'0322',desc : '물의날' ,isLunar: false ,holiday :  false}
@@ -2851,215 +2863,216 @@ var lunarMonthTable = {
 	2100 : [2, 2, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1]
 };
 
-function getCalendarInfo(year){
-	var reval = {
-		/* 해당년에대한 01월01일 에 대한 음력 (lunYear:년, lunMonth:월, lunDay:일 , lunMonthDay :lunMonth의 대한 마지막날) solMonthDay : 2월 마지막 날 */
-		1900 :  {lunYear:1899, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
-		,1901 :  {lunYear:1900, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:28}
-		,1902 :  {lunYear:1901, lunMonth:11, lunDay:22, lunMonthDay:30, solMonthDay:28}
-		,1903 :  {lunYear:1902, lunMonth:12, lunDay:3, lunMonthDay:30, solMonthDay:28}
-		,1904 :  {lunYear:1903, lunMonth:11, lunDay:14, lunMonthDay:29, solMonthDay:29}
-		,1905 :  {lunYear:1904, lunMonth:11, lunDay:26, lunMonthDay:30, solMonthDay:28}
-		,1906 :  {lunYear:1905, lunMonth:12, lunDay:7, lunMonthDay:30, solMonthDay:28}
-		,1907 :  {lunYear:1906, lunMonth:11, lunDay:17, lunMonthDay:29, solMonthDay:28}
-		,1908 :  {lunYear:1907, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:29}
-		,1909 :  {lunYear:1908, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
-		,1910 :  {lunYear:1909, lunMonth:11, lunDay:20, lunMonthDay:29, solMonthDay:28}
-		,1911 :  {lunYear:1910, lunMonth:12, lunDay:1, lunMonthDay:29, solMonthDay:28}
-		,1912 :  {lunYear:1911, lunMonth:11, lunDay:13, lunMonthDay:30, solMonthDay:29}
-		,1913 :  {lunYear:1912, lunMonth:11, lunDay:24, lunMonthDay:29, solMonthDay:28}
-		,1914 :  {lunYear:1913, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
-		,1915 :  {lunYear:1914, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
-		,1916 :  {lunYear:1915, lunMonth:11, lunDay:26, lunMonthDay:29, solMonthDay:29}
-		,1917 :  {lunYear:1916, lunMonth:12, lunDay:8, lunMonthDay:29, solMonthDay:28}
-		,1918 :  {lunYear:1917, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:28}
-		,1919 :  {lunYear:1918, lunMonth:11, lunDay:30, lunMonthDay:30, solMonthDay:28}
-		,1920 :  {lunYear:1919, lunMonth:11, lunDay:11, lunMonthDay:30, solMonthDay:29}
-		,1921 :  {lunYear:1920, lunMonth:11, lunDay:23, lunMonthDay:30, solMonthDay:28}
-		,1922 :  {lunYear:1921, lunMonth:12, lunDay:4, lunMonthDay:30, solMonthDay:28}
-		,1923 :  {lunYear:1922, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
-		,1924 :  {lunYear:1923, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:29}
-		,1925 :  {lunYear:1924, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
-		,1926 :  {lunYear:1925, lunMonth:11, lunDay:17, lunMonthDay:29, solMonthDay:28}
-		,1927 :  {lunYear:1926, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:28}
-		,1928 :  {lunYear:1927, lunMonth:12, lunDay:9, lunMonthDay:30, solMonthDay:29}
-		,1929 :  {lunYear:1928, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:28}
-		,1930 :  {lunYear:1929, lunMonth:12, lunDay:2, lunMonthDay:30, solMonthDay:28}
-		,1931 :  {lunYear:1930, lunMonth:11, lunDay:13, lunMonthDay:30, solMonthDay:28}
-		,1932 :  {lunYear:1931, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:29}
-		,1933 :  {lunYear:1932, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
-		,1934 :  {lunYear:1933, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
-		,1935 :  {lunYear:1934, lunMonth:11, lunDay:26, lunMonthDay:29, solMonthDay:28}
-		,1936 :  {lunYear:1935, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:29}
-		,1937 :  {lunYear:1936, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:28}
-		,1938 :  {lunYear:1937, lunMonth:11, lunDay:30, lunMonthDay:30, solMonthDay:28}
-		,1939 :  {lunYear:1938, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:28}
-		,1940 :  {lunYear:1939, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:29}
-		,1941 :  {lunYear:1940, lunMonth:12, lunDay:4, lunMonthDay:29, solMonthDay:28}
-		,1942 :  {lunYear:1941, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
-		,1943 :  {lunYear:1942, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:28}
-		,1944 :  {lunYear:1943, lunMonth:12, lunDay:6, lunMonthDay:29, solMonthDay:29}
-		,1945 :  {lunYear:1944, lunMonth:11, lunDay:18, lunMonthDay:30, solMonthDay:28}
-		,1946 :  {lunYear:1945, lunMonth:11, lunDay:28, lunMonthDay:29, solMonthDay:28}
-		,1947 :  {lunYear:1946, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
-		,1948 :  {lunYear:1947, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:29}
-		,1949 :  {lunYear:1948, lunMonth:12, lunDay:3, lunMonthDay:30, solMonthDay:28}
-		,1950 :  {lunYear:1949, lunMonth:11, lunDay:13, lunMonthDay:29, solMonthDay:28}
-		,1951 :  {lunYear:1950, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:28}
-		,1952 :  {lunYear:1951, lunMonth:12, lunDay:5, lunMonthDay:30, solMonthDay:29}
-		,1953 :  {lunYear:1952, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
-		,1954 :  {lunYear:1953, lunMonth:11, lunDay:27, lunMonthDay:30, solMonthDay:28}
-		,1955 :  {lunYear:1954, lunMonth:12, lunDay:8, lunMonthDay:30, solMonthDay:28}
-		,1956 :  {lunYear:1955, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:29}
-		,1957 :  {lunYear:1956, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
-		,1958 :  {lunYear:1957, lunMonth:11, lunDay:12, lunMonthDay:30, solMonthDay:28}
-		,1959 :  {lunYear:1958, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:28}
-		,1960 :  {lunYear:1959, lunMonth:12, lunDay:3, lunMonthDay:29, solMonthDay:29}
-		,1961 :  {lunYear:1960, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
-		,1962 :  {lunYear:1961, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:28}
-		,1963 :  {lunYear:1962, lunMonth:12, lunDay:6, lunMonthDay:29, solMonthDay:28}
-		,1964 :  {lunYear:1963, lunMonth:11, lunDay:17, lunMonthDay:30, solMonthDay:29}
-		,1965 :  {lunYear:1964, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
-		,1966 :  {lunYear:1965, lunMonth:12, lunDay:10, lunMonthDay:29, solMonthDay:28}
-		,1967 :  {lunYear:1966, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:28}
-		,1968 :  {lunYear:1967, lunMonth:12, lunDay:2, lunMonthDay:30, solMonthDay:29}
-		,1969 :  {lunYear:1968, lunMonth:11, lunDay:13, lunMonthDay:29, solMonthDay:28}
-		,1970 :  {lunYear:1969, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:28}
-		,1971 :  {lunYear:1970, lunMonth:12, lunDay:5, lunMonthDay:30, solMonthDay:28}
-		,1972 :  {lunYear:1971, lunMonth:11, lunDay:15, lunMonthDay:29, solMonthDay:29}
-		,1973 :  {lunYear:1972, lunMonth:11, lunDay:27, lunMonthDay:29, solMonthDay:28}
-		,1974 :  {lunYear:1973, lunMonth:12, lunDay:9, lunMonthDay:30, solMonthDay:28}
-		,1975 :  {lunYear:1974, lunMonth:11, lunDay:19, lunMonthDay:29, solMonthDay:28}
-		,1976 :  {lunYear:1975, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:29}
-		,1977 :  {lunYear:1976, lunMonth:11, lunDay:12, lunMonthDay:29, solMonthDay:28}
-		,1978 :  {lunYear:1977, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:28}
-		,1979 :  {lunYear:1978, lunMonth:12, lunDay:3, lunMonthDay:29, solMonthDay:28}
-		,1980 :  {lunYear:1979, lunMonth:11, lunDay:14, lunMonthDay:30, solMonthDay:29}
-		,1981 :  {lunYear:1980, lunMonth:11, lunDay:26, lunMonthDay:30, solMonthDay:28}
-		,1982 :  {lunYear:1981, lunMonth:12, lunDay:7, lunMonthDay:30, solMonthDay:28}
-		,1983 :  {lunYear:1982, lunMonth:11, lunDay:18, lunMonthDay:30, solMonthDay:28}
-		,1984 :  {lunYear:1983, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:29}
-		,1985 :  {lunYear:1984, lunMonth:11, lunDay:11, lunMonthDay:30, solMonthDay:28}
-		,1986 :  {lunYear:1985, lunMonth:11, lunDay:21, lunMonthDay:29, solMonthDay:28}
-		,1987 :  {lunYear:1986, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
-		,1988 :  {lunYear:1987, lunMonth:11, lunDay:12, lunMonthDay:29, solMonthDay:29}
-		,1989 :  {lunYear:1988, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:28}
-		,1990 :  {lunYear:1989, lunMonth:12, lunDay:5, lunMonthDay:30, solMonthDay:28}
-		,1991 :  {lunYear:1990, lunMonth:11, lunDay:16, lunMonthDay:30, solMonthDay:28}
-		,1992 :  {lunYear:1991, lunMonth:11, lunDay:27, lunMonthDay:30, solMonthDay:29}
-		,1993 :  {lunYear:1992, lunMonth:12, lunDay:9, lunMonthDay:30, solMonthDay:28}
-		,1994 :  {lunYear:1993, lunMonth:11, lunDay:20, lunMonthDay:30, solMonthDay:28}
-		,1995 :  {lunYear:1994, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
-		,1996 :  {lunYear:1995, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:29}
-		,1997 :  {lunYear:1996, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:28}
-		,1998 :  {lunYear:1997, lunMonth:12, lunDay:3, lunMonthDay:29, solMonthDay:28}
-		,1999 :  {lunYear:1998, lunMonth:11, lunDay:14, lunMonthDay:30, solMonthDay:28}
-		,2000 :  {lunYear:1999, lunMonth:11, lunDay:25, lunMonthDay:30, solMonthDay:29}
-		,2001 :  {lunYear:2000, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
-		,2002 :  {lunYear:2001, lunMonth:11, lunDay:18, lunMonthDay:29, solMonthDay:28}
-		,2003 :  {lunYear:2002, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
-		,2004 :  {lunYear:2003, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:29}
-		,2005 :  {lunYear:2004, lunMonth:11, lunDay:21, lunMonthDay:29, solMonthDay:28}
-		,2006 :  {lunYear:2005, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
-		,2007 :  {lunYear:2006, lunMonth:11, lunDay:13, lunMonthDay:30, solMonthDay:28}
-		,2008 :  {lunYear:2007, lunMonth:11, lunDay:23, lunMonthDay:29, solMonthDay:29}
-		,2009 :  {lunYear:2008, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
-		,2010 :  {lunYear:2009, lunMonth:11, lunDay:17, lunMonthDay:30, solMonthDay:28}
-		,2011 :  {lunYear:2010, lunMonth:11, lunDay:27, lunMonthDay:29, solMonthDay:28}
-		,2012 :  {lunYear:2011, lunMonth:12, lunDay:8, lunMonthDay:29, solMonthDay:29}
-		,2013 :  {lunYear:2012, lunMonth:11, lunDay:20, lunMonthDay:30, solMonthDay:28}
-		,2014 :  {lunYear:2013, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
-		,2015 :  {lunYear:2014, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:28}
-		,2016 :  {lunYear:2015, lunMonth:11, lunDay:22, lunMonthDay:30, solMonthDay:29}
-		,2017 :  {lunYear:2016, lunMonth:12, lunDay:4, lunMonthDay:30, solMonthDay:28}
-		,2018 :  {lunYear:2017, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
-		,2019 :  {lunYear:2018, lunMonth:11, lunDay:26, lunMonthDay:30, solMonthDay:28}
-		,2020 :  {lunYear:2019, lunMonth:12, lunDay:7, lunMonthDay:30, solMonthDay:29}
-		,2021 :  {lunYear:2020, lunMonth:11, lunDay:18, lunMonthDay:29, solMonthDay:28}
-		,2022 :  {lunYear:2021, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
-		,2023 :  {lunYear:2022, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
-		,2024 :  {lunYear:2023, lunMonth:11, lunDay:20, lunMonthDay:29, solMonthDay:29}
-		,2025 :  {lunYear:2024, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
-		,2026 :  {lunYear:2025, lunMonth:11, lunDay:13, lunMonthDay:30, solMonthDay:28}
-		,2027 :  {lunYear:2026, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:28}
-		,2028 :  {lunYear:2027, lunMonth:12, lunDay:5, lunMonthDay:29, solMonthDay:29}
-		,2029 :  {lunYear:2028, lunMonth:11, lunDay:17, lunMonthDay:30, solMonthDay:28}
-		,2030 :  {lunYear:2029, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:28}
-		,2031 :  {lunYear:2030, lunMonth:12, lunDay:8, lunMonthDay:29, solMonthDay:28}
-		,2032 :  {lunYear:2031, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:29}
-		,2033 :  {lunYear:2032, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
-		,2034 :  {lunYear:2033, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:28}
-		,2035 :  {lunYear:2034, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:28}
-		,2036 :  {lunYear:2035, lunMonth:12, lunDay:4, lunMonthDay:30, solMonthDay:29}
-		,2037 :  {lunYear:2036, lunMonth:11, lunDay:16, lunMonthDay:30, solMonthDay:28}
-		,2038 :  {lunYear:2037, lunMonth:11, lunDay:26, lunMonthDay:29, solMonthDay:28}
-		,2039 :  {lunYear:2038, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
-		,2040 :  {lunYear:2039, lunMonth:11, lunDay:17, lunMonthDay:29, solMonthDay:29}
-		,2041 :  {lunYear:2040, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
-		,2042 :  {lunYear:2041, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
-		,2043 :  {lunYear:2042, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:28}
-		,2044 :  {lunYear:2043, lunMonth:12, lunDay:2, lunMonthDay:30, solMonthDay:29}
-		,2045 :  {lunYear:2044, lunMonth:11, lunDay:14, lunMonthDay:30, solMonthDay:28}
-		,2046 :  {lunYear:2045, lunMonth:11, lunDay:25, lunMonthDay:30, solMonthDay:28}
-		,2047 :  {lunYear:2046, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
-		,2048 :  {lunYear:2047, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:29}
-		,2049 :  {lunYear:2048, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:28}
-		,2050 :  {lunYear:2049, lunMonth:12, lunDay:8, lunMonthDay:29, solMonthDay:28}
-		,2051 :  {lunYear:2050, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:28}
-		,2052 :  {lunYear:2051, lunMonth:11, lunDay:30, lunMonthDay:30, solMonthDay:29}
-		,2053 :  {lunYear:2052, lunMonth:11, lunDay:12, lunMonthDay:30, solMonthDay:28}
-		,2054 :  {lunYear:2053, lunMonth:11, lunDay:23, lunMonthDay:30, solMonthDay:28}
-		,2055 :  {lunYear:2054, lunMonth:12, lunDay:4, lunMonthDay:30, solMonthDay:28}
-		,2056 :  {lunYear:2055, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:29}
-		,2057 :  {lunYear:2056, lunMonth:11, lunDay:26, lunMonthDay:29, solMonthDay:28}
-		,2058 :  {lunYear:2057, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
-		,2059 :  {lunYear:2058, lunMonth:11, lunDay:17, lunMonthDay:29, solMonthDay:28}
-		,2060 :  {lunYear:2059, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:29}
-		,2061 :  {lunYear:2060, lunMonth:12, lunDay:10, lunMonthDay:29, solMonthDay:28}
-		,2062 :  {lunYear:2061, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:28}
-		,2063 :  {lunYear:2062, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
-		,2064 :  {lunYear:2063, lunMonth:11, lunDay:13, lunMonthDay:29, solMonthDay:29}
-		,2065 :  {lunYear:2064, lunMonth:11, lunDay:25, lunMonthDay:30, solMonthDay:28}
-		,2066 :  {lunYear:2065, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
-		,2067 :  {lunYear:2066, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
-		,2068 :  {lunYear:2067, lunMonth:11, lunDay:27, lunMonthDay:30, solMonthDay:29}
-		,2069 :  {lunYear:2068, lunMonth:12, lunDay:9, lunMonthDay:30, solMonthDay:28}
-		,2070 :  {lunYear:2069, lunMonth:11, lunDay:19, lunMonthDay:29, solMonthDay:28}
-		,2071 :  {lunYear:2070, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
-		,2072 :  {lunYear:2071, lunMonth:11, lunDay:12, lunMonthDay:30, solMonthDay:29}
-		,2073 :  {lunYear:2072, lunMonth:11, lunDay:23, lunMonthDay:29, solMonthDay:28}
-		,2074 :  {lunYear:2073, lunMonth:12, lunDay:4, lunMonthDay:29, solMonthDay:28}
-		,2075 :  {lunYear:2074, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
-		,2076 :  {lunYear:2075, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:29}
-		,2077 :  {lunYear:2076, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
-		,2078 :  {lunYear:2077, lunMonth:11, lunDay:18, lunMonthDay:30, solMonthDay:28}
-		,2079 :  {lunYear:2078, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
-		,2080 :  {lunYear:2079, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:29}
-		,2081 :  {lunYear:2080, lunMonth:11, lunDay:22, lunMonthDay:30, solMonthDay:28}
-		,2082 :  {lunYear:2081, lunMonth:12, lunDay:3, lunMonthDay:30, solMonthDay:28}
-		,2083 :  {lunYear:2082, lunMonth:11, lunDay:14, lunMonthDay:30, solMonthDay:28}
-		,2084 :  {lunYear:2083, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:29}
-		,2085 :  {lunYear:2084, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
-		,2086 :  {lunYear:2085, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
-		,2087 :  {lunYear:2086, lunMonth:11, lunDay:27, lunMonthDay:30, solMonthDay:28}
-		,2088 :  {lunYear:2087, lunMonth:12, lunDay:8, lunMonthDay:30, solMonthDay:29}
-		,2089 :  {lunYear:2088, lunMonth:11, lunDay:20, lunMonthDay:30, solMonthDay:28}
-		,2090 :  {lunYear:2089, lunMonth:12, lunDay:1, lunMonthDay:29, solMonthDay:28}
-		,2091 :  {lunYear:2090, lunMonth:11, lunDay:12, lunMonthDay:30, solMonthDay:28}
-		,2092 :  {lunYear:2091, lunMonth:11, lunDay:23, lunMonthDay:30, solMonthDay:29}
-		,2093 :  {lunYear:2092, lunMonth:12, lunDay:4, lunMonthDay:29, solMonthDay:28}
-		,2094 :  {lunYear:2093, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
-		,2095 :  {lunYear:2094, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:28}
-		,2096 :  {lunYear:2095, lunMonth:12, lunDay:6, lunMonthDay:29, solMonthDay:29}
-		,2097 :  {lunYear:2096, lunMonth:11, lunDay:18, lunMonthDay:29, solMonthDay:28}
-		,2098 :  {lunYear:2097, lunMonth:11, lunDay:29, lunMonthDay:29, solMonthDay:28}
-		,2099 :  {lunYear:2098, lunMonth:12, lunDay:11, lunMonthDay:30, solMonthDay:28}
-		,2100 :  {lunYear:2099, lunMonth:11, lunDay:21, lunMonthDay:29, solMonthDay:28}
-	}
-	
-	return reval[year]; 
+var yearLunarInfo = {
+	/* 해당년에대한 01월01일 에 대한 음력 (lunYear:년, lunMonth:월, lunDay:일 , lunMonthDay :lunMonth의 대한 마지막날) solMonthDay : 2월 마지막 날 */
+	1900 :  {lunYear:1899, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
+	,1901 :  {lunYear:1900, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:28}
+	,1902 :  {lunYear:1901, lunMonth:11, lunDay:22, lunMonthDay:30, solMonthDay:28}
+	,1903 :  {lunYear:1902, lunMonth:12, lunDay:3, lunMonthDay:30, solMonthDay:28}
+	,1904 :  {lunYear:1903, lunMonth:11, lunDay:14, lunMonthDay:29, solMonthDay:29}
+	,1905 :  {lunYear:1904, lunMonth:11, lunDay:26, lunMonthDay:30, solMonthDay:28}
+	,1906 :  {lunYear:1905, lunMonth:12, lunDay:7, lunMonthDay:30, solMonthDay:28}
+	,1907 :  {lunYear:1906, lunMonth:11, lunDay:17, lunMonthDay:29, solMonthDay:28}
+	,1908 :  {lunYear:1907, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:29}
+	,1909 :  {lunYear:1908, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
+	,1910 :  {lunYear:1909, lunMonth:11, lunDay:20, lunMonthDay:29, solMonthDay:28}
+	,1911 :  {lunYear:1910, lunMonth:12, lunDay:1, lunMonthDay:29, solMonthDay:28}
+	,1912 :  {lunYear:1911, lunMonth:11, lunDay:13, lunMonthDay:30, solMonthDay:29}
+	,1913 :  {lunYear:1912, lunMonth:11, lunDay:24, lunMonthDay:29, solMonthDay:28}
+	,1914 :  {lunYear:1913, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
+	,1915 :  {lunYear:1914, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
+	,1916 :  {lunYear:1915, lunMonth:11, lunDay:26, lunMonthDay:29, solMonthDay:29}
+	,1917 :  {lunYear:1916, lunMonth:12, lunDay:8, lunMonthDay:29, solMonthDay:28}
+	,1918 :  {lunYear:1917, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:28}
+	,1919 :  {lunYear:1918, lunMonth:11, lunDay:30, lunMonthDay:30, solMonthDay:28}
+	,1920 :  {lunYear:1919, lunMonth:11, lunDay:11, lunMonthDay:30, solMonthDay:29}
+	,1921 :  {lunYear:1920, lunMonth:11, lunDay:23, lunMonthDay:30, solMonthDay:28}
+	,1922 :  {lunYear:1921, lunMonth:12, lunDay:4, lunMonthDay:30, solMonthDay:28}
+	,1923 :  {lunYear:1922, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
+	,1924 :  {lunYear:1923, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:29}
+	,1925 :  {lunYear:1924, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
+	,1926 :  {lunYear:1925, lunMonth:11, lunDay:17, lunMonthDay:29, solMonthDay:28}
+	,1927 :  {lunYear:1926, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:28}
+	,1928 :  {lunYear:1927, lunMonth:12, lunDay:9, lunMonthDay:30, solMonthDay:29}
+	,1929 :  {lunYear:1928, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:28}
+	,1930 :  {lunYear:1929, lunMonth:12, lunDay:2, lunMonthDay:30, solMonthDay:28}
+	,1931 :  {lunYear:1930, lunMonth:11, lunDay:13, lunMonthDay:30, solMonthDay:28}
+	,1932 :  {lunYear:1931, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:29}
+	,1933 :  {lunYear:1932, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
+	,1934 :  {lunYear:1933, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
+	,1935 :  {lunYear:1934, lunMonth:11, lunDay:26, lunMonthDay:29, solMonthDay:28}
+	,1936 :  {lunYear:1935, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:29}
+	,1937 :  {lunYear:1936, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:28}
+	,1938 :  {lunYear:1937, lunMonth:11, lunDay:30, lunMonthDay:30, solMonthDay:28}
+	,1939 :  {lunYear:1938, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:28}
+	,1940 :  {lunYear:1939, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:29}
+	,1941 :  {lunYear:1940, lunMonth:12, lunDay:4, lunMonthDay:29, solMonthDay:28}
+	,1942 :  {lunYear:1941, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
+	,1943 :  {lunYear:1942, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:28}
+	,1944 :  {lunYear:1943, lunMonth:12, lunDay:6, lunMonthDay:29, solMonthDay:29}
+	,1945 :  {lunYear:1944, lunMonth:11, lunDay:18, lunMonthDay:30, solMonthDay:28}
+	,1946 :  {lunYear:1945, lunMonth:11, lunDay:28, lunMonthDay:29, solMonthDay:28}
+	,1947 :  {lunYear:1946, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
+	,1948 :  {lunYear:1947, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:29}
+	,1949 :  {lunYear:1948, lunMonth:12, lunDay:3, lunMonthDay:30, solMonthDay:28}
+	,1950 :  {lunYear:1949, lunMonth:11, lunDay:13, lunMonthDay:29, solMonthDay:28}
+	,1951 :  {lunYear:1950, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:28}
+	,1952 :  {lunYear:1951, lunMonth:12, lunDay:5, lunMonthDay:30, solMonthDay:29}
+	,1953 :  {lunYear:1952, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
+	,1954 :  {lunYear:1953, lunMonth:11, lunDay:27, lunMonthDay:30, solMonthDay:28}
+	,1955 :  {lunYear:1954, lunMonth:12, lunDay:8, lunMonthDay:30, solMonthDay:28}
+	,1956 :  {lunYear:1955, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:29}
+	,1957 :  {lunYear:1956, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
+	,1958 :  {lunYear:1957, lunMonth:11, lunDay:12, lunMonthDay:30, solMonthDay:28}
+	,1959 :  {lunYear:1958, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:28}
+	,1960 :  {lunYear:1959, lunMonth:12, lunDay:3, lunMonthDay:29, solMonthDay:29}
+	,1961 :  {lunYear:1960, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
+	,1962 :  {lunYear:1961, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:28}
+	,1963 :  {lunYear:1962, lunMonth:12, lunDay:6, lunMonthDay:29, solMonthDay:28}
+	,1964 :  {lunYear:1963, lunMonth:11, lunDay:17, lunMonthDay:30, solMonthDay:29}
+	,1965 :  {lunYear:1964, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
+	,1966 :  {lunYear:1965, lunMonth:12, lunDay:10, lunMonthDay:29, solMonthDay:28}
+	,1967 :  {lunYear:1966, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:28}
+	,1968 :  {lunYear:1967, lunMonth:12, lunDay:2, lunMonthDay:30, solMonthDay:29}
+	,1969 :  {lunYear:1968, lunMonth:11, lunDay:13, lunMonthDay:29, solMonthDay:28}
+	,1970 :  {lunYear:1969, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:28}
+	,1971 :  {lunYear:1970, lunMonth:12, lunDay:5, lunMonthDay:30, solMonthDay:28}
+	,1972 :  {lunYear:1971, lunMonth:11, lunDay:15, lunMonthDay:29, solMonthDay:29}
+	,1973 :  {lunYear:1972, lunMonth:11, lunDay:27, lunMonthDay:29, solMonthDay:28}
+	,1974 :  {lunYear:1973, lunMonth:12, lunDay:9, lunMonthDay:30, solMonthDay:28}
+	,1975 :  {lunYear:1974, lunMonth:11, lunDay:19, lunMonthDay:29, solMonthDay:28}
+	,1976 :  {lunYear:1975, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:29}
+	,1977 :  {lunYear:1976, lunMonth:11, lunDay:12, lunMonthDay:29, solMonthDay:28}
+	,1978 :  {lunYear:1977, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:28}
+	,1979 :  {lunYear:1978, lunMonth:12, lunDay:3, lunMonthDay:29, solMonthDay:28}
+	,1980 :  {lunYear:1979, lunMonth:11, lunDay:14, lunMonthDay:30, solMonthDay:29}
+	,1981 :  {lunYear:1980, lunMonth:11, lunDay:26, lunMonthDay:30, solMonthDay:28}
+	,1982 :  {lunYear:1981, lunMonth:12, lunDay:7, lunMonthDay:30, solMonthDay:28}
+	,1983 :  {lunYear:1982, lunMonth:11, lunDay:18, lunMonthDay:30, solMonthDay:28}
+	,1984 :  {lunYear:1983, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:29}
+	,1985 :  {lunYear:1984, lunMonth:11, lunDay:11, lunMonthDay:30, solMonthDay:28}
+	,1986 :  {lunYear:1985, lunMonth:11, lunDay:21, lunMonthDay:29, solMonthDay:28}
+	,1987 :  {lunYear:1986, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
+	,1988 :  {lunYear:1987, lunMonth:11, lunDay:12, lunMonthDay:29, solMonthDay:29}
+	,1989 :  {lunYear:1988, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:28}
+	,1990 :  {lunYear:1989, lunMonth:12, lunDay:5, lunMonthDay:30, solMonthDay:28}
+	,1991 :  {lunYear:1990, lunMonth:11, lunDay:16, lunMonthDay:30, solMonthDay:28}
+	,1992 :  {lunYear:1991, lunMonth:11, lunDay:27, lunMonthDay:30, solMonthDay:29}
+	,1993 :  {lunYear:1992, lunMonth:12, lunDay:9, lunMonthDay:30, solMonthDay:28}
+	,1994 :  {lunYear:1993, lunMonth:11, lunDay:20, lunMonthDay:30, solMonthDay:28}
+	,1995 :  {lunYear:1994, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
+	,1996 :  {lunYear:1995, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:29}
+	,1997 :  {lunYear:1996, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:28}
+	,1998 :  {lunYear:1997, lunMonth:12, lunDay:3, lunMonthDay:29, solMonthDay:28}
+	,1999 :  {lunYear:1998, lunMonth:11, lunDay:14, lunMonthDay:30, solMonthDay:28}
+	,2000 :  {lunYear:1999, lunMonth:11, lunDay:25, lunMonthDay:30, solMonthDay:29}
+	,2001 :  {lunYear:2000, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
+	,2002 :  {lunYear:2001, lunMonth:11, lunDay:18, lunMonthDay:29, solMonthDay:28}
+	,2003 :  {lunYear:2002, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
+	,2004 :  {lunYear:2003, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:29}
+	,2005 :  {lunYear:2004, lunMonth:11, lunDay:21, lunMonthDay:29, solMonthDay:28}
+	,2006 :  {lunYear:2005, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
+	,2007 :  {lunYear:2006, lunMonth:11, lunDay:13, lunMonthDay:30, solMonthDay:28}
+	,2008 :  {lunYear:2007, lunMonth:11, lunDay:23, lunMonthDay:29, solMonthDay:29}
+	,2009 :  {lunYear:2008, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
+	,2010 :  {lunYear:2009, lunMonth:11, lunDay:17, lunMonthDay:30, solMonthDay:28}
+	,2011 :  {lunYear:2010, lunMonth:11, lunDay:27, lunMonthDay:29, solMonthDay:28}
+	,2012 :  {lunYear:2011, lunMonth:12, lunDay:8, lunMonthDay:29, solMonthDay:29}
+	,2013 :  {lunYear:2012, lunMonth:11, lunDay:20, lunMonthDay:30, solMonthDay:28}
+	,2014 :  {lunYear:2013, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
+	,2015 :  {lunYear:2014, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:28}
+	,2016 :  {lunYear:2015, lunMonth:11, lunDay:22, lunMonthDay:30, solMonthDay:29}
+	,2017 :  {lunYear:2016, lunMonth:12, lunDay:4, lunMonthDay:30, solMonthDay:28}
+	,2018 :  {lunYear:2017, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
+	,2019 :  {lunYear:2018, lunMonth:11, lunDay:26, lunMonthDay:30, solMonthDay:28}
+	,2020 :  {lunYear:2019, lunMonth:12, lunDay:7, lunMonthDay:30, solMonthDay:29}
+	,2021 :  {lunYear:2020, lunMonth:11, lunDay:18, lunMonthDay:29, solMonthDay:28}
+	,2022 :  {lunYear:2021, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
+	,2023 :  {lunYear:2022, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
+	,2024 :  {lunYear:2023, lunMonth:11, lunDay:20, lunMonthDay:29, solMonthDay:29}
+	,2025 :  {lunYear:2024, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
+	,2026 :  {lunYear:2025, lunMonth:11, lunDay:13, lunMonthDay:30, solMonthDay:28}
+	,2027 :  {lunYear:2026, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:28}
+	,2028 :  {lunYear:2027, lunMonth:12, lunDay:5, lunMonthDay:29, solMonthDay:29}
+	,2029 :  {lunYear:2028, lunMonth:11, lunDay:17, lunMonthDay:30, solMonthDay:28}
+	,2030 :  {lunYear:2029, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:28}
+	,2031 :  {lunYear:2030, lunMonth:12, lunDay:8, lunMonthDay:29, solMonthDay:28}
+	,2032 :  {lunYear:2031, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:29}
+	,2033 :  {lunYear:2032, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
+	,2034 :  {lunYear:2033, lunMonth:11, lunDay:11, lunMonthDay:29, solMonthDay:28}
+	,2035 :  {lunYear:2034, lunMonth:11, lunDay:22, lunMonthDay:29, solMonthDay:28}
+	,2036 :  {lunYear:2035, lunMonth:12, lunDay:4, lunMonthDay:30, solMonthDay:29}
+	,2037 :  {lunYear:2036, lunMonth:11, lunDay:16, lunMonthDay:30, solMonthDay:28}
+	,2038 :  {lunYear:2037, lunMonth:11, lunDay:26, lunMonthDay:29, solMonthDay:28}
+	,2039 :  {lunYear:2038, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
+	,2040 :  {lunYear:2039, lunMonth:11, lunDay:17, lunMonthDay:29, solMonthDay:29}
+	,2041 :  {lunYear:2040, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
+	,2042 :  {lunYear:2041, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
+	,2043 :  {lunYear:2042, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:28}
+	,2044 :  {lunYear:2043, lunMonth:12, lunDay:2, lunMonthDay:30, solMonthDay:29}
+	,2045 :  {lunYear:2044, lunMonth:11, lunDay:14, lunMonthDay:30, solMonthDay:28}
+	,2046 :  {lunYear:2045, lunMonth:11, lunDay:25, lunMonthDay:30, solMonthDay:28}
+	,2047 :  {lunYear:2046, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
+	,2048 :  {lunYear:2047, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:29}
+	,2049 :  {lunYear:2048, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:28}
+	,2050 :  {lunYear:2049, lunMonth:12, lunDay:8, lunMonthDay:29, solMonthDay:28}
+	,2051 :  {lunYear:2050, lunMonth:11, lunDay:19, lunMonthDay:30, solMonthDay:28}
+	,2052 :  {lunYear:2051, lunMonth:11, lunDay:30, lunMonthDay:30, solMonthDay:29}
+	,2053 :  {lunYear:2052, lunMonth:11, lunDay:12, lunMonthDay:30, solMonthDay:28}
+	,2054 :  {lunYear:2053, lunMonth:11, lunDay:23, lunMonthDay:30, solMonthDay:28}
+	,2055 :  {lunYear:2054, lunMonth:12, lunDay:4, lunMonthDay:30, solMonthDay:28}
+	,2056 :  {lunYear:2055, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:29}
+	,2057 :  {lunYear:2056, lunMonth:11, lunDay:26, lunMonthDay:29, solMonthDay:28}
+	,2058 :  {lunYear:2057, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
+	,2059 :  {lunYear:2058, lunMonth:11, lunDay:17, lunMonthDay:29, solMonthDay:28}
+	,2060 :  {lunYear:2059, lunMonth:11, lunDay:28, lunMonthDay:30, solMonthDay:29}
+	,2061 :  {lunYear:2060, lunMonth:12, lunDay:10, lunMonthDay:29, solMonthDay:28}
+	,2062 :  {lunYear:2061, lunMonth:11, lunDay:21, lunMonthDay:30, solMonthDay:28}
+	,2063 :  {lunYear:2062, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
+	,2064 :  {lunYear:2063, lunMonth:11, lunDay:13, lunMonthDay:29, solMonthDay:29}
+	,2065 :  {lunYear:2064, lunMonth:11, lunDay:25, lunMonthDay:30, solMonthDay:28}
+	,2066 :  {lunYear:2065, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
+	,2067 :  {lunYear:2066, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
+	,2068 :  {lunYear:2067, lunMonth:11, lunDay:27, lunMonthDay:30, solMonthDay:29}
+	,2069 :  {lunYear:2068, lunMonth:12, lunDay:9, lunMonthDay:30, solMonthDay:28}
+	,2070 :  {lunYear:2069, lunMonth:11, lunDay:19, lunMonthDay:29, solMonthDay:28}
+	,2071 :  {lunYear:2070, lunMonth:12, lunDay:1, lunMonthDay:30, solMonthDay:28}
+	,2072 :  {lunYear:2071, lunMonth:11, lunDay:12, lunMonthDay:30, solMonthDay:29}
+	,2073 :  {lunYear:2072, lunMonth:11, lunDay:23, lunMonthDay:29, solMonthDay:28}
+	,2074 :  {lunYear:2073, lunMonth:12, lunDay:4, lunMonthDay:29, solMonthDay:28}
+	,2075 :  {lunYear:2074, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
+	,2076 :  {lunYear:2075, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:29}
+	,2077 :  {lunYear:2076, lunMonth:12, lunDay:7, lunMonthDay:29, solMonthDay:28}
+	,2078 :  {lunYear:2077, lunMonth:11, lunDay:18, lunMonthDay:30, solMonthDay:28}
+	,2079 :  {lunYear:2078, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
+	,2080 :  {lunYear:2079, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:29}
+	,2081 :  {lunYear:2080, lunMonth:11, lunDay:22, lunMonthDay:30, solMonthDay:28}
+	,2082 :  {lunYear:2081, lunMonth:12, lunDay:3, lunMonthDay:30, solMonthDay:28}
+	,2083 :  {lunYear:2082, lunMonth:11, lunDay:14, lunMonthDay:30, solMonthDay:28}
+	,2084 :  {lunYear:2083, lunMonth:11, lunDay:24, lunMonthDay:30, solMonthDay:29}
+	,2085 :  {lunYear:2084, lunMonth:12, lunDay:6, lunMonthDay:30, solMonthDay:28}
+	,2086 :  {lunYear:2085, lunMonth:11, lunDay:16, lunMonthDay:29, solMonthDay:28}
+	,2087 :  {lunYear:2086, lunMonth:11, lunDay:27, lunMonthDay:30, solMonthDay:28}
+	,2088 :  {lunYear:2087, lunMonth:12, lunDay:8, lunMonthDay:30, solMonthDay:29}
+	,2089 :  {lunYear:2088, lunMonth:11, lunDay:20, lunMonthDay:30, solMonthDay:28}
+	,2090 :  {lunYear:2089, lunMonth:12, lunDay:1, lunMonthDay:29, solMonthDay:28}
+	,2091 :  {lunYear:2090, lunMonth:11, lunDay:12, lunMonthDay:30, solMonthDay:28}
+	,2092 :  {lunYear:2091, lunMonth:11, lunDay:23, lunMonthDay:30, solMonthDay:29}
+	,2093 :  {lunYear:2092, lunMonth:12, lunDay:4, lunMonthDay:29, solMonthDay:28}
+	,2094 :  {lunYear:2093, lunMonth:11, lunDay:15, lunMonthDay:30, solMonthDay:28}
+	,2095 :  {lunYear:2094, lunMonth:11, lunDay:25, lunMonthDay:29, solMonthDay:28}
+	,2096 :  {lunYear:2095, lunMonth:12, lunDay:6, lunMonthDay:29, solMonthDay:29}
+	,2097 :  {lunYear:2096, lunMonth:11, lunDay:18, lunMonthDay:29, solMonthDay:28}
+	,2098 :  {lunYear:2097, lunMonth:11, lunDay:29, lunMonthDay:29, solMonthDay:28}
+	,2099 :  {lunYear:2098, lunMonth:12, lunDay:11, lunMonthDay:30, solMonthDay:28}
+	,2100 :  {lunYear:2099, lunMonth:11, lunDay:21, lunMonthDay:29, solMonthDay:28}
 }
 
+function pubCalendarYearInfo(year){
+	return yearLunarInfo[year]; 
+}
+
+}(jQuery, window, document));
 
 (function () {
   'use strict';
