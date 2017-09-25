@@ -1811,8 +1811,6 @@ Plugin.prototype ={
 		var _this = this
 			 ,rowClickFlag =false; 
 		
-		var table = _this.element.body.find('.pubGrid-body-cont');
-		
 		_this.config.select.isMouseDown = false; 		
 		
 		_this.element.body.on('mousedown.pubgridcol','.pub-body-td',function (e){
