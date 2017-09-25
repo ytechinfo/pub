@@ -7,6 +7,15 @@
 	font-size: 0.9em;
 }
 
+.mini-pubcalendar ,.full-pubcalendar{
+	line-height: normal !important;
+}
+
+
+.mini-pubcalendar table , .full-pubcalendar table{
+    border-collapse: inherit !important;
+}
+
 .pub-calendar-default  div , .pub-calendar-default  td ,  .pub-calendar-default  th{
 	-webkit-box-sizing: content-box !important;
 	-moz-box-sizing: content-box !important;
@@ -647,6 +656,8 @@ previous button's border...
 
 .pub-calendar-default .pubc-time-calendar .pubc-row-bg-table tr > td {
 	border-left: 1px solid #ddd;
+}
+.pub-calendar-default .pubc-time-calendar .pubc-row-bg-table tr > td:last-child {
 	border-right: 1px solid #ddd;
 }
 
