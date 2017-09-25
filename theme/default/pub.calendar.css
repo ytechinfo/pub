@@ -217,11 +217,14 @@
 	text-align: right;
 	z-index:3;
 }
+
 .pub-calendar-default.full-pubcalendar .pc_more {
     margin: 1px 3px;
     font-size: .85em;
     cursor: pointer;
     text-decoration: none;
+    z-index: 3;
+    position: relative;
 }
 
 .pub-calendar-default.full-pubcalendar .pubcalendar_body {
