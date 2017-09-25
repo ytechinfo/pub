@@ -372,6 +372,8 @@ Plugin.prototype ={
 
 			_this.config.select = {startIdx : _idx, endIdx: _idx};
 
+			_this.element.find('.pubc-row-bg-table').css('z-index',5);
+
 			isMouseDown = true; 
 			
 			//return true;
@@ -403,6 +405,7 @@ Plugin.prototype ={
 			if(isMouseDown){
 				e.preventDefault();
 				e.stopPropagation();
+				_this.element.find('.pubc-row-bg-table').css('z-index',1);
 				_this.element.find('.pubc-bg[_idx]').removeClass('select');
 				var selectInfo = getSelectInfo(); 
 

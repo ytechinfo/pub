@@ -215,7 +215,6 @@
 .pub-calendar-default.full-pubcalendar .pub_calendar_evt_more{
     position: relative;
 	text-align: right;
-	z-index:3;
 }
 
 .pub-calendar-default.full-pubcalendar .pc_more {
@@ -274,7 +273,10 @@
     table-layout: fixed;
     width: 100%;
 }
-.pub-calendar-default.full-pubcalendar .month-row{position:absolute;left:0;width:100%;overflow:hidden}
+.pub-calendar-default.full-pubcalendar .month-row{
+	position:absolute;left:0;width:100%;overflow:hidden;
+	z-index:10;
+}
 
 .pub-calendar-default.full-pubcalendar .pub_calendar_more_area_wrap{
 	display:none;
