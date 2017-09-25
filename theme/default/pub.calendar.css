@@ -135,7 +135,7 @@
 .pub-calendar-default.full-pubcalendar .full-pubcalendar-tbl{
 	position:relative;
 	width: 100%;
-	height: 21px;
+
 	table-layout: fixed;
 }
 .pub-calendar-default.full-pubcalendar .full-pubcalendar-tbl .pubc-week{
