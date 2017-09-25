@@ -11,8 +11,9 @@
 	line-height: normal !important;
 }
 
+
 .mini-pubcalendar table , .full-pubcalendar table{
-    border-collapse: initial;
+    border-collapse: initial !important;
 }
 
 .pub-calendar-default  div , .pub-calendar-default  td ,  .pub-calendar-default  th{
