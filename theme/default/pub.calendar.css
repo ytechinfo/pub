@@ -1,37 +1,37 @@
-/* mini calendar css end*/
-
 .pub-calendar-default{
-	width:100%;
-	height:100%;
-	position:relative;
-	font-size: 0.9em;
+	font-family: Tahoma,'돋움',Dotum;
+	font-size: .85em;
+}
+/*theme default start */
+.pub-calendar-default.full-pubcalendar .full-pubcalendar-tbl .pubc-week{
+    border-left: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
+}
+.pub-calendar-default .pub-button{
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    cursor: default;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    height: 27px;
+    line-height: 27px;
+    min-width: 54px;
+    outline: 0;
+    padding: 0 8px;
 }
 
-.mini-pubcalendar ,.full-pubcalendar{
-	line-height: normal !important;
-}
-
-
-.mini-pubcalendar table , .full-pubcalendar table{
-    border-collapse: initial !important;
-}
-
-.pub-calendar-default  div , .pub-calendar-default  td ,  .pub-calendar-default  th{
-	-webkit-box-sizing: content-box !important;
-	-moz-box-sizing: content-box !important;
-	box-sizing: content-box !important;
-
+.pub-calendar-default .prev_month_day, .pub-calendar-default .next_month_day{
+	zoom: 1; /* ie 5,6,7 bug fix */
+	filter: alpha(opacity=60);
+	opacity: 0.6;
 }
 
 .pub-calendar-default .pub-calendar-red{
 	color : #FE0404;
 }
-
-.pub-calendar-default .pubc-bg-area{
-	height:100%;
-	line-height:100%;
-}
-
 .pub-calendar-default .pub-calendar-black{
 	color : #000;
 }
@@ -39,11 +39,11 @@
 	color : #0099FF;
 }
 
+/*--mini calendar start */
 .pub-calendar-default.mini-pubcalendar a {
 	text-decoration:none;
     color: #000;
 }
-
 .pub-calendar-default.mini-pubcalendar .pc-grid-wrap{
 	color : #0099FF;
 	height : 20px;
@@ -70,8 +70,6 @@
 .pub-calendar-default.mini-pubcalendar tbody>tr>td {
 	text-align:center;
 }
-
-
 .pub-calendar-default.mini-pubcalendar .select{
 	background-color:#fff;
 	border:3px #2B9225 solid;
@@ -81,103 +79,86 @@
 	-webkit-border-radius:100px;
 	-moz-border-radius:100px;
 }
-/* --mini calendar css end*/
+/* mini calendar end */
 
-/*full calendar*/
-.pub-calendar-default .pub-calendar-red{
-	color : #FE0404;
-}
+/*theme default end */
 
-.pub-calendar-default .pub-calendar-black{
-	color : #000;
-}
-.pub-calendar-default .pub-calendar-blue{
-	color : #0099FF;
-}
-.pub-calendar-default .pub-button{
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
-    cursor: default;
-    font-size: 11px;
-    font-weight: bold;
-    text-align: center;
-    white-space: nowrap;
-    height: 27px;
-    line-height: 27px;
-    min-width: 54px;
-    outline: 0;
-    padding: 0 8px;
+
+.mini-pubcalendar ,.full-pubcalendar{
+	line-height: normal !important;
+	width:100%;
+	height:100%;
+	position:relative;
+	font-size: 0.9em;
 }
 
-.pub-calendar-default .prev_month_day, .pub-calendar-default .next_month_day{
-	zoom: 1; /* ie 5,6,7 bug fix */
-	filter: alpha(opacity=60);
-	opacity: 0.6;
+.mini-pubcalendar table , .full-pubcalendar table{
+    border-collapse: initial !important;
 }
 
-.pub-calendar-default.full-pubcalendar a {
+.mini-pubcalendar div, .mini-pubcalendar td, .mini-pubcalendar th ,
+.full-pubcalendar div, .full-pubcalendar td, .full-pubcalendar th{
+	-webkit-box-sizing: content-box !important;
+	-moz-box-sizing: content-box !important;
+	box-sizing: content-box !important;
+
+}
+
+/*full calendar start */
+.full-pubcalendar .pubc-bg-area{
+	height:100%;
+	line-height:100%;
+}
+
+.full-pubcalendar a {
 	text-decoration:none;
 }
-
-.pub-calendar-default.full-pubcalendar .pc-grid-wrap{
-	color : #0099FF;
-	height : 20px;
-}
-.pub-calendar-default.full-pubcalendar .pubcalendar-day-item {
+.full-pubcalendar .pubcalendar-day-item {
 	font-size:11px;
 	cursor:pointer;
 }
-.pub-calendar-default.full-pubcalendar .pubcalendar-day-item.font-bold {
+.full-pubcalendar .pubcalendar-day-item.font-bold {
 	text-align:center;
 	font-weight:bold;
 }
-.pub-calendar-default.full-pubcalendar .full-pubcalendar-tbl{
+.full-pubcalendar .full-pubcalendar-tbl{
 	position:relative;
 	width: 100%;
-
 	table-layout: fixed;
 }
-.pub-calendar-default.full-pubcalendar .full-pubcalendar-tbl .pubc-week{
+
+.full-pubcalendar .full-pubcalendar-tbl .pubc-week{
 	text-align:center;
 	font-size:1em;
     font-weight: bold;
-    border-left: 1px solid #ddd;
-	border-bottom: 1px solid #ddd;
 }
-.pub-calendar-default.full-pubcalendar .full-pubcalendar-tbl .pubc-week.pubc-week-fc{
+.full-pubcalendar .full-pubcalendar-tbl .pubc-week.pubc-week-fc{
 	border-left: 0px solid #ddd;
 }
-
-.pub-calendar-default.full-pubcalendar .day_area {
+.full-pubcalendar .day_area {
 	padding :5px 3px 0px 3px;
 	line-height: 1.0;
 }
-.pub-calendar-default.full-pubcalendar .day_area a{
-	font-family: Tahoma,'돋움',Dotum;
-    font-size: 11px;
+
+.full-pubcalendar .day_area a{
+	font-size: 11px;
 	font-weight: bold;
 	letter-spacing: -1px;
     vertical-align: top;
 	z-index:2;
 	position: relative;
 }
-.pub-calendar-default.full-pubcalendar .day_info {
+.full-pubcalendar .day_info {
 	float:right;
-	font-family: Tahoma,'돋움',Dotum;
-    font-size: 11px;
 	letter-spacing: -1px;
     vertical-align: top;
+	font-size:9pt;
 }
 
-.pub-calendar-default.full-pubcalendar .day_info {
-	float:right;
-	font-family: Tahoma,'돋움',Dotum;
-    font-size: 11px;
-	letter-spacing: -1px;
-    vertical-align: top;
+.pub-calendar-default.full-pubcalendar .pc-grid-wrap{
+	color : #0099FF;
+	height : 20px;
 }
-
 .pub-calendar-default .pubcalendar_year_txt{
 	display:none;
 }
@@ -189,7 +170,7 @@
 }
 
 .pub-calendar-default.full-pubcalendar .pubcalendar_month_select{
-	font: 12pt 돋움;
+	font: 12pt;
 	font-weight: bold;
 }
 .pub-calendar-default.full-pubcalendar .pubc-item-wrap{
@@ -282,7 +263,7 @@
 	display:none;
 	position: absolute;
 	background:#fff;
-	z-index:5;
+	z-index:100;
 	border:1px solid #ddd;
 }
 .pub-calendar-default.full-pubcalendar .pub_calendar_more_area_wrap.open{
@@ -851,7 +832,6 @@ hr.pubc-divider {
 /* bootstrap 아이콘.*/
 .glyphicon-plus{
 	padding-left:10px;
-	font-family: Tahoma,'돋움',Dotum;
 	font-size: 11px;
 	letter-spacing: -1px;
 	vertical-align: top;
@@ -898,17 +878,14 @@ hr.pubc-divider {
 	float: right;
 }
 
-.pub-calendar-default.full-pubcalendar .write_btn_area{
+.full-pubcalendar .write_btn_area{
 	text-align:center;
 	margin-top: 40px;
 }
 
-.pub-calendar-default.full-pubcalendar .write_btn{
-	text-align:center;
-	margin-top: 40px;
-}
 
-.pub-calendar-default.full-pubcalendar .pubc-dim-layer-area{
+
+.full-pubcalendar .pubc-dim-layer-area{
 	position:absolute;
 	top:0;right:0;bottom:0;left:0;
 	display:none;
@@ -925,9 +902,7 @@ hr.pubc-divider {
 	-ms-box-pack:center;
 	-ms-box-align:center; 
 }
-
-
-.pub-calendar-default.full-pubcalendar .pubc-dim-layer-area>.pubc-bg-dim{
+.full-pubcalendar .pubc-dim-layer-area>.pubc-bg-dim{
 	position:absolute;
 	top:0;right:0;bottom:0;left:0;
 	background: #ddd;
@@ -935,7 +910,13 @@ hr.pubc-divider {
 	filter: alpha(opacity=2);
 	z-index:11;
 }
-.pub-calendar-default.full-pubcalendar .pubc-dim-layer-area.open{
+
+.pub-calendar-default.full-pubcalendar .pubc-dim-layer-area>.pubc-bg-dim{
+	background: #ddd;
+	opacity: .2;
+	filter: alpha(opacity=2);
+}
+.full-pubcalendar .pubc-dim-layer-area.open{
 	display:-webkit-box;
 	display:-moz-box;
 	display:-ms-flexbox;
@@ -956,8 +937,4 @@ hr.pubc-divider {
 
 .full-pubcalendar .pubc-dim-layer-area[view-layer="write"] .pub-write-content{
 	display:block;
-}
-
-.pub-calendar-default.full-pubcalendar .pubc-dim-layer-area .pub-write-content{
-	
 }
