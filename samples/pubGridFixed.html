@@ -86,7 +86,7 @@ function getItem (type){
 		for(var i =0 ;i <itemCount; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 150 ;j++){
+			for(var j =0 ; j< 16 ;j++){
 				var colName = 'col'+j ; 
 				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
@@ -136,7 +136,7 @@ function gridDraw(selector, aaa, colItem){
 				,displayLineNumber : true	 // 라인 넘버 보기.
 				,displayRowSelector : false	 // row selecotr checkbox 보기
 				,displayModifyInfo : false	 // 수정여부 보기
-				,colFixedIndex :1
+				,colFixedIndex :0
 				,resize:{
 					enabled : true
 				}
