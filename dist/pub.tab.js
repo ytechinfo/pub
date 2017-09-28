@@ -13,19 +13,22 @@
     var pluginName = "pubTab"
 		,_datastore = {}
 		,defaults = {
-			fadeSpeed: 100
+			speed : 150
 			,width:300
 			,filter: function ($obj) {
 				// Modify $obj, Do not return
 			}
 			,icon :{
-				prev :'<'
-				,next : '>'
+				prev :'pub-tab-left-arrow'
+				,next : 'pub-tab-right-arrow'
 			}
-			,items:[]
-			,selectCls : 'item_select'
-			,click :function (item){
+			,addClass : 'service_menu_tab'	// tab li 추가 클래스
+			,items:[]							// tab item
+			,click :function (item){			// tab click 옵션
 				
+			}
+			,itemKey :{							// item key mapping
+				title :'name'
 			}
 		};
         
@@ -78,7 +81,7 @@
 					prevTimerObj = setTimeout(function(){
 						scrollLeft = _this.config.tabScrollElement.scrollLeft();
 						movePrev()
-					}, 100);
+					}, _this.options.speed);
 				}
 
 				movePrev();	
@@ -94,7 +97,7 @@
 					nextTimerObj = setTimeout(function(){
 						scrollLeft = _this.config.tabScrollElement.scrollLeft();
 						moveNext()
-					}, 100);
+					}, _this.options.speed);
 				}
 				
 				prevElement.show();
@@ -136,7 +139,7 @@
 			$('#'+this.contextId+'pub-tab').css('width',val);
 			this.config.tabScrollElement.css('width',val);
 
-			if(this.config.tabContainerElement.width() > this.options.width){
+			if(this.config.tabContainerElement.width() >= this.options.width){
 				$('#'+this.contextId+'pub-tab-move-space').show();
 				this.element.find('.pub-tab-move-area').show();
 			}else{
@@ -154,9 +157,10 @@
 			
 			function tabItemHtml (){
 				var tabHtm = [];
+				var titleKey = _this.options.itemKey.title;
 				for(var i = 0 ;i < itemLen ;i++){
 					var item = items[i];
-					tabHtm.push('<li class="pub-tab-item '+(i+1==itemLen ? 'last':'')+'"><span class="pub-tab-item-cont" data-tab-idx="'+i+'">'+item.title+'</span></li>');
+					tabHtm.push('<li class="pub-tab-item '+(i+1==itemLen ? 'last':'')+'"><span class="pub-tab-item-cont '+_this.options.addClass+'" data-tab-idx="'+i+'">'+item[titleKey]+'</span></li>');
 				}
 				return tabHtm.join('');
 			}
@@ -170,9 +174,10 @@
 			strHtm.push('			<li><div id="'+_this.contextId+'pub-tab-move-space"  style="display:none;">&nbsp;</div></li>');
 			strHtm.push('			</ul>');
 			strHtm.push('		</div> ');
-			strHtm.push('		<div class="pub-tab-move-area"> ');
-			strHtm.push('			<span class="pub-tab-prev">'+_this.options.icon.prev+'</span>');
-			strHtm.push('			<span class="pub-tab-next">'+_this.options.icon.next+'</span>');
+			strHtm.push('		<div class="pub-tab-move-area">');
+			strHtm.push('			<div class="pub-tab-move-dim"></div>');
+			strHtm.push('			<i class="pub-tab-prev '+_this.options.icon.prev+'"></i>');
+			strHtm.push('			<i class="pub-tab-next '+_this.options.icon.next+'"></i>');
 			strHtm.push('		</div>');
 			strHtm.push('	</div>');
 			strHtm.push('</div>');
@@ -201,8 +206,8 @@
 
 		var _cacheObject = _datastore[selector];
 
-		if(typeof options === 'undefined'){
-			return _cacheObject||{}; 
+		if(typeof options === undefined){
+			return _cacheObject; 
 		}
 		
 		if(!_cacheObject){
@@ -210,6 +215,7 @@
 			_datastore[selector] = _cacheObject;
 			return _cacheObject; 
 		}else if(typeof options==='object'){
+			_cacheObject.destory();
 			_cacheObject = new Plugin(selector, options);
 			_datastore[selector] = _cacheObject;
 			return _cacheObject; 
