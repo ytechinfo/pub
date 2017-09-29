@@ -662,10 +662,13 @@ Plugin.prototype ={
 			}
 		
 			var cycle = parseInt((repeatInfo[colModel.cycle] || 1),10)
-				,days = parseInt(repeatInfo[colModel.days],10)
+				,days = (parseInt(repeatInfo[colModel.days],10) -1)
 				,tmpStartTime = repeatInfo[colModel.startTime]
 				,tmpEndTime = repeatInfo[colModel.endTime];
-				
+			
+			if(cycle==0){
+				return ; 
+			}
 			
 			if(type=='year'){ // 년 반복일정 처리.
 				var startMMDD = startDt.format('MM-DD'); 
@@ -673,6 +676,7 @@ Plugin.prototype ={
 			
 				addRepeatItem(eventInfoArr,exceptionInfo,item, startDt, startDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
 			}else{
+
 				var repeatStart , repeatFirst = first.clone().add((days*-1),'day')
 					,len =1, flag = true;
 
@@ -692,7 +696,7 @@ Plugin.prototype ={
 
 					len = last.clone().startOf(type).diff(repeatStart.startOf('month'),type);
 					len = Math.ceil(len/cycle)+1;
-															
+
 					for (var j=0; j < len ;j++){
 						var tmpStartDt = makeMoment(repeatStart.clone().add(j,'month').format('YYYY-MM')+'-'+startDD); 
 						if(tmpStartDt.isValid()){ 
@@ -702,19 +706,19 @@ Plugin.prototype ={
 							}
 						}
 					}
-					
-				}else if(type=='week'){ // 주 반복일정 처리.
 
+				}else if(type=='week'){ // 주 반복일정 처리.
+						
 					if(flag){
 						var num = repeatFirst.diff(startDt.clone().startOf('week') ,'week');
 						num += (num%cycle > 0 ? cycle -num%cycle : 0);
 						repeatStart = startDt.clone().startOf('week').add(num,'week');
 					}
-
+					
 					len = last.diff(repeatStart,'week');
 					len = Math.ceil(len/cycle)+1;
 					len = len  < 1 ? 1 :len;
-	
+
 					for (var j=0;j <len ;j++){
 						var weekDayNum = repeatStart.weekday();
 
@@ -758,7 +762,6 @@ Plugin.prototype ={
 						}
 						repeatStart.add(cycle,'week');
 					}
-					
 				}else if(type=='day'){ // 일 반복일정 처리.
 					if(flag){
 						var num = repeatFirst.diff(startDt,type);
@@ -773,7 +776,7 @@ Plugin.prototype ={
 						addRepeatItem(eventInfoArr,exceptionInfo,item, repeatStart, repeatStart.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
 						repeatStart.add(cycle,'day');
 					}
-				}
+				}	
 			}
 		});
 
