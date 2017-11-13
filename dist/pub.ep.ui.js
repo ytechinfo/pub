@@ -919,17 +919,24 @@ window.PubEPUI = _$base;
 
 		this.empty().html(strHTML.join(''));
 		
-		$(this.selector+' .page-click').on('click', function() {
-			var sNo = $(this).attr('pageno');
-			if (typeof callback == 'function') {
-				callback(sNo);
-			} else {
-				try {
-					nextPage(sNo);
-				} catch (e) {
+		var initFlag = this.data('initFlag');
+		
+		if(initFlag != 'true'){
+			this.data('initFlag', 'true')
+			this.on('click',' .page-click', function() {
+				var sNo = $(this).attr('pageno');
+				
+				
+				if (typeof callback == 'function') {
+					callback(sNo);
+				} else {
+					try {
+						nextPage(sNo);
+					} catch (e) {
+					}
 				}
-			}
-		});
+			});
+		}
 		
 		return this; 
 	};
