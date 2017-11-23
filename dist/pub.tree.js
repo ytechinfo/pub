@@ -141,6 +141,14 @@
 				_this.toggle($(this));
 			})
 		}
+		,nodeClick : function (id){
+			var _this  = this;
+			
+			var clickEle = $(this.selector).find('#'+id+'_a');
+			
+			clickEle.trigger('click');
+			
+		}
 		,toggle : function (selectEle){
 			var _this = this
 				,_opt = _this.options
