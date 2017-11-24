@@ -7,7 +7,7 @@
 <link href="../theme/default/pub.ep.css" rel="stylesheet">
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
-<script src="../plugins/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="../plugins/jquery-ui-1.12.1.min.js"></script>
 <script src="../dist/pub.multiselect.js"></script>
 
 </HEAD>
@@ -220,6 +220,7 @@ $(document).ready(function (){
 	selectObj= $.pubMultiselect('#source', {
 		targetSelector : '#target'
 		,addItemClass:'text_selected'
+		,containment :'.exampleTbl'
 		,useMultiSelect : true
 		,pageInfo :{
 			max :9 
@@ -277,7 +278,8 @@ $(document).ready(function (){
 	for(var i = 0 ;i <10; i++){
 		paramTargetItem2.push({LINK_ID1 :'0000'+i ,LINK_NAME1:'name'+i});
 	}
-
+	
+	return ; 
 
 	selectObj2= $.pubMultiselect('#source2', {
 		targetSelector : '#target2'
