@@ -31,15 +31,6 @@ _defaultOption ={
 	method :'post'
 	,cache: false
 	,dataType: "json"
-	,beforeSend : function( xhr ) {
-		if(loadDiv)	$(loadDiv).centerLoadingClose();
-	}
-	,error : function (data, status, err){
-			
-	}
-	,complete: function (data, status, err){
-			
-	}	
 }
 ,globalOption ={
 	httpMethod :{
@@ -51,7 +42,7 @@ _defaultOption ={
 		,'popup':'popup'
 		,'location':'location'
 	}
-	,loadSelect : '.pub-loading-area'
+	,loadSelector : '.pub-loading-area'
 	,defaultPopupMethod:'get'
 	,useReplaceParam : true
 	,useLinkReplace : true
@@ -97,8 +88,9 @@ _defaultOption ={
  * @method init
  * @description 설정 초기화.
  */	
-_$base.init = function (option){
-	$.extend(globalOption,option);
+_$base.init = function (gOption , ajaxOpt){
+	_$base.util.objectMerge(globalOption,option);
+	_$base.util.objectMerge(_defaultAjaxOption,ajaxOpt);
 	return _$base; 
 }
 /**
@@ -182,30 +174,28 @@ _$base.req ={
 	 */		
 	ajax:function (option){
 		
-		var loadSelector = option.loadSelector ?option.loadSelector : globalOption.loadSelect; 
+		var loadSelector = option.loadSelector ?option.loadSelector : globalOption.loadSelector; 
 		
 		if(option.dataType == 'jsonp'){
 			option.timeout = option.timeout || 10000;
 		}
+		var ajaxOpt =_$base.util.objectMerge({}, _defaultAjaxOption,option); 
 		
-		$.ajax($.extend({}, {
-			type :'get'
-			,cache: false
-			,dataType: "json"
-			,beforeSend : function( xhr ) {
-				if($(loadSelector.loadSelect).length > 0){
-					$(loadSelector).centerLoading({
-						contentClear:false 
-					});
-				}
+		ajaxOpt.beforeSend = function (xhr){
+			if($(loadSelector).length > 0){
+				$(loadSelector).centerLoading({
+					contentClear:false 
+				});
 			}
-			,error : function (data, status, err){
-				if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
+			
+			if($.isFunction(option.beforeSend)){
+				option.beforeSend(xhr);
 			}
-			,complete: function (data, status, err){
-				if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
-			}	
-		},option));
+		}
+		
+		$.ajax(ajaxOpt).done(function (xhr){
+			if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
+		})
 	}
 	/**
 	 * @method PubEP.resultMessage
@@ -267,15 +257,14 @@ jQuery.fn.centerLoading = function(options) {
 	var config = $.extend({},this.config, options);
 	id = this.attr('id');
 
-	w = config.width==0?this.width():config.width;
 	h = config.height==0?this.height():config.height;
 	opacity = config.opacity;
 	
 	if($(this).parent().attr('prevspan') =='Y')	config.contentClear = false;
 	
 	var strHtm = [];
-	strHtm.push('<div class="pub-center-loading" style="z-index:'+config.zIndex+';position:'+config.position+';top: 0;left: 0;width:'+w+'px;height:'+h+'px;cursor:'+config.cursor+';">');
-	strHtm.push('<div class="pub-center-loading-bg"" style="background:'+config.bgColor+';opacity:'+opacity+';filter: alpha(opacity='+(parseFloat('0.4')*100)+');-moz-opacity:'+opacity+';-khtml-opacity: '+opacity+';'+(!config.contentClear?"position:absolute;":"")+'width:'+w+'px; height:'+h+'px;"></div>');
+	strHtm.push('<div class="pub-center-loading" style="z-index:'+config.zIndex+';position:'+config.position+';width:100%;height:'+h+'px;cursor:'+config.cursor+';">');
+	strHtm.push('<div class="pub-center-loading-bg" style="background:'+config.bgColor+';opacity:'+opacity+';filter: alpha(opacity='+(parseFloat('0.4')*100)+');-moz-opacity:'+opacity+';-khtml-opacity: '+opacity+';'+(!config.contentClear?"position:absolute;":"")+'width:100%; height:'+h+'px;"></div>');
 	strHtm.push('<table style="position:absolute;z-index:3;width:100%;height:100%;"><tr><td style="vertical-align:middle;text-align:center;">')
 	strHtm.push('<div><div><img src="'+config.loadingImg+'"></div><div class="center-loading-content" style="color:#ffffff;"></div></div></td></tr></table>')
 	strHtm.push('</div>');
