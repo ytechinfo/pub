@@ -217,9 +217,14 @@ function gridDraw(selector, aaa, colItem){
 					}
 					,callback: function(key,sObj) {
 						console.log(this,key,sObj);
+
+						if(key =='copy'){
+							gridObj.copyData();
+						}
 					}
 					,items: [
 						{key : "refresh" , "name": "새로고침"}
+						,{key : "copy" , "name": "복사"}
 						,{key : "sql_create", "name": "sql생성" 
 							,subMenu: [
 								{ key : "selectStar","name": "select *" , mode: "selectStar"}
