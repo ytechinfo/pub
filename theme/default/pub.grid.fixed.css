@@ -260,7 +260,7 @@
 	float: right;
 	width: 0;
 	height: 0;
-	margin-top: 5px;
+	margin-top: -13px;
 	margin-right: -10px;
 	border-color: transparent;
 	border-left-color: #cccccc;
@@ -288,6 +288,26 @@
 }
 .pub-context .pub-context-submenu:hover > .pub-context-menu {
 	display: block;
+}
+.pub-context-item-title{
+	max-width:50%;
+	display:table-cell;
+}
+.pub-context-hotkey{
+	width:50%;
+	max-width:50%;
+    padding-left: 8px;
+	min-width:78px;
+	text-align: right;
+	display:table-cell;
+}
+
+.pub-context-hotkey-empty{
+	width:78px;
+	min-width:78px;
+	margin-left: 8px;
+	text-align: right;
+	display:table-cell;
 }
 .compressed-context a{
 	padding-left: 14px;

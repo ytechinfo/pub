@@ -224,7 +224,7 @@ function gridDraw(selector, aaa, colItem){
 					}
 					,items: [
 						{key : "refresh" , "name": "새로고침"}
-						,{key : "copy" , "name": "복사"}
+						,{key : "copy" , "name": "복사", hotkey:'Ctrl+C'}
 						,{key : "sql_create", "name": "sql생성" 
 							,subMenu: [
 								{ key : "selectStar","name": "select *" , mode: "selectStar"}
@@ -235,7 +235,7 @@ function gridDraw(selector, aaa, colItem){
 								,{ key : "drop","name": "drop" , mode:"drop"}
 							]
 						}
-						,{key : "create_ddl","name": "DDL 보기" 
+						,{key : "create_ddl","name": "DDL 보기" ,hotkey:'Ctrl+shift+C'
 							
 						}
 						,{key : "mybatis-sql_create","name": "mybatis Sql생성" 

@@ -251,7 +251,14 @@ Plugin.prototype ={
 			, navi :{height : 0, width : 0}
 			, scroll : {before:{},top :0 , left:0, startCol:0, endCol : 0,startRow : 0, endRow :0, viewIdx : 0, vBarPosition :0 , hBarPosition :0 , maxViewCount:0, viewCount : 0, verticalHeight:0,horizontalWidth:0}
 			,aside :{items :[]}
-			,select :{startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0}
+			,select :{
+				range :[
+					{startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0}
+				]
+				,isSelect :false
+				,isMouseDown:false
+				,curr : 0
+			}
 		};
 		
 		_this.setOptions(options, true);
@@ -701,7 +708,9 @@ Plugin.prototype ={
 		}
 
 		if(gridMode=='reDraw'){
-			_this.config.select = {isSelect :false, isMouseDown:false,startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0};
+			_this._setRangeSelectInfo({
+				rangeInfo : {startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0}
+			}, true);
 			_this.calcDimension('reDraw');
 			_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 		}
@@ -1110,7 +1119,7 @@ Plugin.prototype ={
 		
 		var asideItem =_this.config.aside.items; 
 
-		var selectCell = _this.getSelectCellInfo(_this.config.select);
+		var selectCell = _this.getSelectCellInfo(0,false);
 
 		var colFixedIndex = this.options.headerOptions.colFixedIndex;
 
@@ -1774,7 +1783,9 @@ Plugin.prototype ={
      * @method getSelectCellInfo
      * @description 선택된 cell 영역 구하기.
      */
-	,getSelectCellInfo :function(selectInfo, flag){
+	,getSelectCellInfo :function(curr, allDataFlag){
+		var selectInfo = this.config.select.range[curr];
+
 		var  startIdx = selectInfo.startIdx
 			,endIdx = selectInfo.endIdx	
 			,startRow = parseInt(selectInfo.startRow,10)
@@ -1822,6 +1833,39 @@ Plugin.prototype ={
 		}
 	}
 	/**
+     * @method _setRangeSelectInfo
+     * @description 선택 영역 정보 셋팅.
+     */
+	,_setRangeSelectInfo : function(selectInfo, initFlag){
+		var	rangeInfo = selectInfo.rangeInfo;
+		
+		var cfgSelect = this.config.select; 
+		for(var key in selectInfo){
+			if(key =='rangeInfo'){
+				;
+			}else if(key =='curr'){
+				if(selectInfo[key]=='add'){
+					cfgSelect.curr+=1;
+					cfgSelect.range.push(rangeInfo)
+				}
+			}else{
+				cfgSelect[key] = selectInfo[key];
+			}
+		}
+
+		if(initFlag === true){
+			cfgSelect.curr = 0;
+			cfgSelect.range=[];
+			cfgSelect.range.push(rangeInfo);
+			return ; 
+		}
+
+		var currInfo = cfgSelect.range[cfgSelect.curr];
+		for(var key in rangeInfo){
+			currInfo[key] = rangeInfo[key];
+		}
+	}
+	/**
      * @method _initBodyEvent
      * @description 바디 이벤트 초기화.
      */
@@ -1829,7 +1873,7 @@ Plugin.prototype ={
 		var _this = this
 			 ,rowClickFlag =false; 
 		
-		_this.config.select.isMouseDown = false; 		
+		_this._setRangeSelectInfo({isMouseDown : false});
 		
 		_this.element.body.on('mousedown.pubgridcol','.pub-body-td',function (e){
 
@@ -1847,12 +1891,29 @@ Plugin.prototype ={
 			var selItem = _this.options.tbodyItem[selRow];
 			
 			if (e.shiftKey) {
-				_this.config.select.endIdx=selIdx;
-				_this.config.select.endRow=selRow;
-				_this.config.select.endCol=colIdx;
+				_this._setRangeSelectInfo({
+					rangeInfo : {
+						endIdx:selIdx
+						,endRow:selRow
+						,endCol:colIdx
+					}
+				});
 				selectTo();
-			} else {
-				_this.config.select = {isSelect :true, startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx};
+			} else if(e.ctrlKey){
+				console.log(_this.config.select)
+
+				_this._setRangeSelectInfo({
+					rangeInfo : {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx}
+					,isSelect : true
+					,curr : (_this.config.select.isSelect?'add':'')
+				});
+				sEle.addClass('col-active');
+			}else{
+				_this._setRangeSelectInfo({
+					rangeInfo : {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx}
+					,isSelect : true
+				}, true);
+
 				_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
 				sEle.addClass('col-active');
 			}
@@ -1860,7 +1921,7 @@ Plugin.prototype ={
 			window.getSelection().removeAllRanges();
 		
 			//_this.element.body.attr("onselectstart", "return false");
-			_this.config.select.isMouseDown = true; 
+			_this._setRangeSelectInfo({isMouseDown : true});
 
 			if($.isFunction(_this.options.tColItem[colIdx].colClick)){
 				_this.options.tColItem[colIdx].colClick.call(this,colIdx,{
@@ -1882,28 +1943,32 @@ Plugin.prototype ={
 				,selRow = selCol[0]
 				,colIdx = selCol[1];
 
-			_this.config.select.endRow=selRow;
-			_this.config.select.endCol=colIdx;
-			_this.config.select.endIdx=_this.config.scroll.viewIdx+parseInt(selRow,10);
-
+			_this._setRangeSelectInfo({
+				rangeInfo : {
+					endIdx : _this.config.scroll.viewIdx+parseInt(selRow,10)
+					,endRow : selRow
+					,endCol : colIdx
+				}
+			});
+			
 			selectTo();
 		})
 				
-		$(document).on('mouseup.'+_this.prefix,function () {
+		$(document).on('mouseup.'+_this.prefix,function (e) {
 			//_this.element.body.removeClass('pubGrid-noselect');
-			_this.config.select.isMouseDown = false;
+			_this._setRangeSelectInfo({isMouseDown : false});
 		});
 	
 		// col select
 		function selectTo() {
-			var colInfo = _this.getSelectCellInfo(_this.config.select);
+			var colInfo = _this.getSelectCellInfo(_this.config.select.curr, false);
 			
 			var  sRow= colInfo.startRow
 				,eRow =  colInfo.endRow
 				,sCol= colInfo.startCol
 				,eCol =  colInfo.endCol; 
 			
-			_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
+			//_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
 			
 			for(var i = sRow ; i <= eRow ; i++){
 				for(var j=sCol ;j <= eCol; j++){
@@ -1988,7 +2053,7 @@ Plugin.prototype ={
      */
 	,selectData : function () {
 		var _this = this; 
-		var colInfo = _this.getSelectCellInfo(_this.config.select);
+		var colInfo = _this.getSelectCellInfo(-1, true);
 			
 		var sCol= colInfo.startCol
 			,eCol =  colInfo.endCol
