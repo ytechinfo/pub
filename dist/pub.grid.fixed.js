@@ -125,6 +125,21 @@ var _initialized = false
     return 11;
 })());
 
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function hasProperty(obj , key){
+	return hasOwnProperty.call(obj, key);
+}
+
+function isUndefined(obj){
+	return typeof obj==='undefined';
+}
+
+function intValue(val){
+	return parseInt(val , 10);
+}
+
+
 var util= {
 	formatter : {
 		'money' : function (num , fixedNum , prefix , suffix){
@@ -168,8 +183,7 @@ function getHashCode (str){
 function copyStringToClipboard (prefix , copyText) {
 	var isRTL = document.documentElement.getAttribute('dir') == 'rtl';
 
-	if (typeof window.clipboardData !== "undefined" &&
-	  typeof window.clipboardData.setData !== "undefined") {
+	if (!isUndefined(window.clipboardData) && !isUndefined(window.clipboardData.setData)) {
 		window.clipboardData.setData("Text", copyText);
 		return ; 
 	}
@@ -253,11 +267,14 @@ Plugin.prototype ={
 			,aside :{items :[]}
 			,select :{
 				range :[
-					{startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0}
+					{startIdx : -1,endIdx : -1, startRow : -1 ,startCol : -1, endRow : -1, endCol : -1}
 				]
 				,isSelect :false
 				,isMouseDown:false
 				,curr : 0
+				,minIdx : -1 ,maxIdx : -1	// 선택한 영역의 min , max row 값
+				,minCol : -1 ,maxCol : -1	// 선택한 영역의 min , max col 값
+				,selectPosition : {}
 			}
 		};
 		
@@ -304,7 +321,7 @@ Plugin.prototype ={
 			
 			if(_cb){
 				_this.options.rowOptions.contextMenu.callback = function(key,sObj) {
-					this.gridItem = _this.getItems(_this.config.scroll.viewIdx + parseInt(this.element.attr('rowInfo'),10));
+					this.gridItem = _this.getItems(_this.config.scroll.viewIdx + intValue(this.element.attr('rowInfo')));
 					_cb.call(this,key,sObj);
 				}
 			}
@@ -518,13 +535,13 @@ Plugin.prototype ={
 
 		for(var _ikey in sortHeaderInfo){
 			var tmpHgi = headGroupInfo[sortHeaderInfo[_ikey].r][_ikey]
-			if(typeof tmpHgi !=='undefined'){
+			if(!isUndefined(tmpHgi)){
 				tmpHgi['isSort'] =(tmpHgi.sort===true?true:false); 
 				headGroupInfo[sortHeaderInfo[_ikey].r][_ikey] = tmpHgi;
 			}
 
 			tmpHgi = leftHeaderGroupInfo[sortHeaderInfo[_ikey].r][_ikey]
-			if(typeof tmpHgi !=='undefined'){
+			if(!isUndefined(tmpHgi)){
 				tmpHgi['isSort'] =(tmpHgi.sort===true?true:false); 
 				leftHeaderGroupInfo[sortHeaderInfo[_ikey].r][_ikey] = tmpHgi;
 			}
@@ -709,7 +726,7 @@ Plugin.prototype ={
 
 		if(gridMode=='reDraw'){
 			_this._setRangeSelectInfo({
-				rangeInfo : {startIdx : 0,endIdx : 0, startRow : 0 ,startCol : 0, endRow:0, endCol :0}
+				rangeInfo : {startIdx : -1,endIdx : -1, startRow : -1 ,startCol : -1, endRow:-1, endCol :-1}
 			}, true);
 			_this.calcDimension('reDraw');
 			_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
@@ -953,9 +970,9 @@ Plugin.prototype ={
 
 		if($.isFunction(thiItem.formatter)){
 			itemVal = thiItem.formatter.call(null,{idx : _idx , colInfo:thiItem, item: rowItem , formatter : function (val, fixed , prefix , suffix){
-				fixed = typeof fixed ==='undefined'?tmpFormatter.fixed :fixed;
-				prefix = typeof prefix ==='undefined'?tmpFormatter.prefix :prefix;
-				suffix = typeof suffix ==='undefined'?tmpFormatter.suffix :suffix;
+				fixed = isUndefined(fixed)?tmpFormatter.fixed :fixed;
+				prefix = isUndefined(prefix)?tmpFormatter.prefix :prefix;
+				suffix = isUndefined(suffix)?tmpFormatter.suffix :suffix;
 				return util.formatter[type](val, fixed ,prefix, suffix); 
 			}});
 		}else{
@@ -1119,22 +1136,14 @@ Plugin.prototype ={
 		
 		var asideItem =_this.config.aside.items; 
 
-		var selectCell = _this.getSelectCellInfo(0,false);
-
 		var colFixedIndex = this.options.headerOptions.colFixedIndex;
 
-		startCol = startCol < colFixedIndex ? colFixedIndex : startCol;
-
-		//var selectFlag = (drawMode != 'init'&&selectCell.startIdx <= itemIdx && itemIdx <= selectCell.endIdx) ?true :false;
-		var selectFlag = (_this.config.select.isSelect ===true) ?true :false;
 
 		function setSelectCell(row , col, addEle){
 			addEle.parentElement.classList.remove( 'col-active' );
-			if(selectFlag){
-				if(selectCell.startIdx <=row && row <= selectCell.endIdx
-					&& selectCell.startCol <=col && col <= selectCell.endCol ){
-					addEle.parentElement.classList.add( 'col-active' );
-				}
+			
+			if(_this.isSelectPosition(row+','+col)){
+				addEle.parentElement.classList.add( 'col-active' );
 			}
 
 			return false; 
@@ -1788,10 +1797,10 @@ Plugin.prototype ={
 
 		var  startIdx = selectInfo.startIdx
 			,endIdx = selectInfo.endIdx	
-			,startRow = parseInt(selectInfo.startRow,10)
-			,endRow = parseInt(selectInfo.endRow,10)
-			,startCol = parseInt(selectInfo.startCol,10)
-			,endCol = parseInt(selectInfo.endCol,10);
+			,startRow = selectInfo.startRow
+			,endRow = selectInfo.endRow
+			,startCol = selectInfo.startCol
+			,endCol = selectInfo.endCol;
 		
 		if(startIdx > endIdx){
 			var tmp = endIdx;
@@ -1854,16 +1863,38 @@ Plugin.prototype ={
 		}
 
 		if(initFlag === true){
-			cfgSelect.curr = 0;
-			cfgSelect.range=[];
+			var initOpt = {
+				curr :0
+				,range : []
+				,selectPosition : {}
+				,minIdx : -1 ,maxIdx : -1
+				,minCol : -1 ,maxCol : -1
+			}
+		
+			for(var key in initOpt){
+				cfgSelect[key] = initOpt[key];
+			}
 			cfgSelect.range.push(rangeInfo);
 			return ; 
 		}
 
+		if(isUndefined(rangeInfo)) return ; 
+
+		
+		
 		var currInfo = cfgSelect.range[cfgSelect.curr];
+
 		for(var key in rangeInfo){
 			currInfo[key] = rangeInfo[key];
 		}
+
+		console.log(currInfo);
+
+		cfgSelect.minIdx =  ( cfgSelect.minIdx ==-1  || cfgSelect.minIdx > currInfo.startIdx ? currInfo.startIdx : cfgSelect.minIdx);
+		cfgSelect.maxIdx =  (cfgSelect.maxIdx < currInfo.endIdx ? currInfo.endIdx : cfgSelect.maxIdx);
+
+		cfgSelect.minCol =  (cfgSelect.minCol == -1 || cfgSelect.minCol > currInfo.startCol ? currInfo.startCol : cfgSelect.minCol);
+		cfgSelect.maxCol = (cfgSelect.maxCol < currInfo.endCol ? currInfo.endCol : cfgSelect.maxCol);
 	}
 	/**
      * @method _initBodyEvent
@@ -1882,39 +1913,43 @@ Plugin.prototype ={
 			}
 
 			var sEle = $(this)
-				,selCol = sEle.attr('data-grid-position').split(',')
-				,selRow = selCol[0]
-				,colIdx = selCol[1];
+				,gridTdPos = sEle.attr('data-grid-position')
+				,selCol = gridTdPos.split(',')
+				,selRow = intValue(selCol[0])
+				,colIdx = intValue(selCol[1]);
 
-			var selIdx = _this.config.scroll.viewIdx+parseInt(selRow,10);
+			var selIdx = _this.config.scroll.viewIdx+intValue(selRow);
 				
 			var selItem = _this.options.tbodyItem[selRow];
 			
 			if (e.shiftKey) {
 				_this._setRangeSelectInfo({
 					rangeInfo : {
-						endIdx:selIdx
-						,endRow:selRow
-						,endCol:colIdx
+						endIdx: selIdx
+						,endRow: selRow
+						,endCol: colIdx
 					}
 				});
 				selectTo();
-			} else if(e.ctrlKey){
-				console.log(_this.config.select)
-
-				_this._setRangeSelectInfo({
-					rangeInfo : {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx}
-					,isSelect : true
-					,curr : (_this.config.select.isSelect?'add':'')
-				});
-				sEle.addClass('col-active');
 			}else{
-				_this._setRangeSelectInfo({
-					rangeInfo : {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx}
-					,isSelect : true
-				}, true);
 
-				_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
+				if(e.ctrlKey){
+					_this._setRangeSelectInfo({
+						rangeInfo : {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx}
+						,isSelect : true
+						,curr : (_this.config.select.isSelect?'add':'')
+					});
+				}else{
+					_this._setRangeSelectInfo({
+						rangeInfo : {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx}
+						,isSelect : true
+					}, true);
+
+					_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
+				}
+				
+				_this._addSelectPosition(selIdx ,colIdx);
+
 				sEle.addClass('col-active');
 			}
 			
@@ -1940,12 +1975,12 @@ Plugin.prototype ={
 
 			var sEle = $(this)
 				,selCol = sEle.attr('data-grid-position').split(',')
-				,selRow = selCol[0]
-				,colIdx = selCol[1];
+				,selRow = intValue(selCol[0])
+				,colIdx = intValue(selCol[1]);
 
 			_this._setRangeSelectInfo({
 				rangeInfo : {
-					endIdx : _this.config.scroll.viewIdx+parseInt(selRow,10)
+					endIdx : _this.config.scroll.viewIdx+intValue(selRow)
 					,endRow : selRow
 					,endCol : colIdx
 				}
@@ -1961,18 +1996,33 @@ Plugin.prototype ={
 	
 		// col select
 		function selectTo() {
-			var colInfo = _this.getSelectCellInfo(_this.config.select.curr, false);
+			var tmpCurr = _this.config.select.curr;
+			var colInfo = _this.getSelectCellInfo(tmpCurr, false);
 			
-			var  sRow= colInfo.startRow
+			var sIdx = colInfo.startIdx 
+				,sRow= colInfo.startRow
 				,eRow =  colInfo.endRow
 				,sCol= colInfo.startCol
 				,eCol =  colInfo.endCol; 
 			
-			//_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
-			
+			_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').each(function (){
+				var sEle = $(this);
+				sEle.removeClass('col-active');
+
+				var gridPos = sEle.attr('data-grid-position'); 
+				if(gridPos.indexOf(sIdx+',') ==0){
+					delete _this.config.select.selectPosition[sEle.attr('data-grid-position')];
+				}
+			})
+
+			var rowIdx =-1; 
+
 			for(var i = sRow ; i <= eRow ; i++){
+				++rowIdx;
 				for(var j=sCol ;j <= eCol; j++){
 					var rowCol = i+','+j; 
+									
+					_this._addSelectPosition((sIdx+rowIdx) ,j);
 					var addEle;
 					
 					if(_this._isFixedPostion(j)){
@@ -1980,7 +2030,8 @@ Plugin.prototype ={
 					}else{
 						addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont').querySelector('[data-grid-position="'+rowCol+'"]');
 					}
-					addEle.classList.add( 'col-active' );
+					addEle.setAttribute('data-select-idx',tmpCurr);
+					addEle.classList.add('col-active' );
 					
 					addEle = null; 
 				}
@@ -1995,7 +2046,7 @@ Plugin.prototype ={
 				var selRow = $(this)
 					,rowinfo=selRow.attr('rowinfo');
 				
-				rowinfo = _this.config.scroll.viewIdx+parseInt(rowinfo,10);
+				rowinfo = _this.config.scroll.viewIdx+intValue(rowinfo);
 
 				var selItem = _this.options.tbodyItem[rowinfo];
 				
@@ -2009,11 +2060,11 @@ Plugin.prototype ={
 		}
 				
 		$(window).on("keydown." + _this.prefix, function (e) {
-				if(!_this.config.focus) return ; 
+			if(!_this.config.focus) return ; 
 
-			if (e.metaKey || e.ctrlKey) {
-				
-				if (e.which == 67) {
+			if (e.metaKey || e.ctrlKey) { // copy 
+
+				if (e.which == 67) { // ctrl+ c
 					
 					var copyData = _this.selectData();
 					try{
@@ -2021,6 +2072,9 @@ Plugin.prototype ={
 					}catch(e){
 						console.log('Unable to copy', e);					
 					}					
+				}else if(e.which==65){ // ctrl + a
+
+					return false; 
 				}
 			}
 		});
@@ -2034,6 +2088,20 @@ Plugin.prototype ={
 				_this.config.focus = false; 
 			}
 		});
+	}
+	/**
+     * @method _setSelectPosition
+     * @description select position add
+     */
+	,_addSelectPosition: function (row , col){
+		this.config.select.selectPosition[row+','+col] ='';
+	}
+	/**
+     * @method isSelectPosition
+     * @description is select position
+     */
+	,isSelectPosition: function (pos){
+		return hasProperty(this.config.select.selectPosition, pos)
 	}
 	/**
      * @method copyData
@@ -2428,7 +2496,8 @@ Plugin.prototype ={
 		console.log(downloadInfo);
 		
 		downloadInfo = cssText+downloadInfo;
-		if(typeof opt !=='undefined'){
+
+		if(!isUndefined(opt)){
 			if(opt.type=='download'){
 				var fileName = opt.fileName || 'pubgrid-excel-data.xls',
 					charset = opt.charset||"utf-8";
@@ -2437,7 +2506,7 @@ Plugin.prototype ={
 					var _blob = new Blob([downloadInfo], { type: "text/html" });
 					window.navigator.msSaveOrOpenBlob(_blob, fileName);
 				} else {
-					if (_broswer=='msie' && typeof Blob === "undefined") {
+					if (_broswer=='msie' && typeof isUndefined(Blob)) {
 						
 						var downloadFrame = $('<iframe id="' + this.prefix+ '-excel-export" style="display:none"></iframe>');
 						$(document.body).append(downloadFrame);
@@ -2503,11 +2572,11 @@ $.pubGrid = function (selector,options, args) {
 	
 	var _cacheObject = _datastore[selector]; 
 
-	if(typeof options === 'undefined'){
+	if(isUndefined(options)){
 		return _cacheObject; 
 	}
 	
-	if(typeof _cacheObject === 'undefined'){
+	if(isUndefined(_cacheObject)){
 		_cacheObject = new Plugin(selector, options);
 		_datastore[selector] = _cacheObject;
 		return _cacheObject; 
@@ -2529,7 +2598,7 @@ $.pubGrid = function (selector,options, args) {
 
 	if(typeof options === 'string'){
 		var callObj =_cacheObject[options]; 
-		if(typeof callObj ==='undefined'){
+		if(isUndefined(callObj)){
 			return options+' not found';
 		}else if(typeof callObj==='function'){
 			return _cacheObject[options].apply(_cacheObject,args);
