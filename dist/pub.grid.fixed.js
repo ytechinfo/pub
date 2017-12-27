@@ -265,18 +265,10 @@ Plugin.prototype ={
 			, navi :{height : 0, width : 0}
 			, scroll : {before:{},top :0 , left:0, startCol:0, endCol : 0,startRow : 0, endRow :0, viewIdx : 0, vBarPosition :0 , hBarPosition :0 , maxViewCount:0, viewCount : 0, verticalHeight:0,horizontalWidth:0}
 			,aside :{items :[]}
-			,select :{
-				range :[
-					{startIdx : -1,endIdx : -1, startRow : -1 ,startCol : -1, endRow : -1, endCol : -1}
-				]
-				,isSelect :false
-				,isMouseDown:false
-				,curr : 0
-				,minIdx : -1 ,maxIdx : -1	// 선택한 영역의 min , max row 값
-				,minCol : -1 ,maxCol : -1	// 선택한 영역의 min , max col 값
-				,selectPosition : {}
-			}
+			,select : {}
 		};
+
+		_this._setRangeSelectInfo({},true);
 		
 		_this.setOptions(options, true);
 
@@ -663,7 +655,7 @@ Plugin.prototype ={
 		}
 		
 		strHtm.push('<colgroup>');
-		
+
 		for(var i=startCol ;i <endCol; i++){
 			thiItem = tci[i];
 			var tmpStyle = [];
@@ -725,9 +717,7 @@ Plugin.prototype ={
 		}
 
 		if(gridMode=='reDraw'){
-			_this._setRangeSelectInfo({
-				rangeInfo : {startIdx : -1,endIdx : -1, startRow : -1 ,startCol : -1, endRow:-1, endCol :-1}
-			}, true);
+			_this._setRangeSelectInfo({}, true);
 			_this.calcDimension('reDraw');
 			_this.config.drawBeforeData = {}; // 이전 값을 가지고 있기 위한 객체
 		}
@@ -1140,10 +1130,19 @@ Plugin.prototype ={
 
 
 		function setSelectCell(row , col, addEle){
-			addEle.parentElement.classList.remove( 'col-active' );
-			
-			if(_this.isSelectPosition(row+','+col)){
-				addEle.parentElement.classList.add( 'col-active' );
+
+			if(_this._isAllSelect()){
+				if(_this.isAllSelectUnSelectPosition(row , col)){
+					addEle.parentElement.classList.remove( 'col-active' );
+				}else{
+					addEle.parentElement.classList.add( 'col-active' );
+				}
+			}else{
+				addEle.parentElement.classList.remove( 'col-active' );
+				
+				if(_this.isSelectPosition(row , col)){
+					addEle.parentElement.classList.add( 'col-active' );
+				}
 			}
 
 			return false; 
@@ -1183,8 +1182,11 @@ Plugin.prototype ={
 				//var addEle = _this.element.tdEle[rowCol] = $pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-tbody').querySelector('[data-grid-position="'+rowCol+'"]>.pub-content')
 				
 				addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont').querySelector('[data-grid-position="'+(i+','+j)+'"]>.pub-content');
-				this.valueFormatter( i, tci[j],tbiItem , addEle);
-				setSelectCell(itemIdx , j ,  addEle);
+
+				if(addEle){
+					this.valueFormatter( i, tci[j],tbiItem , addEle);
+					setSelectCell(itemIdx , j ,  addEle);
+				}
 				addEle = null; 
 			}
 			itemIdx++;
@@ -1793,7 +1795,7 @@ Plugin.prototype ={
      * @description 선택된 cell 영역 구하기.
      */
 	,getSelectCellInfo :function(curr, allDataFlag){
-		var selectInfo = this.config.select.range[curr];
+		var selectInfo = this.config.select.range;
 
 		var  startIdx = selectInfo.startIdx
 			,endIdx = selectInfo.endIdx	
@@ -1842,61 +1844,6 @@ Plugin.prototype ={
 		}
 	}
 	/**
-     * @method _setRangeSelectInfo
-     * @description 선택 영역 정보 셋팅.
-     */
-	,_setRangeSelectInfo : function(selectInfo, initFlag){
-		var	rangeInfo = selectInfo.rangeInfo;
-		
-		var cfgSelect = this.config.select; 
-		for(var key in selectInfo){
-			if(key =='rangeInfo'){
-				;
-			}else if(key =='curr'){
-				if(selectInfo[key]=='add'){
-					cfgSelect.curr+=1;
-					cfgSelect.range.push(rangeInfo)
-				}
-			}else{
-				cfgSelect[key] = selectInfo[key];
-			}
-		}
-
-		if(initFlag === true){
-			var initOpt = {
-				curr :0
-				,range : []
-				,selectPosition : {}
-				,minIdx : -1 ,maxIdx : -1
-				,minCol : -1 ,maxCol : -1
-			}
-		
-			for(var key in initOpt){
-				cfgSelect[key] = initOpt[key];
-			}
-			cfgSelect.range.push(rangeInfo);
-			return ; 
-		}
-
-		if(isUndefined(rangeInfo)) return ; 
-
-		
-		
-		var currInfo = cfgSelect.range[cfgSelect.curr];
-
-		for(var key in rangeInfo){
-			currInfo[key] = rangeInfo[key];
-		}
-
-		console.log(currInfo);
-
-		cfgSelect.minIdx =  ( cfgSelect.minIdx ==-1  || cfgSelect.minIdx > currInfo.startIdx ? currInfo.startIdx : cfgSelect.minIdx);
-		cfgSelect.maxIdx =  (cfgSelect.maxIdx < currInfo.endIdx ? currInfo.endIdx : cfgSelect.maxIdx);
-
-		cfgSelect.minCol =  (cfgSelect.minCol == -1 || cfgSelect.minCol > currInfo.startCol ? currInfo.startCol : cfgSelect.minCol);
-		cfgSelect.maxCol = (cfgSelect.maxCol < currInfo.endCol ? currInfo.endCol : cfgSelect.maxCol);
-	}
-	/**
      * @method _initBodyEvent
      * @description 바디 이벤트 초기화.
      */
@@ -1929,8 +1876,8 @@ Plugin.prototype ={
 						,endRow: selRow
 						,endCol: colIdx
 					}
-				});
-				selectTo();
+				},false , true);
+
 			}else{
 
 				if(e.ctrlKey){
@@ -1938,19 +1885,35 @@ Plugin.prototype ={
 						rangeInfo : {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx}
 						,isSelect : true
 						,curr : (_this.config.select.isSelect?'add':'')
-					});
+					}, false);
 				}else{
 					_this._setRangeSelectInfo({
 						rangeInfo : {startIdx : selIdx, endIdx : selIdx, startRow : selRow ,endRow:selRow, startCol : colIdx,  endCol :colIdx}
 						,isSelect : true
+						,allSelect : false
 					}, true);
 
 					_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
 				}
 				
-				_this._addSelectPosition(selIdx ,colIdx);
+			
+				if(sEle.hasClass('col-active')){
+					sEle.removeClass('col-active');
+										
+					if(_this._isAllSelect()){
+						_this.config.select.unSelectPosition[selIdx+','+colIdx]='';
+					}else{
+						_this._removeSelectPosition(selIdx ,colIdx);
+					}
+				}else{
+					sEle.addClass('col-active');
 
-				sEle.addClass('col-active');
+					if(_this._isAllSelect()){
+						delete _this.config.select.unSelectPosition[selIdx+','+colIdx];
+					}else{
+						_this._addSelectPosition(selIdx ,colIdx, _this.config.select.curr);
+					}
+				}
 			}
 			
 			window.getSelection().removeAllRanges();
@@ -1984,9 +1947,8 @@ Plugin.prototype ={
 					,endRow : selRow
 					,endCol : colIdx
 				}
-			});
+			},false , true);
 			
-			selectTo();
 		})
 				
 		$(document).on('mouseup.'+_this.prefix,function (e) {
@@ -1994,50 +1956,6 @@ Plugin.prototype ={
 			_this._setRangeSelectInfo({isMouseDown : false});
 		});
 	
-		// col select
-		function selectTo() {
-			var tmpCurr = _this.config.select.curr;
-			var colInfo = _this.getSelectCellInfo(tmpCurr, false);
-			
-			var sIdx = colInfo.startIdx 
-				,sRow= colInfo.startRow
-				,eRow =  colInfo.endRow
-				,sCol= colInfo.startCol
-				,eCol =  colInfo.endCol; 
-			
-			_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').each(function (){
-				var sEle = $(this);
-				sEle.removeClass('col-active');
-
-				var gridPos = sEle.attr('data-grid-position'); 
-				if(gridPos.indexOf(sIdx+',') ==0){
-					delete _this.config.select.selectPosition[sEle.attr('data-grid-position')];
-				}
-			})
-
-			var rowIdx =-1; 
-
-			for(var i = sRow ; i <= eRow ; i++){
-				++rowIdx;
-				for(var j=sCol ;j <= eCol; j++){
-					var rowCol = i+','+j; 
-									
-					_this._addSelectPosition((sIdx+rowIdx) ,j);
-					var addEle;
-					
-					if(_this._isFixedPostion(j)){
-						addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-left-cont').querySelector('[data-grid-position="'+rowCol+'"]');
-					}else{
-						addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont').querySelector('[data-grid-position="'+rowCol+'"]');
-					}
-					addEle.setAttribute('data-select-idx',tmpCurr);
-					addEle.classList.add('col-active' );
-					
-					addEle = null; 
-				}
-			}
-		}
-
 		if(_this.options.rowOptions.click !== false && typeof _this.options.rowOptions.click == 'function'){
 			rowClickFlag =true; 
 
@@ -2073,7 +1991,7 @@ Plugin.prototype ={
 						console.log('Unable to copy', e);					
 					}					
 				}else if(e.which==65){ // ctrl + a
-
+					_this.allItemSelect();
 					return false; 
 				}
 			}
@@ -2090,18 +2008,192 @@ Plugin.prototype ={
 		});
 	}
 	/**
-     * @method _setSelectPosition
-     * @description select position add
+     * @method allItemSelect
+     * @description 전체 선택.
      */
-	,_addSelectPosition: function (row , col){
-		this.config.select.selectPosition[row+','+col] ='';
+	,allItemSelect : function (){
+		this.config.select.allSelect = true; 
+		this.element.body.find('.pub-body-td').addClass('col-active');
+		return ; 
+	}
+	/**
+     * @method _setRangeSelectInfo
+     * @description 선택 영역 정보 셋팅.
+     */
+	,_setRangeSelectInfo : function(selectInfo, initFlag, tdSelectFlag){
+		var _this =this; 
+		var cfgSelect = this.config.select;
+
+		/**
+		asdfasdf
+		asdf
+		asdf
+		asdf  min , asdfawefawef
+		*/
+
+		if(selectInfo.allSelect !==false  && _this._isAllSelect()){
+			return ; 
+		}
+
+		var	rangeInfo = selectInfo.rangeInfo;
+		
+		function setSelectInfo (cfgSelect, selectInfo){
+			for(var key in selectInfo){
+				if(key =='rangeInfo'){
+					;
+				}else if(key =='curr'){
+					if(selectInfo[key]=='add'){
+						cfgSelect.curr+=1;
+						cfgSelect.range = rangeInfo;
+					}
+				}else{
+					cfgSelect[key] = selectInfo[key];
+				}
+			}
+			return cfgSelect; 
+		}
+
+		if(initFlag === true){
+		
+			var initOpt = {
+				curr :0
+				,range : {startIdx : -1,endIdx : -1, startRow : -1 ,startCol : -1, endRow : -1, endCol : -1}
+				,isSelect : false
+				,isMouseDown:false
+				,selectPosition : {}
+				,unSelectPosition:{}
+				,allSelect : false
+				,minIdx : -1 ,maxIdx : -1
+				,minCol : -1 ,maxCol : -1
+			};
+			setSelectInfo(initOpt, selectInfo);
+			cfgSelect = this.config.select = initOpt;
+		}else{
+			setSelectInfo(cfgSelect, selectInfo);
+		}
+
+		var currInfo = cfgSelect.range;
+
+		for(var key in rangeInfo){
+			currInfo[key] = rangeInfo[key];
+		}
+
+		cfgSelect.minIdx =  ( cfgSelect.minIdx ==-1 ? Math.min(currInfo.startIdx, currInfo.endIdx) : Math.min(cfgSelect.minIdx, currInfo.startIdx, currInfo.endIdx) );
+		cfgSelect.maxIdx =  Math.max(cfgSelect.maxIdx ,currInfo.endIdx , currInfo.startIdx);
+
+		cfgSelect.minCol =  (cfgSelect.minCol == -1 ? Math.min( currInfo.endCol , currInfo.startCol): Math.min(cfgSelect.minCol ,currInfo.endCol , currInfo.startCol) );
+		cfgSelect.maxCol = Math.max(cfgSelect.maxCol ,currInfo.endCol , currInfo.startCol); 
+
+
+		if(isUndefined(rangeInfo)) return ; 
+		
+		if(tdSelectFlag){
+			_this._setCellSelect();
+		}
+	}
+	/**
+     * @method _isAllSelect
+     * @description cell select  
+     */
+	,_isAllSelect : function (){
+		return this.config.select.allSelect;
+	}
+	/**
+     * @method _setCellSelect
+     * @description cell select  
+     */
+	,_setCellSelect : function () {
+		var _this =this; 
+
+		var tmpCurr = _this.config.select.curr;
+		var colInfo = _this.getSelectCellInfo(tmpCurr, false);
+		
+		var sIdx = colInfo.startIdx 
+			,sRow= colInfo.startRow
+			,eRow =  colInfo.endRow
+			,sCol= colInfo.startCol
+			,eCol =  colInfo.endCol; 
+		
+		_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').each(function (){
+			var sEle = $(this);
+			
+			var gridTdPos = sEle.attr('data-grid-position')
+				,selCol = gridTdPos.split(',')
+				,selRow = intValue(selCol[0])
+				,colIdx = intValue(selCol[1]);
+
+			var selIdx = _this.config.scroll.viewIdx+intValue(selRow);
+
+			var selPos = _this.getSelectPosition(selIdx, colIdx);
+
+			if(!isUndefined(selPos) && selPos != tmpCurr){
+				
+			}else{
+				_this._removeSelectPosition(selIdx, colIdx);
+				sEle.removeClass('col-active');
+			}
+		})
+
+		var rowIdx =-1; 
+
+		for(var i = sRow ; i <= eRow ; i++){
+			++rowIdx;
+			for(var j=sCol ;j <= eCol; j++){
+				var rowCol = i+','+j; 
+				
+				if(_this.isSelectPosition((sIdx+rowIdx) ,j)){
+					continue; 
+				}
+				
+				_this._addSelectPosition((sIdx+rowIdx) ,j ,tmpCurr);
+				var addEle;
+				
+				if(_this._isFixedPostion(j)){
+					addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-left-cont').querySelector('[data-grid-position="'+rowCol+'"]');
+				}else{
+					addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont').querySelector('[data-grid-position="'+rowCol+'"]');
+				}
+				addEle.setAttribute('data-select-idx',tmpCurr);
+				addEle.classList.add('col-active' );
+				
+				addEle = null; 
+			}
+		}
+	}
+	/**
+     * @method _setSelectPosition
+     * @description 선택 영역 정보 추가.
+     */
+	,_addSelectPosition: function (row , col , selCurr){
+		this.config.select.selectPosition[row+','+col] =selCurr;
+	}
+	/**
+     * @method _removeSelectPosition
+     * @description 선택 영역 정보 삭제
+     */
+	,_removeSelectPosition: function (row , col){
+		delete this.config.select.selectPosition[row+','+col];
 	}
 	/**
      * @method isSelectPosition
-     * @description is select position
+     * @description cell 선택 여부
      */
-	,isSelectPosition: function (pos){
-		return hasProperty(this.config.select.selectPosition, pos)
+	,isSelectPosition: function (row , col){
+		return hasProperty(this.config.select.selectPosition, row+','+col)
+	}
+	/**
+     * @method isAllSelectUnSelectPosition
+     * @description cell all 선택시 선택 여부
+     */
+	,isAllSelectUnSelectPosition: function (row , col){
+		return hasProperty(this.config.select.unSelectPosition, row+','+col)
+	}
+	/**
+     * @method getSelectPosition
+     * @description 선택영역 정보 얻기
+     */
+	,getSelectPosition: function (row , col){
+		return this.config.select.selectPosition[row+','+col]
 	}
 	/**
      * @method copyData
@@ -2121,22 +2213,47 @@ Plugin.prototype ={
      */
 	,selectData : function () {
 		var _this = this; 
-		var colInfo = _this.getSelectCellInfo(-1, true);
-			
-		var sCol= colInfo.startCol
-			,eCol =  colInfo.endCol
-			,sIdx= colInfo.startIdx
-			,eIdx =  colInfo.endIdx;
-					
+		
+		var sCol,eCol,sIdx,eIdx , chkFn;
+
+		var allSelectFlag = _this._isAllSelect(); 
+		
+		if(allSelectFlag){
+			sCol= 0;
+			eCol= _this.options.tColItem.length-1;
+			sIdx= 0;
+			eIdx = _this.options.tbodyItem.length-1;
+		}else{
+			var colInfo = _this.config.select;
+			sCol= colInfo.minCol;
+			eCol =  colInfo.maxCol;
+			sIdx= colInfo.minIdx;
+			eIdx =  colInfo.maxIdx;
+		}
+
 		var textArr = [];
+		var addRowFlag; 
 		for(var i = sIdx ; i <= eIdx ; i++){
 			var item = _this.options.tbodyItem[i];
+
+			if(item.hidden===true) continue; 
+
 			var rowText = [];
+			addRowFlag = false; 
 			for(var j=sCol ;j <= eCol; j++){
-				rowText.push(_this.valueFormatter( i, _this.options.tColItem[j],item,null,true)); 
+				if(allSelectFlag && !_this.isAllSelectUnSelectPosition( i,j)){
+					addRowFlag = true;
+					rowText.push(_this.valueFormatter( i, _this.options.tColItem[j],item,null,true)); 
+				}else if(_this.isSelectPosition( i,j)){
+					addRowFlag = true;
+					rowText.push(_this.valueFormatter( i, _this.options.tColItem[j],item,null,true)); 
+				}else{
+					rowText.push(''); 
+				}
 			}
-			
-			textArr.push(rowText.join('\t'));
+			if(addRowFlag){
+				textArr.push(rowText.join('\t'));
+			}
 		}
 
 		return textArr.join('\n');
