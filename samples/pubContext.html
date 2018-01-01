@@ -1,7 +1,7 @@
 <!doctype html>
 <HTML>
 <HEAD>
-<TITLE>pub GRID-fixed-예제</TITLE>
+<TITLE>pub context menu-예제</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link href="../theme/default/pub.example.css" rel="stylesheet">
 <link href="../theme/default/pub.context.css" rel="stylesheet">
@@ -62,8 +62,14 @@ $(document).ready(function (){
 				gridObj.copyData();
 			}
 		}
+		,disableItemKey : function (items){
+			return [
+				{key :'copy' , depth :0	}
+				,{key :'sql_create' , depth :0}	
+			]
+		}
 		,items: [
-			{key : "refresh" , "name": "새로고침"}
+			{key : "refresh" , "name": "새로고침" , disabled:true}
 			,{key : "copy" , "name": "복사", hotkey:'Ctrl+C'}
 			,{key : "sql_create", "name": "sql생성" 
 				,subMenu: [
