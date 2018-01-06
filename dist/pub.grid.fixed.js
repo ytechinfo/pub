@@ -17,7 +17,6 @@ var _initialized = false
 ,_defaults = {
 	fixed:false
 	,drag:false
-	,scrollWidth : 18	// 스크롤바 넓이
 	,minWidth : 38
 	,rowOptions:{
 		height: 22	// cell 높이
@@ -106,20 +105,16 @@ var _initialized = false
     if (win.ActiveXObject === undefined) return null;
     if (!win.XMLHttpRequest) return 6;
     if (!doc.querySelector){
-		//_defaults.scrollWidth = 21;
 		return 7;
 	}
     if (!doc.addEventListener){
-		//_defaults.scrollWidth = 18;
 		return 8;
 	}
     if (!win.atob){
-		//_defaults.scrollWidth = 18;
 		return 9;
 	}
 
     if (!input.dataset){
-		//_defaults.scrollWidth = 18;
 		return 10;
 	}
     return 11;
@@ -655,16 +650,25 @@ Plugin.prototype ={
 		}
 		
 		strHtm.push('<colgroup>');
-
+		
+		var enableColCnt =0; 
 		for(var i=startCol ;i <endCol; i++){
 			thiItem = tci[i];
 			var tmpStyle = [];
 			tmpStyle.push('width:'+thiItem.width+'px;');
 			if(thiItem.hidden===true){
 				tmpStyle.push('display:none;');
+			}else{
+				++enableColCnt;
 			}
 			
 			strHtm.push('<col id="'+id+i+'" style="'+tmpStyle.join('')+'" />');
+		}
+
+		_this.config.dataInfo = {
+			colLen : enableColCnt
+			,allColLen : endCol
+			,rowLen : _this.options.tbodyItem.length
 		}
 
 		strHtm.push('</colgroup>');
@@ -1343,10 +1347,10 @@ Plugin.prototype ={
 			drawFlag = true; 
 		}
 
-		_this.moveHScroll(leftVal, false);
+		_this.moveHScroll({pos :leftVal, drawFlag:false});
 
 		if(beforeViewCount !=0 ){
-			_this.moveVScroll(topVal, false);
+			_this.moveVScroll({pos :topVal, drawFlag:false});
 			
 			if(type !='reDraw' && drawFlag){
 				_this.drawGrid();
@@ -1375,10 +1379,10 @@ Plugin.prototype ={
 		
 			//delta > 0--up
 			if(_this.config.scroll.vUse){
-				_this.moveVScroll(_this.config.scroll.top+((delta > 0?-1:1) * _this.config.scroll.oneRowMove));
+				_this.moveVScroll({pos :(delta > 0? 'U' :'D')});
 			}else{
 				if(_this.config.scroll.hUse){
-					_this.moveHScroll(_this.config.scroll.left+((delta > 0?-1:1) * _this.config.scroll.oneColMove));
+					_this.moveHScroll({pos :(delta > 0?'L':'R')});
 				}
 			}
 		});
@@ -1409,7 +1413,7 @@ Plugin.prototype ={
 					}
 				}
 
-				_this.moveVScroll(pTop);
+				_this.moveVScroll({pos :pTop});
 
 				if(mouseDown){
 					scrollTimer = setTimeout(function() {
@@ -1447,7 +1451,7 @@ Plugin.prototype ={
 					}
 				}
 				
-				_this.moveHScroll(pLeft);
+				_this.moveHScroll({pos : pLeft});
 				
 				if(mouseDown){
 					scrollTimer = setTimeout(function() {
@@ -1514,7 +1518,7 @@ Plugin.prototype ={
 
 		oy = data.top+(oy - data.pageY);
 		
-		this.moveVScroll(oy);
+		this.moveVScroll({pos :oy});
 		if(type=='end'){
 			$(document).off('touchmove.pubvscroll mousemove.pubvscroll').off('touchend.pubvscroll mouseup.pubvscroll mouseleave.pubvscroll');
 		}
@@ -1522,9 +1526,18 @@ Plugin.prototype ={
 	/**
 	* 세로 스크롤 이동.
 	*/
-	,moveVScroll : function (topVal, drawFlag){
+	,moveVScroll : function (moveObj){
+		var _this =this; 
+		if(!_this.config.scroll.vUse){ return ; }
+
+		var topVal = moveObj.pos 
+			,drawFlag = moveObj.drawFlag;
+
+		if(isNaN(topVal)){
+			topVal =_this.config.scroll.top+((topVal=='U'?-1:1) * _this.config.scroll.oneRowMove);
+		}
 		
-		var beforeEndFlag = this.config.scroll.endFlag; 
+		var beforeEndFlag = _this.config.scroll.endFlag; 
 		var _topVal = topVal; 
 		this.config.scroll.endFlag = false; 
 		var barPos = 0 ; 
@@ -1592,7 +1605,7 @@ Plugin.prototype ={
 		,ox = oe ? oe[0].pageX : e.pageX;
 		ox = data.left+(ox - data.pageX);
 		
-		this.moveHScroll(ox);
+		this.moveHScroll({pos : ox});
 
 		if(type=='end'){
 			$(document).off('touchmove.pubhscroll mousemove.pubhscroll').off('touchend.pubhscroll mouseup.pubhscroll mouseleave.pubhscroll');
@@ -1601,7 +1614,17 @@ Plugin.prototype ={
 	/**
 	* 가로 스크롤 이동.
 	*/
-	,moveHScroll : function (leftVal, drawFlag){
+	,moveHScroll : function (moveObj){
+		var _this =this; 
+		if(!_this.config.scroll.hUse){ return ; }
+
+		var leftVal = moveObj.pos 
+			,drawFlag = moveObj.drawFlag;
+		
+		if(isNaN(leftVal)){
+			leftVal =_this.config.scroll.left+((leftVal=='L'?-1:1) * _this.config.scroll.oneColMove);
+		}
+
 		var vWidth =(this.config.scroll.vUse ? this.options.scroll.verticalWidth :0) +1
 			,hw = this.config.scroll.horizontalWidth;
 		leftVal = leftVal > 0 ? (leftVal >= hw ? hw : leftVal) : 0 ; 
@@ -1978,11 +2001,13 @@ Plugin.prototype ={
 		}
 				
 		$(window).on("keydown." + _this.prefix, function (e) {
-			if(!_this.config.focus) return ; 
+			if(!_this.config.focus) return ;
+
+			var evtKey = window.event ? e.keyCode : e.which;
 
 			if (e.metaKey || e.ctrlKey) { // copy 
 
-				if (e.which == 67) { // ctrl+ c
+				if (evtKey == 67) { // ctrl+ c
 					
 					var copyData = _this.selectData();
 					try{
@@ -1990,11 +2015,78 @@ Plugin.prototype ={
 					}catch(e){
 						console.log('Unable to copy', e);					
 					}					
-				}else if(e.which==65){ // ctrl + a
+				}else if(evtKey==65){ // ctrl + a
 					_this.allItemSelect();
 					return false; 
 				}
 			}
+
+			var endRow = _this.config.select.endRow
+				,endCol = _this.config.select.endCol;
+
+			if( (36 < evtKey && evtKey <41) || evtKey == 13 || evtKey == 9){
+				e.preventDefault();
+				e.stopPropagation();
+			
+				
+				
+				switch(evtKey){
+					case 37 : { //left
+						_this._setRangeSelectInfo({
+							rangeInfo : {
+								endCol : (endCol-1 >-1? endCol-1: 0)
+							}
+						},false);
+						_this.moveHScroll({pos:'L'});
+
+						break; 
+					}
+					case 39 : { //right
+						var colLen = _this.config.dataInfo.colLen; 
+						_this._setRangeSelectInfo({
+							rangeInfo : {
+								endCol : (endCol+1 >colLen? colLen-1: endCol+1)
+							}
+						},false);
+
+						_this.moveHScroll({pos:'R'});
+						break; 
+					}
+					case 38 : { //up
+						_this._setRangeSelectInfo({
+							rangeInfo : {
+								endRow : (endRow+1 >colLen? colLen-1: endRow+1)
+							}
+						},false);
+
+						_this.moveVScroll({pos:'U'});
+						break; 
+					}
+					case 40 : { //down
+						var rowLen = _this.config.dataInfo.rowLen;
+						_this._setRangeSelectInfo({
+							rangeInfo : {
+								endRow : (endRow+1 >rowLen? rowLen-1: endRow+1)
+							}
+						},false);
+
+						_this.moveVScroll({pos:'D'});
+						break; 
+					}
+					case 13 :{ // enter
+						_this.moveVScroll({pos:'D'});
+						break; 
+					}
+					case 9 :{ // tab
+						_this.moveHScroll({pos:'R'});
+						break; 
+					}
+					default:{
+						break; 
+					}
+				}
+			}
+			
 		});
 
 		$(document).on('mousedown.'+_this.prefix,'#'+_this.prefix+'_pubGrid',function (e){
@@ -2076,7 +2168,6 @@ Plugin.prototype ={
 
 		cfgSelect.minCol =  (cfgSelect.minCol == -1 ? Math.min( currInfo.endCol , currInfo.startCol): Math.min(cfgSelect.minCol ,currInfo.endCol , currInfo.startCol) );
 		cfgSelect.maxCol = Math.max(cfgSelect.maxCol ,currInfo.endCol , currInfo.startCol); 
-
 
 		if(isUndefined(rangeInfo)) return ; 
 		
