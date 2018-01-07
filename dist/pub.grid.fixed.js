@@ -1919,7 +1919,6 @@ Plugin.prototype ={
 					_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
 				}
 				
-			
 				if(sEle.hasClass('col-active')){
 					sEle.removeClass('col-active');
 										
@@ -1929,6 +1928,7 @@ Plugin.prototype ={
 						_this._removeSelectPosition(selIdx ,colIdx);
 					}
 				}else{
+					sEle.attr('data-select-idx',_this.config.select.curr);
 					sEle.addClass('col-active');
 
 					if(_this._isAllSelect()){
@@ -2020,71 +2020,12 @@ Plugin.prototype ={
 					return false; 
 				}
 			}
-
-			var endRow = _this.config.select.endRow
-				,endCol = _this.config.select.endCol;
-
+			
 			if( (36 < evtKey && evtKey <41) || evtKey == 13 || evtKey == 9){
 				e.preventDefault();
 				e.stopPropagation();
-			
-				
-				
-				switch(evtKey){
-					case 37 : { //left
-						_this._setRangeSelectInfo({
-							rangeInfo : {
-								endCol : (endCol-1 >-1? endCol-1: 0)
-							}
-						},false);
-						_this.moveHScroll({pos:'L'});
 
-						break; 
-					}
-					case 39 : { //right
-						var colLen = _this.config.dataInfo.colLen; 
-						_this._setRangeSelectInfo({
-							rangeInfo : {
-								endCol : (endCol+1 >colLen? colLen-1: endCol+1)
-							}
-						},false);
-
-						_this.moveHScroll({pos:'R'});
-						break; 
-					}
-					case 38 : { //up
-						_this._setRangeSelectInfo({
-							rangeInfo : {
-								endRow : (endRow+1 >colLen? colLen-1: endRow+1)
-							}
-						},false);
-
-						_this.moveVScroll({pos:'U'});
-						break; 
-					}
-					case 40 : { //down
-						var rowLen = _this.config.dataInfo.rowLen;
-						_this._setRangeSelectInfo({
-							rangeInfo : {
-								endRow : (endRow+1 >rowLen? rowLen-1: endRow+1)
-							}
-						},false);
-
-						_this.moveVScroll({pos:'D'});
-						break; 
-					}
-					case 13 :{ // enter
-						_this.moveVScroll({pos:'D'});
-						break; 
-					}
-					case 9 :{ // tab
-						_this.moveHScroll({pos:'R'});
-						break; 
-					}
-					default:{
-						break; 
-					}
-				}
+				_this.gridKeyCtrl(e, evtKey);
 			}
 			
 		});
@@ -2098,6 +2039,149 @@ Plugin.prototype ={
 				_this.config.focus = false; 
 			}
 		});
+	}
+	/**
+     * @method gridKeyCtrl
+     * @description key ctrl
+     */
+	,gridKeyCtrl : function (evt, evtKey){
+		var _this  =this;
+		var endRow = _this.config.select.range.endRow
+			,endCol = _this.config.select.range.endCol
+			,currViewIdx = _this.config.scroll.viewIdx;
+
+		switch(evtKey){
+			case 37 : { //left
+				var moveColIdx = (endCol-1 >-1? endCol-1: 0); 
+							
+				if(endCol != moveColIdx){
+					if(moveColIdx <= _this.config.scroll.startCol){
+						_this.moveHScroll({pos:'L'});
+					}
+				}else{
+					_this.moveHScroll({pos:'L', drawFlag:false});
+				}
+				currViewIdx = _this.config.scroll.viewIdx+endRow;
+
+				if(evt.shiftKey){
+					_this._setRangeSelectInfo({
+						rangeInfo : {endCol :moveColIdx}
+						,selectPosition :{}
+					}, false,true);
+				}else{
+					_this._setRangeSelectInfo({
+						rangeInfo : {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow ,startCol:moveColIdx,endCol :moveColIdx}
+						,selectPosition :{}
+					},true, true);
+				}
+
+				break; 
+			}
+			case 9 : // tab
+			case 39 : { //right
+				var colLen = _this.config.dataInfo.colLen; 
+
+				var moveColIdx =(endCol+1 >= colLen? colLen-1: endCol+1);
+				
+				if(endCol+1 == colLen && evtKey==9){
+					moveColIdx = 0; 
+					_this.moveHScroll({pos:0});
+
+					currViewIdx = (_this.config.scroll.viewIdx+1)+endRow;
+					
+					var rowLen = _this.config.scroll.viewCount-1;
+
+					endRow =(endRow+1 >=rowLen? rowLen : endRow+1);
+
+					if(endRow==rowLen){
+						_this.moveVScroll({pos:'D'});
+					}
+				}else {
+					if(endCol != moveColIdx ){
+						if(moveColIdx >= _this.config.scroll.endCol){
+							_this.moveHScroll({pos:'R'});
+						}
+					}else{
+						_this.moveHScroll({pos:'R', drawFlag:false});
+					}
+					currViewIdx = _this.config.scroll.viewIdx+endRow;
+				}
+				
+				if(evtKey != 9 && evt.shiftKey){
+					_this._setRangeSelectInfo({
+						rangeInfo :  {endCol :moveColIdx}
+						,selectPosition :{}
+					}, false,true);
+				}else{
+					_this._setRangeSelectInfo({
+						rangeInfo :  {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow, startCol:moveColIdx,endCol :moveColIdx}
+						,selectPosition :{}
+					},true, true);
+				}
+				
+				break; 
+			}
+			case 38 : { //up
+				
+				var moveColIdx =(endRow-1 >0? endRow-1: 0);
+						
+				if(moveColIdx==0 && currViewIdx > 0){
+					_this.moveVScroll({pos:'U'});
+				}
+				currViewIdx = _this.config.scroll.viewIdx+moveColIdx;
+
+				if(evt.shiftKey){
+					_this._setRangeSelectInfo({
+						rangeInfo : {endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx}		
+						,selectPosition :{}		
+					}, false,true);
+				}else{
+					_this._setRangeSelectInfo({
+						rangeInfo : {startIdx :currViewIdx, endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx, startCol:endCol, endCol:endCol}
+						,selectPosition :{}		
+					}, true, true);
+				}
+
+				break; 
+			}
+			case 13 : // enter
+			case 40 : { //down
+				var rowLen = _this.config.scroll.viewCount-1;
+
+				var moveColIdx =(endRow+1 >=rowLen? rowLen : endRow+1);
+
+				if(moveColIdx==rowLen &&  (_this.config.scroll.viewIdx+moveColIdx) < _this.config.dataInfo.rowLen){
+					_this.moveVScroll({pos:'D'});
+				}
+				currViewIdx = _this.config.scroll.viewIdx+moveColIdx;
+
+				if(evt.shiftKey){
+					_this._setRangeSelectInfo({
+						rangeInfo : {endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx}		
+						,selectPosition :{}		
+					}, false,true);
+				}else{
+					_this._setRangeSelectInfo({
+						rangeInfo : {startIdx : currViewIdx,endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx, startCol:endCol, endCol:endCol}
+						,selectPosition :{}		
+					}, true,true);
+				}
+
+				break; 
+			}
+			case 9 :{ // tab
+
+				if(endCol+1 == colLen && evtKey==9){
+					moveColIdx = 0; 
+					_this.moveHScroll({pos:0});
+				}
+				
+				break; 
+			}
+			default:{
+				break; 
+			}
+		}
 	}
 	/**
      * @method allItemSelect
@@ -2193,11 +2277,16 @@ Plugin.prototype ={
 		var colInfo = _this.getSelectCellInfo(tmpCurr, false);
 		
 		var sIdx = colInfo.startIdx 
-			,sRow= colInfo.startRow
-			,eRow =  colInfo.endRow
+			,eIdx = colInfo.endIdx 
 			,sCol= colInfo.startCol
-			,eCol =  colInfo.endCol; 
+			,eCol =  colInfo.endCol
+			,currViewIdx = _this.config.scroll.viewIdx;
 		
+		var	sRow= sIdx < currViewIdx ? 0 : (sIdx-currViewIdx)
+			,eRow =  eIdx- currViewIdx;
+
+		eRow = eRow > _this.config.scroll.viewCount ? _this.config.scroll.viewCount :eRow;
+
 		_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').each(function (){
 			var sEle = $(this);
 			
@@ -2206,7 +2295,7 @@ Plugin.prototype ={
 				,selRow = intValue(selCol[0])
 				,colIdx = intValue(selCol[1]);
 
-			var selIdx = _this.config.scroll.viewIdx+intValue(selRow);
+			var selIdx = currViewIdx+selRow;
 
 			var selPos = _this.getSelectPosition(selIdx, colIdx);
 
@@ -2220,16 +2309,25 @@ Plugin.prototype ={
 
 		var rowIdx =-1; 
 
+		/**
+		* position 잡는거 처리 할것. 
+		중간에 빠진 영역 
+		*/
+
+
 		for(var i = sRow ; i <= eRow ; i++){
 			++rowIdx;
 			for(var j=sCol ;j <= eCol; j++){
 				var rowCol = i+','+j; 
-				
-				if(_this.isSelectPosition((sIdx+rowIdx) ,j)){
+				var currIdx = currViewIdx+i;
+
+				if(_this.isSelectPosition(currIdx ,j)){
 					continue; 
 				}
 				
-				_this._addSelectPosition((sIdx+rowIdx) ,j ,tmpCurr);
+				//console.log('1111',currViewIdx, rowIdx , (currViewIdx+rowIdx) ,j)
+
+				_this._addSelectPosition(currIdx ,j ,tmpCurr);
 				var addEle;
 				
 				if(_this._isFixedPostion(j)){
@@ -2237,6 +2335,8 @@ Plugin.prototype ={
 				}else{
 					addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont').querySelector('[data-grid-position="'+rowCol+'"]');
 				}
+				if(addEle==null) continue; 
+
 				addEle.setAttribute('data-select-idx',tmpCurr);
 				addEle.classList.add('col-active' );
 				
@@ -2364,8 +2464,6 @@ Plugin.prototype ={
 			sIdx= colInfo.minIdx;
 			eIdx =  colInfo.maxIdx;
 		}
-
-		console.log(sIdx , eIdx)
 
 		if(sIdx < 0 || eIdx < 0) return []; 
 
