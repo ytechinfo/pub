@@ -1132,20 +1132,19 @@ Plugin.prototype ={
 
 		var colFixedIndex = this.options.headerOptions.colFixedIndex;
 
-
 		function setSelectCell(row , col, addEle){
 
 			if(_this._isAllSelect()){
 				if(_this.isAllSelectUnSelectPosition(row , col)){
-					addEle.parentElement.classList.remove( 'col-active' );
+					addEle.parentElement.classList.remove('col-active' );
 				}else{
-					addEle.parentElement.classList.add( 'col-active' );
+					addEle.parentElement.classList.add('col-active' );
 				}
 			}else{
-				addEle.parentElement.classList.remove( 'col-active' );
-				
+				addEle.parentElement.classList.remove('col-active' );
+
 				if(_this.isSelectPosition(row , col)){
-					addEle.parentElement.classList.add( 'col-active' );
+					addEle.parentElement.classList.add('col-active' );
 				}
 			}
 
@@ -1294,7 +1293,11 @@ Plugin.prototype ={
 		var beforeViewCount = _this.config.scroll.viewCount ; 
 		_this.config.scroll.viewCount = itemTotHeight > bodyH ? Math.ceil(bodyH / this.config.rowHeight) : _this.options.tbodyItem.length;
 		_this.config.scroll.overflowVal = bodyH % this.config.rowHeight; 
-		
+
+		if(_this.config.scroll.overflowVal > 0){
+			_this.config.scroll.insideViewCount = _this.config.scroll.viewCount-1; 
+		}
+
 		var topVal = 0 ; 
 		if(vScrollFlag){
 			_this.config.scroll.vUse = true;
@@ -1622,7 +1625,10 @@ Plugin.prototype ={
 			,drawFlag = moveObj.drawFlag;
 		
 		if(isNaN(leftVal)){
+			
 			leftVal =_this.config.scroll.left+((leftVal=='L'?-1:1) * _this.config.scroll.oneColMove);
+
+			console.log(leftVal);
 		}
 
 		var vWidth =(this.config.scroll.vUse ? this.options.scroll.verticalWidth :0) +1
@@ -1921,20 +1927,13 @@ Plugin.prototype ={
 				
 				if(sEle.hasClass('col-active')){
 					sEle.removeClass('col-active');
-										
-					if(_this._isAllSelect()){
-						_this.config.select.unSelectPosition[selIdx+','+colIdx]='';
-					}else{
-						_this._removeSelectPosition(selIdx ,colIdx);
-					}
+					_this.config.select.unSelectPosition[selIdx+','+colIdx]='';
 				}else{
 					sEle.attr('data-select-idx',_this.config.select.curr);
 					sEle.addClass('col-active');
 
 					if(_this._isAllSelect()){
 						delete _this.config.select.unSelectPosition[selIdx+','+colIdx];
-					}else{
-						_this._addSelectPosition(selIdx ,colIdx, _this.config.select.curr);
 					}
 				}
 			}
@@ -2066,12 +2065,10 @@ Plugin.prototype ={
 				if(evt.shiftKey){
 					_this._setRangeSelectInfo({
 						rangeInfo : {endCol :moveColIdx}
-						,selectPosition :{}
 					}, false,true);
 				}else{
 					_this._setRangeSelectInfo({
 						rangeInfo : {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow ,startCol:moveColIdx,endCol :moveColIdx}
-						,selectPosition :{}
 					},true, true);
 				}
 
@@ -2089,7 +2086,7 @@ Plugin.prototype ={
 
 					currViewIdx = (_this.config.scroll.viewIdx+1)+endRow;
 					
-					var rowLen = _this.config.scroll.viewCount-1;
+					var rowLen = _this.config.scroll.insideViewCount-1;
 
 					endRow =(endRow+1 >=rowLen? rowLen : endRow+1);
 
@@ -2110,12 +2107,10 @@ Plugin.prototype ={
 				if(evtKey != 9 && evt.shiftKey){
 					_this._setRangeSelectInfo({
 						rangeInfo :  {endCol :moveColIdx}
-						,selectPosition :{}
 					}, false,true);
 				}else{
 					_this._setRangeSelectInfo({
 						rangeInfo :  {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow, startCol:moveColIdx,endCol :moveColIdx}
-						,selectPosition :{}
 					},true, true);
 				}
 				
@@ -2132,13 +2127,11 @@ Plugin.prototype ={
 
 				if(evt.shiftKey){
 					_this._setRangeSelectInfo({
-						rangeInfo : {endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx}		
-						,selectPosition :{}		
+						rangeInfo : {endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx}
 					}, false,true);
 				}else{
 					_this._setRangeSelectInfo({
 						rangeInfo : {startIdx :currViewIdx, endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx, startCol:endCol, endCol:endCol}
-						,selectPosition :{}		
 					}, true, true);
 				}
 
@@ -2146,7 +2139,7 @@ Plugin.prototype ={
 			}
 			case 13 : // enter
 			case 40 : { //down
-				var rowLen = _this.config.scroll.viewCount-1;
+				var rowLen = _this.config.scroll.insideViewCount-1;
 
 				var moveColIdx =(endRow+1 >=rowLen? rowLen : endRow+1);
 
@@ -2157,13 +2150,11 @@ Plugin.prototype ={
 
 				if(evt.shiftKey){
 					_this._setRangeSelectInfo({
-						rangeInfo : {endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx}		
-						,selectPosition :{}		
+						rangeInfo : {endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx}
 					}, false,true);
 				}else{
 					_this._setRangeSelectInfo({
 						rangeInfo : {startIdx : currViewIdx,endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx, startCol:endCol, endCol:endCol}
-						,selectPosition :{}		
 					}, true,true);
 				}
 
@@ -2214,6 +2205,7 @@ Plugin.prototype ={
 					if(selectInfo[key]=='add'){
 						cfgSelect.curr+=1;
 						cfgSelect.range = rangeInfo;
+						cfgSelect.allRange.push(rangeInfo);
 					}
 				}else{
 					cfgSelect[key] = selectInfo[key];
@@ -2227,9 +2219,9 @@ Plugin.prototype ={
 			var initOpt = {
 				curr :0
 				,range : {startIdx : -1,endIdx : -1, startRow : -1 ,startCol : -1, endRow : -1, endCol : -1}
+				,allRange: []
 				,isSelect : false
 				,isMouseDown:false
-				,selectPosition : {}
 				,unSelectPosition:{}
 				,allSelect : false
 				,minIdx : -1 ,maxIdx : -1
@@ -2237,6 +2229,7 @@ Plugin.prototype ={
 			};
 			setSelectInfo(initOpt, selectInfo);
 			cfgSelect = this.config.select = initOpt;
+			cfgSelect.allRange.push(cfgSelect.range);
 		}else{
 			setSelectInfo(cfgSelect, selectInfo);
 		}
@@ -2254,6 +2247,11 @@ Plugin.prototype ={
 		cfgSelect.maxCol = Math.max(cfgSelect.maxCol ,currInfo.endCol , currInfo.startCol); 
 
 		if(isUndefined(rangeInfo)) return ; 
+
+		currInfo.minIdx =   Math.min(currInfo.startIdx, currInfo.endIdx)
+		currInfo.maxIdx =  Math.max(currInfo.endIdx ,currInfo.startIdx);
+		currInfo.minCol =  Math.min( currInfo.endCol , currInfo.startCol);
+		currInfo.maxCol = Math.max( currInfo.endCol , currInfo.startCol);
 		
 		if(tdSelectFlag){
 			_this._setCellSelect();
@@ -2281,39 +2279,15 @@ Plugin.prototype ={
 			,sCol= colInfo.startCol
 			,eCol =  colInfo.endCol
 			,currViewIdx = _this.config.scroll.viewIdx;
-		
+
 		var	sRow= sIdx < currViewIdx ? 0 : (sIdx-currViewIdx)
 			,eRow =  eIdx- currViewIdx;
 
 		eRow = eRow > _this.config.scroll.viewCount ? _this.config.scroll.viewCount :eRow;
 
-		_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').each(function (){
-			var sEle = $(this);
-			
-			var gridTdPos = sEle.attr('data-grid-position')
-				,selCol = gridTdPos.split(',')
-				,selRow = intValue(selCol[0])
-				,colIdx = intValue(selCol[1]);
-
-			var selIdx = currViewIdx+selRow;
-
-			var selPos = _this.getSelectPosition(selIdx, colIdx);
-
-			if(!isUndefined(selPos) && selPos != tmpCurr){
-				
-			}else{
-				_this._removeSelectPosition(selIdx, colIdx);
-				sEle.removeClass('col-active');
-			}
-		})
+		_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').removeClass('col-active');
 
 		var rowIdx =-1; 
-
-		/**
-		* position 잡는거 처리 할것. 
-		중간에 빠진 영역 
-		*/
-
 
 		for(var i = sRow ; i <= eRow ; i++){
 			++rowIdx;
@@ -2321,13 +2295,10 @@ Plugin.prototype ={
 				var rowCol = i+','+j; 
 				var currIdx = currViewIdx+i;
 
-				if(_this.isSelectPosition(currIdx ,j)){
+				if(!_this.isSelectPosition(currIdx ,j, true)){
 					continue; 
 				}
 				
-				//console.log('1111',currViewIdx, rowIdx , (currViewIdx+rowIdx) ,j)
-
-				_this._addSelectPosition(currIdx ,j ,tmpCurr);
 				var addEle;
 				
 				if(_this._isFixedPostion(j)){
@@ -2345,25 +2316,36 @@ Plugin.prototype ={
 		}
 	}
 	/**
-     * @method _setSelectPosition
-     * @description 선택 영역 정보 추가.
-     */
-	,_addSelectPosition: function (row , col , selCurr){
-		this.config.select.selectPosition[row+','+col] =selCurr;
-	}
-	/**
-     * @method _removeSelectPosition
-     * @description 선택 영역 정보 삭제
-     */
-	,_removeSelectPosition: function (row , col){
-		delete this.config.select.selectPosition[row+','+col];
-	}
-	/**
      * @method isSelectPosition
      * @description cell 선택 여부
      */
-	,isSelectPosition: function (row , col){
-		return hasProperty(this.config.select.selectPosition, row+','+col)
+	,isSelectPosition: function (row , col, currFlag){
+		
+		function isSelRange(range,row,col){
+			return range.minIdx <=row && row <= range.maxIdx && range.minCol <=col && col <= range.maxCol;
+		}
+
+		if(hasProperty(this.config.select.unSelectPosition, row+','+col)){
+			return false; 
+		}else{
+
+			if(currFlag){
+				return isSelRange(this.config.select.range, row , col);
+			}else {
+
+				var allRange = this.config.select.allRange;
+
+				for(var i=0 ;i <allRange.length; i++){
+					var tmpRange = allRange[i];
+					
+					if(isSelRange(tmpRange, row , col)){
+						return true; 
+					}
+				}
+			}
+		}
+
+		return false; 
 	}
 	/**
      * @method isAllSelectUnSelectPosition
@@ -2371,13 +2353,6 @@ Plugin.prototype ={
      */
 	,isAllSelectUnSelectPosition: function (row , col){
 		return hasProperty(this.config.select.unSelectPosition, row+','+col)
-	}
-	/**
-     * @method getSelectPosition
-     * @description 선택영역 정보 얻기
-     */
-	,getSelectPosition: function (row , col){
-		return this.config.select.selectPosition[row+','+col]
 	}
 	/**
      * @method copyData
