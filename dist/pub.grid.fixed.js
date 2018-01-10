@@ -1294,7 +1294,7 @@ Plugin.prototype ={
 		_this.config.scroll.viewCount = itemTotHeight > bodyH ? Math.ceil(bodyH / this.config.rowHeight) : _this.options.tbodyItem.length;
 		_this.config.scroll.overflowVal = bodyH % this.config.rowHeight; 
 
-		if(_this.config.scroll.overflowVal > 0){
+		if(_this.config.scroll.overflowVal > 0){	// 화면에 다 보이는 row count
 			_this.config.scroll.insideViewCount = _this.config.scroll.viewCount-1; 
 		}
 
@@ -1327,7 +1327,8 @@ Plugin.prototype ={
 			var hscrollW = bodyW-_this.config.gridWidth.aside; 
 			var barWidth = (hscrollW*(hscrollW/_this.config.gridWidth.total*100))/100; 
 			barWidth = barWidth < 25 ? 25 :barWidth;
-			_this.config.scroll.hBarWidth = barWidth; 
+			_this.config.scroll.hBarWidth = barWidth;
+			_this.config.scroll.hHiddenWidth = _this.config.gridWidth.total - hscrollW;
 			_this.config.scroll.horizontalWidth =$('#'+_this.prefix+'_hscroll').find('.pubGrid-hscroll-bar-area').width() - barWidth;
 			_this.config.scroll.oneColMove = _this.config.gridWidth.total/_this.config.scroll.horizontalWidth;
 			leftVal = _this.config.scroll.horizontalWidth* _this.config.scroll.hBarPosition/100;
@@ -1625,10 +1626,17 @@ Plugin.prototype ={
 			,drawFlag = moveObj.drawFlag;
 		
 		if(isNaN(leftVal)){
-			
-			leftVal =_this.config.scroll.left+((leftVal=='L'?-1:1) * _this.config.scroll.oneColMove);
 
-			console.log(leftVal);
+			if(isUndefined(moveObj.colIdx)){
+				leftVal =_this.config.scroll.left+((leftVal=='L'?-1:1) * _this.config.scroll.oneColMove);
+			}else{
+				
+				var colInfo = _this.config.headerInfo[_this.config.headerInfo.length-1][moveObj.colIdx];
+				var moveVal = ((colInfo.width/_this.config.scroll.hHiddenWidth *100) * _this.config.scroll.horizontalWidth /100);
+				leftVal = _this.config.scroll.left+ ((leftVal=='L'?-1:1) *moveVal);
+
+				console.log(colInfo , moveVal , leftVal , _this.config.scroll.hHiddenWidth , _this.config.scroll.horizontalWidth)
+			}
 		}
 
 		var vWidth =(this.config.scroll.vUse ? this.options.scroll.verticalWidth :0) +1
@@ -1648,7 +1656,6 @@ Plugin.prototype ={
 		if(drawFlag !== false){
 			this.drawGrid('hscroll');
 		}
-		
 	}
 	/**
 	* 가로 스크롤 바 이동 
@@ -1688,7 +1695,10 @@ Plugin.prototype ={
 
 		this.config.scroll.startCol = ( startCol > 0? startCol:0 ); 
 		this.config.scroll.endCol = ( endCol >= tci.length? tci.length:endCol );
-
+		
+		if(itemLeftVal != gridW){ // 화면에 다 보이는 col size
+			this.config.scroll.insideEndCol = this.config.scroll.endCol -1; 
+		}
 	}
 	,_statusMessage : function (viewCnt){
 		var startVal = this.config.scroll.viewIdx +1
@@ -1708,7 +1718,6 @@ Plugin.prototype ={
      */
 	,resizeDraw :function (opt){
 		this.calcDimension('resize',opt);
-		
 		return ; 
 	}
 	/**
@@ -2026,7 +2035,6 @@ Plugin.prototype ={
 
 				_this.gridKeyCtrl(e, evtKey);
 			}
-			
 		});
 
 		$(document).on('mousedown.'+_this.prefix,'#'+_this.prefix+'_pubGrid',function (e){
@@ -2051,14 +2059,16 @@ Plugin.prototype ={
 
 		switch(evtKey){
 			case 37 : { //left
-				var moveColIdx = (endCol-1 >-1? endCol-1: 0); 
+				var moveColIdx = (endCol-1 >-1? endCol-1: 0);
+
+				console.log('moveColIdx', moveColIdx)
 							
 				if(endCol != moveColIdx){
 					if(moveColIdx <= _this.config.scroll.startCol){
-						_this.moveHScroll({pos:'L'});
+						_this.moveHScroll({pos:'L', colIdx :moveColIdx });
 					}
 				}else{
-					_this.moveHScroll({pos:'L', drawFlag:false});
+					_this.moveHScroll({pos:'L', colIdx :moveColIdx, drawFlag:false});
 				}
 				currViewIdx = _this.config.scroll.viewIdx+endRow;
 
@@ -2095,11 +2105,11 @@ Plugin.prototype ={
 					}
 				}else {
 					if(endCol != moveColIdx ){
-						if(moveColIdx >= _this.config.scroll.endCol){
-							_this.moveHScroll({pos:'R'});
+						if(moveColIdx >= _this.config.scroll.insideEndCol){
+							_this.moveHScroll({pos:'R' ,colIdx :moveColIdx});
 						}
 					}else{
-						_this.moveHScroll({pos:'R', drawFlag:false});
+						_this.moveHScroll({pos:'R',colIdx :moveColIdx,drawFlag:false});
 					}
 					currViewIdx = _this.config.scroll.viewIdx+endRow;
 				}
@@ -2123,8 +2133,13 @@ Plugin.prototype ={
 				if(moveColIdx==0 && currViewIdx > 0){
 					_this.moveVScroll({pos:'U'});
 				}
-				currViewIdx = _this.config.scroll.viewIdx+moveColIdx;
 
+				if(this.config.scroll.endFlag){
+					currViewIdx = (_this.config.dataInfo.rowLen)-(_this.config.scroll.insideViewCount-moveColIdx);
+				}else{
+					currViewIdx = _this.config.scroll.viewIdx+moveColIdx;
+				}
+				
 				if(evt.shiftKey){
 					_this._setRangeSelectInfo({
 						rangeInfo : {endIdx : currViewIdx, startRow : moveColIdx ,endRow:moveColIdx}
@@ -2146,7 +2161,12 @@ Plugin.prototype ={
 				if(moveColIdx==rowLen &&  (_this.config.scroll.viewIdx+moveColIdx) < _this.config.dataInfo.rowLen){
 					_this.moveVScroll({pos:'D'});
 				}
-				currViewIdx = _this.config.scroll.viewIdx+moveColIdx;
+
+				if(_this.config.scroll.insideViewCount != _this.config.scroll.viewCount && (_this.config.scroll.viewIdx+endRow+1) == _this.config.dataInfo.rowLen-1){
+					currViewIdx = _this.config.dataInfo.rowLen-1;
+				}else{
+					currViewIdx = _this.config.scroll.viewIdx+moveColIdx;
+				}
 
 				if(evt.shiftKey){
 					_this._setRangeSelectInfo({
@@ -2285,7 +2305,18 @@ Plugin.prototype ={
 
 		eRow = eRow > _this.config.scroll.viewCount ? _this.config.scroll.viewCount :eRow;
 
-		_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').removeClass('col-active');
+		_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').each(function (){
+			var sEle = $(this);
+			
+			var gridTdPos = sEle.attr('data-grid-position')
+				,selCol = gridTdPos.split(',');
+
+			if(_this.isSelectPosition(currViewIdx+intValue(selCol[0]) , intValue(selCol[1]))){
+				
+			}else{
+				sEle.removeClass('col-active');
+			}
+		})
 
 		var rowIdx =-1; 
 
