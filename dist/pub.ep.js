@@ -624,6 +624,36 @@ _$base.page ={
 	}
 }
 
+_$base.download= function (opt){
+	
+	var inputStr = [];
+	var tmpParam = opt.param;
+	
+	var tmpLocationHrefForm = $('#pub_hidden_download_form');
+	if(tmpLocationHrefForm.length < 1){
+		var inputStr = [];
+		inputStr.push('<form action="" method="post" id="pub_hidden_download_form" name="hidden_download_form" target="pub_hidden_download_target" style="width:0;height:0px;display:hidden;">');
+		inputStr.push('</form>');
+		inputStr.push('<iframe name="pub_hidden_download_target" style="width:0;height:0px;display:hidden;"></iframe>');
+		$('body').append(inputStr.join(''));
+	}
+	
+	var tmpVal;
+	for(var key in tmpParam){
+		tmpVal = tmpParam[key];
+		inputStr.push('<input type="hidden" name="'+key+'" value=\''+((typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal))+'\'/>');
+	}
+	
+	var downloadForm = $('#pub_hidden_download_form'); 
+	downloadForm.empty().html(inputStr.join(''));
+	downloadForm.attr('action',opt.url);
+	downloadForm.attr('method',opt.method=='get'?'get':'post');
+	
+	document.hidden_download_form.submit();
+	
+	downloadForm.empty();
+}
+
 
 _$base.util = {
 	/**
