@@ -1328,7 +1328,7 @@ Plugin.prototype ={
 			var barWidth = (hscrollW*(hscrollW/_this.config.gridWidth.total*100))/100; 
 			barWidth = barWidth < 25 ? 25 :barWidth;
 			_this.config.scroll.hBarWidth = barWidth;
-			_this.config.scroll.hHiddenWidth = _this.config.gridWidth.total - hscrollW;
+			_this.config.scroll.hHiddenWidth = _this.config.gridWidth.main - hscrollW;
 			_this.config.scroll.horizontalWidth =$('#'+_this.prefix+'_hscroll').find('.pubGrid-hscroll-bar-area').width() - barWidth;
 			_this.config.scroll.oneColMove = _this.config.gridWidth.total/_this.config.scroll.horizontalWidth;
 			leftVal = _this.config.scroll.horizontalWidth* _this.config.scroll.hBarPosition/100;
@@ -1630,12 +1630,9 @@ Plugin.prototype ={
 			if(isUndefined(moveObj.colIdx)){
 				leftVal =_this.config.scroll.left+((leftVal=='L'?-1:1) * _this.config.scroll.oneColMove);
 			}else{
-				
 				var colInfo = _this.config.headerInfo[_this.config.headerInfo.length-1][moveObj.colIdx];
 				var moveVal = ((colInfo.width/_this.config.scroll.hHiddenWidth *100) * _this.config.scroll.horizontalWidth /100);
 				leftVal = _this.config.scroll.left+ ((leftVal=='L'?-1:1) *moveVal);
-
-				console.log(colInfo , moveVal , leftVal , _this.config.scroll.hHiddenWidth , _this.config.scroll.horizontalWidth)
 			}
 		}
 
@@ -2060,16 +2057,27 @@ Plugin.prototype ={
 		switch(evtKey){
 			case 37 : { //left
 				var moveColIdx = (endCol-1 >-1? endCol-1: 0);
-
-				console.log('moveColIdx', moveColIdx)
-							
-				if(endCol != moveColIdx){
-					if(moveColIdx <= _this.config.scroll.startCol){
-						_this.moveHScroll({pos:'L', colIdx :moveColIdx });
+				
+				if(_this.config.scroll.endCol <= moveColIdx){
+					var headerInfo = _this.config.headerInfo[_this.config.headerInfo.length-1];
+					
+					var moveColLeftVal=0; 
+					for(var i =0 ; i <headerInfo.length;i++){
+						moveColLeftVal +=headerInfo[i].width;
 					}
+					var leftVal = ((moveColLeftVal/_this.config.scroll.hHiddenWidth *100) * _this.config.scroll.horizontalWidth /100);
+					_this.moveHScroll({pos:leftVal});
+
 				}else{
-					_this.moveHScroll({pos:'L', colIdx :moveColIdx, drawFlag:false});
+					if(endCol != moveColIdx){
+						if(moveColIdx <= _this.config.scroll.startCol){
+							_this.moveHScroll({pos:'L', colIdx :moveColIdx });
+						}
+					}else{
+						_this.moveHScroll({pos:'L', colIdx :moveColIdx, drawFlag:false});
+					}
 				}
+				
 				currViewIdx = _this.config.scroll.viewIdx+endRow;
 
 				if(evt.shiftKey){
@@ -2089,41 +2097,56 @@ Plugin.prototype ={
 				var colLen = _this.config.dataInfo.colLen; 
 
 				var moveColIdx =(endCol+1 >= colLen? colLen-1: endCol+1);
-				
-				if(endCol+1 == colLen && evtKey==9){
-					moveColIdx = 0; 
-					_this.moveHScroll({pos:0});
 
-					currViewIdx = (_this.config.scroll.viewIdx+1)+endRow;
+				if(_this.config.scroll.startCol >= moveColIdx){
+					var headerInfo = _this.config.headerInfo[_this.config.headerInfo.length-1];
 					
-					var rowLen = _this.config.scroll.insideViewCount-1;
-
-					endRow =(endRow+1 >=rowLen? rowLen : endRow+1);
-
-					if(endRow==rowLen){
-						_this.moveVScroll({pos:'D'});
+					var moveColLeftVal=0; 
+					for(var i =0 ; i <headerInfo.length;i++){
+						moveColLeftVal +=headerInfo[i].width;
 					}
-				}else {
-					if(endCol != moveColIdx ){
-						if(moveColIdx >= _this.config.scroll.insideEndCol){
-							_this.moveHScroll({pos:'R' ,colIdx :moveColIdx});
-						}
-					}else{
-						_this.moveHScroll({pos:'R',colIdx :moveColIdx,drawFlag:false});
-					}
-					currViewIdx = _this.config.scroll.viewIdx+endRow;
-				}
-				
-				if(evtKey != 9 && evt.shiftKey){
-					_this._setRangeSelectInfo({
-						rangeInfo :  {endCol :moveColIdx}
-					}, false,true);
+
+
+					var leftVal = (((_this.config.gridWidth.main -moveColLeftVal)/_this.config.scroll.hHiddenWidth *100) * _this.config.scroll.horizontalWidth /100);
+					_this.moveHScroll({pos:leftVal});
+
 				}else{
-					_this._setRangeSelectInfo({
-						rangeInfo :  {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow, startCol:moveColIdx,endCol :moveColIdx}
-					},true, true);
-				}
 				
+					if(endCol+1 == colLen && evtKey==9){
+						moveColIdx = 0; 
+						_this.moveHScroll({pos:0});
+
+						currViewIdx = (_this.config.scroll.viewIdx+1)+endRow;
+						
+						var rowLen = _this.config.scroll.insideViewCount-1;
+
+						endRow =(endRow+1 >=rowLen? rowLen : endRow+1);
+
+						if(endRow==rowLen){
+							_this.moveVScroll({pos:'D'});
+						}
+					}else {
+						if(endCol != moveColIdx ){
+							if(moveColIdx >= _this.config.scroll.insideEndCol){
+								_this.moveHScroll({pos:'R' ,colIdx :moveColIdx});
+							}
+						}else{
+							_this.moveHScroll({pos:'R',colIdx :moveColIdx,drawFlag:false});
+						}
+						currViewIdx = _this.config.scroll.viewIdx+endRow;
+					}
+
+					if(evtKey != 9 && evt.shiftKey){
+						_this._setRangeSelectInfo({
+							rangeInfo :  {endCol :moveColIdx}
+						}, false,true);
+					}else{
+						_this._setRangeSelectInfo({
+							rangeInfo :  {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow, startCol:moveColIdx,endCol :moveColIdx}
+						},true, true);
+					}
+				}
+								
 				break; 
 			}
 			case 38 : { //up
