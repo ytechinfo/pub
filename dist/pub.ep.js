@@ -639,10 +639,10 @@ _$base.download= function (opt){
 	}
 	
 	var tmpVal;
-	var inputStr ='<input type="hidden" name="_key" value="_val"/>';
+	var inputField ='<input type="hidden" name="_key" value="_val"/>';
 	for(var key in tmpParam){
 		tmpVal = tmpParam[key];
-		inputStr.push(inputStr.replace('_key', key).replace('_val',((typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal))));
+		inputStr.push(inputField.replace('_key', key).replace('_val',((typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal))));
 	}
 	
 	var downloadForm = $('#pub_hidden_download_form'); 
