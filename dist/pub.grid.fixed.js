@@ -2054,21 +2054,49 @@ Plugin.prototype ={
 			,endCol = _this.config.select.range.endCol
 			,currViewIdx = _this.config.scroll.viewIdx;
 
+		function isScrollInside(endCol , mode){
+
+			console.log(_this.config.scroll.startCol ,'=== ', endCol , '=== ',_this.config.scroll.endCol)
+			
+			if(_this.config.scroll.startCol <= endCol && endCol <= _this.config.scroll.endCol){
+				return true; 
+			}
+
+			var headerInfo = _this.config.headerInfo[_this.config.headerInfo.length-1];
+					
+			var moveColLeftVal=0;
+			
+			if(endCol > 0){
+				var colFrontFlag = false; 
+				if(_this.config.scroll.startCol >= endCol){
+					endCol =endCol-1;
+					colFrontFlag = true; 
+				}
+				
+				for(var i =0 ; i <= endCol;i++){
+					moveColLeftVal +=headerInfo[i].width;
+				}
+
+				
+				if(!colFrontFlag){
+					moveColLeftVal=moveColLeftVal- (_this.config.body.width - _this.config.gridWidth.aside);
+				}
+			}
+					
+			moveColLeftVal = moveColLeftVal > 0 ? moveColLeftVal :0;
+			var leftVal = (((moveColLeftVal)/_this.config.scroll.hHiddenWidth *100) * _this.config.scroll.horizontalWidth /100);
+			
+			_this.moveHScroll({pos:leftVal});
+
+			return false; 
+			
+		}
+
 		switch(evtKey){
 			case 37 : { //left
 				var moveColIdx = (endCol-1 >-1? endCol-1: 0);
-				
-				if(_this.config.scroll.endCol <= moveColIdx){
-					var headerInfo = _this.config.headerInfo[_this.config.headerInfo.length-1];
-					
-					var moveColLeftVal=0; 
-					for(var i =0 ; i <headerInfo.length;i++){
-						moveColLeftVal +=headerInfo[i].width;
-					}
-					var leftVal = ((moveColLeftVal/_this.config.scroll.hHiddenWidth *100) * _this.config.scroll.horizontalWidth /100);
-					_this.moveHScroll({pos:leftVal});
-
-				}else{
+								
+				if(isScrollInside(endCol,'L')){
 					if(endCol != moveColIdx){
 						if(moveColIdx <= _this.config.scroll.startCol){
 							_this.moveHScroll({pos:'L', colIdx :moveColIdx });
@@ -2076,18 +2104,17 @@ Plugin.prototype ={
 					}else{
 						_this.moveHScroll({pos:'L', colIdx :moveColIdx, drawFlag:false});
 					}
-				}
-				
-				currViewIdx = _this.config.scroll.viewIdx+endRow;
+					currViewIdx = _this.config.scroll.viewIdx+endRow;
 
-				if(evt.shiftKey){
-					_this._setRangeSelectInfo({
-						rangeInfo : {endCol :moveColIdx}
-					}, false,true);
-				}else{
-					_this._setRangeSelectInfo({
-						rangeInfo : {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow ,startCol:moveColIdx,endCol :moveColIdx}
-					},true, true);
+					if(evt.shiftKey){
+						_this._setRangeSelectInfo({
+							rangeInfo : {endCol :moveColIdx}
+						}, false,true);
+					}else{
+						_this._setRangeSelectInfo({
+							rangeInfo : {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow ,startCol:moveColIdx,endCol :moveColIdx}
+						},true, true);
+					}
 				}
 
 				break; 
@@ -2098,20 +2125,7 @@ Plugin.prototype ={
 
 				var moveColIdx =(endCol+1 >= colLen? colLen-1: endCol+1);
 
-				if(_this.config.scroll.startCol >= moveColIdx){
-					var headerInfo = _this.config.headerInfo[_this.config.headerInfo.length-1];
-					
-					var moveColLeftVal=0; 
-					for(var i =0 ; i <headerInfo.length;i++){
-						moveColLeftVal +=headerInfo[i].width;
-					}
-
-
-					var leftVal = (((_this.config.gridWidth.main -moveColLeftVal)/_this.config.scroll.hHiddenWidth *100) * _this.config.scroll.horizontalWidth /100);
-					_this.moveHScroll({pos:leftVal});
-
-				}else{
-				
+				if(isScrollInside(endCol,'R')){
 					if(endCol+1 == colLen && evtKey==9){
 						moveColIdx = 0; 
 						_this.moveHScroll({pos:0});
