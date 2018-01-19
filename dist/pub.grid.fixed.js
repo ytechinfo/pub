@@ -2054,116 +2054,134 @@ Plugin.prototype ={
 			,endCol = _this.config.select.range.endCol
 			,currViewIdx = _this.config.scroll.viewIdx;
 
-		function isScrollInside(endCol , mode){
-
-			console.log(_this.config.scroll.startCol ,'=== ', endCol , '=== ',_this.config.scroll.endCol)
+		function isScrollInside(endCol, mode){ // mode === H:horizontal , V=vertical
+			var scrObj = _this.config.scroll
+				,tmpEndIdx = _this.config.select.range.endIdx;
 			
-			if(_this.config.scroll.startCol <= endCol && endCol <= _this.config.scroll.endCol){
+			var hFlag = (scrObj.startCol <= endCol && endCol <= scrObj.endCol)
+				, vFlag = (scrObj.viewIdx <= tmpEndIdx  && tmpEndIdx <= (scrObj.viewIdx+ scrObj.insideViewCount))
+
+			if(hFlag && vFlag){
 				return true; 
 			}
-
-			var headerInfo = _this.config.headerInfo[_this.config.headerInfo.length-1];
-					
-			var moveColLeftVal=0;
 			
-			if(endCol > 0){
-				var colFrontFlag = false; 
-				if(_this.config.scroll.startCol >= endCol){
-					endCol =endCol-1;
-					colFrontFlag = true; 
+			if(!vFlag){
+				var topMoveVal = 0; 
+				if( tmpEndIdx > (scrObj.viewIdx+ scrObj.insideViewCount)){
+					topMoveVal = (tmpEndIdx-scrObj.insideViewCount+1)* _this.config.scroll.oneRowMove;
+				}else{
+					topMoveVal = (tmpEndIdx* _this.config.scroll.oneRowMove);
 				}
-				
-				for(var i =0 ; i <= endCol;i++){
-					moveColLeftVal +=headerInfo[i].width;
-				}
-
-				
-				if(!colFrontFlag){
-					moveColLeftVal=moveColLeftVal- (_this.config.body.width - _this.config.gridWidth.aside);
-				}
+				_this.moveVScroll({pos:topMoveVal});
 			}
-					
-			moveColLeftVal = moveColLeftVal > 0 ? moveColLeftVal :0;
-			var leftVal = (((moveColLeftVal)/_this.config.scroll.hHiddenWidth *100) * _this.config.scroll.horizontalWidth /100);
-			
-			_this.moveHScroll({pos:leftVal});
 
+			if(!hFlag){
+				var headerInfo = _this.config.headerInfo[_this.config.headerInfo.length-1];
+						
+				var moveColLeftVal=0;
+				
+				if(endCol > 0){
+					var colFrontFlag = false; 
+					if(scrObj.startCol >= endCol){
+						endCol =endCol-1;
+						colFrontFlag = true; 
+					}
+					for(var i =0 ; i <= endCol;i++){
+						moveColLeftVal +=headerInfo[i].width;
+					}
+					if(!colFrontFlag){
+						moveColLeftVal=moveColLeftVal- (_this.config.body.width - _this.config.gridWidth.aside);
+					}
+				}
+						
+				moveColLeftVal = moveColLeftVal > 0 ? moveColLeftVal :0;
+				var leftVal = (((moveColLeftVal)/scrObj.hHiddenWidth *100) * scrObj.horizontalWidth /100);
+				
+				_this.moveHScroll({pos:leftVal});
+			}
 			return false; 
-			
 		}
 
 		switch(evtKey){
 			case 37 : { //left
-				var moveColIdx = (endCol-1 >-1? endCol-1: 0);
-								
-				if(isScrollInside(endCol,'L')){
-					if(endCol != moveColIdx){
-						if(moveColIdx <= _this.config.scroll.startCol){
-							_this.moveHScroll({pos:'L', colIdx :moveColIdx });
-						}
-					}else{
-						_this.moveHScroll({pos:'L', colIdx :moveColIdx, drawFlag:false});
-					}
-					currViewIdx = _this.config.scroll.viewIdx+endRow;
+			
+				if(!isScrollInside(endCol,'H')) return ;
 
-					if(evt.shiftKey){
-						_this._setRangeSelectInfo({
-							rangeInfo : {endCol :moveColIdx}
-						}, false,true);
-					}else{
-						_this._setRangeSelectInfo({
-							rangeInfo : {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow ,startCol:moveColIdx,endCol :moveColIdx}
-						},true, true);
+				var moveColIdx = (endCol-1 >-1? endCol-1: 0);
+				if(endCol != moveColIdx){
+					if(moveColIdx <= _this.config.scroll.startCol){
+						_this.moveHScroll({pos:'L', colIdx :moveColIdx });
 					}
+				}else{
+					_this.moveHScroll({pos:'L', colIdx :moveColIdx, drawFlag:false});
+				}
+				currViewIdx = _this.config.scroll.viewIdx+endRow;
+
+				if(evt.shiftKey){
+					_this._setRangeSelectInfo({
+						rangeInfo : {endCol :moveColIdx}
+					}, false,true);
+				}else{
+					_this._setRangeSelectInfo({
+						rangeInfo : {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow ,startCol:moveColIdx,endCol :moveColIdx}
+					},true, true);
 				}
 
 				break; 
 			}
 			case 9 : // tab
 			case 39 : { //right
+				if(!isScrollInside(endCol,'H')) return ; 
+
 				var colLen = _this.config.dataInfo.colLen; 
 
 				var moveColIdx =(endCol+1 >= colLen? colLen-1: endCol+1);
 
-				if(isScrollInside(endCol,'R')){
-					if(endCol+1 == colLen && evtKey==9){
-						moveColIdx = 0; 
-						_this.moveHScroll({pos:0});
+				console.log(moveColIdx , endCol , colLen , endRow , this.config.scroll.endFlag)
 
-						currViewIdx = (_this.config.scroll.viewIdx+1)+endRow;
-						
-						var rowLen = _this.config.scroll.insideViewCount-1;
+				if(endCol+1 == colLen && evtKey==9){
 
-						endRow =(endRow+1 >=rowLen? rowLen : endRow+1);
+					
+					moveColIdx = 0; 
+					_this.moveHScroll({pos:0});
 
-						if(endRow==rowLen){
-							_this.moveVScroll({pos:'D'});
-						}
-					}else {
-						if(endCol != moveColIdx ){
-							if(moveColIdx >= _this.config.scroll.insideEndCol){
-								_this.moveHScroll({pos:'R' ,colIdx :moveColIdx});
-							}
-						}else{
-							_this.moveHScroll({pos:'R',colIdx :moveColIdx,drawFlag:false});
-						}
-						currViewIdx = _this.config.scroll.viewIdx+endRow;
+					currViewIdx = (_this.config.scroll.viewIdx+1)+endRow;
+					
+					var rowLen = _this.config.scroll.insideViewCount-1;
+
+					endRow =(endRow+1 >=rowLen? rowLen : endRow+1);
+
+					if(endRow==rowLen){
+						_this.config.select.range.endRow
+						_this.moveVScroll({pos:'D'});
 					}
-
-					if(evtKey != 9 && evt.shiftKey){
-						_this._setRangeSelectInfo({
-							rangeInfo :  {endCol :moveColIdx}
-						}, false,true);
+				}else {
+					if(endCol != moveColIdx ){
+						if(moveColIdx >= _this.config.scroll.insideEndCol){
+							_this.moveHScroll({pos:'R' ,colIdx :moveColIdx});
+						}
 					}else{
-						_this._setRangeSelectInfo({
-							rangeInfo :  {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow, startCol:moveColIdx,endCol :moveColIdx}
-						},true, true);
+						_this.moveHScroll({pos:'R',colIdx :moveColIdx,drawFlag:false});
 					}
+					currViewIdx = _this.config.scroll.viewIdx+endRow;
 				}
-								
+
+				if(evtKey != 9 && evt.shiftKey){
+					_this._setRangeSelectInfo({
+						rangeInfo :  {endCol :moveColIdx}
+					}, false,true);
+				}else{
+					_this._setRangeSelectInfo({
+						rangeInfo :  {startIdx : currViewIdx,endIdx : currViewIdx, startRow : endRow ,endRow:endRow, startCol:moveColIdx,endCol :moveColIdx}
+					},true, true);
+				}
+		
 				break; 
 			}
 			case 38 : { //up
+
+				if(!isScrollInside(endCol,'V')) return ; 
+
 				
 				var moveColIdx =(endRow-1 >0? endRow-1: 0);
 						
@@ -2191,7 +2209,14 @@ Plugin.prototype ={
 			}
 			case 13 : // enter
 			case 40 : { //down
+
+				if(!isScrollInside(endCol,'V')) return ;
+
+				
+
 				var rowLen = _this.config.scroll.insideViewCount-1;
+
+				
 
 				var moveColIdx =(endRow+1 >=rowLen? rowLen : endRow+1);
 
@@ -2204,6 +2229,9 @@ Plugin.prototype ={
 				}else{
 					currViewIdx = _this.config.scroll.viewIdx+moveColIdx;
 				}
+
+				console.log(moveColIdx , currViewIdx)
+
 
 				if(evt.shiftKey){
 					_this._setRangeSelectInfo({
