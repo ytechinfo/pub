@@ -534,7 +534,7 @@ _$base.module={
 				
 				if(selectVal.length >0){
 					var tmpVal = '',tmpObj;
-					
+					var addItemArr = [];
 					selectVal.each(function (i, item){
 						tmpObj = $(item);
 						tmpVal=tmpObj.val();
@@ -567,11 +567,15 @@ _$base.module={
 						_this.addItemList[tmpVal] =_addItem;
 						$(actionObj.secondSelect).append(_this.getItemHtml('second',tmpVal ,selectItem ));
 						tmpObj.addClass(_this.options.addItemClass);
+												
+						addItemArr.push(tmpVal);
 											
 						if($.isFunction(_this.options.afterFirstMove)){
 							_this.options.afterFirstMove(tmpObj); 
 						}
 					});
+					
+					return addItemArr;
 				}else{
 					if(_this.options.message.addEmpty !== false){
 						alert(_this.options.message.addEmpty);
@@ -594,7 +598,9 @@ _$base.module={
 				}
 
 				if(selectVal.length >0){
-					var removeItem; 
+					var removeItem;
+					
+					var removeItemArr = [];
 					selectVal.each(function (i, item){
 						if($.isFunction(_this.options.beforeSecondMove)){
 							_this.options.beforeSecondMove($(item)); 
@@ -606,12 +612,16 @@ _$base.module={
 						}
 						$(item).remove();
 						
+						removeItemArr.push(tmpKey);
+						
 						delete _this.addItemList[tmpKey];
 						
 						if($.isFunction(_this.options.afterSecondMove)){
 							_this.options.afterSecondMove(removeItem); 
 						}
 					});
+					
+					return removeItemArr;
 				}else{
 					if(_this.options.message.delEmpty !== false){
 						alert(_this.options.message.delEmpty);
