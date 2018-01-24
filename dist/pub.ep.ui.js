@@ -666,20 +666,25 @@ _$base.module={
 				var selectElement = $(_this.secondSelect+' option:selected');
 				var len = selectElement.length;  
 				if(len ==0) return ; 
-
-				if(type=='up'){			
-					var firstIdx = $(_this.secondSelect+' option').index(selectElement[0]);
-	
-					if(firstIdx < 1) return ;
 					
-					$(selectElement[len-1]).after($(_this.secondSelect+' option').get(firstIdx-1));
+				if(type=='up'){
+					for(var i =0 ;i <len ;i++){
+						var currItem = $(selectElement[i])
+							,prevItem = $(currItem.prev());
+
+						if(!prevItem.is(':selected')) {
+							currItem.after(prevItem);
+						}
+					}
 				}else{
-					var lastIdx = $(_this.secondSelect+' option').index(selectElement[len-1]);
-					var len = $(_this.secondSelect+' option').length; 
-					
-					if(lastIdx == len) return ; 
+					for(var i =len-1 ;i >=0 ;i--){
+						var currItem = $(selectElement[i])
+							,nextItem = $(currItem.next());
 
-					$(selectElement[0]).before($(_this.secondSelect+' option').get(lastIdx+1));
+						if(!nextItem.is(':selected')) {
+							currItem.before(nextItem);
+						}
+					}
 				}
 			}
 			/**

@@ -613,36 +613,28 @@ Plugin.prototype ={
 		var _this = this; 
 		var selectElement =_this.getSelectElement(_this.targetElement);
 		var selectLen = selectElement.length;  
-		if(len ==0) return ; 
 
+		if(selectLen < 1) return ; 
+		
+		var selectClass =this.options.selectClass; 
 		if(type=='up'){
-			var sourceIdx = 0;
-			var tmpSelector = _this.targetElement.find(this.options.itemSelector);
-			
-			var len = tmpSelector.length; 
-			var lastIdx = tmpSelector.index(selectElement[len]);
+			for(var i =0 ;i <selectLen ;i++){
+				var currItem = $(selectElement[i])
+					,prevItem = $(currItem.prev());
 
-			for(var i =0 ;i <len ;i++){
-				if(sourceIdx > 0){
-					
-				}else if(i < lastIdx){
-					break ; 
-				}else{
-					sourceIdx = tmpSelector.index(selectElement[i]);	
+				if(!prevItem.hasClass(selectClass)) {
+					currItem.after(prevItem);
 				}
 			}
-		
-			if(sourceIdx < 1) return ;
-			
-						
-			$(selectElement[len-1]).after(_this.targetElement.find(this.options.itemSelector).get(sourceIdx-1));
 		}else{
-			var lastIdx = _this.targetElement.find(this.options.itemSelector).index(selectElement[len-1]);
-			var len = _this.targetElement.find(this.options.itemSelector).length; 
-			
-			if(lastIdx == len) return ; 
+			for(var i =selectLen-1 ;i >=0 ;i--){
+				var currItem = $(selectElement[i])
+					,nextItem = $(currItem.next());
 
-			$(selectElement[0]).before(_this.targetElement.find(this.options.itemSelector).get(lastIdx+1));
+				if(!nextItem.hasClass(selectClass)) {
+					currItem.before(nextItem);
+				}
+			}
 		}
 	}
 	/**

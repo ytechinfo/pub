@@ -26,22 +26,34 @@ html , body {
 	<button class="exceldown" type="button">excel download</button>
 	<button type="button" onclick="fn_init()">regrid</button>
 	<select id="itemCount">
-		<option value="3">3</option>
+		<option value="3" selected>6</option>
 		<option value="0">0</option>
-		<option value="10">10</option>
-		<option value="100" selected>100</option>
+		<option value="10" >10</option>
+		<option value="100" >100</option>
 		<option value="500">500</option>
 		<option value="1000">1000</option>
 		<option value="10000">10000</option>
 		<option value="100000">100000</option>
 	</select>
 </div>
-<div class="asdfasdfWrapper">
-	<div id="asdfasdf" style="height:100%"></div>
-</div>
-<div class="asdfasdfWrapper">
-	<div id="asdfasdf1" style="height:100%"></div>
-</div>
+<table style="width:100%;height:100%;">
+	<colgroup>
+		<col width="50%">
+		<col width="50%">
+	</colgroup>
+	<tr>
+		<td>
+			<div class="asdfasdfWrapper">
+				<div id="asdfasdf" style="height:100%"></div>
+			</div>
+		</td>
+		<td>
+			<div class="asdfasdfWrapper">
+				<div id="asdfasdf1" style="height:100%"></div>
+			</div>
+		</td>
+	</tr>
+</table>
 </BODY>
 </HTML>
 <script>
@@ -209,7 +221,22 @@ function gridDraw(selector, aaa, colItem){
 			,rowOptions :{
 				height : 50
 				,click : function (idx, item){
-					//console.log(idx, item);
+					
+					var aaabb = getItem(2);
+
+					console.log(aaabb)
+
+					$.pubGrid('#asdfasdf1', {
+						headerOptions : {
+							redraw : false
+						}
+						,page :false
+						,height:'auto'
+						,autoResize :false
+						,tColItem : aaabb.colItem
+						,tbodyItem  : aaabb.aaa
+						
+					});
 				}
 				,contextMenu :{
 					beforeSelect :function (){
