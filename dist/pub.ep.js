@@ -601,14 +601,18 @@ _$base.page ={
 			
 			if(tmpParam.length > 0)	openUrl =openUrl+'?'+tmpParam.join('&');
 			
-			tmpiframe.off("load");
-			tmpiframe.on("load", function(){
-				tmpiframe.off("load");
+			if(options.onlySrc){
 				tmpiframe.attr('src', openUrl);
-				tmpiframe.show();
-			})
-			tmpiframe.attr('src', '');
-			tmpiframe.hide();
+			}else{
+				tmpiframe.off("load");
+				tmpiframe.on("load", function(){
+					tmpiframe.off("load");
+					tmpiframe.attr('src', openUrl);
+					tmpiframe.show();
+				})
+				tmpiframe.attr('src', '');
+				tmpiframe.hide();
+			}
 		}
 		
 		var cstyle=tmpiframe.attr('style');
