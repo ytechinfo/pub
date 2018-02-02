@@ -174,15 +174,16 @@
 				if(!_this.config.initStyleFlag){
 
 					var position = _this.selectorElement.offset(); 
-
+					
 					var pubAutocompleteWrapper = _this.autocompleteEle.closest('.pub-autocomplete-wrapper');
+					
+					var _width = this.options.width ||_this.selectorElement.outerWidth(); 
 
-					pubAutocompleteWrapper.css('width',this.options.width||_this.selectorElement.outerWidth()+'px');
+					pubAutocompleteWrapper.css('width',_width+'px');
 
 					if(_this.options.addSelector ===false){
 						pubAutocompleteWrapper.css({ 'left': position.left+'px' 
 							,'top':(position.top+_this.selectorElement.outerHeight())+'px'
-							,'width': _this.selectorElement.outerWidth()+'px'
 						})
 					}
 					
