@@ -58,9 +58,7 @@ var _initialized = false
 		cellDblClick : false	// body td click
 	}
 	,scroll :{
-		lazyLoad : false // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
-		,lazyLoadTime : 30 // scroll 로드 타임. 
-		,verticalWidth : 12
+		verticalWidth : 12
 		,horizontalHeight: 12
 	}
 	,height: 200
@@ -1553,7 +1551,7 @@ Plugin.prototype ={
 	,moveVScroll : function (moveObj){
 		var _this =this; 
 
-		console.log('moveVScroll' ,moveObj)
+		//console.log('moveVScroll' ,moveObj)
 
 		if(!_this.config.scroll.vUse && moveObj.resizeFlag !== true){ 
 			_this.config.scroll.viewIdx = 0;
@@ -2046,15 +2044,18 @@ Plugin.prototype ={
 
 		if(isFunction(_this.options.bodyOptions.cellDblClick)){
 			
-			_this.element.body.on('click.pubgridtd','.pub-body-td',function (e){
+			_this.element.body.on('dblclick.pubgridtd','.pub-body-td',function (e){
 				var selRow = $(this)
-					,tdInfo=selRow.data('grid-position');
+					,tdInfo=selRow.data('grid-position')
+					,rowColArr  = tdInfo.split(',');
 				
-				var rowIdx = _this.config.scroll.viewIdx+intValue(tdInfo.split(',')[0]);
+				var rowIdx = _this.config.scroll.viewIdx+intValue(rowColArr[0])
+					,colIdx = intValue(rowColArr[1]); 
+
 
 				var rowItem = _this.options.tbodyItem[rowIdx];
 								
-				_this.options.bodyOptions.cellDblClick.call(selRow ,rowIdx , rowItem);							
+				_this.options.bodyOptions.cellDblClick.call(selRow ,{item : rowItem ,r: rowIdx ,c:colIdx , keyItem : _this.options.tColItem[colIdx] } );
 			});
 		}
 				

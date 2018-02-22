@@ -207,6 +207,11 @@ function gridDraw(selector, aaa, colItem){
 			]
 			,tbodyItem :aaa
 			,tfootItem :['asdf']
+			,bodyOptions :{
+				cellDblClick : function (rowItem){
+					console.log( rowItem.item[rowItem.keyItem.key]);
+				}
+			}
 			,rowOptions :{
 				height : 50
 				,click : function (idx, item){
