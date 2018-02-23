@@ -89,8 +89,8 @@ _defaultOption ={
  * @description 설정 초기화.
  */	
 _$base.init = function (gOption , ajaxOpt){
-	_$base.util.objectMerge(globalOption,option);
-	_$base.util.objectMerge(_defaultAjaxOption,ajaxOpt);
+	globalOption=_$base.util.objectMerge(globalOption,gOption);
+	_defaultAjaxOption=_$base.util.objectMerge(_defaultAjaxOption,ajaxOpt);
 	return _$base; 
 }
 /**
