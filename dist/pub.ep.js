@@ -82,6 +82,19 @@ _defaultOption ={
 		,maxImageSize : 10*1024*1024
 		,maxTotalImageSize : 50*1024*1024
 	}
+	,speicalChar :{
+		'|' : '[|]'
+		,'+' : '[+]'
+		,'$' : '[$]'
+		,'*' : '[*]'
+		,'(' : '\\('
+		,')' : '\\)'
+		,'{' : '\\{'
+		,'}' : '\\}'
+		,'[' : '\\['
+		,']' : '\\]'
+		,'\\' : '\\\\\\\\'
+	}
 };
 
 /**
@@ -173,7 +186,6 @@ _$base.req ={
 	 * @description ajax request 
 	 */		
 	ajax:function (option){
-		
 		var loadSelector = option.loadSelector ?option.loadSelector : globalOption.loadSelector; 
 		
 		if(option.dataType == 'jsonp'){
@@ -966,13 +978,30 @@ _$base.util = {
 		var matchObj = str.match(/#.*?#/g);
 		
 		if(matchObj != null){
-			var _paramVal = str,tmpKey={},matchKey; 
-			for(var j=0 ;j <matchObj.length; j++){
-				matchKey = matchObj[j];
-				if(typeof replaceParam==='object'){
-					if(!tmpKey[matchKey]){
-						_paramVal =_paramVal.replace(new RegExp(matchKey,'g'), (replaceParam[matchKey.replace(/#/g,'')]||'') );
-						tmpKey[matchKey] = matchKey;
+			var _paramVal = str,tmpKey={},matchKey,orginKey, paramObjFlag = (typeof replaceParam==='object'); 
+				
+			for(var j=0 , matchLen =matchObj.length;j <matchLen; j++){
+				orginKey = matchObj[j];
+				var matchKey = orginKey;
+				
+				var keyMatch = matchKey.match(/[*+$|^(){}\[\]]/gi); 
+
+				if(keyMatch != null){
+					var tmpReplaceKey = {}
+					for(var z=0, matchKeyLen =keyMatch.length ;z <matchKeyLen; z++){	
+						var specCh = keyMatch[z];
+
+						if(!tmpReplaceKey[specCh]){
+							matchKey = matchKey.replace(new RegExp(globalOption.speicalChar[specCh],'g'), globalOption.speicalChar[specCh]); 
+							tmpReplaceKey[specCh] = specCh;
+						}
+					}
+				}
+
+				if(paramObjFlag){
+					if(!tmpKey[orginKey]){
+						_paramVal =_paramVal.replace(new RegExp(matchKey,'g'), (replaceParam[orginKey.replace(/#/g,'')]||'') );
+						tmpKey[orginKey] = orginKey;
 					}
 				}else{
 					_paramVal =_paramVal.replace(new RegExp(matchKey,'g'), replaceParam );

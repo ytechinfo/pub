@@ -50,7 +50,7 @@ var _initialized = false
 		,colWidthFixed : false  // 넓이 고정 여부.
 		,colMinWidth : 50  // 컬럼 최소 넓이
 		,colMaxWidth : 500  // 컬럼 최대 넓이
-		,oneCharWidth: 9
+		,oneCharWidth: 7
 		,viewAllLabel : true
 		,contextMenu : false // header contextmenu event
 	}
@@ -131,6 +131,28 @@ function isFunction(obj){
 
 function intValue(val){
 	return parseInt(val , 10);
+}
+
+function getCharLength(s){
+    var w_1 =0 , w_15 =0 , w_2=0, w_3 =0 ; // 글자 크기.
+
+    for(var i=0,l=s.length; i<l; i++){
+		var c=s.charCodeAt(i);
+
+		if(c>>11){ // 3byte 처리
+			++w_3;
+		}else if(c>>7){	// 2byte 처리
+			++w_2;
+		}else{
+			if(65 <=c && c <=90){ // 대문자 
+				++w_15;
+			}else{
+				++w_1;
+			}
+		}
+    }
+
+    return w_1 + (w_15*1.3) + (w_2*2) + (w_3*2.1);
 }
 
 var util= {
@@ -1814,7 +1836,8 @@ Plugin.prototype ={
 		
 		var beforeClickObj; 
 		//headerCol.off('click.pubGridHeader.sort');
-
+		
+		// column select
 		_this.element.header.find('.pub-header-cont').on('click.pubGridHeader.select',function (e){
 			var selEle = $(this)
 				,col_idx = selEle.attr('col_idx');
@@ -1833,7 +1856,8 @@ Plugin.prototype ={
 				,curr : curr
 			}, initFlag , true);
 		});
-
+		
+		// sort
 		_this.element.header.find('.pub-header-cont.sort-header').on('dblclick.pubGridHeader.sort',function (e){
 			var selEle = $(this)
 				,col_idx = selEle.attr('col_idx')
@@ -2708,11 +2732,20 @@ Plugin.prototype ={
 				var resizeW = selColItem.maxWidth || -1; 
 
 				if(resizeW < 1){
-					var len = _this.options.tbodyItem.length;
+					var tbodyItem = _this.options.tbodyItem
+						, beforeLen = -1
+						,tmpVal ,currLen
+						,selColKey  =selColItem.key; 
+					
+					for(var i =0, len = tbodyItem.length ;i <len;i++){
+						tmpVal = tbodyItem[i][selColKey]+'';
 
-					for(var i =0 ;i <len;i++){
-						var tmpVal = _this.options.tbodyItem[i][selColItem.key]; 
-						resizeW = Math.max((tmpVal||'').length,resizeW);
+						currLen = tmpVal.length;
+						if(currLen > beforeLen){
+							resizeW = Math.max(getCharLength(tmpVal||''),resizeW);
+						}
+
+						beforeLen= currLen;
 					}
 					resizeW = resizeW*_this.options.headerOptions.oneCharWidth;
 					selColItem.maxWidth=resizeW; 
