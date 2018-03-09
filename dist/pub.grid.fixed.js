@@ -841,16 +841,20 @@ Plugin.prototype ={
 			+' 			</div>'
 			+' 		</div>'
 			+' 		<div id="'+_this.prefix+'_vscroll" class="pubGrid-vscroll">'
-			
-			+' 			<div class="pubGrid-vscroll-bar-area"><div class="pubGrid-vscroll-bar"></div></div>'
-			//+' 			<div class="pubGrid-vscroll-up">^</div>'
-			//+' 			<div class="pubGrid-vscroll-down">V</div>'
+			+'			<div class="pubGrid-scroll-top-area" style="height:23px;"></div>'
+			+' 			<div class="pubGrid-vscroll-bar-area">'
+			+' 			  <div class="pubGrid-vscroll-up pubGrid-vscroll-btn" data-pubgrid-btn="U"><svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="50,0 0,100 100,100" fill="#737171"/></g></svg></div>'
+			+'			  <div class="pubGrid-vscroll-bar"></div>'
+			+' 			  <div class="pubGrid-vscroll-down pubGrid-vscroll-btn" data-pubgrid-btn="D"><svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="0,0 100,0 50,90" fill="#737171"/></g></svg></div>'
+			+' 			</div>'
 			+' 		</div>'
 			+' 		<div id="'+_this.prefix+'_hscroll" class="pubGrid-hscroll">'
 			+'			<div class="pubGrid-scroll-aside-area" style="width:41px;"></div>'
-			+' 			<div class="pubGrid-hscroll-bar-area"><div class="pubGrid-hscroll-bar"></div></div>'
-			//+' 			<div class="pubGrid-hscroll-left"><</div>'
-			//+' 			<div class="pubGrid-hscroll-right">></div>'
+			+' 			<div class="pubGrid-hscroll-bar-area">'
+			+' 			  <div class="pubGrid-hscroll-left pubGrid-hscroll-btn" data-pubgrid-btn="L"><svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="10,50 100,0 100,100" fill="#737171"/></g></svg></div>'
+			+'			  <div class="pubGrid-hscroll-bar"></div>'
+			+' 			  <div class="pubGrid-hscroll-right pubGrid-hscroll-btn" data-pubgrid-btn="R"><svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="0,0 0,100 90,50" fill="#737171"/></g></svg></div>'
+			+'			</div>'
 			+' 		</div> '
 			+' 	</div>'
 			+' 	<div id="'+_this.prefix+'_navigation" class="pubGrid-navigation"><div class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'_status" class="pubgGrid-count-info"></div>'
@@ -1236,6 +1240,7 @@ Plugin.prototype ={
      */
 	,setElementDimensionAndMessage : function (){
 		this.config.header.height = this.element.header.outerHeight();
+		var header_height = this.config.header.height; 
 
 		this.config.navi.height = 0;
 
@@ -1262,11 +1267,11 @@ Plugin.prototype ={
 		}
 
 		this.element.pubGrid.addClass(pubGridClass)
-		this.element.header.find('.pubGrid-header-aside-cont').css('line-height',this.config.header.height+'px').css('height',this.config.header.height+'px')
-		this.element.header.find('.aside-label-wrapper').css('height',this.config.header.height-1+'px');
+		this.element.header.find('.pubGrid-header-aside-cont').css({'line-height': header_height+'px' , 'height' : header_height+'px'})
+		this.element.header.find('.aside-label-wrapper').css('height',header_height-1+'px');
 			
-		$('#'+this.prefix+'_vscroll').css('width', this.options.scroll.verticalWidth);
-		$('#'+this.prefix+'_hscroll').css('height', this.options.scroll.horizontalHeight).css('padding-left', (this.options.headerOptions.displayLineNumber ===true? 40 :0));
+		$('#'+this.prefix+'_vscroll').css({'width' : this.options.scroll.verticalWidth , 'padding-top' :  header_height});
+		$('#'+this.prefix+'_hscroll').css({'height' : this.options.scroll.horizontalHeight , 'padding-left' : (this.options.headerOptions.displayLineNumber ===true? 40 :0) });
 		
 		// empty message
 		if($.isFunction(this.options.message.empty)){
@@ -1551,7 +1556,29 @@ Plugin.prototype ={
 			});
 
 			return true; 
-		})
+		}); 
+		
+		// 가로 방향키
+		$('#'+_this.prefix+'_hscroll .pubGrid-hscroll-btn').off('click.pubhscroll');
+		$('#'+_this.prefix+'_hscroll .pubGrid-hscroll-btn').on('click.pubvhcroll',function (e){
+			var sEle = $(this)
+				,mode = sEle.attr('data-pubgrid-btn');
+
+			_this.moveHScroll({pos :mode});
+
+			console.log(sEle, mode)
+
+			return false;
+		});
+
+		$('#'+_this.prefix+'_vscroll .pubGrid-vscroll-btn').off('click.pubvscroll');
+		$('#'+_this.prefix+'_vscroll .pubGrid-vscroll-btn').on('click.pubvscroll',function (e){
+			var sEle = $(this)
+				,mode = sEle.attr('data-pubgrid-btn');
+
+			_this.moveVScroll({pos :mode});
+			return false; 
+		});
 	}
 	/**
 	* 세로 스크롤
@@ -1664,6 +1691,8 @@ Plugin.prototype ={
 	* 가로 스크롤 이동.
 	*/
 	,moveHScroll : function (moveObj){
+
+		console.log('moveHScroll ', moveObj)
 		var _this =this; 
 		if(!_this.config.scroll.hUse && moveObj.resizeFlag !== true){ return ; }
 
@@ -2701,28 +2730,29 @@ Plugin.prototype ={
 	,_headerResize :function (flag){
 		var _this = this
 			,resizeEle = _this.element.header.find('.pub-header-resizer');
-		if(flag===true){
 
-			function colResize(_this , sEle){
-				_this.drag = {};
-				
-				_this.drag.ele = sEle;
-				
-				_this.drag.resizeIdx = _this.drag.ele.attr('data-resize-idx');
-				_this.drag.isLeftContent  = _this._isFixedPostion(_this.drag.resizeIdx);
-				_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.resizeIdx);
-				
-				_this.drag.totColW = _this.drag.ele.closest('[data-header-info]').width();
-				
-				_this.drag.colW = _this.options.tColItem[_this.drag.resizeIdx].width;
-				if(_this.drag.isLeftContent){
-					_this.drag.gridW = _this.config.gridWidth.left - _this.drag.colW;
-				}else{
-					_this.drag.gridW = _this.config.gridWidth.main - _this.drag.colW;
-				}
-				_this.drag.gridBodyW = _this.config.body.width - _this.drag.colW;
-				return 
+		function colResize(_this , sEle){
+			_this.drag = {};
+			
+			_this.drag.ele = sEle;
+			
+			_this.drag.resizeIdx = _this.drag.ele.attr('data-resize-idx');
+			_this.drag.isLeftContent  = _this._isFixedPostion(_this.drag.resizeIdx);
+			_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.resizeIdx);
+			
+			_this.drag.totColW = _this.drag.ele.closest('[data-header-info]').width();
+			
+			_this.drag.colW = _this.options.tColItem[_this.drag.resizeIdx].width;
+			if(_this.drag.isLeftContent){
+				_this.drag.gridW = _this.config.gridWidth.left - _this.drag.colW;
+			}else{
+				_this.drag.gridW = _this.config.gridWidth.main - _this.drag.colW;
 			}
+			_this.drag.gridBodyW = _this.config.body.width - _this.drag.colW;
+			return 
+		}
+
+		if(flag===true){
 
 			resizeEle.on('dblclick', function (e){
 				colResize(_this, $(this));

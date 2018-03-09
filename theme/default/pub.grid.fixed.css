@@ -339,26 +339,37 @@
 	position:absolute;
 	bottom:0px;
 	z-index:2;
-	background:#fbfbfb;
 	padding:1px;
 	border-top: 1px solid #cac3c3;
+	background:#f5f4f4;
+}
+.pubGrid-hscroll-btn{
+	position: absolute;top:0px;height: 100%;line-height: 0.3;cursor:pointer;z-index:1;
+}
+.pubGrid-hscroll-btn polygon{
+	background-color:#ddd;
 }
 .pubGrid-hscroll-left{
-	position:absolute;left:0px;top:0px;
+	left:0px;
 }
 .pubGrid-hscroll-right{
-	position:absolute;right:0px;top: 0px;
+	right:0px;
 }
 .pubGrid-hscroll-bar-area{
 	position : relative;
 	height:100%; 
 	width:100%;
+	padding : 0px 10px 0px 10px;
 }
 .pubGrid-scroll-aside-area{
 	position:absolute;left:0px;top:0px;height:100%;border-right:0px solid #8e8b8b;
 }
+
+.pubGrid-scroll-top-area{
+	position:absolute;left:0px;top:0px;width:100%;border-right:0px solid #8e8b8b;
+}
 .pubGrid-hscroll-bar{
-	position:absolute;
+	position : relative;
 	width:100px;
 	height:100%; 
 	background:#ccc8c8;
@@ -381,26 +392,29 @@
 	right:0px;
 	top:0px;
 	z-index: 3;
-	background:#fbfbfb;
 	padding:1px;
 	border-left: 1px solid #cac3c3;
+	background:#f5f4f4;
+}
+.pubGrid-vscroll-btn{
+	position: absolute;left:0px;width: 100%;line-height: 0.3;cursor:pointer;
 }
 .pubGrid-vscroll-up{
-	position:absolute; top:0px; left:0px;
+	 top:0px;
 }
 .pubGrid-vscroll-down{
-	position:absolute; bottom:0px; left:0px;
+	bottom:0px;
 }
 
 .pubGrid-vscroll-bar-area{
 	position : relative;
 	height:100%; 
 	width:100%;
+	padding : 10px 0 10px 0;
 	border-bottom: 1px solid #cac3c3;
-	
 }
 .pubGrid-vscroll-bar{
-	position:absolute;
+	position : relative;
 	width:100%;
 	height:100px; 
 	background:#ccc8c8;
