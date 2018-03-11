@@ -361,6 +361,12 @@
 	width:100%;
 	padding : 0px 10px 0px 10px;
 }
+
+.pubGrid-hscroll-bar-bg{
+	position : relative;
+	height:100%; 
+	width:100%;
+}
 .pubGrid-scroll-aside-area{
 	position:absolute;left:0px;top:0px;height:100%;border-right:0px solid #8e8b8b;
 }
@@ -369,16 +375,16 @@
 	position:absolute;left:0px;top:0px;width:100%;border-right:0px solid #8e8b8b;
 }
 .pubGrid-hscroll-bar{
-	position : relative;
-	width:100px;
-	height:100%; 
-	background:#ccc8c8;
+	position: absolute;
+    top: 0px;
+    width: 100px;
+    margin-left: 10px;
+    height: 100%;
+    background: #ccc8c8;
     border: 1px solid #aaa;
-	border-radius: 0.5em !important;
+    border-radius: 0.5em !important;
     touch-action: none;
-	-webkit-box-sizing:  border-box; !important;
-	-moz-box-sizing: border-box; !important;
-	box-sizing: border-box !important;
+    -webkit-box-sizing: border-box;
 }
 
 .pubGrid-hscroll-bar.active , .pubGrid-hscroll-bar:hover {

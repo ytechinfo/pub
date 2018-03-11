@@ -851,6 +851,7 @@ Plugin.prototype ={
 			+' 		<div id="'+_this.prefix+'_hscroll" class="pubGrid-hscroll">'
 			+'			<div class="pubGrid-scroll-aside-area" style="width:41px;"></div>'
 			+' 			<div class="pubGrid-hscroll-bar-area">'
+			+'			  <div class="pubGrid-hscroll-bar-bg"></div>'
 			+' 			  <div class="pubGrid-hscroll-left pubGrid-hscroll-btn" data-pubgrid-btn="L"><svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="10,50 100,0 100,100" fill="#737171"/></g></svg></div>'
 			+'			  <div class="pubGrid-hscroll-bar"></div>'
 			+' 			  <div class="pubGrid-hscroll-right pubGrid-hscroll-btn" data-pubgrid-btn="R"><svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="0,0 0,100 90,50" fill="#737171"/></g></svg></div>'
@@ -1476,8 +1477,8 @@ Plugin.prototype ={
 			clearTimeout(scrollTimer);
 		});
 		
-		$('#'+_this.prefix+'_hscroll .pubGrid-hscroll-bar-area').off('mousedown touchstart mouseup touchend');
-		$('#'+_this.prefix+'_hscroll .pubGrid-hscroll-bar-area').on('mousedown touchstart',function(e) {
+		$('#'+_this.prefix+'_hscroll .pubGrid-hscroll-bar-bg').off('mousedown touchstart mouseup touchend');
+		$('#'+_this.prefix+'_hscroll .pubGrid-hscroll-bar-bg').on('mousedown touchstart',function(e) {
 			mouseDown = true;
 			var evtX = e.offsetX;
 			var leftFlag =evtX > _this.config.scroll.left ? false :true;
@@ -1565,8 +1566,6 @@ Plugin.prototype ={
 				,mode = sEle.attr('data-pubgrid-btn');
 
 			_this.moveHScroll({pos :mode});
-
-			console.log(sEle, mode)
 
 			return false;
 		});
