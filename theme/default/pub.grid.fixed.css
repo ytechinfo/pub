@@ -247,9 +247,6 @@
     border-bottom: 1px solid #e4e4ea;
 }
 
-
-
-
 .pubGrid-container [rowinfo="0"]>td {
 	border-top:0px;
 }
@@ -374,11 +371,61 @@
 .pubGrid-scroll-top-area{
 	position:absolute;left:0px;top:0px;width:100%;border-right:0px solid #8e8b8b;
 }
+.pubGrid-setting{
+	display:none;
+	cursor:pointer;
+}
+
+.pubGrid-setting-area{
+	position:absolute;  
+	width:200px;
+    top: 25px;
+    right: 12px;
+	background-color:#fdfdfd;
+	border: 1px solid #ddd;
+	padding: 0px 5px 5px;
+	display:none;
+}
+
+.pubGrid-scroll-top-area.open .pubGrid-setting-area{
+	display:block;
+}
+
+.pubGrid-setting-area >div{
+	margin-top:5px;
+	background-color:#ffffff;
+	border: 1px solid #ddd;
+	padding:3px;
+	display:none;
+}
+.pubGrid-search-area>select{
+	width:50px;
+	height:23px;
+	margin-right:5px;
+}
+
+.pubGrid-search-area>input{
+	width:75px;
+	height:17px;
+	margin-right:5px;
+}
+
+.pubGrid-speed-area>select{
+	width:50px;
+	height:23px;
+	margin:0 5px;
+}
+.pubGrid-setting-area .pubgrid-btn{
+	background-color:#ffffff;
+	border: 1px solid #ddd;
+	float:right
+}
+
 .pubGrid-hscroll-bar{
 	position: absolute;
     top: 0px;
     width: 100px;
-    margin-left: 10px;
+    margin :0px 10px 0px 10px;
     height: 100%;
     background: #ccc8c8;
     border: 1px solid #aaa;
@@ -419,8 +466,16 @@
 	padding : 10px 0 10px 0;
 	border-bottom: 1px solid #cac3c3;
 }
-.pubGrid-vscroll-bar{
+
+.pubGrid-vscroll-bar-bg{
 	position : relative;
+	height:100%; 
+	width:100%;
+}
+.pubGrid-vscroll-bar{
+	position : absolute;
+	margin :10px 0 10px 0;
+	top:0px;
 	width:100%;
 	height:100px; 
 	background:#ccc8c8;

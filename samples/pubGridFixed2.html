@@ -149,14 +149,25 @@ function gridDraw(selector, aaa, colItem){
 						{key : "refresh" , "name": "새로고침"}
 					]
 				}
+				,setting : {
+					enable : true
+					,click : false
+					,enableSearch : true
+					,enableSpeed : true
+				}
 			}
 			,height : 'auto'
 			,height1:400
 			,scroll :{
 				lazyLoad : true // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
 				,lazyLoadTime : 30 // scroll 로드 타임. 
-				,verticalWidth: 10
-				,horizontalHeight: 10
+				,vertical:{
+					width: 10
+					,speed :2
+				}
+				,horizontal : {
+					height: 10
+				}
 			}
 			,autoResize : true
 			//,bigData :false
