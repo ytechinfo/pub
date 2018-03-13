@@ -379,8 +379,8 @@
 .pubGrid-setting-area{
 	position:absolute;  
 	width:200px;
-    top: 25px;
-    right: 12px;
+    top: 1px;
+    right: 11px;
 	background-color:#fdfdfd;
 	border: 1px solid #ddd;
 	padding: 0px 5px 5px;
@@ -405,7 +405,7 @@
 }
 
 .pubGrid-search-area>input{
-	width:75px;
+	width:70px;
 	height:17px;
 	margin-right:5px;
 }
@@ -418,7 +418,8 @@
 .pubGrid-setting-area .pubgrid-btn{
 	background-color:#ffffff;
 	border: 1px solid #ddd;
-	float:right
+	height: 22px;
+	float:right;
 }
 
 .pubGrid-hscroll-bar{

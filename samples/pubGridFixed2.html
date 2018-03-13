@@ -29,10 +29,10 @@ html , body {
 	<select id="itemCount">
 		<option value="3" >6</option>
 		<option value="0">0</option>
-		<option value="10" selected >10</option>
+		<option value="10"  >10</option>
 		<option value="100" >100</option>
 		<option value="500">500</option>
-		<option value="1000">1000</option>
+		<option value="1000" selected>1000</option>
 		<option value="10000">10000</option>
 		<option value="100000">100000</option>
 	</select>
@@ -154,6 +154,9 @@ function gridDraw(selector, aaa, colItem){
 					,click : false
 					,enableSearch : true
 					,enableSpeed : true
+					,callback : function (data){
+						console.log(data);
+					}
 				}
 			}
 			,height : 'auto'

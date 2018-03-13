@@ -1,7 +1,7 @@
 /**
  * pubGrid v0.0.1
  * ========================================================================
- * Copyright 2016 ytkim
+ * Copyright 2016 - 2018 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
  * url : https://github.com/ytechinfo/pub
@@ -241,7 +241,7 @@ function copyStringToClipboard (prefix , copyText) {
 	
 	function handler (event){
 		document.removeEventListener('copy', handler);
-		copyArea = null; <
+		copyArea = null;
 	}
 	document.addEventListener('copy', handler);
 
@@ -300,6 +300,8 @@ Plugin.prototype ={
 			, navi :{height : 0, width : 0}
 			,aside :{items :[]}
 			,select : {}
+			,template: {}
+			,orginData: []
 			,dataInfo : {colLen : 0, allColLen : 0, rowLen : 0, lastRowIdx : 0}
 		};
 		_this._initScrollData();
@@ -584,7 +586,8 @@ Plugin.prototype ={
 		var colWidth = Math.floor((gridElementWidth)/tci.length);
 		
 		var viewAllLabel= (opt.headerOptions.viewAllLabel ===true ?true :false); 
-
+		
+		var strHtm = [];
 		for(var j=0; j<tci.length; j++){
 			var tciItem = opt.tColItem[j];
 
@@ -604,8 +607,11 @@ Plugin.prototype ={
 			}else{
 				_this.config.gridWidth.main +=tciItem.width;
 			}
+
+			strHtm.push('<option value="'+tciItem.key+'">'+tciItem.label+'</option>');
 		}
 		
+		_this.config.template['searchField'] = strHtm.join('');
 		_this._calcElementWidth();
 	}
 	/**
@@ -622,7 +628,6 @@ Plugin.prototype ={
 			,tciLen = tci.length;
 
 		var _totW = _this.config.gridWidth.aside+_this.config.gridWidth.left+_this.config.gridWidth.main+opt.scroll.vertical.width;
-
 			
 		if(opt.headerOptions.colWidthFixed !== true){
 			var resizeFlag = _totW  < _gw ? true : false;
@@ -732,7 +737,7 @@ Plugin.prototype ={
 			data = pdata.items;
 			pageInfo = pdata.page; 
 		}
-
+		
 		if(data){
 			_this.options.tbodyItem = data
 		}
@@ -754,10 +759,11 @@ Plugin.prototype ={
 						break; 
 					}
 				}
-				
 				if(_idx != -1) _this.getSortList(_idx, _sortType);
 			}
 		}
+
+		_this.config.orginData = _this.options.tbodyItem;
 
 		if(gridMode=='reDraw'){
 
@@ -893,8 +899,8 @@ Plugin.prototype ={
 			+'		s7,3.141,7,7S30.859,34,27,34z"/></g>'
 			+'</svg></div>'
 			+' 			  <div class="pubGrid-setting-area">'
-			+'			    <div class="pubGrid-search-area"><select name="pubgrid_srh_filed"><option>field</option></select><input type="text" class="pubGrid-search-field"><button type="button" class="pubgrid-btn pubgrid_search_btn">검색</button></div>'
-			+'			    <div class="pubGrid-speed-area"><span>스크롤속도</span><select name="pubgrid_scr_speed"><option value="1">1</option></select><button type="button" class="pubgrid-btn pubgrid_speed_btn">설정</button></div>'
+			+'			    <div class="pubGrid-search-area"><select name="pubgrid_srh_filed"><option>field</option></select><input type="text" name="pubgrid_srh_val" class="pubGrid-search-field"><button type="button" class="pubgrid-btn" data-setting-mode="search">검색</button></div>'
+			+'			    <div class="pubGrid-speed-area"><span>스크롤속도</span><select name="pubgrid_scr_speed"><option value="1">1</option></select><button type="button" class="pubgrid-btn" data-setting-mode="speed">설정</button></div>'
 			+' 			  </div>'
 			+'			</div>'
 			+' 			<div class="pubGrid-vscroll-bar-area">'
@@ -1107,7 +1113,7 @@ Plugin.prototype ={
 		if(headerInfo.length > 0 && headerOpt.view){
 			var ghArr, ghItem;
 				
-			for(var i =0 ; i < headerInfo.length; i++){
+			for(var i =0, len=headerInfo.length ; i < len; i++){
 				ghArr = headerInfo[i];
 				strHtm.push('<tr class="pub-header-tr">');
 				for(var j=0 ; j <ghArr.length; j++){
@@ -1497,7 +1503,6 @@ Plugin.prototype ={
 			}
 		});
 		
-
 		var scrollTimer , mouseDown = false
 			,vBgDelay = _this.options.scroll.vertical.bgDelay
 			,hBgDelay = _this.options.scroll.horizontal.bgDelay;
@@ -2022,26 +2027,61 @@ Plugin.prototype ={
 				});
 				
 				if(headerOpt.setting.enableSearch ===true){
+					$('#'+_this.prefix+'_vscroll [name="pubgrid_srh_filed"]').empty().html(_this.config.template['searchField']);
 					$('#'+_this.prefix+'_vscroll .pubGrid-search-area').show(); 
-					
-					//ㅁㄴㅇㄻㄴㅇㄻㄴㄹㅇ
-					$('#'+_this.prefix+'_vscroll .pubgrid_search_btn').on('click', function (){
-						console.log('검색 버튼 처리.');
-					})
-
-					
 				}
+
+				var settingVal = {};
 
 				if(headerOpt.setting.enableSpeed ===true){
 					$('#'+_this.prefix+'_vscroll .pubGrid-speed-area').show();
 					
 					var strHtm = [];
+					strHtm.push('<option value="auto">자동</option>');
 					for(var i =1 ;i <=headerOpt.setting.speedMaxVal;i++){
 						strHtm.push('<option value="'+i+'">'+i+'</option>');
 					}
 					
 					$('#'+_this.prefix+'_vscroll [name="pubgrid_scr_speed"]').empty().html(strHtm.join(''));
 				}
+
+				$('#'+_this.prefix+'_vscroll').on('click','[data-setting-mode]',function (e){
+					var sEle = $(this)
+						,btnMode = sEle.data('setting-mode');
+
+					if('search' == btnMode){
+						var schField = $('#'+_this.prefix+'_vscroll [name="pubgrid_srh_filed"]').val()
+							,schVal = $('#'+_this.prefix+'_vscroll [name="pubgrid_srh_val"]').val();
+
+						settingVal.search = {
+							field : schField
+							,val : schVal
+						}
+						
+						var schArr = [];
+						var orgData = _this.config.orginData; 
+						for(var i =0 , len  = _this.config.orginData.length; i < len;i++){
+							if(orgData[i][schField].indexOf(schVal) > -1){
+								schArr.push(orgData[i]);
+							}
+						}
+
+						console.log(schArr);
+						_this.setData(schArr,'reDraw');
+						
+					}else if('speed' == btnMode){
+						var speedVal = $('#'+_this.prefix+'_vscroll [name="pubgrid_scr_speed"]').val();  
+
+						speedVal = isNaN(speedVal)? (speedVal=='auto'?speedVal:1) : intValue(speedVal);
+
+						_this.options.scroll.vertical.speed= speedVal;
+						settingVal.speed = speedVal;
+					}
+
+					if(isFunction(headerOpt.setting.callback)){
+						headerOpt.setting.callback.call(null,{evt :e , item : settingVal})
+					}
+				})
 			}
 		}
 	}
