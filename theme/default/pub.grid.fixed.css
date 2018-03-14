@@ -371,23 +371,27 @@
 .pubGrid-scroll-top-area{
 	position:absolute;left:0px;top:0px;width:100%;border-right:0px solid #8e8b8b;
 }
+
+.pubGrid-setting-wrapper{
+	position:absolute;left:3px;top:2px;z-index:10;display:none;
+}
 .pubGrid-setting{
-	display:none;
 	cursor:pointer;
+    line-height: 1;
 }
 
 .pubGrid-setting-area{
 	position:absolute;  
 	width:200px;
     top: 1px;
-    right: 11px;
+    left: 11px;
 	background-color:#fdfdfd;
 	border: 1px solid #ddd;
 	padding: 0px 5px 5px;
 	display:none;
 }
 
-.pubGrid-scroll-top-area.open .pubGrid-setting-area{
+.pubGrid-setting-wrapper.open .pubGrid-setting-area{
 	display:block;
 }
 

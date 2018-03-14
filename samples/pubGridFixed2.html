@@ -134,9 +134,6 @@ function gridDraw(selector, aaa, colItem){
 			headerOptions:{
 				view : true
 				,sort : true
-				,displayLineNumber : true	 // 라인 넘버 보기.
-				,displayRowSelector : false	 // row selecotr checkbox 보기
-				,displayModifyInfo : false	 // 수정여부 보기
 				,colFixedIndex :0
 				,resize:{
 					enabled : true
@@ -159,6 +156,20 @@ function gridDraw(selector, aaa, colItem){
 					}
 				}
 			}
+			,asideOptions :{
+				lineNumber : {
+					enable : true
+					,width : 30
+					,styleCss : 'text-align:right;padding-right:3px;'
+				}
+				,rowSelector :{
+					enable :false
+				}
+				,modifyInfo :{
+					enable :false
+				}
+			}
+
 			,height : 'auto'
 			,height1:400
 			,scroll :{
