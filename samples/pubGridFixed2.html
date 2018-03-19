@@ -29,10 +29,10 @@ html , body {
 	<select id="itemCount">
 		<option value="3" >6</option>
 		<option value="0">0</option>
-		<option value="10"  >10</option>
+		<option value="10"  selected>10</option>
 		<option value="100" >100</option>
 		<option value="500">500</option>
-		<option value="1000" selected>1000</option>
+		<option value="1000" >1000</option>
 		<option value="10000">10000</option>
 		<option value="100000">100000</option>
 	</select>
@@ -146,14 +146,21 @@ function gridDraw(selector, aaa, colItem){
 						{key : "refresh" , "name": "새로고침"}
 					]
 				}
-				,setting : {
-					enable : true
-					,click : false
-					,enableSearch : true
-					,enableSpeed : true
-					,callback : function (data){
-						console.log(data);
+			}
+			,setting : {
+				enable : true
+				,click : false
+				,enableSearch : true
+				,enableSpeed : true
+				,callback : function (data){
+					console.log(data);
+				}
+				,configVal :{
+					search :{			// 검색
+						field : 'col0'		// 검색 필드
+						,val : ''		// 검색어
 					}
+					,speed :-1			// scroll speed
 				}
 			}
 			,asideOptions :{
