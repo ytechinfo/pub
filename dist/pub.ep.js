@@ -41,6 +41,9 @@ _defaultOption ={
 		'iframe':'iframe'
 		,'popup':'popup'
 		,'location':'location'
+		,'1':'popup'
+		,'2':'iframe'
+		,'3':'location'
 	}
 	,loadSelector : '.pub-loading-area'
 	,defaultPopupMethod:'get'
@@ -340,11 +343,13 @@ _$base.logWrite = function (url, type, options){
 
 _$base.page ={
 	popupPostMsg : ''	
-	,view : function(url, type, options){
+	,view : function(url, pType, options){
     
 		if(typeof url ==='undefined') throw 'PubEP.page.view url undefined : ['+url+']';
 		
-		if(typeof globalOption.openType[type]==='undefined') throw 'PubEP.page.view ['+type+'] Type mismatch view url:'+url;
+		var type = globalOption.openType[pType];
+		
+		if(typeof type==='undefined') throw 'PubEP.page.view ['+pType+'] Type mismatch view url:'+url;
 		
 		var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {link : {}, replaceParam :{}} : pubEPortalConfig); 
 		
