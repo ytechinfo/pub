@@ -210,7 +210,9 @@ _$base.req ={
 		
 		$.ajax(ajaxOpt).done(function (xhr){
 			if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
-		})
+		}).fail(function (xhr){
+			if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
+		});
 	}
 	/**
 	 * @method PubEP.resultMessage
