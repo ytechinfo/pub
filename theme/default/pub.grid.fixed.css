@@ -169,7 +169,7 @@
 	position: relative;
     padding:0;	
 	width:100%;
-    padding-right: 4px;
+   /* padding-right: 4px;  //2018-03-30*/
 }
 
 .pubGrid-header-container .label-wrapper > .pub-header-label  {
