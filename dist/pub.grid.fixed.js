@@ -81,6 +81,7 @@ var _initialized = false
 			,name : ''
 			,width : 40
 			,styleCss : ''	//css 
+			,isSelectRow:true
 		}
 		,rowSelector :{
 			enable :false
@@ -434,6 +435,10 @@ Plugin.prototype ={
 
 		if(!isNaN(headerHeight)){
 			cssStr.push('#'+_this.prefix+'_pubGrid .pubGrid-header-container th{height:'+headerHeight+'px;}');
+		}
+
+		if(_this.options.asideOptions.lineNumber.isSelectRow ===true){
+			cssStr.push('#'+_this.prefix+'_pubGrid .pubGrid-body-aside .pub-body-aside-td{cursor:pointer;}');
 		}
 		var styleId = _this.prefix+'_pubGridStyle'; 
 		var styleTag = document.getElementById(styleId);
@@ -887,7 +892,7 @@ Plugin.prototype ={
 			,hArrowWidth = _this.options.scroll.horizontal.height-2;
 	
 
-		return '<div id="'+_this.prefix+'_pubGrid" class="pubGrid pubGrid-noselect"  style="overflow:hidden;width:'+_this.config.body.width+'px;">'
+		return '<div class="pubGrid-wrapper"><div id="'+_this.prefix+'_pubGrid" class="pubGrid pubGrid-noselect"  style="overflow:hidden;width:'+_this.config.body.width+'px;">'
 			+' 	<div id="'+_this.prefix+'_container" class="pubGrid-container" style="overflow:hidden;">'
 			+'    <div class="pubGrid-setting-wrapper"><div class="pubGrid-setting"><svg version="1.1" width="'+vArrowWidth+'px" height="'+vArrowWidth+'px" viewBox="0 0 54 54" style="enable-background:new 0 0 54 54;">	'
 			+'<g><path id="'+_this.prefix+'_settingBtn" d="M51.22,21h-5.052c-0.812,0-1.481-0.447-1.792-1.197s-0.153-1.54,0.42-2.114l3.572-3.571	'
@@ -968,7 +973,7 @@ Plugin.prototype ={
 			+' 	</div>'
 			+' 	<div id="'+_this.prefix+'_navigation" class="pubGrid-navigation"><div class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'_status" class="pubgGrid-count-info"></div>'
 			+' 	</div>'
-			+' </div>';
+			+' </div></div>';
 
 	}
 	,getTbodyAsideHtml : function (mode){
@@ -1425,7 +1430,7 @@ Plugin.prototype ={
 		_this.config.body.height = opt.height;
 		
 		var mainHeight = opt.height - this.config.navi.height;
-		_this.element.container.css('height',mainHeight);
+		_this.element.container.css('height',mainHeight-2);
 
 		var  bodyW = (_this.config.body.width-this.options.scroll.vertical.width)
 			, hScrollFlag = _this.config.gridWidth.total > bodyW  ? true : false
@@ -2263,11 +2268,12 @@ Plugin.prototype ={
      * @description 바디 이벤트 초기화.
      */
 	,_initBodyEvent : function (){
-		var _this = this; 
+		var _this = this
+			,asideOpt = _this.options.asideOptions;
 		
 		_this._setRangeSelectInfo({isMouseDown : false});
 		
-		_this.element.body.on('mousedown.pubgridcol','.pub-body-td',function (e){
+		_this.element.body.find('.pubGrid-body').on('mousedown.pubgridcol','.pub-body-td',function (e){
 
 			if(e.which ===3){
 				return true; 
@@ -2362,11 +2368,36 @@ Plugin.prototype ={
 			//_this.element.body.removeClass('pubGrid-noselect');
 			_this._setRangeSelectInfo({isMouseDown : false});
 		});
+
+
+		if(asideOpt.lineNumber.isSelectRow === true){
+			// column select
+			_this.element.body.find('.pubGrid-body-aside').on('click.pubGridLine.select','.pub-body-aside-td',function (e){
+				var selEle = $(this)
+					,row_idx = selEle.closest('tr').attr('rowinfo');
+				
+				var curr ='' , initFlag = true ; 
+				if(e.ctrlKey){
+					curr = 'add';
+					initFlag  = false; 
+				}else{
+					_this.element.body.find('.pub-body-td.col-active').removeClass('col-active');
+				}
+
+				var rowIdx = _this.config.scroll.viewIdx+intValue(row_idx); 
+
+				_this._setRangeSelectInfo({
+					rangeInfo : {startIdx : rowIdx, endIdx : rowIdx, startRow : row_idx ,endRow:row_idx, startCol : 0,  endCol :_this.config.scroll.endCol}
+					,isSelect : true
+					,curr : curr
+				}, initFlag , true);
+			});
+		}
 	
 		if(isFunction(_this.options.rowOptions.click)){
 
 			var beforeRow; 
-			_this.element.body.on('click.pubgridrow','.pub-body-tr',function (e){
+			_this.element.body.find('.pubGrid-body').on('click.pubgridrow','.pub-body-tr',function (e){
 				var selRow = $(this)
 					,rowinfo=selRow.attr('rowinfo');
 				
@@ -2379,13 +2410,13 @@ Plugin.prototype ={
 				selRow.addClass('active');
 				beforeRow = selRow; 
 				
-				_this.options.rowOptions.click.call(selRow ,rowinfo , selItem);							
+				 _this.options.rowOptions.click.call(selRow ,rowinfo , selItem);							
 			});
 		}
 
 		if(isFunction(_this.options.bodyOptions.cellDblClick)){
 			
-			_this.element.body.on('dblclick.pubgridtd','.pub-body-td',function (e){
+			_this.element.body.find('.pubGrid-body').on('dblclick.pubgridtd','.pubGrid-body>.pub-body-td',function (e){
 				var selRow = $(this)
 					,tdInfo=selRow.data('grid-position')
 					,rowColArr  = tdInfo.split(',');

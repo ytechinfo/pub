@@ -58,6 +58,7 @@ _defaultOption ={
 		}
 		,logWriteKey : 'all'
 		,enabled : false
+		,isBlankAllow :false
 		/*
 		,logWriteKey:[
 		     'all'
@@ -321,10 +322,17 @@ _$base.logWrite = function (url, type, options){
 	var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {replaceParam:{userid:''}} : pubEPortalConfig); 
 	
 	if(options.logWriteFlag !==false && (globalOption.log.logWriteKey =='all' || $.inArray(options.gubun, globalOption.log.logWriteKey) > -1 ) ){
+		options.gubun = options.gubun ||'';
+		options.gubunkey = options.gubunkey ||'';
+		
+		if(globalOption.log.isBlankAllow===false && (options.gubun == '' || options.gubunkey == '')){
+			return false; 
+		}
+		
 		$.ajax({
 			url : globalOption.log.url
 			,dataType : "text"
-			,data : {
+			,data : _$base.util.objectMerge({
 				gubun : options.gubun
 				,gubunkey : options.gubunkey
 				,url : url
@@ -334,7 +342,7 @@ _$base.logWrite = function (url, type, options){
 				,ip : ''
 				,loginfo : tmpInfo.replaceParam.userid
 				,userid : tmpInfo.replaceParam.userid
-			}
+				},globalOption.log.param)
 			,success : function(resdata) {}
 			,error : function() {}
 		});
@@ -736,7 +744,7 @@ _$base.util = {
 	 * @param mode
 	 * @description current domain
 	 */	
-	,domain : function (mode){
+	,domain : function (mode, prefix, protocalFlag){
 		if(typeof mode==='undefined'){
 			if(window.location.origin){
 				return window.location.origin; 
@@ -744,11 +752,24 @@ _$base.util = {
 				return window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
 			}
 		}else {
-			if(mode=='domain'){
-				return window.location.hostname; 
-			}else{
-				return window.location.hostname;
+			var hostName = window.location.hostname;
+
+			var i=0,domain=document.domain,p=domain.split('.'),s='_g_d'+(new Date()).getTime();
+			while(i<(p.length-1) && document.cookie.indexOf(s+'='+s)==-1){
+				domain = p.slice(-1-(++i)).join('.');
+				document.cookie = s+"="+s+";domain="+domain+";";
 			}
+			document.cookie = s+"=;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain="+domain+";";
+			
+			if(mode=='main'){
+				prefix = (prefix ||''); 
+				var protocal = protocalFlag ===true ?  window.location.protocol + "//" :'';
+				return protocal+prefix+domain;
+			}else if (mode=='sub'){
+				var tmpsub = hostName.replace(domain,'').replace('.',''); 
+				return tmpsub=='www'?'':tmpsub;
+			}
+			throw 'mode not valid '+ domain
 		}
 	}
 	/**
