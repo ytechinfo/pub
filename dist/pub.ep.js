@@ -779,23 +779,32 @@ _$base.util = {
 	 * @description object merge
 	 */	
 	,objectMerge : function () {
-		var dst = {},src ,p ,args = [].splice.call(arguments, 0);
 		
-		while (args.length > 0) {
-			src = args.splice(0, 1)[0];
-			if (Object.prototype.toString.call(src) == '[object Object]') {
-				for (p in src) {
-					if (src.hasOwnProperty(p)) {
-						if (Object.prototype.toString.call(src[p]) == '[object Object]') {
-							dst[p] = _$base.util.objectMerge(dst[p] || {}, src[p]);
-						} else {
-							dst[p] = src[p];
-						}
-					}
+		var objMergeRecursive = function (dst, src) {
+		    
+			for (var p in src) {
+				if (!src.hasOwnProperty(p)) {continue;}
+				
+				var srcItem = src[p] ;
+				if (srcItem=== undefined) {continue;}
+				
+				if ( typeof srcItem!== 'object' || srcItem=== null) {
+					dst[p] = srcItem;
+				} else if (typeof dst[p]!=='object' || dst[p] === null) {
+					dst[p] = objMergeRecursive(srcItem.constructor===Array ? [] : {}, srcItem);
+				} else {
+					objMergeRecursive(dst[p], srcItem);
 				}
 			}
+			return dst;
 		}
-		return dst;
+
+		var reval = arguments[0];
+		if (typeof reval !== 'object' || reval === null) {	return reval;}
+		for (var i = 1, il = arguments.length; i < il; i++) {
+			objMergeRecursive(reval, arguments[i]);
+		}
+		return reval;
 	}
 	/**
 	 * @method PubEP.util.dateFormat
