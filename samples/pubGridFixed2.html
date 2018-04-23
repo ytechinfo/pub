@@ -135,7 +135,7 @@ function gridDraw(selector, aaa, colItem){
 				view : true
 				,sort : true
 				,colFixedIndex :0
-				,isColSelectAll:false
+				,isSelectCol: true
 				,resize:{
 					enabled : true
 				}
@@ -147,6 +147,8 @@ function gridDraw(selector, aaa, colItem){
 						{key : "refresh" , "name": "새로고침"}
 					]
 				}
+
+				
 			}
 			,setting : {
 				enable : true
@@ -169,6 +171,7 @@ function gridDraw(selector, aaa, colItem){
 					enable : true
 					,width : 30
 					,styleCss : 'text-align:right;padding-right:3px;'
+					,isSelectRow: true
 				}
 				,rowSelector :{
 					enable :false
@@ -247,7 +250,7 @@ function gridDraw(selector, aaa, colItem){
 			,rowOptions :{
 				height : 50
 				,click : function (idx, item){
-					//console.log(idx, item);
+					console.log(idx, item);
 				}
 				,contextMenu :{
 					beforeSelect :function (){

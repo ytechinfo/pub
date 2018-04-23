@@ -11,21 +11,31 @@
 	background: #fff;
     height: 25px;
     padding-top: 2px;
-}
-
-.pubTab{
-	position:relative;
 	-webkit-box-sizing: content-box !important;
 	-moz-box-sizing: content-box !important;
 	box-sizing: content-box !important;
 }
+
+.pubTab-wrapper *{
+	-webkit-box-sizing: content-box !important;
+	-moz-box-sizing: content-box !important;
+	box-sizing: content-box !important;
+}
+
+.pubTab{
+	position:relative;
+	border-bottom: 1px solid #bfb8b8;
+	margin-bottom: 2px;
+}
+
+
 .pubTab-scroll{
 	overflow:hidden;
-	padding: 2px 0px 2px 0px;
+	padding: 2px 0px 0px 0px;
 }
 
 .pubTab-move-area{
-	z-index:1;
+	z-index:100;
 	position:absolute; 
 	right:0px;
 	top:0px;
@@ -42,10 +52,12 @@
 
 .pubTab-container{	
 	list-style: none;
+    position: relative;
+	left:0px;
 	padding: 0px;
     margin: 0px;
 	display: table;
-    border-bottom: 1px solid #bfb8b8;
+    padding: 0px 2px 0px 2px;
 }
 .pubTab-item{
 	vertical-align: baseline;
@@ -104,12 +116,6 @@
 	opacity: 0.5;
 	filter: alpha(opacity=5);
 	box-shadow: none;
-}
-
-.pubTab-drop-area{
-	position: relative;
-	width:100%;
-	background:#fff;
 }
 
 .pubTab-drop-open-btn:hover{

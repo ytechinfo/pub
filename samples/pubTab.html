@@ -33,7 +33,7 @@
 </HTML>
 <script>
 $(document).ready(function (e){
-	var aaa = 'Tables	Views	Procedures	Functions'.split('\t');
+	var aaa = 'Tables	Views	Procedures	Functions	Trigger	Index	Package'.split('\t');
 		
 	for(var i =0 ;i <aaa.length; i++){
 		aaa[i] = {
@@ -51,6 +51,7 @@ $(document).ready(function (e){
 	$.pubTab('#pubTabId',{
 		items :aaa
 		,width:'auto'
+		,overItemViewMode :'drop'
 		,click : function (item){
 			console.log(item);
 		}
