@@ -65,6 +65,8 @@ _defaultOption ={
       	]
       */
 	} 
+	// page.view 하기 전에 호출 체크. 
+	,beforePageView : false //function (callback){callback(true);}	
 	,defaultPopupPosition : {
 		align : 'top'
 		,topMargin : 10
@@ -313,6 +315,14 @@ _$base.log=function (){
 /**
 * url open 메소드
 * view 필수 항복  url, type , options{gubun:'menu , portlet, sso 등등', gubunkey:'구분키 값'}
+* options :{
+	gubun :''	// 로그 남길때 gubun 값 
+	, gubunkey : '' 	// 로그 남길때 gubun keyr값. 
+	,viewOption :''  팝업일때 창 옵션. 
+	,name :  '' 팝업창 이름
+	,beforeCheck : false or true // beforePageView 가 있을 경우 체크 할지 여부를 등록.
+	
+ }
 * ex : 
 * popup ex : _$base.page.view("http://dev.pub.com/",'popup',{gubun:'menu', gubunkey:'menu_pub',name:'popup name', method:'get or post',viewOption:'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400'});
 * location ex : _$base.page.view("http://dev.pub.com/",'location',{gubun:'menu', gubunkey:'menu_location'});
@@ -375,6 +385,24 @@ _$base.page ={
 				}
 			}
 		}
+		
+		if($.isFunction (globalOption.beforePageView)  &&  options.beforeCheck !==false){
+			try{
+				globalOption.beforePageView.call(null, function (reval){
+					if(reval===true){
+						_$base.page._viewPage(url, type, tmpInfo, options);
+					}else if(reval== 'return'){
+						return {'url' : url, 'type': type, 'tmpInfo':tmpInfo, 'options':options };
+					}
+				})
+			}catch(e){
+				_$base.page._viewPage(url, type, tmpInfo, options);
+			}
+		}else{
+			_$base.page._viewPage(url, type, tmpInfo, options);
+		}
+	}
+	,_viewPage : function (url, type, tmpInfo, options){
 		
 		if(options.useReplaceParam ===true && tmpInfo.replaceParam){
 			url=_$base.util.replaceUrl(url,tmpInfo.replaceParam);

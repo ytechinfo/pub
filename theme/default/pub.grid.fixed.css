@@ -16,6 +16,7 @@
 .pubGrid *{
 	border-spacing:0;
 	border-collapse:collapse;
+	color: #000;
 }
 .pubGrid input{
 	line-height: normal;
@@ -33,6 +34,7 @@
 .pubGrid{
 	position: relative;
 	border : 1px solid #bcbcbd;
+    background: #fbf8f8;
 	font-size:12px;
 	border-spacing:0;
 	border-collapse:collapse;
