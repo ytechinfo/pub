@@ -6,6 +6,9 @@
 	<link href="../theme/default/pub.example.css" rel="stylesheet">
 	<link href="../theme/default/pub.tab.css" rel="stylesheet">
 
+	<link href="http://localhost:18080/vsql/webstatic/font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
 	<script src="../plugins/jquery-1.10.2.min.js"></script>
 	<script src="../dist/pub.tab.js"></script>
 
@@ -51,6 +54,13 @@ $(document).ready(function (e){
 	$.pubTab('#pubTabId',{
 		items :aaa
 		,width:'auto'
+		,activeIcon :{
+			position : 'prev1'		//  활성시 html 추가 위치
+			,html : '<i class="fa fa-refresh"></i>'		// 활성시 추가할 html
+			,click : function (item){
+				console.log('icon-click', item)
+			}
+		}
 		,overItemViewMode :'drop'
 		,click : function (item){
 			console.log(item);
