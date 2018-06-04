@@ -73,6 +73,9 @@
     border-top-right-radius: 3px;
 	border-bottom: 0px;
 }
+.pubTab-item-cont>span{
+	display:table-cell;
+}
 
 .pubTab-item.last {
     padding: 0px 0px;
