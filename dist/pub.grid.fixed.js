@@ -407,13 +407,6 @@ Plugin.prototype ={
 		}
 		_this._setGridWidth();
 	}
-	,initScrollData : function (gridCount){
-		this.config.scroll.endCol = this.options.tColItem.length-1;
-		this.config.scroll.endRow = this.options.tbodyItem.length;
-		this.config.scroll.totalHeight = this.options.tbodyItem.length * this.config.rowHeight; 
-
-		return this.config.scroll; 
-	}
 	/**
      * @method addStyleTag
 	 * @param options {Object} - 데이타 .
@@ -730,7 +723,8 @@ Plugin.prototype ={
 			pageInfo = pdata.page; 
 		}
 		
-		if(data){
+		if(data && data.length > 0){
+			data.push('last');	
 			_this.options.tbodyItem = data
 		}
 
@@ -1341,6 +1335,17 @@ Plugin.prototype ={
 			itemIdx++;
 		}
 
+		var overVal = itemIdx - (this.options.tbodyItem.length -1); 
+
+		//console.log('viewCount',overVal,this.options.tbodyItem.length, itemIdx, viewCount)
+					
+		if(overVal >  0){
+			_this.element.container.find('[rowinfo="'+(viewCount-1)+'"]').hide();
+		}else{
+			_this.element.container.find('[rowinfo="'+(viewCount-1)+'"]').show();
+			
+		}
+
 		_this._statusMessage(viewCount);
 		
 	}
@@ -1443,7 +1448,7 @@ Plugin.prototype ={
 					
 					colItem.width = colResizeW;
 				
-					$('#'+_this.prefix+'colHeader'+i).css('width',colResizeW+'px').removeAttr('_width');
+					$('#'+_this.prefix+'colHeader'+i).css('width',colResizeW+'px');
 					$('#'+_this.prefix+'colbody'+i).css('width',colResizeW+'px');
 				}
 
@@ -1791,7 +1796,6 @@ Plugin.prototype ={
 
 		if(!_this.config.scroll.vUse && moveObj.resizeFlag !== true){ 
 			_this.config.scroll.viewIdx = 0;
-			_this.element.body.css('margin-top',0);
 			return ; 
 		}
 
@@ -1829,17 +1833,11 @@ Plugin.prototype ={
 			itemIdx  = Math.round(itemIdx); 
 		}
 			
-		if(this.config.scroll.endFlag){
-			if(this.config.scroll.overflowVal > 0){
-				var vHeight = (this.config.scroll.hUse?this.options.scroll.horizontal.height:0);
-				this.element.body.css('margin-top',(tmpRowHeight-this.config.scroll.overflowVal+2+vHeight)*-1); // 아래 조금 띄우기 위에서 +3 해줌. 
-			}
-		}else{
-			if(beforeEndFlag && !this.config.scroll.endFlag){
-				//itemIdx+=1;
-				this.element.body.css('margin-top',0);
-			}
+		if(beforeEndFlag && !this.config.scroll.endFlag){
+			//itemIdx+=1;
+			this.element.body.css('margin-top',0);
 		}
+		
 		
 		this.config.scroll.vBarPosition = barPos;
 
@@ -2491,8 +2489,7 @@ Plugin.prototype ={
 				_this.gridKeyCtrl(e, evtKey);
 			}
 		});
-		
-		
+				
 		//grid set focus
 		//$(document).on('mousedown.'+_this.prefix,'#'+_this.prefix+'_pubGrid',function (e){
 		$('#'+_this.prefix+'_pubGrid').on('mousedown.'+_this.prefix,function (e){
@@ -3238,7 +3235,6 @@ Plugin.prototype ={
 			_this.options.tColItem[drag.resizeIdx].width = w; 
 			
 			drag.colHeader.css('width',w+'px');
-			drag.colHeader.attr('_width',w);
 			$('#'+_this.prefix+'colbody'+drag.resizeIdx).css('width',w+'px');
 			
 			drag.ele.removeAttr('style');
