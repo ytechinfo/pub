@@ -1047,7 +1047,7 @@ Plugin.prototype ={
 						thiItem = tci[j];
 						clickFlag = thiItem.colClick;
 						
-						strHtm.push('<td scope="col" class="pub-body-td '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-grid-position="'+i+','+j+'"><div class="pub-content pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'"></div></td>');
+						strHtm.push('<td scope="col" class="pub-body-td ' +thiItem['_alignClass']+' '+(thiItem.hidden===true ? 'pubGrid-disoff':'')+'" data-grid-position="'+i+','+j+'"><div class="pub-content pub-content-ellipsis '+ (clickFlag?'pub-body-td-click':'') +'"></div></td>');
 					}
 					strHtm.push('</tr>');
 				}
@@ -2840,10 +2840,14 @@ Plugin.prototype ={
 				sEle.removeClass('col-active');
 			}
 		})
-
-		var isRowSelect = _this.config.select.range._key.indexOf('row') == 0
-			,isColSelect = _this.config.select.range._key.indexOf('col') == 0;
-
+		
+		var rangeKey = _this.config.select.range._key; 
+		var isRowSelect =false,isColSelect = false;  
+		if(!isUndefined(rangeKey)){
+			isRowSelect = _this.config.select.range._key.indexOf('row') == 0;
+			isColSelect = _this.config.select.range._key.indexOf('col') == 0;
+		}
+		
 		for(var i = sRow ; i <= eRow ; i++){
 
 			for(var j=sCol ;j <= eCol; j++){
