@@ -9,6 +9,7 @@
 <script src="../plugins/jquery-1.10.2.min.js"></script>
 <script src="../dist/pub.context.js"></script>
 <script src="../dist/pub.grid.fixed.js"></script>
+
 <style>
 html , body {
 	height:100%;
@@ -26,8 +27,8 @@ html , body {
 	<button class="exceldown" type="button">excel download</button>
 	<button type="button" onclick="fn_init()">regrid</button>
 	<select id="itemCount">
-		<option value="3" >6</option>
-		<option value="0">0</option>
+		<option value="1">0</option>
+		<option value="5" >5</option>
 		<option value="10" >10</option>
 		<option value="20" selected>20</option>
 		<option value="100">100</option>
@@ -137,6 +138,11 @@ function fn_init(){
 
 	var aaa =item.aaa
 		,colItem  = item.colItem;
+	
+
+	if(parseInt($('#itemCount').val(),10) == 1){
+		aaa = [];
+	}
 	
 	gridDraw('#asdfasdf',aaa, colItem);
 	//gridDraw('#asdfasdf1',aaa, colItem);
