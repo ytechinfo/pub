@@ -469,7 +469,7 @@ _$base.page ={
 		if(tmpPopOption != ''){
 		
 			var popupOptArr = tmpPopOption.split(',');
-			var tmpItem ,_t=0 , _l=0 ,_w=1050, _h=0, addFlag ,tmpOpt='',addScrollbarOpt = true, addStatusOpt=false, addResizeableOpt=true; 
+			var tmpItem ,_t=-1 , _l=-1 ,_w=1050, _h=0, addFlag ,tmpOpt='',addScrollbarOpt = true, addStatusOpt=false, addResizeableOpt=true; 
 				
 			for(var i = 0 ;i < popupOptArr.length; i++){
 				tmpItem = popupOptArr[i];
@@ -528,14 +528,14 @@ _$base.page ={
 				var _top = 0 , _left = 0;
 				
 				if($.browser.name=='msie'){
-					if(_t!=0){
+					if(_t!=-1){
 						_viewPosition.top = _t;
 					}else{
 						_viewPosition.top = tmpTopMargin;
 					}
 				}else{
 					_viewPosition.top = typeof screen['availTop']!=='undefined' ?screen['availTop'] : (window.screenTop || screen.top);
-					if(_t!=0){
+					if(_t!=-1){
 						_viewPosition.top = (_viewPosition.top > 0? _viewPosition.top- _t : _viewPosition.top+_t); 
 					}else{
 						_viewPosition.top = (_viewPosition.top > 0? _viewPosition.top- tmpTopMargin : _viewPosition.top+tmpTopMargin); 
@@ -554,8 +554,17 @@ _$base.page ={
 				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
 			}
 			
-			_viewPosition.top = isNaN(tmpTopMargin)?_viewPosition.top:_viewPosition.top+tmpTopMargin;
-			_viewPosition.left = isNaN(tmpLeftMargin)?_viewPosition.left:_viewPosition.left+tmpLeftMargin
+			if(_t! = -1){
+				_viewPosition.top = _t;
+			}else{
+				_viewPosition.top = isNaN(tmpTopMargin)?_viewPosition.top:_viewPosition.top+tmpTopMargin;
+			}
+			
+			if(_l != -1){
+				_viewPosition.left = _l;
+			}else{
+				_viewPosition.left = isNaN(tmpLeftMargin)?_viewPosition.left:_viewPosition.left+tmpLeftMargin
+			}
 
 			tmpPopOption = tmpOpt+', width=' + _w + 'px, height=' + _h + 'px, top=' + _viewPosition.top + 'px, left=' + _viewPosition.left+'px';
 		}
