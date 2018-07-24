@@ -878,7 +878,7 @@ Plugin.prototype ={
 			//_this.sourceElement.empty().html(strHtm.join(''));
 		}
 	}
-	,destory:function (){
+	,destroy:function (){
 		//$(document).off('contextmenu.pubcontext', this.element).off('click', '.context-event');
 	}
 	/**

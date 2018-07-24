@@ -1918,7 +1918,7 @@ Plugin.prototype ={
 	,_layerActive: function (e){
 		e.stopPropagation();
 	}
-	,destory:function (){
+	,destroy:function (){
 		delete _datastore[this.selector];
 	}
 };
