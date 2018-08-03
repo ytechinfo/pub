@@ -174,10 +174,15 @@ function gridDraw(selector, aaa, colItem){
 			,height : 'auto'
 			,height1:400
 			,scroll :{
-				lazyLoad : true // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
-				,lazyLoadTime : 30 // scroll 로드 타임. 
-				,verticalWidth: 10
-				,horizontalHeight: 10
+				vertical : {
+					onUpdate : function (item){	// 스크롤 업데이트. 
+						//console.log(item);
+						//return true; 
+					}
+				}
+				,horizontal :{
+					
+				}
 			}
 			//,bigData :false
 			,bigData : {
@@ -231,11 +236,7 @@ function gridDraw(selector, aaa, colItem){
 				height : 50
 				,click : function (idx, item){
 					
-					var aaabb = getItem(2);
-
-					console.log(aaabb);
 					return ; 
-
 
 					$.pubGrid('#asdfasdf1', {
 						headerOptions : {

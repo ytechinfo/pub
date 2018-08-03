@@ -554,7 +554,7 @@ _$base.page ={
 				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
 			}
 			
-			if(_t! = -1){
+			if(_t != -1){
 				_viewPosition.top = _t;
 			}else{
 				_viewPosition.top = isNaN(tmpTopMargin)?_viewPosition.top:_viewPosition.top+tmpTopMargin;
