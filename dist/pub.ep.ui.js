@@ -52,10 +52,28 @@ _$base.replaceHtm={
  * @description dialog
  */
 _$base.dialog={
-	closeDialog : function (){
-		$(".ui-dialog-titlebar .ui-dialog-titlebar-close").trigger('click');
+	closeDialog : function (selector){
+		var _opener = window;
+		
+		if(typeof top.PubEPUI !=='undefined'){
+			_opener = top; 
+		}else if(typeof parent.PubEPUI !=='undefined'){
+			_opener = parent; 
+		}
+		
+		var dialogEle;
+		if(selector){
+			dialogEle = _opener.$(selector);
+		}else{
+			dialogEle= _opener.$('#_main_div_dialog_frame_id_');
+		}
+		
+		dialogEle.closest('.ui-dialog.ui-widget').find('.ui-dialog-titlebar .ui-dialog-titlebar-close').trigger('click');
 	}
-	,html : function (text , opt){
+	,html : function (selector , opt){
+		this._dialog('html',selector ,opt);
+	}
+	,text : function (text , opt){
 		this._dialog('text',text ,opt);
 	}
 	/**
@@ -100,15 +118,12 @@ _$base.dialog={
 			$('#'+_targetId).css('overflow', 'auto');
 		}
 				
-		if(_opener.$('#'+_targetId+'iframe').length > 0){
-			_opener.$('#'+_targetId).dialog("close");
-		}
-		
 		var modalOption = {
 			 modal: true
 			, autoOpen : false
 			, resizable : false
 			, draggable: true
+			, titleClass : ''
 			, close : function (event, ui){
 				_opener.$('html').css('overflow','auto');
 			}
@@ -116,49 +131,68 @@ _$base.dialog={
 		
 		modalOption = $.extend(true,modalOption,options);
 		
-		var dialogHtm;
-		
-		if(mode=='frame'){
-			if(options.directCall===false){
-				dialogInfo=PubEP.getContextPath(dialogInfo);
-			}
-			modalOption.width = 'auto';
-			modalOption.height = 'auto';
-			modalOption.open =function(){
-				_opener.PubEP.page.view(dialogInfo, "iframe", $.extend({},{target:"#"+_targetId+'iframe', gubun:"dialog", gubunkey:"portletTabConfig",name:decodeURIComponent("게시판 목록 관리")},opt));
-			}
-			dialogHtm = '<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>'; 
-		}else if(mode=='frameHtml'){
-			modalOption.width = 'auto';
-			modalOption.height = 'auto';
-			modalOption.open =function(){
-				var previewFrame = document.getElementById(_targetId+'iframe');
-		        var preview =  previewFrame.contentDocument ||  previewFrame.contentWindow.document;
-		        preview.open();
-		        preview.write(dialogInfo);
-		        preview.close();
-			}
-			dialogHtm = '<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>';
+		var dialogEle;
+		if(mode == 'html'){
+			dialogEle =_opener.$(dialogInfo);
+			
+			dialogEle.dialog(modalOption)
+			.dialog("open").parent().find('.ui-dialog-title').html('<h1 class="tit">'+options.title+'</h1>');
 		}else{
-			modalOption.width = options.width;
-			modalOption.height =options.height;
-			modalOption.open = function (){};
-			dialogHtm = dialogInfo;
-		}
-		
-		_opener.$('#'+_targetId).html(dialogHtm)
+			var dialogHtm;
+			
+			if(_opener.$('#'+_targetId+'iframe').length > 0){
+				_opener.$('#'+_targetId).dialog("close");
+			}
+			
+			if(mode=='frame'){
+				if(options.directCall===false){
+					dialogInfo=PubEP.getContextPath(dialogInfo);
+				}
+				modalOption.width = 'auto';
+				modalOption.height = 'auto';
+				modalOption.open =function(){
+					_opener.PubEP.page.view(dialogInfo, "iframe", $.extend({},{target:"#"+_targetId+'iframe', gubun:"dialog", gubunkey:"portletTabConfig",name:decodeURIComponent("게시판 목록 관리")},opt));
+				}
+				dialogHtm = '<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>'; 
+			}else if(mode=='frameHtml'){
+				modalOption.width = 'auto';
+				modalOption.height = 'auto';
+				modalOption.open =function(){
+					var previewFrame = document.getElementById(_targetId+'iframe');
+			        var preview =  previewFrame.contentDocument ||  previewFrame.contentWindow.document;
+			        preview.open();
+			        preview.write(dialogInfo);
+			        preview.close();
+				}
+				dialogHtm = '<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>';
+			}else if(mode=='text'){
+				modalOption.width = options.width;
+				modalOption.height =options.height;
+				modalOption.open = function (){};
+				dialogHtm = dialogInfo;
+			}
+			
+			dialogEle = _opener.$('#'+_targetId);
+			dialogEle.html(dialogHtm)
 			.dialog(modalOption)
 			.dialog("open").parent().find('.ui-dialog-title').html('<h1 class="tit">'+options.title+'</h1>');
+		}
 		
 		if(options.cssStyle!=''){
-			_opener.$('#'+_targetId).attr('style',options.cssStyle);
+			dialogEle.attr('style',options.cssStyle);
+		}
+		
+		var uiDiloagWidgetEle = dialogEle.closest('.ui-dialog.ui-widget');
+		
+		if(options.titleClass != ''){
+			uiDiloagWidgetEle.find('.ui-dialog-titlebar').addClass(options.titleClass);
 		}
 		
 		if(options.titleHide===true){
-			_opener.$('.ui-dialog-titlebar').hide();
+			uiDiloagWidgetEle.find('.ui-dialog-titlebar').hide();
 			_opener.$('html').css('overflow','hidden');
 		}else{
-			_opener.$('.ui-dialog-titlebar').show();
+			uiDiloagWidgetEle.find('.ui-dialog-titlebar').show();
 			_opener.$('html').css('overflow','hidden');
 			//_opener.$('.ui-widget-overlay.ui-front').css('height',_opener.$(_opener.document).height());
 		}
@@ -166,7 +200,7 @@ _$base.dialog={
 		if(options.overlayHide===true){
 			_opener.$('.ui-widget-overlay.ui-front').off('click');
 			_opener.$('.ui-widget-overlay.ui-front').on('click' , function (){
-				_opener.$('#'+_targetId).dialog("close");
+				dialogEle.dialog("close");
 			})
 		}
 		
@@ -175,7 +209,7 @@ _$base.dialog={
 			_opener.$('.ui-widget-overlay.ui-front').bgiframe();
 			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').off('click');
 			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').on('click' , function (){
-				_opener.$('#'+_targetId).dialog("close");
+				dialogEle.dialog("close");
 			})
 		}
 	}
