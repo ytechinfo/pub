@@ -125,7 +125,9 @@ _$base.dialog={
 			, draggable: true
 			, titleClass : ''
 			, close : function (event, ui){
-				_opener.$('html').css('overflow','auto');
+				if(opt.closeOverflowAuto !==false){
+					_opener.$('html').css('overflow','auto');
+				}
 			}
 		}
 		
@@ -288,6 +290,7 @@ _$base.toast = {
 			, stack:false
 			, showHideTransition: 'fade'
 			, position: 'mid-center'
+			, loader :false
 			//, beforeShow : function(){$('.jq-toast-wrap').css("margin" , "0 0 0 -155px") }
 		},opt);
 		
