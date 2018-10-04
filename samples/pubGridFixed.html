@@ -81,6 +81,11 @@ function getItem (type){
 				,c: (i*10000)
 				,d:'ddd_'+i
 				,e:'eee_'+i
+				,f:'ffff'+i
+				,g:'ggggg'+i
+				,h:'hhhh'+i
+				,i:'iiii'+i
+				,j:'jjjj'+i
 			});
 		}
 		colItem = [
@@ -93,6 +98,12 @@ function getItem (type){
 				return rowInfo.formatter(item['c'],0);
 			}}
 			,{key :'e', label:'이',width:100}
+			,{key :'f', label:'이',width:100}
+			,{key :'g', label:'이',width:100}
+			,{key :'h', label:'이',width:100}
+			,{key :'i', label:'이',width:100}
+			,{key :'k', label:'이',width:100}
+			,{key :'j', label:'이',width:100}
 			//,{key :'d', label:'디', hidden:true}
 		]
 	}else{
@@ -100,7 +111,7 @@ function getItem (type){
 		for(var i =0 ;i <itemCount; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 10 ;j++){
+			for(var j =0 ; j< 20 ;j++){
 				var colName = 'col'+j ; 
 				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
