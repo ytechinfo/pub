@@ -137,6 +137,22 @@ _$base.getPojectName=function (){
 }
 
 /**
+ * @method PubEP.isUndefined
+ * @description undefined check
+ */
+_$base.isUndefined =function(obj){
+	return typeof obj==='undefined';
+}
+
+/**
+ * @method PubEP.isFunction
+ * @description function check
+ */
+_$base.isFunction =function(obj){
+	return typeof obj==='function';
+}
+
+/**
  * @method PubEP.cookie
  * @param name 
  * @param val 
