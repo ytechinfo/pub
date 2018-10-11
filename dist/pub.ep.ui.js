@@ -294,15 +294,15 @@ _$base.toast = {
 			//, beforeShow : function(){$('.jq-toast-wrap').css("margin" , "0 0 0 -155px") }
 		},opt);
 		
-		var tmpP = window ; 
+		var _opener = window;
 		
-		if(parent){
-			if(typeof tmpP.$ === 'undefined' && typeof tmpP.$.toast === 'undefined' ){
-				tmpP = parent;
-			}
+		if(typeof top.PubEPUI !=='undefined'){
+			_opener = top; 
+		}else if(typeof parent.PubEPUI !=='undefined'){
+			_opener = parent; 
 		}
 		
-		tmpP.$.toast($.extend(true,setOpt, option));
+		_opener.$.toast($.extend(true,setOpt, option));
 	}
 }
 
