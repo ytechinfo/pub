@@ -2337,7 +2337,7 @@ Plugin.prototype ={
 				var rangeKey = 'row'+rowIdx;
 
 				_this._setRangeSelectInfo({
-					rangeInfo : {_key : rangeKey, startIdx : rowIdx, endIdx : rowIdx, startRow : row_idx ,endRow:row_idx, startCol : 0,  endCol :_this.config.itemColumnCount}
+					rangeInfo : {_key : rangeKey, startIdx : rowIdx, endIdx : rowIdx, startRow : row_idx ,endRow:row_idx, startCol : 0,  endCol :_this.config.itemColumnCount-1}
 					,isSelect : true
 					,curr : curr
 				}, initFlag , true);
