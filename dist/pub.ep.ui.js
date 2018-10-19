@@ -133,6 +133,8 @@ _$base.dialog={
 		
 		modalOption = $.extend(true,modalOption,options);
 		
+		_opener.$('html').css('overflow','hidden');
+		
 		var dialogEle;
 		if(mode == 'html'){
 			dialogEle =_opener.$(dialogInfo);
@@ -192,16 +194,15 @@ _$base.dialog={
 		
 		if(options.titleHide===true){
 			uiDiloagWidgetEle.find('.ui-dialog-titlebar').hide();
-			_opener.$('html').css('overflow','hidden');
 		}else{
 			uiDiloagWidgetEle.find('.ui-dialog-titlebar').show();
-			_opener.$('html').css('overflow','hidden');
 			//_opener.$('.ui-widget-overlay.ui-front').css('height',_opener.$(_opener.document).height());
 		}
 		
 		if(options.overlayHide===true){
 			_opener.$('.ui-widget-overlay.ui-front').off('click');
 			_opener.$('.ui-widget-overlay.ui-front').on('click' , function (){
+				_opener.$('html').css('overflow','auto');
 				dialogEle.dialog("close");
 			})
 		}
@@ -211,6 +212,7 @@ _$base.dialog={
 			_opener.$('.ui-widget-overlay.ui-front').bgiframe();
 			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').off('click');
 			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').on('click' , function (){
+				_opener.$('html').css('overflow','auto');
 				dialogEle.dialog("close");
 			})
 		}
