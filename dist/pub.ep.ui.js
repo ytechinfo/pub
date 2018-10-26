@@ -124,7 +124,9 @@ _$base.dialog={
 		}
 		
 		var isScroll = (document.body.clientHeight > window.innerHeight) || $('html').css('overflow-y') == 'scroll';
-				
+		
+		isScroll = _opener.$('.pub-ep-ui-overlay').length > 0 ? false :isScroll; 
+		
 		var modalOption = {
 			 modal: true
 			, autoOpen : false
@@ -133,8 +135,8 @@ _$base.dialog={
 			, titleClass : ''
 			, close : function (event, ui){
 				if(opt.closeOverflowAuto !==false){
-					_opener.$('html').css('overflow','');
 					if(isScroll){
+						_opener.$('html').css('overflow','');
 						_opener.$('body').css('overflow-y','');
 					}
 				}
@@ -143,9 +145,8 @@ _$base.dialog={
 		
 		modalOption = $.extend(true,modalOption,options);
 		
-		_opener.$('html').css('overflow','hidden');
-		
 		if(isScroll){
+			_opener.$('html').css('overflow','hidden');
 			_opener.$('body').css('overflow-y','scroll');
 		}
 		
@@ -213,26 +214,21 @@ _$base.dialog={
 			//_opener.$('.ui-widget-overlay.ui-front').css('height',_opener.$(_opener.document).height());
 		}
 		
-		if(options.overlayHide===true){
-			_opener.$('.ui-widget-overlay.ui-front').off('click');
-			_opener.$('.ui-widget-overlay.ui-front').on('click' , function (){
-				_opener.$('html').css('overflow','');
-				
-				if(isScroll){
-					_opener.$('body').css('overflow-y','');
-				}
-				
-				dialogEle.dialog("close");
-			})
-		}
+		var _uuid = 'bgiframe-'+PubEP.util.generateUUID();
+		
+		var overLayEle = uiDiloagWidgetEle.nextAll('.ui-widget-overlay.ui-front:not(.pub-ep-ui-overlay)'); 
+		
+		overLayEle.addClass('pub-ep-ui-overlay');
+		overLayEle.append('<div class="bg-iframe-overlay '+_uuid+'" style="display:block;position:fixed;z-index:1;top:0px;left:0px;width:100%;height:100%;opacity:0;"></div>')
 		
 		if(options.bgiframe !== false && globalUIOption.dialogBgIframe !== false){
-			_opener.$('.ui-widget-overlay.ui-front').append('<div class="bg-iframe-overlay" style="display:block;position:fixed;z-index:1;top:0px;left:0px;width:100%;height:100%;opacity:0;"></div>')
-			_opener.$('.ui-widget-overlay.ui-front').bgiframe();
-			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').off('click');
-			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').on('click' , function (){
-				_opener.$('html').css('overflow','');
+			overLayEle.bgiframe();
+		}
+		
+		if(options.overlayHide !== false){
+			_opener.$('.'+_uuid).on('click' , function (){
 				if(isScroll){
+					_opener.$('html').css('overflow','');
 					_opener.$('body').css('overflow-y','');
 				}
 				dialogEle.dialog("close");
