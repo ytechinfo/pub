@@ -52,13 +52,15 @@ _$base.replaceHtm={
  * @description dialog
  */
 _$base.dialog={
-	closeDialog : function (selector){
+	closeDialog : function (selector, parentWinChk){
 		var _opener = window;
 		
-		if(typeof top.PubEPUI !=='undefined'){
-			_opener = top; 
-		}else if(typeof parent.PubEPUI !=='undefined'){
-			_opener = parent; 
+		if(parentWinChk !== false){
+			if(typeof top.PubEPUI !=='undefined'){
+				_opener = top; 
+			}else if(typeof parent.PubEPUI !=='undefined'){
+				_opener = parent; 
+			}
 		}
 		
 		var dialogEle;
@@ -91,11 +93,14 @@ _$base.dialog={
 	,_dialog : function (mode , dialogInfo , opt){
 		var _opener = window;
 		
-		if(typeof top.PubEPUI !=='undefined'){
-			_opener = top; 
-		}else if(typeof parent.PubEPUI !=='undefined'){
-			_opener = parent; 
+		if(opt.parentCheck !== false){
+			if(typeof top.PubEPUI !=='undefined'){
+				_opener = top; 
+			}else if(typeof parent.PubEPUI !=='undefined'){
+				_opener = parent; 
+			}
 		}
+		
 		opt.height = opt.height+'';
 		var options = $.extend(true, {
 			targetID : '_main_div_dialog_frame_id_'
@@ -117,6 +122,8 @@ _$base.dialog={
 		}else{
 			$('#'+_targetId).css('overflow', 'auto');
 		}
+		
+		var isScroll = (document.body.clientHeight > window.innerHeight) || $('html').css('overflow-y') == 'scroll';
 				
 		var modalOption = {
 			 modal: true
@@ -126,7 +133,10 @@ _$base.dialog={
 			, titleClass : ''
 			, close : function (event, ui){
 				if(opt.closeOverflowAuto !==false){
-					_opener.$('html').css('overflow','auto');
+					_opener.$('html').css('overflow','');
+					if(isScroll){
+						_opener.$('body').css('overflow-y','');
+					}
 				}
 			}
 		}
@@ -134,6 +144,10 @@ _$base.dialog={
 		modalOption = $.extend(true,modalOption,options);
 		
 		_opener.$('html').css('overflow','hidden');
+		
+		if(isScroll){
+			_opener.$('body').css('overflow-y','scroll');
+		}
 		
 		var dialogEle;
 		if(mode == 'html'){
@@ -202,7 +216,12 @@ _$base.dialog={
 		if(options.overlayHide===true){
 			_opener.$('.ui-widget-overlay.ui-front').off('click');
 			_opener.$('.ui-widget-overlay.ui-front').on('click' , function (){
-				_opener.$('html').css('overflow','auto');
+				_opener.$('html').css('overflow','');
+				
+				if(isScroll){
+					_opener.$('body').css('overflow-y','');
+				}
+				
 				dialogEle.dialog("close");
 			})
 		}
@@ -212,7 +231,10 @@ _$base.dialog={
 			_opener.$('.ui-widget-overlay.ui-front').bgiframe();
 			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').off('click');
 			_opener.$('.ui-widget-overlay.ui-front>.bg-iframe-overlay').on('click' , function (){
-				_opener.$('html').css('overflow','auto');
+				_opener.$('html').css('overflow','');
+				if(isScroll){
+					_opener.$('body').css('overflow-y','');
+				}
 				dialogEle.dialog("close");
 			})
 		}
@@ -286,7 +308,7 @@ _$base.toast = {
 		
 		// 기본 옵션 셋팅
 		var setOpt = $.extend({}, {
-			 hideAfter: 3000
+			 hideAfter: 2000
 			, position: {left:"50%",top:"50%"}
 			, textColor: '#fff'
 			, stack:false

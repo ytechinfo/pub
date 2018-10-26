@@ -441,8 +441,8 @@ _$base.page ={
 		}
 	}
 	,_location:function (url, options){
-		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
+		var openUrl = this._getUrl(url);
+		
 		var tmpParam=getParameter(url , {});
 		tmpParam=paramToArray(tmpParam);
 		
@@ -468,6 +468,13 @@ _$base.page ={
 			location.href=url;
 		}
 	}
+	,_getUrl : function (url){
+		var urlIdx = url.indexOf('?');
+		
+		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
+		
+		return openUrl;
+	}
 	,_popup:function (url, options){
 		var _this = this; 
 		var targetId = 'PubEP_'+_$base.util.generateUUID().replace(/-/g,'')
@@ -477,8 +484,7 @@ _$base.page ={
 			, tmpPosition = $.extend({},globalOption.defaultPopupPosition,( $.isPlainObject(options.position)?options.position:{align:options.position} ))
 			, tmpName ='PubEP_'+(options.name?( escape(options.name).replace(/[ \{\}\[\]\/?.,;:|\)*~`!^\-+┼<>@\#$%&\'\"\\(\=]/gi,'') ):targetId.replace(/-/g,''));
 			
-		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
+		var openUrl = _this._getUrl(url);
 		
 		tmpPopOption = tmpPopOption.replace(/\s/gi,'');
 		
@@ -652,14 +658,13 @@ _$base.page ={
 		var tmpParam = options.param?options.param:{};
 		tmpParam=getParameter(url , tmpParam);
 		
-		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > -1 ? url.substring(0,urlIdx) : url;
+		var openUrl = this._getUrl(url);
 
 		//if(url== tmpiframe.attr('_view_url') && options.refresh != true) return ; 
 		
 		tmpiframe.attr('_view_url', url);
 
-		if(options.method == "post"){
+		if(options.method == globalOption.httpMethod.post){
 			var tmpForm = $("<form></form>");
 			var strHtm = [];
 			var tmpVal;
@@ -1514,7 +1519,8 @@ function getParameter(url, param){
 			if(!(tmpKey=='StyleName' && addStyleFlag==false)){
 				rtnval[tmpKey]=tmpParam.substring(firstIdx+1);
 			}
-				
+		}else{
+			rtnval[tmpParam]='pub.ep.empty';
 		}
 	}
 
@@ -1607,7 +1613,11 @@ function paramToArray(param){
 	for(var key in param) {
 		if(key) {
 			tmpVal = param[key];
-			tmpArr.push( key+'='+ ( (typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal) ) );
+			if(tmpVal=='pub.ep.empty'){
+				tmpArr.push( key);
+			}else{
+				tmpArr.push( key+'='+ ( (typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal) ) );
+			}
 		}
 	}
 	return tmpArr; 
