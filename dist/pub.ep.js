@@ -337,7 +337,7 @@ _$base.log=function (){
 	,viewOption :''  팝업일때 창 옵션. 
 	,name :  '' 팝업창 이름
 	,beforeCheck : false or true // beforePageView 가 있을 경우 체크 할지 여부를 등록.
-	
+	,orginUrlView : false 직접 볼려면 true
  }
 * ex : 
 * popup ex : _$base.page.view("http://dev.pub.com/",'popup',{gubun:'menu', gubunkey:'menu_pub',name:'popup name', method:'get or post',viewOption:'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400'});
@@ -441,12 +441,17 @@ _$base.page ={
 		}
 	}
 	,_location:function (url, options){
-		var openUrl = this._getUrl(url);
+	
 		
-		var tmpParam=getParameter(url , {});
-		tmpParam=paramToArray(tmpParam);
+		var tmpParam = options.param?options.param:{}
+		var openUrl;
 		
-		if(tmpParam.length > 0) url =openUrl+'?'+tmpParam.join('&');
+		if(options.orginUrlView===true){
+			openUrl = url;
+		}else{
+			openUrl = this._getUrl(url);
+			tmpParam=getParameter(url , tmpParam);
+		}
 		
 		if(options){
 			if(options.method=='post'){
@@ -462,6 +467,7 @@ _$base.page ={
 				document.pubepLocationHrefForm.action = url; 
 				document.pubepLocationHrefForm.submit();
 			}else{
+				openUrl = this._addParamGetUrl(openUrl , tmpParam);
 				location.href=url;
 			}
 		}else{
@@ -475,6 +481,19 @@ _$base.page ={
 		
 		return openUrl;
 	}
+	,_addParamGetUrl : function (openUrl, tmpParam){
+		tmpParam =tmpParam || {};
+		tmpParam=paramToArray(tmpParam);
+		
+		if(tmpParam.length > 0)	{
+			if(openUrl.indexOf('?') > -1){
+				openUrl =openUrl+'&'+tmpParam.join('&');
+			}else {
+				openUrl =openUrl+'?'+tmpParam.join('&');
+			}
+		}
+		return openUrl; 
+	}
 	,_popup:function (url, options){
 		var _this = this; 
 		var targetId = 'PubEP_'+_$base.util.generateUUID().replace(/-/g,'')
@@ -483,8 +502,15 @@ _$base.page ={
 			, tmpPopOption = options.viewOption?options.viewOption:''
 			, tmpPosition = $.extend({},globalOption.defaultPopupPosition,( $.isPlainObject(options.position)?options.position:{align:options.position} ))
 			, tmpName ='PubEP_'+(options.name?( escape(options.name).replace(/[ \{\}\[\]\/?.,;:|\)*~`!^\-+┼<>@\#$%&\'\"\\(\=]/gi,'') ):targetId.replace(/-/g,''));
-			
-		var openUrl = _this._getUrl(url);
+		
+		var openUrl;
+		
+		if(options.orginUrlView===true){
+			openUrl = url;
+		}else{
+			openUrl = _this._getUrl(url);
+			tmpParam=getParameter(url , tmpParam);
+		}
 		
 		tmpPopOption = tmpPopOption.replace(/\s/gi,'');
 		
@@ -590,14 +616,11 @@ _$base.page ={
 
 			tmpPopOption = tmpOpt+', width=' + _w + 'px, height=' + _h + 'px, top=' + _viewPosition.top + 'px, left=' + _viewPosition.left+'px';
 		}
-		tmpParam=getParameter(url , tmpParam);
 		
 		// get method
 		if(globalOption.httpMethod.get ==tmpMethod){
 			
-			tmpParam=paramToArray(tmpParam);
-			
-			if(tmpParam.length > 0)	openUrl =openUrl+'?'+tmpParam.join('&');
+			openUrl = _this._addParamGetUrl(openUrl , tmpParam);
 			
 			try{
 				var myWindow=window.open(openUrl,tmpName, tmpPopOption);
@@ -654,14 +677,18 @@ _$base.page ={
 		}
 		
 		if(tmpiframe.length < 1) throw SyntaxError(options.target+ ' iframe element emtpy');
-				
+		
 		var tmpParam = options.param?options.param:{};
-		tmpParam=getParameter(url , tmpParam);
 		
-		var openUrl = this._getUrl(url);
-
-		//if(url== tmpiframe.attr('_view_url') && options.refresh != true) return ; 
+		var openUrl;
 		
+		if(options.orginUrlView===true){
+			openUrl = url;
+		}else{
+			openUrl = this._getUrl(url);
+			tmpParam=getParameter(url , tmpParam);
+		}
+				
 		tmpiframe.attr('_view_url', url);
 
 		if(options.method == globalOption.httpMethod.post){
@@ -682,9 +709,7 @@ _$base.page ={
 			$("#hiddenFormIframe").append(tmpForm);
 			tmpForm.submit();
 		}else{
-			tmpParam=paramToArray(tmpParam);
-			
-			if(tmpParam.length > 0)	openUrl =openUrl+'?'+tmpParam.join('&');
+			openUrl = this._addParamGetUrl(openUrl , tmpParam);
 			
 			if(options.onlySrc){
 				tmpiframe.attr('src', openUrl);
