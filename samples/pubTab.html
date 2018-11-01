@@ -6,9 +6,6 @@
 	<link href="../theme/default/pub.example.css" rel="stylesheet">
 	<link href="../theme/default/pub.tab.css" rel="stylesheet">
 
-	<link href="http://localhost:18080/vsql/webstatic/font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-
-
 	<script src="../plugins/jquery-1.10.2.min.js"></script>
 	<script src="../dist/pub.tab.js"></script>
 
@@ -17,9 +14,13 @@
 </style>
 </HEAD>
 <BODY>
-	<div id="pubTabId" style="width:300px">
+	<div id="pubTabId" style="width:calc(100% - 300px);">
 	</div>
 -------------------------------<br/>
+	<div>
+		<button type="button" class="add-item">add item</button>
+		<button type="button" class="del-item">del item</button>
+	</div>
 	<div id="asdfasdf" style="width:300px">
 		<div class="pub-tab-wrapper">
 			<div class="pub-tab" data-mode="vertical">
@@ -36,39 +37,69 @@
 </HTML>
 <script>
 $(document).ready(function (e){
-	var aaa = 'Tables	Views	Procedures	Functions	Trigger	Index	Package'.split('\t');
-		
-	for(var i =0 ;i <aaa.length; i++){
-		aaa[i] = {
-			test1 : aaa[i]
-		}
+	pubTab.init();
+})
+
+
+var pubTab = {
+	init : function(){
+		this.initEvt();
+		this.tabDraw();
 	}
-	/*
-	for(var i =aaa.length ;i <10; i++){
-		aaa.push({
-			title:'asdf'+i
+	,initEvt : function (){
+
+		//add-item
+		$('.add-item').on('click', function(){
+			$.pubTab('#pubTabId').addItem({title :'asdffefe'})
+		})
+		
+		//del-item
+		$('.del-item').on('click', function(){
+		
 		})
 	}
-	*/
-
-	$.pubTab('#pubTabId',{
-		items :aaa
-		,width:'auto'
-		,activeIcon :{
-			position : 'prev1'		//  활성시 html 추가 위치
-			,html : '<i class="fa fa-refresh"></i>'		// 활성시 추가할 html
-			,click : function (item){
-				console.log('icon-click', item)
+	,tabDraw : function(){
+		var aaa = 'Tables	Views	Pr--ocedures	Fun--ctions	Trigger	Index	Package'.split('\t');
+		
+		for(var i =0 ;i <aaa.length; i++){
+			aaa[i] = {
+				title : aaa[i]
+				,id : 'test_'+i
 			}
 		}
-		,overItemViewMode :'drop'
-		,click : function (item){
-			console.log(item);
+
+		console.log(JSON.stringify(aaa))
+
+
+		aaa=[];
+		/*
+		for(var i =aaa.length ;i <10; i++){
+			aaa.push({
+				title:'asdf'+i
+			})
 		}
-		,itemKey :{							// item key mapping
-			title :'test1'
-		}
-	})
-})
+		*/
+
+		$.pubTab('#pubTabId',{
+			items :aaa
+			,width:'auto'
+			,activeIcon :{
+				
+				position : 'last'		//  활성시 html 추가 위치
+				,html : '<i class="fa fa-refresh">X</i>'		// 활성시 추가할 html
+				,click : function (item, idx){
+					$.pubTab('#pubTabId').removeItem(idx);
+				}
+			}
+			,overItemViewMode :'drop'
+			,click : function (item){
+				console.log(item);
+			}
+			,itemKey :{							// item key mapping
+				title :'title'
+			}
+		})
+	}
+}
 </script>
 
