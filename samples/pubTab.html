@@ -50,7 +50,9 @@ var pubTab = {
 
 		//add-item
 		$('.add-item').on('click', function(){
-			$.pubTab('#pubTabId').addItem({title :'asdffefe'})
+			$.pubTab('#pubTabId').addItem({
+				item : {title :'asdffefe'}
+			})
 		})
 		
 		//del-item
@@ -68,10 +70,7 @@ var pubTab = {
 			}
 		}
 
-		console.log(JSON.stringify(aaa))
-
-
-		aaa=[];
+		//aaa=[];
 		/*
 		for(var i =aaa.length ;i <10; i++){
 			aaa.push({

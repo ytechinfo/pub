@@ -1606,7 +1606,6 @@ Plugin.prototype ={
 			
 		_this.element.body.off('mousewheel DOMMouseScroll');
 		_this.element.body.on('mousewheel DOMMouseScroll', function(e) {
-			e.preventDefault();
 			var oe = e.originalEvent;
 			var delta = 0;
 		
@@ -1618,9 +1617,11 @@ Plugin.prototype ={
 
 			//delta > 0--up
 			if(_this.config.scroll.vUse){
+				e.preventDefault();
 				_this.moveVScroll({pos :(delta > 0? 'U' :'D') , speed : _this.options.scroll.vertical.speed});
 			}else{
 				if(_this.config.scroll.hUse){
+					e.preventDefault();
 					_this.moveHScroll({pos :(delta > 0?'L':'R') , speed : _this.options.scroll.horizontal.speed});
 				}
 			}
