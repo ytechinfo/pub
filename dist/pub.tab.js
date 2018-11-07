@@ -369,7 +369,24 @@
 				return; 
 			}else{
 				this.addItem(modInfo);
-			}	
+			}
+		}
+		,getItem : function(itemId , mode){
+			var tabEle= this.element.find('.pubTab-item[data-tab-id="'+itemId+'"]');
+			var itemEle;
+			if(mode == 'prev'){
+				itemEle = tabEle.prev('[data-tab-id]');
+			}else if(mode == 'next'){
+				itemEle = tabEle.next('[data-tab-id]');
+			}else{
+				itemEle = tabEle; 
+			}
+			
+			if(itemEle.length > 0){
+				return this.options.items[itemEle.index()];
+			}
+
+			return {};
 		}
 		/**
 		 * @method removeItem
