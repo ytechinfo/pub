@@ -730,7 +730,7 @@ Plugin.prototype ={
 			pageInfo = pdata.page; 
 		}
 		
-		if(data && data.length > 0){
+		if(data){
 			if(gridMode == 'addData'){
 				_this.options.tbodyItem = _this.options.tbodyItem.concat(data);	
 			}else{
@@ -789,7 +789,7 @@ Plugin.prototype ={
 				}catch(e){}
 			}
 		}
-		
+
 		_this.config.dataInfo.orginRowLen = _this.options.tbodyItem.length;
 
 		if(_this.config.dataInfo.orginRowLen > 0){
@@ -1275,10 +1275,12 @@ Plugin.prototype ={
 		}
 
 		if(tbi.length < 1){
+			_this.element.body.find('.pubGrid-body-aside-cont').css({'visibility' :'hidden'})
 			_this.element.body.find('.pubGrid-body-cont-wrapper').hide();
 			_this.element.body.find('.pubGrid-empty-msg-area').show();
 			return ; 
 		}else{
+			_this.element.body.find('.pubGrid-body-aside-cont').css({'visibility' :'visible'});
 			_this.element.body.find('.pubGrid-body-cont-wrapper').show();
 			_this.element.body.find('.pubGrid-empty-msg-area').hide();
 		}
@@ -1365,8 +1367,7 @@ Plugin.prototype ={
 			_this.element.container.find('[rowinfo="'+(viewCount-1)+'"]').show();
 		}
 					
-		_this._statusMessage(viewCount);
-		
+		_this._statusMessage(viewCount);	
 	}
 	/**
      * @method setElementDimensionAndMessage

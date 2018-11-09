@@ -79,7 +79,7 @@ var pubTab = {
 		}
 		*/
 
-		$.pubTab('#pubTabId',{
+		var pubTabObj = $.pubTab('#pubTabId',{
 			items :aaa
 			,width:'auto'
 			,activeIcon :{
@@ -87,7 +87,9 @@ var pubTab = {
 				position : 'last'		//  활성시 html 추가 위치
 				,html : '<i class="fa fa-refresh">X</i>'		// 활성시 추가할 html
 				,click : function (item, idx){
-					$.pubTab('#pubTabId').removeItem(idx);
+					pubTabObj.removeItem(idx);
+
+					console.log('pubTabObj.getSelectItem() : '+ pubTabObj.getSelectItem())
 				}
 			}
 			,overItemViewMode :'drop'
