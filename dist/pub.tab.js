@@ -374,13 +374,12 @@
 
 				this.options.items[tabEle.index()] = objectMerge(this.options.items[tabEle.index()], item);
 				
-
 				tabEle.find('.pubTab-item-title').empty().html(item[this.options.itemKey.title]);
-
 				
 				if(enabled !== false){
 					tabEle.find('.pubTab-item-title').trigger('click');
 				}
+				this.calcItemWidth();
 				
 				return; 
 			}else{
@@ -388,7 +387,7 @@
 			}
 		}
 		/**
-		 * @method getLastItem
+		 * @method getFirstItem
 		 * @description get item
 		 */
 		,getFirstItem : function (){
@@ -434,14 +433,23 @@
 		 * @description item remove
 		 */
 		,removeItem : function(item){
-			var idx  = item;
+			var idx = item;
 			if(typeof item ==='object'){
+				var removeEle = this.element.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]'); 
+
+				if(removeEle.length < 1){
+					return ; 
+				}
 				idx = this.element.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]').index();
+			}
+
+			if(isNaN(idx) || idx < 0 || idx > this.options.items.length){
+				return ; 
 			}
 
 			var reval = this.options.items.splice(idx, 1);
 
-			if(typeof reval ==='undefined' && reval.length < 1){
+			if(reval && reval.length < 1){
 				return ;
 			}
 			reval = reval[0];
@@ -463,8 +471,7 @@
 			}
 
 			this.calcItemWidth();
-			this.refresh();
-
+			
 			if($.isFunction(this.options.removeItem)){
 				this.options.removeItem.call(null,reval);
 			}
@@ -615,6 +622,8 @@
 			});
 
 			_this.config.totalWidth = containerW;
+
+			this.refresh();
 		}
 		,setScrollInfo : function (){
 			this.config.scroll = {
