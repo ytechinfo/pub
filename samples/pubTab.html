@@ -82,9 +82,12 @@ var pubTab = {
 		var pubTabObj = $.pubTab('#pubTabId',{
 			items :aaa
 			,width:'auto'
+			,itemMaxWidth:80
+			,dropItemWidth : '50px'
 			,activeIcon :{
 				
 				position : 'last'		//  활성시 html 추가 위치
+				,overView : false
 				,html : '<i class="fa fa-refresh">X</i>'		// 활성시 추가할 html
 				,click : function (item, idx){
 					pubTabObj.removeItem(idx);
