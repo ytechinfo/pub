@@ -111,6 +111,10 @@ _$base.dialog={
 			,directCall : true
 		} ,opt);
 		
+		if(typeof options.position ==='undefined' && opt.onlyCenter===true){
+			options.position= { my: "center center", at: "center center", of: window }
+		}
+		
 		var _targetId = options.targetID; 
 		
 		if(_opener.$('#'+_targetId).length < 1){
