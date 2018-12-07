@@ -15,7 +15,8 @@
 		,pubElement= false
         ,defaults = {
 			_currMode : 'default'
-			,addSelector : false
+			,viewAreaSelector : false
+			,useFilter : true
 			,minLength: 1
 			,autoClose : true
 			,itemkey : 'title'
@@ -181,7 +182,7 @@
 
 					pubAutocompleteWrapper.css('width',_width+'px');
 
-					if(_this.options.addSelector ===false){
+					if(_this.options.viewAreaSelector ===false){
 						pubAutocompleteWrapper.css({ 'left': position.left+'px' 
 							,'top':(position.top+_this.selectorElement.outerHeight())+'px'
 						})
@@ -282,8 +283,8 @@
 
 				allTemplateHtm.push('</div>');
 
-				if(_this.options.addSelector !==false){
-					$(_this.options.addSelector).empty().html(allTemplateHtm.join(''));
+				if(_this.options.viewAreaSelector !==false){
+					$(_this.options.viewAreaSelector).empty().html(allTemplateHtm.join(''));
 				}else{
 					pubElement.append(allTemplateHtm.join(''));
 				}
@@ -427,8 +428,9 @@
 			if(len > 0){
 				var renderFn = _this._getOptionValue('renderItem')
 					,filterFn = _this._getOptionValue('filter')
-					,hilightTemplate = _this._getOptionValue('hilightTemplate');
-
+					,hilightTemplate = _this._getOptionValue('hilightTemplate')
+					,useFilter = _this._getOptionValue('useFilter'); 
+				
 				var tmpSearchVal = searchVal.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 				var re = new RegExp("(" + tmpSearchVal.split(' ').join('|') + ")", "gi");
 
@@ -438,6 +440,9 @@
 					if(searchVal==''){
 						emptyFlag = false; 
 						strHtm.push('<li class="pub-autocomplete-item" data-idx="'+i+'" data-val="'+escape(itemVal)+'">'+renderFn(itemVal,item)+'</li>');
+					}else if(useFilter===false){
+						emptyFlag = false; 
+						strHtm.push('<li class="pub-autocomplete-item" data-idx="'+i+'" data-val="'+escape(itemVal)+'">'+renderFn(_this.getHilightTemplateData(re, itemVal,hilightTemplate),item)+'</li>');
 					}else{
 						if(filterFn(itemVal , searchVal)){
 							emptyFlag = false; 
