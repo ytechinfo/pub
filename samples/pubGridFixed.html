@@ -251,6 +251,15 @@ function gridDraw(selector, aaa, colItem){
 					,{label :'aaa'}
 				]
 			]
+			,bodyOptions : {
+				cellDblClick : false	// body td click
+				,valueFilter : function (headerItem, bodyItem){
+					if(headerItem.key=='col4'){
+						return bodyItem[headerItem.key]+' [[ asdf';
+					}
+					return false; 
+				}
+			}
 			,tbodyItem : aaa
 			,tfootItem :['asdf']
 			,rowOptions :{

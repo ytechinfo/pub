@@ -98,6 +98,7 @@ var _initialized = false
 	}
 	,bodyOptions : {
 		cellDblClick : false	// body td click
+		,valueFilter : false	// cell value filter
 	}
 	,scroll :{
 		vertical : {
@@ -316,6 +317,7 @@ Plugin.prototype ={
 			, orginData: []
 			, dataInfo : {colLen : 0, allColLen : 0, rowLen : 0, lastRowIdx : 0}
 		};
+		_this.eleCache = {};
 		_this._initScrollData();
 		_this._setRangeSelectInfo({},true);
 		
@@ -1111,8 +1113,14 @@ Plugin.prototype ={
 	,valueFormatter : function (_idx ,thiItem, rowItem, addEle, returnFlag){
 		
 		var type = thiItem.type || 'string';
+		var itemVal;
+		if(this.options.bodyOptions.valueFilter ===false){
+			itemVal = rowItem[thiItem.key];
+		}else{
+			var tmpVal = this.options.bodyOptions.valueFilter(thiItem, rowItem);
+			itemVal = tmpVal !==false ? tmpVal : rowItem[thiItem.key];
+		}
 		
-		var itemVal = rowItem[thiItem.key];
 		var tmpFormatter={}; 		
 		if(type == 'money' || type == 'number'){
 			tmpFormatter = this.options.formatter[type];
@@ -1316,17 +1324,19 @@ Plugin.prototype ={
 
 			return false; 
 		}
-
-		for(var i =0 ; i < viewCount; i++){
-			tbiItem = tbi[itemIdx]||{};
 		
+		for(var i =0 ; i < viewCount; i++){
+			tbiItem = tbi[itemIdx] ||{};
+			
+			var overRowFlag = (itemIdx >= this.config.dataInfo.orginRowLen)
 			var addEle;
+
 			for(var j =0 ; j < asideItem.length ;j++){
 				var tmpItem = asideItem[j]; 
 				var rowCol = i+','+tmpItem.key;
-
+				
 				addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-aside-cont').querySelector('[data-aside-position="'+rowCol+'"]>.aside-content');
-
+				
 				if(tmpItem.key == 'number'){
 					addEle.textContent = (itemIdx+1);	
 				}else if(tmpItem.key == 'chceck'){
@@ -1334,27 +1344,37 @@ Plugin.prototype ={
 				}else if(tmpItem.key == 'modify'){
 					addEle.innerHTML = 'V';
 				}
+				
 			};
 			
 			if(drawMode != 'hscroll'){
 				for(var j=0; j < colFixedIndex ; j++){
 					
 					addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-left-cont').querySelector('[data-grid-position="'+(i+','+j)+'"]>.pub-content');
-					this.valueFormatter( i, tci[j],tbiItem , addEle); 
-					setSelectCell(itemIdx , j ,  addEle);
-					
+
+					if(overRowFlag){
+						addEle.textContent='';
+					}else{
+						this.valueFormatter( i, tci[j],tbiItem , addEle); 
+						setSelectCell(itemIdx , j ,  addEle);
+					}
 					addEle = null; 
+					
 				}
 			}
 			
 			for(var j=startCol ;j <= endCol; j++){
 				//var addEle = _this.element.tdEle[rowCol] = $pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-tbody').querySelector('[data-grid-position="'+rowCol+'"]>.pub-content')
-				
+
 				addEle =$pubSelect('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont').querySelector('[data-grid-position="'+(i+','+j)+'"]>.pub-content');
 
 				if(addEle){
-					this.valueFormatter( i, tci[j],tbiItem , addEle);
-					setSelectCell(itemIdx , j ,  addEle);
+					if(overRowFlag){
+						addEle.textContent='';
+					}else{
+						this.valueFormatter( i, tci[j],tbiItem , addEle);
+						setSelectCell(itemIdx , j ,  addEle);
+					}
 				}
 				addEle = null; 
 			}
@@ -1366,7 +1386,7 @@ Plugin.prototype ={
 		}else{
 			_this.element.container.find('[rowinfo="'+(viewCount-1)+'"]').show();
 		}
-					
+		
 		_this._statusMessage(viewCount);	
 	}
 	/**
