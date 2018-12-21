@@ -23,6 +23,7 @@
 			,height : 200
 			,selectCls : 'selected'
 			,emptyMessage : 'no data'
+			,searchDelay : -1
 			,items :[]
 			,charZeroConfig : false
 			,filter : function (itemVal , searchVal) {
@@ -135,7 +136,8 @@
 					}
 				}
 			});
-
+			
+			var searchTimeout; 
 			_this.selectorElement.on('keyup.pubAutocomplete' , function (e){
 				var isWordCharacter = e.key.length === 1;
 				var isBackspaceOrDelete = (e.keyCode == 8 || e.keyCode == 46);
@@ -150,7 +152,16 @@
 						return ; 
 					}
 					
-					_this.gridItems('default',searchVal);
+					if(_this.options.searchDelay !== -1){
+						if(searchTimeout) window.clearTimeout(searchTimeout); 
+						searchTimeout = window.setTimeout(function (){ // 검색어 완성시 검색 할수 있게 지연처리.
+							_this.gridItems('default',searchVal);	
+						}, _this.options.searchDelay ); 
+					}else{
+						console.log(')searchVal ', searchVal)
+						_this.gridItems('default',searchVal);	
+					}
+					
 				}
 			});
 
@@ -212,6 +223,8 @@
 						this.options.charZeroConfig.initEvt.call(this);
 					}
 				}
+			}else{
+				this.hide();
 			}
 		}
 		/**
@@ -465,15 +478,19 @@
 		 * @description 결과 없을때 보여줄 메소드
 		 */	
 		,viewEmptyMessage : function (msg){
-			 if(msg){
-				this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html(msg); 
-			 }else{
-				if($.isFunction(this._getOptionValue('emptyMessage'))){
-					this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html('<li>'+this._getOptionValue('emptyMessage').call(this)+'</li>'); 
+			if(this._getOptionValue('emptyMessage') ===false){
+				this.hide();
+			}else{
+				if(msg){
+					this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html(msg); 
 				}else{
-					this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html('<li>'+this._getOptionValue('emptyMessage')+'</li>'); 
+					if($.isFunction(this._getOptionValue('emptyMessage'))){
+						this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html('<li>'+this._getOptionValue('emptyMessage').call(this)+'</li>'); 
+					}else{
+						this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html('<li>'+this._getOptionValue('emptyMessage')+'</li>'); 
+					}
 				}
-			 }
+			}
 		}
 		/**
 		 * @method selectItem

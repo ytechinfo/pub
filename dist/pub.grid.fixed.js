@@ -1604,12 +1604,12 @@ Plugin.prototype ={
 		}
 
 		if(type=='resize'){
-			_this.moveVScroll({pos :topVal, drawFlag : false,resizeFlag:true});
-			_this.moveHScroll({pos :leftVal, drawFlag : false,resizeFlag:true});
+			_this.moveVerticalScroll({pos :topVal, drawFlag : false,resizeFlag:true});
+			_this.moveHorizontalScroll({pos :leftVal, drawFlag : false,resizeFlag:true});
 			_this.drawGrid();
 		}else{
-			_this.moveVScroll({pos :topVal, drawFlag : false});
-			_this.moveHScroll({pos :leftVal, drawFlag : false});
+			_this.moveVerticalScroll({pos :topVal, drawFlag : false});
+			_this.moveHorizontalScroll({pos :leftVal, drawFlag : false});
 			if(beforeViewCount !=0 ){
 				if(type !='reDraw' && drawFlag){
 					_this.drawGrid();
@@ -1639,11 +1639,11 @@ Plugin.prototype ={
 			//delta > 0--up
 			if(_this.config.scroll.vUse){
 				e.preventDefault();
-				_this.moveVScroll({pos :(delta > 0? 'U' :'D') , speed : _this.options.scroll.vertical.speed});
+				_this.moveVerticalScroll({pos :(delta > 0? 'U' :'D') , speed : _this.options.scroll.vertical.speed});
 			}else{
 				if(_this.config.scroll.hUse){
 					e.preventDefault();
-					_this.moveHScroll({pos :(delta > 0?'L':'R') , speed : _this.options.scroll.horizontal.speed});
+					_this.moveHorizontalScroll({pos :(delta > 0?'L':'R') , speed : _this.options.scroll.horizontal.speed});
 				}
 			}
 		});
@@ -1676,7 +1676,7 @@ Plugin.prototype ={
 					}
 				}
 
-				_this.moveVScroll({pos :pTop});
+				_this.moveVerticalScroll({pos :pTop});
 
 				if(mouseDown){
 					scrollTimer = setTimeout(function() {
@@ -1714,7 +1714,7 @@ Plugin.prototype ={
 					}
 				}
 				
-				_this.moveHScroll({pos : pLeft});
+				_this.moveHorizontalScroll({pos : pLeft});
 				
 				if(mouseDown){
 					scrollTimer = setTimeout(function() {
@@ -1773,7 +1773,6 @@ Plugin.prototype ={
 			return true; 
 		}); 
 
-
 		// 가로 방향키
 		var scrollBtnTimer
 			,vBtnDelay = _this.options.scroll.vertical.btnDelay
@@ -1785,7 +1784,7 @@ Plugin.prototype ={
 				,mode = sEle.attr('data-pubgrid-btn');
 			
 			function scrollMove(mode){
-				_this.moveHScroll({pos :mode});
+				_this.moveHorizontalScroll({pos :mode});
 
 				scrollBtnTimer = setTimeout(function() {
 					scrollMove(mode);
@@ -1803,7 +1802,7 @@ Plugin.prototype ={
 				,mode = sEle.attr('data-pubgrid-btn');
 			
 			function scrollMove(mode){
-				_this.moveVScroll({pos :mode});
+				_this.moveVerticalScroll({pos :mode});
 
 				scrollBtnTimer = setTimeout(function() {
 					scrollMove(mode);
@@ -1815,7 +1814,7 @@ Plugin.prototype ={
 		});
 	}
 	/**
-	* 세로 스크롤
+	* 세로 스크롤 드래그 이동 
 	*/
 	,verticalScroll : function (data,e, type){
 		var oe = e.originalEvent.touches
@@ -1823,7 +1822,7 @@ Plugin.prototype ={
 
 		oy = data.top+(oy - data.pageY);
 		
-		this.moveVScroll({pos :oy});
+		this.moveVerticalScroll({pos :oy});
 		if(type=='end'){
 			$(document).off('touchmove.pubvscroll mousemove.pubvscroll').off('touchend.pubvscroll mouseup.pubvscroll mouseleave.pubvscroll');
 		}
@@ -1831,11 +1830,11 @@ Plugin.prototype ={
 	/**
 	* 세로 스크롤 이동.
 	*/
-	,moveVScroll : function (moveObj){
+	,moveVerticalScroll : function (moveObj){
 		var _this =this
 			,opt = _this.options; 
 
-		//console.log('moveVScroll' ,moveObj)
+		//console.log('moveVerticalScroll' ,moveObj)
 
 		if(!_this.config.scroll.vUse && moveObj.resizeFlag !== true){ 
 			_this.config.scroll.viewIdx = 0;
@@ -1850,7 +1849,13 @@ Plugin.prototype ={
 			topVal =_this.config.scroll.top+((topVal=='U'?-1:1)* speed * _this.config.scroll.oneRowMove);
 		}
 		
-		var _topVal = topVal; 
+		this.moveVScrollPosition(topVal, moveObj.drawFlag);
+	}
+	/**
+	*세로 스크롤 위치 이동.
+	*/
+	,moveVScrollPosition : function (topVal, drawFlag, updateChkFlag){
+
 		var barPos = 0 ; 
 
 		if( topVal> 0){
@@ -1862,26 +1867,33 @@ Plugin.prototype ={
 			topVal = 0;
 			barPos = 0 ; 
 		}
-
-		if(moveObj.drawFlag !== false && isFunction(opt.scroll.vertical.onUpdate)){
-			if(opt.scroll.vertical.onUpdate.call(null, {position : barPos}) === false){
-				return ; 
-			}
+		
+		if(this.config.scroll.top ==topVal){
+			return ; 
 		}
 		
+		if(updateChkFlag !== false){
+			var onUpdateFn = this.options.scroll.vertical.onUpdate; 
+			if(drawFlag !== false && isFunction(onUpdateFn)){
+				if(onUpdateFn.call(null, {position : topVal}) === false){
+					return ; 
+				}
+			}
+		}
+
 		this._setScrollBarTopPosition(topVal);
 		
 		var itemIdx =0;
 
 		if(topVal > 0){
 			var tmpRowHeight = this.config.rowHeight; 
-			itemIdx = topVal/(this.config.scroll.verticalHeight / (_this.config.dataInfo.rowLen-this.config.scroll.viewCount));
+			itemIdx = topVal/(this.config.scroll.verticalHeight / (this.config.dataInfo.rowLen-this.config.scroll.viewCount));
 			itemIdx  = Math.round(itemIdx); 
 		}
 
 		this.config.scroll.vBarPosition = barPos;
 
-		if(moveObj.drawFlag === false){
+		if(drawFlag === false){
 			this.config.scroll.viewIdx = itemIdx; 
 			return ; 
 		}
@@ -1893,21 +1905,21 @@ Plugin.prototype ={
 		this.drawGrid('vscroll');
 	}
 	/**
-	* vertical scroll top postion
+	* vertical scroll top postion setting
 	*/
 	,_setScrollBarTopPosition : function (topVal){
 		this.config.scroll.top = topVal; 
 		this.element.vScrollBar.css('top', topVal);
 	}
 	/**
-	* 가로 스크롤
+	* 가로 스크롤 드래그 이동
 	*/
 	,horizontalScroll : function (data ,e, type){
 		var oe = e.originalEvent.touches
 		,ox = oe ? oe[0].pageX : e.pageX;
 		ox = data.left+(ox - data.pageX);
 		
-		this.moveHScroll({pos : ox});
+		this.moveHorizontalScroll({pos : ox});
 
 		if(type=='end'){
 			$(document).off('touchmove.pubhscroll mousemove.pubhscroll').off('touchend.pubhscroll mouseup.pubhscroll mouseleave.pubhscroll');
@@ -1916,12 +1928,11 @@ Plugin.prototype ={
 	/**
 	* 가로 스크롤 이동.
 	*/
-	,moveHScroll : function (moveObj){
+	,moveHorizontalScroll : function (moveObj){
 		var _this =this; 
 		if(!_this.config.scroll.hUse && moveObj.resizeFlag !== true){ return ; }
 
-		var leftVal = moveObj.pos 
-			,drawFlag = moveObj.drawFlag;
+		var leftVal = moveObj.pos;
 		
 		if(isNaN(leftVal)){
 
@@ -1934,9 +1945,29 @@ Plugin.prototype ={
 			}
 		}
 
+		this.moveHScrollPosition(leftVal, moveObj.drawFlag);
+	}
+	/**
+	* 가로 스크롤바 위치 이동
+	*/
+	,moveHScrollPosition : function (leftVal, drawFlag, updateChkFlag){
 		var vWidth =(this.config.scroll.vUse ? this.options.scroll.vertical.width :0) +1
 			,hw = this.config.scroll.horizontalWidth;
 		leftVal = leftVal > 0 ? (leftVal >= hw ? hw : leftVal) : 0 ; 
+
+		if(this.config.scroll.left ==leftVal){
+			return ; 
+		}
+
+
+		if(updateChkFlag !== false){
+			var onUpdateFn = this.options.scroll.horizontal.onUpdate; 
+			if(drawFlag !== false && isFunction(onUpdateFn)){
+				if(onUpdateFn.call(null, {position : leftVal}) === false){
+					return ; 
+				}
+			}
+		}
 
 		var headerLeft  = ((this.config.gridWidth.total - this.config.body.width+vWidth)*(leftVal/hw*100))/100; 
 
@@ -1953,7 +1984,7 @@ Plugin.prototype ={
 		}
 	}
 	/**
-	* 가로 스크롤 바 이동 
+	* 가로 스크롤 바 위치 셋팅
 	*/
 	, _setScrollBarLeftPosition : function (leftVal){
 		this.config.scroll.left = leftVal; 
@@ -2577,7 +2608,7 @@ Plugin.prototype ={
 				}else{
 					topMoveVal = (tmpEndIdx* _this.config.scroll.oneRowMove);
 				}
-				_this.moveVScroll({pos:topMoveVal});
+				_this.moveVerticalScroll({pos:topMoveVal});
 			}
 
 			if(!hFlag){
@@ -2602,7 +2633,7 @@ Plugin.prototype ={
 				moveColLeftVal = moveColLeftVal > 0 ? moveColLeftVal :0;
 				var leftVal = (((moveColLeftVal)/scrObj.hHiddenWidth *100) * scrObj.horizontalWidth /100);
 				
-				_this.moveHScroll({pos:leftVal});
+				_this.moveHorizontalScroll({pos:leftVal});
 			}
 			return false; 
 		}
@@ -2615,10 +2646,10 @@ Plugin.prototype ={
 				var moveColIdx = (endCol-1 >-1? endCol-1: 0);
 				if(endCol != moveColIdx){
 					if(moveColIdx <= _this.config.scroll.startCol){
-						_this.moveHScroll({pos:'L', colIdx :moveColIdx });
+						_this.moveHorizontalScroll({pos:'L', colIdx :moveColIdx });
 					}
 				}else{
-					_this.moveHScroll({pos:'L', colIdx :moveColIdx, drawFlag:false});
+					_this.moveHorizontalScroll({pos:'L', colIdx :moveColIdx, drawFlag:false});
 				}
 				currViewIdx = _this.config.scroll.viewIdx+endRow;
 
@@ -2649,7 +2680,7 @@ Plugin.prototype ={
 						return ; 
 					}
 
-					_this.moveHScroll({pos:0});
+					_this.moveHorizontalScroll({pos:0});
 					currViewIdx = (_this.config.scroll.viewIdx+1)+endRow;
 					var rowLen = _this.config.scroll.insideViewCount-1;
 
@@ -2659,15 +2690,15 @@ Plugin.prototype ={
 						if(_this.config.dataInfo.lastRowIdx ==(_this.config.scroll.viewIdx+endRow+1)){
 							endRow = endRow+1
 						}
-						_this.moveVScroll({pos:'D'});
+						_this.moveVerticalScroll({pos:'D'});
 					}
 				}else {
 					if(endCol != moveColIdx ){
 						if(moveColIdx >= _this.config.scroll.insideEndCol){
-							_this.moveHScroll({pos:'R' ,colIdx :moveColIdx});
+							_this.moveHorizontalScroll({pos:'R' ,colIdx :moveColIdx});
 						}
 					}else{
-						_this.moveHScroll({pos:'R',colIdx :moveColIdx,drawFlag:false});
+						_this.moveHorizontalScroll({pos:'R',colIdx :moveColIdx,drawFlag:false});
 					}
 					currViewIdx = _this.config.scroll.viewIdx+endRow;
 				}
@@ -2691,7 +2722,7 @@ Plugin.prototype ={
 				var moveRowIdx =(endRow-1 >0? endRow-1: 0);
 						
 				if(endRow==0 && currViewIdx > 0){
-					_this.moveVScroll({pos:'U'});
+					_this.moveVerticalScroll({pos:'U'});
 				}
 				
 				currViewIdx = _this.config.scroll.viewIdx+moveRowIdx;
@@ -2725,7 +2756,7 @@ Plugin.prototype ={
 				var tmpModeIdx = (moveRowIdx -_this.config.scroll.viewIdx); 
 
 				if(tmpModeIdx == rowLen){
-					_this.moveVScroll({pos:'D'});
+					_this.moveVerticalScroll({pos:'D'});
 				}
 
 				tmpModeIdx = (moveRowIdx -_this.config.scroll.viewIdx); 
