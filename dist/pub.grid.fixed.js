@@ -3494,6 +3494,14 @@ Plugin.prototype ={
 		this.calcDimension('headerResize');
 	}
 	/**
+     * @method getHeaderWidth
+	 * @param  idx : heder index
+     * @description 페이징 하기.
+     */
+	,getHeaderWidth : function (idx){
+		return this.options.tColItem[idx].width;
+	}
+	/**
      * @method pageNav
 	 * @param  options {Object} 옵션
      * @description 페이징 하기.
