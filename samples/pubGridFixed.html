@@ -142,13 +142,13 @@ function getItem (type){
 	}; 
 }
 
-
+var aaa, colItem;
 function fn_init(){
 	
 	var	item=getItem ( 2 );
 
-	var aaa =item.aaa
-		,colItem  = item.colItem;
+	aaa =item.aaa;
+	colItem  = item.colItem;
 	
 
 	if(parseInt($('#itemCount').val(),10) == 1){
@@ -156,6 +156,8 @@ function fn_init(){
 	}
 	
 	gridDraw('#asdfasdf',aaa, colItem);
+
+	gridDraw('#asdfasdf1',aaa, colItem);
 	//gridDraw('#asdfasdf1',aaa, colItem);
 }
 function gridDraw(selector, aaa, colItem){
@@ -172,6 +174,9 @@ function gridDraw(selector, aaa, colItem){
 				,colFixedIndex :0
 				,resize:{
 					enabled : true
+					,update :  function (item){
+						console.log(item);
+					}
 				}
 				,contextMenu :{
 					callback: function(key,sObj) {
