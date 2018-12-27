@@ -16,6 +16,7 @@
         ,defaults = {
 			_currMode : 'default'
 			,viewAreaSelector : false
+			,showHideSelector : false
 			,useFilter : true
 			,minLength: 1
 			,autoClose : true
@@ -26,6 +27,7 @@
 			,searchDelay : -1
 			,items :[]
 			,charZeroConfig : false
+			,alwaysSourceCheck : false
 			,filter : function (itemVal , searchVal) {
 				searchVal = searchVal.toLowerCase();
 				return ~(itemVal).toLowerCase().indexOf(searchVal);
@@ -110,14 +112,18 @@
 			
 			_this.selectorElement.on('keydown.pubAutocomplete' , function (e){
 				var key = window.event ? e.keyCode : e.which;
-
+				
 				switch(key){
 					case 40 : { //down
-						_this.moveItem('down');
+						if(_this.getItems().length > 0){
+							_this.moveItem('down');
+						}
 						break; 
 					}
 					case 38 : { //up
-						_this.moveItem('up');
+						if(_this.getItems().length > 0){
+							_this.moveItem('up');
+						}
 						break; 
 					}
 					case 27 : { //esc
@@ -138,16 +144,17 @@
 			});
 			
 			var searchTimeout; 
+			var charZeroFnFlag = $.isFunction(this.options.charZeroConfig.init); 
 			_this.selectorElement.on('keyup.pubAutocomplete' , function (e){
 				var isWordCharacter = e.key.length === 1;
 				var isBackspaceOrDelete = (e.keyCode == 8 || e.keyCode == 46);
 				
 				if (isWordCharacter || isBackspaceOrDelete) {
-					var searchVal = _this.selectorElement.val(); 
-					if(searchVal.length==0){
+					var searchVal = _this.selectorElement.val();
+					if(searchVal.length==0  && charZeroFnFlag){
 						_this._charZeroEvent();
 						return ; 
-					}else if(searchVal.length <= _this.options.minLength){
+					}else if(_this.options.alwaysSourceCheck !==true && searchVal.length <= _this.options.minLength){
 						_this.hide();
 						return ; 
 					}
@@ -158,10 +165,8 @@
 							_this.gridItems('default',searchVal);	
 						}, _this.options.searchDelay ); 
 					}else{
-						console.log(')searchVal ', searchVal)
 						_this.gridItems('default',searchVal);	
 					}
-					
 				}
 			});
 
@@ -380,15 +385,23 @@
 		 * @description 숨기기
 		 */	
 		,hide : function (){
-			this.autocompleteEle.closest('.pub-autocomplete-wrapper').hide();
+			if(this.options.showHideSelector !== false){
+				$(this.options.showHideSelector).hide();
+			}else{
+				this.autocompleteEle.closest('.pub-autocomplete-wrapper').hide();
+			}
 		}
 		/**
 		 * @method show
 		 * @description 보이기
 		 */	
 		,show : function (){
-			this.autocompleteEle.closest('.pub-autocomplete-wrapper').show();
-
+			if(this.options.showHideSelector !== false){
+				$(this.options.showHideSelector).show();
+			}else{
+				this.autocompleteEle.closest('.pub-autocomplete-wrapper').show();
+			}
+			
 			if(!this.config.position){
 				this.config.position = this.autocompleteEle.position();
 			}
