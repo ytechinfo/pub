@@ -1887,7 +1887,7 @@ Plugin.prototype ={
 		if(updateChkFlag !== false){
 			var onUpdateFn = this.options.scroll.vertical.onUpdate; 
 			if(drawFlag !== false && isFunction(onUpdateFn)){
-				if(onUpdateFn.call(null, {position : topVal}) === false){
+				if(onUpdateFn.call(null, {scrollTop : topVal, height :  this.config.scroll.verticalHeight , barPosition : barPos }) === false){
 					return ; 
 				}
 			}
@@ -1971,20 +1971,20 @@ Plugin.prototype ={
 			return ; 
 		}
 
+		var headerLeft  = ((this.config.gridWidth.total - this.config.body.width+vWidth)*(leftVal/hw*100))/100; 
+
+		this._setScrollBarLeftPosition(leftVal);
+		this.config.scroll.hBarPosition = leftVal/hw*100; 
 
 		if(updateChkFlag !== false){
 			var onUpdateFn = this.options.scroll.horizontal.onUpdate; 
 			if(drawFlag !== false && isFunction(onUpdateFn)){
-				if(onUpdateFn.call(null, {position : leftVal}) === false){
+				if(onUpdateFn.call(null, {scrollLeft : leftVal , width : this.config.scroll.horizontalWidth, barPosition : this.config.scroll.hBarPosition}) === false){
 					return ; 
 				}
 			}
 		}
 
-		var headerLeft  = ((this.config.gridWidth.total - this.config.body.width+vWidth)*(leftVal/hw*100))/100; 
-
-		this._setScrollBarLeftPosition(leftVal);
-		this.config.scroll.hBarPosition = leftVal/hw*100; 
 		
 		this.calcViewCol(headerLeft);
 
