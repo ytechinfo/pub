@@ -51,7 +51,8 @@ html , body {
 
 $(document).ready(function (){
 	var opt = {
-		beforeSelect :function (){
+		compress:true
+		,beforeSelect :function (){
 			$(this).trigger('click');
 		}
 		,callback: function(key,sObj) {
@@ -71,6 +72,7 @@ $(document).ready(function (){
 			{key : "refresh" , "name": "새로고침" , disabled:true}
 			,{key : "copy" , "name": "복사", hotkey:'Ctrl+C'}
 			,{checkbox :true , name:'header' , key:'selectkey'}
+			
 			,{key : "sql_create", "name": "sql생성" 
 				,subMenu: [
 					{ key : "selectStar","name": "select *" , mode: "selectStar"}
@@ -81,9 +83,11 @@ $(document).ready(function (){
 					,{ key : "drop","name": "drop" , mode:"drop"}
 				]
 			}
+			,{divider:true}
 			,{key : "create_ddl","name": "DDL 보기" ,hotkey:'Ctrl+shift+C'
 				
 			}
+			,{divider:true}
 			,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
 				,subMenu : [
 					{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
@@ -99,6 +103,7 @@ $(document).ready(function (){
 					,{key : "export_column3","name": "컬럼정보 내보내기3"}
 				]
 			}
+			,{divider:true}
 		]
 	}
 	
