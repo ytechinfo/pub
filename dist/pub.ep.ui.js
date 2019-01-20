@@ -109,6 +109,7 @@ _$base.dialog={
 			,height : '355'
 			,scrolling : 'no'
 			,directCall : true
+			,useScrollHidden : true
 		} ,opt);
 		
 		if(typeof options.position ==='undefined' && opt.onlyCenter===true){
@@ -150,8 +151,10 @@ _$base.dialog={
 		modalOption = $.extend(true,modalOption,options);
 		
 		if(isScroll){
-			_opener.$('html').css('overflow','hidden');
-			_opener.$('body').css('overflow-y','scroll');
+			if(options.useScrollHidden !== false){
+				_opener.$('html').css('overflow','hidden');
+				_opener.$('body').css('overflow-y','scroll');
+			}
 		}
 		
 		var dialogEle;
@@ -232,8 +235,10 @@ _$base.dialog={
 		if(options.overlayHide !== false){
 			_opener.$('.'+_uuid).on('click' , function (){
 				if(isScroll){
-					_opener.$('html').css('overflow','');
-					_opener.$('body').css('overflow-y','');
+					if(options.useScrollHidden !== false){
+						_opener.$('html').css('overflow','');
+						_opener.$('body').css('overflow-y','');
+					}
 				}
 				dialogEle.dialog("close");
 			})
@@ -275,7 +280,7 @@ _$base.toast = {
 	options : {
 		info :  {
 			icon : 'info'
-			, bgColor: '#7399e6'
+			, bgColor: '#000'
 		}
 		,error : {
 			icon : 'error'
