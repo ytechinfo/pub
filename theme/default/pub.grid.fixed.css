@@ -456,6 +456,7 @@
 .pubGrid-hscroll-bar{
 	position: absolute;
     top: 0px;
+	left:0px;
     width: 100px;
     margin :0px 10px 0px 10px;
     height: 100%;
