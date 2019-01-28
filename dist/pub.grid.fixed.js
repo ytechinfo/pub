@@ -54,9 +54,9 @@ var _initialized = false
 	}
 	,setting : {
 		enable : false
-		,enableSpeed : true 
+		,enableSpeed : false
 		,enableSearch : true
-		,enableColumnFix : true
+		,enableColumnFix : false
 		,click : false		// 직접 처리 할경우. function 으로 처리.
 		,speedMaxVal :10
 		,callback : function (item){
@@ -952,8 +952,8 @@ Plugin.prototype ={
 			+'</svg></div>'
 			+'		<div class="pubGrid-setting-area">'
 			+'			<div class="pubGrid-search-area"><select name="pubgrid_srh_filed"><option>field</option></select><input type="text" name="pubgrid_srh_val" class="pubGrid-search-field"><button type="button" class="pubgrid-btn" data-setting-mode="search">'+this.options.i18n['search.button']+'</button></div>'
-			+'			<div class="pubGrid-speed-area"><span>'+this.options.i18n['setting.speed.label']+'</span><select name="pubgrid_scr_speed"><option value="1">1</option></select><button type="button" class="pubgrid-btn" data-setting-mode="speed">'+this.options.i18n['setting.label']+'</button></div>'
 			+'			<div class="pubGrid-colfixed-area"><span>'+this.options.i18n['setting.column.fixed.label']+'</span><select name="pubgrid_col_fixed"></select></div>'
+			+'			<div class="pubGrid-speed-area"><span>'+this.options.i18n['setting.speed.label']+'</span><select name="pubgrid_scr_speed"><option value="1">1</option></select></div>'
 			+'		</div>'
 			+'		</div>'
 			+' 		<div class="pubGrid-header-container-warpper">'
@@ -2432,16 +2432,25 @@ Plugin.prototype ={
 						_this.setData(_this.config.orginData,'search');	
 					}
 
-					settingOpt.configVal.search = settingVal.search;
-										
-				}else if('speed' == btnMode){
-					settingVal.speed = _this.setScrollSpeed(settingWrapper.find('[name="pubgrid_scr_speed"]').val());
+					settingOpt.configVal.search = settingVal.search;						
 				}
 
 				if(isFunction(settingOpt.callback)){
 					settingOpt.callback.call(null,{evt :e , item : settingVal})
 				}
 			})
+
+			// 스크롤 스피드 셋팅 
+			settingWrapper.find('[name="pubgrid_scr_speed"]').on('change.scroll.speed', function (e){
+				settingVal.speed = _this.setScrollSpeed($(this).val());
+				
+				settingWrapper.removeClass('open');
+
+				if(isFunction(settingOpt.callback)){
+					settingOpt.callback.call(null,{evt :e , item : settingVal})
+				}
+			})
+
 			
 			// 컬럼 고정. 
 			settingWrapper.find('[name="pubgrid_col_fixed"]').on('change.colfixed.setting', function (e){
@@ -2449,6 +2458,8 @@ Plugin.prototype ={
 				var sIndex = sEle.prop('selectedIndex');
 
 				_this.setColFixedIndex(sIndex);
+
+				settingWrapper.removeClass('open');
 			})
 		}
 	}
