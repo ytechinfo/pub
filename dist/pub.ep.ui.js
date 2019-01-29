@@ -71,6 +71,17 @@ _$base.dialog={
 		}
 		
 		dialogEle.closest('.ui-dialog.ui-widget').find('.ui-dialog-titlebar .ui-dialog-titlebar-close').trigger('click');
+		
+		var isScroll = (document.body.clientHeight > window.innerHeight) || $('html').css('overflow-y') == 'scroll';
+		
+		isScroll = _opener.$('.pub-ep-ui-overlay').length > 0 ? false :isScroll; 
+		
+		if(isScroll){
+			_opener.$('html').css('overflow','');
+			_opener.$('body').css('overflow-y','');
+		}
+		
+		
 	}
 	,html : function (selector , opt){
 		this._dialog('html',selector ,opt);
@@ -102,7 +113,7 @@ _$base.dialog={
 		}
 		
 		opt.height = opt.height+'';
-		var options = $.extend(true, {
+		var options = PubEP.util.objectMerge({}, {
 			targetID : '_main_div_dialog_frame_id_'
 			,title : '설정'
 			,width : '480'
@@ -130,7 +141,7 @@ _$base.dialog={
 		
 		var isScroll = (document.body.clientHeight > window.innerHeight) || $('html').css('overflow-y') == 'scroll';
 		
-		isScroll = _opener.$('.pub-ep-ui-overlay').length > 0 ? false :isScroll; 
+		isScroll = _opener.$('.pub-ep-ui-overlay').length > 0 ? false :isScroll;
 		
 		var modalOption = {
 			 modal: true
@@ -141,17 +152,20 @@ _$base.dialog={
 			, close : function (event, ui){
 				if(opt.closeOverflowAuto !==false){
 					if(isScroll){
-						_opener.$('html').css('overflow','');
-						_opener.$('body').css('overflow-y','');
+						if(options.useScrollHidden !== false){
+							_opener.$('html').css('overflow','');
+							_opener.$('body').css('overflow-y','');
+						}
 					}
 				}
 			}
 		}
 		
-		modalOption = $.extend(true,modalOption,options);
+		modalOption =PubEP.util.objectMerge({},modalOption,options);
 		
 		if(isScroll){
 			if(options.useScrollHidden !== false){
+				//position: fixed;
 				_opener.$('html').css('overflow','hidden');
 				_opener.$('body').css('overflow-y','scroll');
 			}

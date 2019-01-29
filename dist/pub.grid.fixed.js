@@ -1043,7 +1043,7 @@ Plugin.prototype ={
 		if(mode=='init'){
 			var bodyHtm = '';
 			bodyHtm += '<colgroup>'+colGroupHtm.join('')+'</colgroup>';
-			bodyHtm += '<tbody class="pubGrid-body-tbody" data-start-idx="0">'+strHtm.join('')+'</tbody>';
+			bodyHtm += '<tbody class="pubGrid-body-tbody">'+strHtm.join('')+'</tbody>';
 			tmpeElementBody.empty().html(bodyHtm);
 		}else{
 			strHtm = strHtm.join('');
@@ -1119,7 +1119,7 @@ Plugin.prototype ={
 			if(mode=='init'){
 				var bodyHtm = '';
 				bodyHtm +=_this._getColGroup(_this.prefix+'colbody', type);
-				bodyHtm += '<tbody class="pubGrid-body-tbody" data-start-idx="0">'+strHtm.join('')+'</tbody>';
+				bodyHtm += '<tbody class="pubGrid-body-tbody">'+strHtm.join('')+'</tbody>';
 				
 				tmpeElementBody.empty().html(bodyHtm);
 				
