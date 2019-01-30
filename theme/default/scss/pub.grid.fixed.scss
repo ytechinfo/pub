@@ -6,52 +6,12 @@
  * http://www.opensource.org/licenses/mit-license.php
 */
 
-$font_color: #000; 			// font color
-$font_thin_color: #969494; 			// font color
-$font_size: 12px;			// font size
-$line_height: 30p;			// line height
-$box_sizing_border: border-box;
-$box_sizing_content: content-box;
+@import "variables_drak.scss";
 
-
-$navigation_font_color : #fbf8f8; 
-
-// scroll 
-$scroll_border_color : #cac3c3;
-$scroll_background_color :#f5f4f4;
-
-$scrollbar_border_color : #aaaaaa;
-$scrollbar_background_color :#ccc8c8;
-
-$scrollbar_active_color :#989191;
-
-$move_header_background : #82c5c0;		// header resize 
-
-$column_active_background: #8bbdf1;		//column select color
-$column_active_color: #fbf8f8;
-
-
-@mixin box-sizing($boxtype) {
-	-webkit-box-sizing: $boxtype !important;
-	-moz-box-sizing: $boxtype !important;
-	box-sizing: $boxtype !important;
-}
-
-
-@mixin background_gradident{
-	background-image: -webkit-linear-gradient(#ffffff,#f1f1f1);
-    background-image: -moz-linear-gradient(#ffffff,#f1f1f1);
-    background-image: -ms-linear-gradient(#ffffff,#f1f1f1);
-    background-image: -o-linear-gradient(#ffffff,#f1f1f1);
-    background-image: linear-gradient(#ffffff,#f1f1f1);
-    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#f1f1f1', GradientType=0);
-}
-
-/*bootstrap conflict 막기위해 넣은 코드. 1*/
 .pubGrid-wrapper{
 	*{
 		border-spacing:0;
-		border-collapse:collapse;
+		border-collapse:collapse;	
 		@include box-sizing($box_sizing_border)
 	}
 
@@ -64,19 +24,24 @@ $column_active_color: #fbf8f8;
 	position: relative;
 	border : 1px solid $border_thick_color;
     background: $background_color;
-	font-size:#{$font_size};
+	font-size:$font_size;
+	color:$font_color;
 	@include box-sizing($box_sizing_content);
-	
-	*{
-		color:#{$font_color};
-	}
+		
 	input{
 		line-height: normal;
 		margin: 0; 
 		padding:0;		
+		background: $background_color;
+		color:$font_color;
 	}
-}
 
+	select{
+		background: $background_color;
+		color:$font_color;
+	}
+} 
+ 
 .pubGrid-noselect {
 	-webkit-touch-callout: none; /* iOS Safari */
 	  -webkit-user-select: none; /* Safari */
@@ -233,6 +198,14 @@ $column_active_color: #fbf8f8;
 		background: $column_active_background;
 		color: $column_active_color;
 	}
+
+	tr:nth-child(even) {
+		background: $table_tr_even;
+	}
+	tr:nth-child(odd) {
+		background: $table_tr_odd;
+	}
+
 }
 
 .pubGrid-body-aside-cont, .pubGrid-body-left-cont, .pubGrid-body-cont {
@@ -335,11 +308,12 @@ $column_active_color: #fbf8f8;
 		}
 
 		.pubgrid-btn{
+			cursor: pointer;
+			color:$font_color;
 			border: 1px solid $border_thin_color;
 			background: $background_color;
 			height: 22px;
 			float:right;
-			cursor: pointer;
 		}
 	}
 
@@ -384,12 +358,14 @@ $column_active_color: #fbf8f8;
 }
 .pubGrid-hscroll-right{
 	right:0px;
-}
+} 
+
 .pubGrid-hscroll-bar-area{
 	position : relative;
 	height:100%; 
 	width:100%;
 	padding : 0px 10px 0px 10px;
+	margin-top: 1px;
 }
 
 .pubGrid-hscroll-bar-bg{
@@ -576,5 +552,3 @@ $column_active_color: #fbf8f8;
 .pubgGrid-count-info{
 	position:absolute;top:0px;margin-top:8px;;right:5px;line-height:17px;
 }
-
-@import "pub.context.scss";

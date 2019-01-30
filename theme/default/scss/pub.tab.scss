@@ -1,0 +1,240 @@
+/*
+ * pub.tabs.scss: 0.0.1
+ * ========================================================================
+ * Copyright 2018-2019 ytkim
+ * Licensed under MIT
+ * http://www.opensource.org/licenses/mit-license.php
+*/
+
+@import "variables_drak.scss";
+
+.pubTab-wrapper{
+	background:$background_color;
+    height: 25px;
+    padding-top: 2px;
+	width:100%;
+	color:$font_color;
+
+	*{
+		-webkit-box-sizing: content-box !important;
+		-moz-box-sizing: content-box !important;
+		box-sizing: content-box !important;
+	}	
+}
+
+.pubTab{
+	position:relative;
+	width:100%;
+	border-bottom: 1px solid $border_thick_color;
+	margin-bottom: 2px;
+	
+	.pubTab-icon-area{
+		display:table-cell;
+		visibility: hidden;
+		padding-right: 3px;
+		margin-top: 0px;
+		vertical-align: middle;
+		.pubTab-icon{
+			cursor:pointer;
+		}
+		.pubTab-icon:hover{
+			color:#13daf5;
+		}
+	}
+
+	.pubTab-item-cont{
+		background: $tab_background;
+
+		&:hover .pubTab-icon-area{
+			visibility: visible;
+			display:table-cell;
+		}
+		
+		&.pubTab-icon-hover-hide .pubTab-icon-area{
+			visibility: hidden;
+			display:none;
+		}
+	}
+
+	.active .pubTab-item-cont .pubTab-icon-area{
+		visibility: visible;
+		display:table-cell;
+
+	}
+
+	.pubTab-drop-item-wrapper{
+		display:none;
+		position: absolute;
+		top: 100%;
+		right: 0;
+		left: auto;
+		max-height: 300px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		z-index: 1000;
+		background-color: $background_color;
+		-webkit-background-clip: padding-box;
+		background-clip: padding-box;
+		border: 1px solid $border_thin_color;
+	}
+	
+	.pubTab-open .pubTab-drop-item-wrapper{
+		display:block;
+	}
+		
+	.pubTab-drop-item-area{
+		margin: 0px 0 0 0;
+		font-size: 14px;
+		padding:0px;
+		text-align: left;
+		background-color: $background_color;
+		list-style: none;
+
+		>li{
+			padding: 0px 5px 1px 5px;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			word-wrap: normal;
+			overflow: hidden;
+		}
+	}
+
+	.pubTab-drop-item{
+		cursor:pointer;
+		white-space: nowrap;
+
+		&:hover {
+			background-color: $background_thick_color;
+		}
+	}
+}
+
+.pubTab-scroll{
+	overflow:hidden;
+	padding: 2px 0px 0px 0px;
+}
+
+.pubTab-move-area{
+	z-index:5;
+	position:absolute;
+	right:0px;
+	top:0px;
+	margin-top: 1px;
+	min-width:32px;
+
+	i:hover{
+		color:$arrow_active_color;
+	}
+	
+	.pubTab-right-arrow , .pubTab-left-arrow{
+		padding: 0px;
+		margin: 0px;
+		width: 12px;
+		color:$arrow_color;
+		font-size: 11pt;
+		font-style: inherit;
+		float: left;
+		margin: 0px;
+	}
+
+	.pubTab-left-arrow:before {
+		content:'\25C0';
+		margin: 0 0px 0 0;
+		text-align: right;
+	}
+
+	.pubTab-right-arrow:after {
+		content:'\25B6';
+		text-align: center;	
+	}
+
+	.pubTab-move-dim{
+		background: $background_color;
+		position:absolute; 
+		right:1px;
+		top:1px;
+		bottom:0px;
+		left:0px;
+		z-index:-1;
+		opacity: 0.5;
+		filter: alpha(opacity=5);
+		box-shadow: none;
+	}
+}
+
+.pubTab-prev ,.pubTab-next{
+	cursor : pointer; 
+}
+
+.pubTab-container{	
+	list-style: none;
+    position: relative;
+	left:0px;
+	padding: 0px;
+    margin: 0px;
+	display: table;
+    padding: 0px 2px 0px 2px;
+}
+
+.pubTab-item{
+	vertical-align: baseline;
+	padding: 0px 5px 0px 0px;
+	display: table-cell;
+	opacity: 0.8;
+	-moz-opacity: 0.8;
+	-khtml-opacity: 0.8;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+	filter: alpha(opacity=80);
+
+	.pub-title-ellipsis {
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		word-wrap: normal;
+		overflow: hidden;
+	}
+
+	.pubTab-item-cont{
+		padding :0px 3px 0px 3px;
+	}
+
+	&.active{
+		opacity: 1;
+		-moz-opacity: 1;
+		-khtml-opacity: 1;
+		-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+		filter: alpha(opacity=100);
+
+		.pubTab-item-cont{
+			background : $tab_active_background;
+			color: $tab_active_color;
+		}
+	}
+	
+	&.last {
+		padding: 0px 0px;
+	}
+}
+
+.pubTab-item-cont-wrapper{
+	border: 1px solid $border_thin_color;
+	border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+	border-bottom: 0px;
+}
+
+.pubTab-item-title{
+	display:inline-block;
+	padding: 0px 5px;
+	cursor:pointer;
+	white-space: nowrap;
+	display:table-cell;
+}
+
+.pubTab-drop-open-btn:hover{
+	background:$background_thick_color;
+}
+
+.pubTab-hide{
+	display:none;
+}
+

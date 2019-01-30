@@ -1,0 +1,87 @@
+// variables.scss: 0.1
+// pub css variable
+
+$font_color: #c5c3c3; 			// font color
+$font_disable_color: #999999;
+$font_thin_color: #969494; 			// font color
+$font_size: 12px;			// font size
+$line_height: 30p;			// line height
+$box_sizing_border: border-box;
+$box_sizing_content: content-box;
+
+// border color
+$border_thin_color: #6d6d75;
+$border_thick_color: #5f5f68;
+$background_color: #262729;
+$background_thick_color: #000000;
+
+// a tag color
+$a_hover_font_color : #ffffff;
+$a_hover_border_color: #a4e3cf;
+$a_hover_background_color: #262729;
+$a_hover_color: #a4e3cf;
+
+
+//table tr 
+$table_tr_odd : #262729;
+$table_tr_even : #1a1616;
+
+$arrow_color :#989494;	// sub menu right arrow border color
+$arrow_active_color :#716e6e;	// sub menu right arrow active border color
+
+
+@mixin box-sizing($boxtype) {
+  -webkit-box-sizing: $boxtype !important;
+  -moz-box-sizing: $boxtype !important;
+  box-sizing: $boxtype !important;
+}
+
+@mixin background_gradident{
+  background-image: -webkit-linear-gradient(#191818, #4a4949);
+  background-image: -moz-linear-gradient(#191818, #4a4949);
+  background-image: -ms-linear-gradient(#191818, #4a4949);
+  background-image: -o-linear-gradient(#191818, #4a4949);
+  background-image: linear-gradient(#191818, #4a4949);
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#191818', endColorstr='#4a4949', GradientType=0);
+}
+
+@mixin text_shadow{
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+@mixin box_shadow{
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+
+// --------------------------------  pub grid start -------------------------------- 
+$border_colfixed_color :#9898a0; // column fixed border
+$navigation_font_color : #fbf8f8; 
+
+// scroll 
+$scroll_border_color : #6d6d75;
+$scroll_background_color :#262729;
+
+$scrollbar_border_color : #6d6d75;
+$scrollbar_background_color :#424040;
+
+$scrollbar_active_color :#6b5b5b;
+
+$move_header_background : #6b7776;		// header resize 
+
+$column_active_background: #214163;		//column select color
+$column_active_color: #fbf8f8;
+// -------------------------------- pub grid end -------------------------------- 
+
+//-------------------------------- pub context menu start -------------------------------- 
+$context_menu_header_font_color: #444040; // header color
+//--------------------------------  pub context menu end-------------------------------- 
+
+// -------------------------------- pub tab end -------------------------------- 
+$tab_background : #423f3f;
+$tab_active_background : #1b1b1b;
+$tab_active_color: #fbf8f8;
+// -------------------------------- pub tab end -------------------------------- 
