@@ -1,0 +1,16 @@
+// variables.scss: 0.1
+// pub css variable
+
+// theme color map 
+
+$g_theme_list_info : base dark;
+
+$g_default_theme_name : base;
+
+@import '_var_pub.global.scss';
+
+@import '_var_pub.contextmenu.scss';
+
+@import '_var_pub.grid.scss';
+
+@import '_var_pub.tab.scss';

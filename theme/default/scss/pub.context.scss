@@ -6,7 +6,8 @@
  * http://www.opensource.org/licenses/mit-license.php
 */
 
-@import "variables.scss";
+@import "_variables.scss";
+
 
 .pub-context-menu {
 	position: absolute;
@@ -19,10 +20,10 @@
 	padding: 5px 0;
 	margin: 2px 0 0;
 	list-style: none;
-	color : $font_color;
-	font-size: $font_size;
-	border: 1px solid $border_thin_color;
-	background-color: $background_color;
+	color : colorInfo($g_default_theme_name , "font_color");
+	font-size: colorInfo($g_default_theme_name , "font_size");
+	border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+	background-color: colorInfo($g_default_theme_name , "background_color");
 	text-align:left;	
 	-webkit-background-clip: padding-box;
 	-moz-background-clip: padding;
@@ -33,14 +34,14 @@
 		right: 0;
 		left: auto;
 	}
-
+	
 	.divider {
 		width: 100%;
 		height: 1px;
 		margin: 9px 1px;
 		margin: 3px 0px 3px;
 		overflow: hidden;
-		border-bottom: 1px solid $border_thick_color;
+		border-bottom: 1px solid colorInfo($g_default_theme_name , "border_thick_color");
 	}
 
 	a {
@@ -58,14 +59,14 @@
 
 	li > a:hover, .pub-context-submenu:hover > a {
 		text-decoration: none;
-		color : $a_hover_font_color;
-		background-color: $a_hover_background_color;
-		border: 1px solid $a_hover_border_color;
+		color : colorInfo($g_default_theme_name , "a_hover_font_color");
+		background-color: colorInfo($g_default_theme_name , "a_hover_background_color");
+		border: 1px solid colorInfo($g_default_theme_name , "a_hover_border_color");
 		outline: none;
 	}
 
 	.disabled > a{
-		color: $font_disable_color !important;
+		color: colorInfo($g_default_theme_name , "font_disable_color") !important;
 	}
 
 	label{
@@ -85,13 +86,12 @@
 
 	.pub-context-header {
 		cursor: default;
-		color: $context_menu_header_font_color;
+		color: contxtMenuColorInfo($g_default_theme_name , "context_menu_header_font_color");
 		padding: 3px 7px;
 		font-weight: bold;
 		line-height: 20px;
 	}
 }
-
 
 .pub-context-submenu {
 	position: relative;
@@ -115,18 +115,18 @@
 		margin-top: -13px;
 		margin-right: -10px;
 		border-color: transparent;
-		border-left-color: $arrow_color;
+		border-left-color: colorInfo($g_default_theme_name , "arrow_color");
 		border-style: solid;
 		border-width: 5px 0 5px 5px;
 		content: " ";
 	}
 
 	&:hover > a:after {
-		border-left-color: $arrow_active_color;
+		border-left-color: colorInfo($g_default_theme_name , "arrow_active_color");
 	}
 
 	&.disabled > a:after {
-		border-left-color: $arrow_color;
+		border-left-color: colorInfo($g_default_theme_name , "arrow_color");
 	}
 }
 
@@ -166,3 +166,49 @@
 	text-align: right;
 	display:table-cell;
 }
+
+
+@each $pThemeName in $g_theme_list_info {
+
+	#{$pThemeName} .pub-context-menu {
+		color : colorInfo($pThemeName , "font_color");
+		font-size: colorInfo($pThemeName , "font_size");
+		border: 1px solid colorInfo($pThemeName , "border_thin_color");
+		background-color: colorInfo($pThemeName , "background_color");
+
+		.divider {
+			border-bottom: 1px solid colorInfo($pThemeName , "border_thick_color");
+		}
+
+		li > a:hover, .pub-context-submenu:hover > a {
+			color : colorInfo($pThemeName , "a_hover_font_color");
+			background-color: colorInfo($pThemeName , "a_hover_background_color");
+			border: 1px solid colorInfo($pThemeName , "a_hover_border_color");
+		}
+
+		.disabled > a{
+			color: colorInfo($pThemeName , "font_disable_color") !important;
+		}
+
+		.pub-context-header {
+			color: contxtMenuColorInfo($pThemeName , "context_menu_header_font_color");
+		}
+	}
+
+	#{$pThemeName} .pub-context-submenu {
+
+		> a:after {
+			border-left-color: colorInfo($pThemeName , "arrow_color");
+		}
+
+		&:hover > a:after {
+			border-left-color: colorInfo($pThemeName , "arrow_active_color");
+		}
+
+		&.disabled > a:after {
+			border-left-color: colorInfo($pThemeName , "arrow_color");
+		}
+	}
+}
+
+ 

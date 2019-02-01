@@ -1,0 +1,30 @@
+$pubgrid_colors: (
+  'base': (
+    'border_colfixed_color' : #848486 // column fixed border
+    ,'navigation_font_color' :  #fbf8f8 
+    // scroll 
+    ,'scroll_border_color' :  #cac3c3
+    ,'scroll_background_color' : #f5f4f4
+    ,'scrollbar_border_color' :  #aaaaaa
+    ,'scrollbar_background_color' : #ccc8c8
+    ,'scrollbar_active_color' : #989191
+
+    ,'move_header_background' :  #82c5c0		// header resize 
+
+    ,'column_active_background' : #8bbdf1		//column select color
+    ,'column_active_color' : #fbf8f8
+  )
+);
+
+// function 
+@function gridColorInfo($themeName: 'base', $type: 'font_color') {
+  $map: map-get($pubgrid_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme gridColorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}

@@ -1,0 +1,80 @@
+
+
+
+$theme_colors: (
+  'base': (
+    'font_color': #000000 			// font color
+    ,'font_disable_color': #999999
+    ,'font_thin_color': #969494 			// font color
+    ,'font_size': 12px			// font size
+    ,'border_thin_color' : #d5d5d8
+    ,'border_thick_color' : #bcbcbd
+    ,'background_color' : #ffffff
+    ,'background_thick_color' : #dddddd
+    ,'background_gradident_first' :#ffffff
+    ,'background_gradident_last' :#f1f1f1
+    ,'text_shadow_color' : rgba(255, 255, 255, 0.5)
+    ,'box_shadow_color' : rgba(233, 227, 227, 0.2)
+    // a tag color
+    ,'a_hover_font_color' : #000000
+    ,'a_hover_border_color' : #a4e3cf
+    ,'a_hover_background_color' : #ffffff
+    ,'a_hover_color' : #a4e3cf
+
+    //table tr 
+    ,'table_tr_odd' : #f3f6fa
+    ,'table_tr_even' : #fff
+
+    ,'arrow_color' : #989494	// sub menu right arrow border color
+    ,'arrow_active_color' : #716e6e	// sub menu right arrow active border color
+  )
+  ,'dark' :(
+
+  )
+);
+
+$line_height: 30p;			// line height
+$box_sizing_border: border-box;
+$box_sizing_content: content-box;
+
+@mixin box-sizing($boxtype) {
+  -webkit-box-sizing: $boxtype !important;
+  -moz-box-sizing: $boxtype !important;
+  box-sizing: $boxtype !important;
+}
+
+@mixin background_gradident($themeName){
+    $firstColor : colorInfo($themeName , 'background_gradident_first');
+    $lastColor : colorInfo($themeName , 'background_gradident_last');
+
+    background-image: -webkit-linear-gradient($firstColor,$lastColor );
+    background-image: -moz-linear-gradient($firstColor,$lastColor );
+    background-image: -ms-linear-gradient($firstColor,$lastColor );
+    background-image: -o-linear-gradient($firstColor,$lastColor );
+    background-image: linear-gradient($firstColor,$lastColor );
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='$firstColor', endColorstr='$lastColor', GradientType=0);
+}
+
+@mixin text_shadow($themeName: 'base'){
+  text-shadow: 0 1px 0 ;
+}
+
+@mixin box_shadow($themeName: 'base'){
+  $color : colorInfo($themeName , 'box_shadow_color');
+  -webkit-box-shadow: 0 5px 10px $color;
+	-moz-box-shadow: 0 5px 10px $color;
+  box-shadow: 0 5px 10px $color;
+}
+
+// function 
+@function colorInfo($themeName: 'base', $type: 'font_color') {
+  $map: map-get($theme_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme colorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}

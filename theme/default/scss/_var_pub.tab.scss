@@ -1,0 +1,20 @@
+$pubtab_colors: (
+  'base': (
+    'tab_background':#dbd5d5
+    ,'tab_active_background':#f5f5f5
+    ,'tab_active_color': #1a1818
+  )
+);
+
+// function 
+@function tabColorInfo($themeName: 'base', $type: 'font_color') {
+  $map: map-get($pubtab_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme tabColorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}
