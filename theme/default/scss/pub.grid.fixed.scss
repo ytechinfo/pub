@@ -553,6 +553,16 @@
 	.pubgGrid-count-info{
 		position:absolute;top:0px;margin-top:8px;;right:5px;line-height:17px;
 	}
+
+	.pubGrid-setting svg path {
+		fill: colorInfo($g_default_theme_name , "font_color");
+		stroke:colorInfo($g_default_theme_name , "font_color");
+	}
+	
+	.pubGrid-setting.search-on svg path {
+		fill: colorInfo($g_default_theme_name , "font_warning_color");
+		stroke:colorInfo($g_default_theme_name , "font_warning_color");
+	}
 }
 
 @each $pThemeName in $g_theme_list_info {
@@ -715,6 +725,16 @@
 					border-color: colorInfo($pThemeName , "border_thin_color");
 				}
 			}	
+		}
+
+		.pubGrid-setting svg path {
+			fill: colorInfo($pThemeName , "font_color");
+			stroke:colorInfo($pThemeName , "font_color");
+		}
+		
+		.pubGrid-setting.search-on svg path {
+			fill: colorInfo($pThemeName , "font_warning_color");
+			stroke:colorInfo($pThemeName , "font_warning_color");
 		}
 	}
 }

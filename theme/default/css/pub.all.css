@@ -582,6 +582,16 @@
   line-height: 17px;
 }
 
+.pubGrid-wrapper .pubGrid-setting svg path {
+  fill: #817a7a;
+  stroke: #817a7a;
+}
+
+.pubGrid-wrapper .pubGrid-setting.search-on svg path {
+  fill: #f55353;
+  stroke: #f55353;
+}
+
 .pub-theme-dark .pubGrid-wrapper * {
   color: #c5c3c3 !important;
 }
@@ -721,6 +731,16 @@
 
 .pub-theme-dark .pubGrid-wrapper .pubGrid-page-navigation > ul > .disabled > span, .pub-theme-dark .pubGrid-wrapper .pubGrid-page-navigation > ul > .disabled > span:hover, .pub-theme-dark .pubGrid-wrapper .pubGrid-page-navigation > ul > .disabled > span:focus, .pub-theme-dark .pubGrid-wrapper .pubGrid-page-navigation > ul > .disabled > a, .pub-theme-dark .pubGrid-wrapper .pubGrid-page-navigation > ul > .disabled > a:hover, .pub-theme-dark .pubGrid-wrapper .pubGrid-page-navigation > ul > .disabled > a:focus {
   border-color: #6d6d75;
+}
+
+.pub-theme-dark .pubGrid-wrapper .pubGrid-setting svg path {
+  fill: #c5c3c3;
+  stroke: #c5c3c3;
+}
+
+.pub-theme-dark .pubGrid-wrapper .pubGrid-setting.search-on svg path {
+  fill: #f55353;
+  stroke: #f55353;
 }
 
 /*

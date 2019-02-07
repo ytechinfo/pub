@@ -845,9 +845,11 @@ Plugin.prototype ={
 		_this.setPage(pageInfo);
 
 		if(_this.config.orginData != _this.options.tbodyItem){
-			$('#'+_this.prefix+'_settingBtn').attr('fill','red').attr('stroke','red');
+			_this.gridElement.find('.pubGrid-setting').addClass('search-on');
+			//$('#'+_this.prefix+'_settingBtn').attr('fill','red').attr('stroke','red');
 		}else{
-			$('#'+_this.prefix+'_settingBtn').removeAttr('fill').removeAttr('stroke');
+			_this.gridElement.find('.pubGrid-setting').removeClass('search-on');
+			//$('#'+_this.prefix+'_settingBtn').removeAttr('fill').removeAttr('stroke');
 		}
 	}
 	/**
