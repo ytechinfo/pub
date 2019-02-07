@@ -6,8 +6,7 @@
  * http://www.opensource.org/licenses/mit-license.php
 */
 
-@import "_variables.scss";
-
+@import '_var_pub.contextmenu.scss';
 
 .pub-context-menu {
 	position: absolute;
@@ -28,7 +27,7 @@
 	-webkit-background-clip: padding-box;
 	-moz-background-clip: padding;
 	background-clip: padding-box;
-	@include box_shadow;
+	@include box_shadow($g_default_theme_name);
 	
 	&.pull-right {
 		right: 0;
@@ -170,11 +169,12 @@
 
 @each $pThemeName in $g_theme_list_info {
 
-	#{$pThemeName} .pub-context-menu {
+	.#{fn_themeName($pThemeName)} .pub-context-menu {
 		color : colorInfo($pThemeName , "font_color");
 		font-size: colorInfo($pThemeName , "font_size");
 		border: 1px solid colorInfo($pThemeName , "border_thin_color");
 		background-color: colorInfo($pThemeName , "background_color");
+		@include box_shadow($pThemeName);
 
 		.divider {
 			border-bottom: 1px solid colorInfo($pThemeName , "border_thick_color");
@@ -195,7 +195,7 @@
 		}
 	}
 
-	#{$pThemeName} .pub-context-submenu {
+	.#{fn_themeName($pThemeName)} .pub-context-submenu {
 
 		> a:after {
 			border-left-color: colorInfo($pThemeName , "arrow_color");

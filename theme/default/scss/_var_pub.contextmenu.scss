@@ -1,5 +1,8 @@
+
+@import '_var_pub.global.scss';
+
 $pubcontentmenu_colors: (
-  'base': (
+  'light': (
     'context_menu_header_font_color': #444040 // header color
   )
   ,'dark': (
@@ -8,7 +11,7 @@ $pubcontentmenu_colors: (
 );
 
 // function 
-@function contxtMenuColorInfo($themeName: 'base', $type: 'font_color') {
+@function contxtMenuColorInfo($themeName: 'light', $type: 'font_color') {
   $map: map-get($pubcontentmenu_colors, $themeName);
 
   @if $map != null{
@@ -19,3 +22,4 @@ $pubcontentmenu_colors: (
     @return 'style not found';
   }
 }
+

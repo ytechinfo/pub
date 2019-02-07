@@ -22,6 +22,7 @@ var pluginName = "pubContextMenu"
 			// Modify $obj, Do not return
 		}
 		,bgiframe:true
+		,theme : 'light'
 		,above: 'auto'
 		,preventDoubleContext: true
 		,compress: true
@@ -246,6 +247,22 @@ Plugin.prototype ={
 		}
 	}
 	/**
+     * @method setTheme
+     * @description set theme
+     */
+	,setTheme : function (themeName){
+		$('#'+this.contextId+'_wrap').removeClass('pub-theme-'+this.options.theme);
+		this.options.theme = themeName;
+		$('#'+this.contextId+'_wrap').addClass('pub-theme-'+themeName);
+	}
+	/**
+     * @method getTheme
+     * @description get theme
+     */
+	,getTheme : function (){
+		return this.options.theme;
+	}
+	/**
      * @method getCheckBoxId
      * @description get checkbox id
      */
@@ -263,7 +280,7 @@ Plugin.prototype ={
 			,$menu =_this.buildMenu(opt.items, id, false, 0)
 			,selector = _this.selector;
 		
-		$menu = '<div id="'+id+'_wrap" onselectstart="return false" draggable="false">'+$menu+'</div>';
+		$menu = '<div id="'+id+'_wrap" class="'+opt.theme+'" onselectstart="return false" draggable="false">'+$menu+'</div>';
 		
 		var contextMenu  = $('#'+id+'_wrap'); 
 

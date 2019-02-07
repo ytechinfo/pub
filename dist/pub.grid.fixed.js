@@ -125,6 +125,7 @@ var _initialized = false
 			,speed : 1			// 스크롤 스피드
 		}
 	}
+	,theme : 'light'
 	,height: 'auto'
 	,tColItem : [] //head item
  	,theadGroup : [] // head group 
@@ -3800,6 +3801,22 @@ Plugin.prototype ={
 			,'currStartPage' : currStartPage ,'currEndPage' : currEndPage
 			,'totalCount' : totalCount ,'totalPage' : totalPage
 		};
+	}
+	/**
+     * @method setTheme
+     * @description set theme
+     */
+	,setTheme : function (themeName){
+		this.gridElement.removeClass('pub-theme-'+this.options.theme);
+		this.options.theme = themeName;
+		this.gridElement.addClass('pub-theme-'+themeName);
+	}
+	/**
+     * @method getTheme
+     * @description get theme
+     */
+	,getTheme : function (){
+		return this.options.theme;
 	}
 	/**
      * @method excelExport

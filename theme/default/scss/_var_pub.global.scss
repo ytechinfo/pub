@@ -1,8 +1,9 @@
 
+@import '_variables.scss';
 
-
+// theme color
 $theme_colors: (
-  'base': (
+  'light': (
     'font_color': #000000 			// font color
     ,'font_disable_color': #999999
     ,'font_thin_color': #969494 			// font color
@@ -18,8 +19,10 @@ $theme_colors: (
     // a tag color
     ,'a_hover_font_color' : #000000
     ,'a_hover_border_color' : #a4e3cf
+    ,'a_hover_border_thick_color' : #5970f5
     ,'a_hover_background_color' : #ffffff
     ,'a_hover_color' : #a4e3cf
+    ,'a_hover_thick_color' : #5970f5
 
     //table tr 
     ,'table_tr_odd' : #f3f6fa
@@ -27,9 +30,59 @@ $theme_colors: (
 
     ,'arrow_color' : #989494	// sub menu right arrow border color
     ,'arrow_active_color' : #716e6e	// sub menu right arrow active border color
+
+    //scroll
+    ,'scroll_border_color' :  #cac3c3
+    ,'scroll_background_color' : #f5f4f4
+    ,'scrollbar_border_color' :  #aaaaaa
+    ,'scrollbar_background_color' : #ccc8c8
+    ,'scrollbar_active_color' : #989191
+
+    ,'move_header_background' :  #82c5c0		// header resize 
+
+    //column color
+    ,'column_active_background' : #8bbdf1		//column select color
+    ,'column_active_color' : #fbf8f8
   )
   ,'dark' :(
+    'font_color': #c5c3c3 			// font color
+    ,'font_disable_color': #999999
+    ,'font_thin_color': #969494 			// font color
+    ,'font_size': 12px			// font size
+    ,'border_thin_color' : #6d6d75
+    ,'border_thick_color' : #5f5f68
+    ,'background_color' : #262729
+    ,'background_thick_color' : #000000
+    ,'background_gradident_first' : #191818
+    ,'background_gradident_last' : #4a4949
+    ,'text_shadow_color' : rgba(255, 255, 255, 0.5)
+    ,'box_shadow_color' : rgba(0, 0, 0, 0.2)
+    // a tag color
+    ,'a_hover_font_color' : #ffffff
+    ,'a_hover_border_color' : #a4e3cf
+    ,'a_hover_border_thick_color' : #5970f5
+    ,'a_hover_background_color' : #262729
+    ,'a_hover_color' : #a4e3cf
+    ,'a_hover_thick_color' : #5970f5
+    
+    //table tr 
+    ,'table_tr_odd' : #262729
+    ,'table_tr_even' : #1a1616
 
+    ,'arrow_color' : #989494	// sub menu right arrow border color
+    ,'arrow_active_color' : #cbc3c3	// sub menu right arrow active border color
+
+    // scroll 
+    ,'scroll_border_color' :  #6d6d75
+    ,'scroll_background_color' : #262729
+    ,'scrollbar_border_color' :  #6d6d75
+    ,'scrollbar_background_color' : #424040
+    ,'scrollbar_active_color' : #6b5b5b
+
+    ,'move_header_background' :  #6b7776		// header resize 
+
+    ,'column_active_background' : #214163		//column select color
+    ,'column_active_color' : #fbf8f8
   )
 );
 
@@ -43,7 +96,8 @@ $box_sizing_content: content-box;
   box-sizing: $boxtype !important;
 }
 
-@mixin background_gradident($themeName){
+@mixin background_gradident($themeName: 'light'){
+  
     $firstColor : colorInfo($themeName , 'background_gradident_first');
     $lastColor : colorInfo($themeName , 'background_gradident_last');
 
@@ -55,11 +109,11 @@ $box_sizing_content: content-box;
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='$firstColor', endColorstr='$lastColor', GradientType=0);
 }
 
-@mixin text_shadow($themeName: 'base'){
+@mixin text_shadow($themeName: 'light'){
   text-shadow: 0 1px 0 ;
 }
 
-@mixin box_shadow($themeName: 'base'){
+@mixin box_shadow($themeName: 'light'){
   $color : colorInfo($themeName , 'box_shadow_color');
   -webkit-box-shadow: 0 5px 10px $color;
 	-moz-box-shadow: 0 5px 10px $color;
@@ -67,7 +121,7 @@ $box_sizing_content: content-box;
 }
 
 // function 
-@function colorInfo($themeName: 'base', $type: 'font_color') {
+@function colorInfo($themeName: 'light', $type: 'font_color') {
   $map: map-get($theme_colors, $themeName);
 
   @if $map != null{
