@@ -111,6 +111,16 @@ $box_sizing_content: content-box;
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='$firstColor', endColorstr='$lastColor', GradientType=0);
 }
 
+@mixin opacity_val($opacityNum: 0.7){
+  $perVal : $opacityNum*100; 
+  opacity: $opacityNum;
+	-moz-opacity: $opacityNum;
+	-khtml-opacity: $opacityNum;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=#{$perVal})";
+	filter: alpha(opacity=$perVal);
+}
+
+
 @mixin text_shadow($themeName: 'light'){
   text-shadow: 0 1px 0 ;
 }
