@@ -26,10 +26,14 @@
 
 .pubTab-wrapper .pubTab .pubTab-icon-area {
   display: table-cell;
-  visibility: hidden;
+  visibility: visible;
   padding-right: 3px;
   margin-top: 0px;
   vertical-align: middle;
+}
+
+.pubTab-wrapper .pubTab .pubTab-icon-area.hide {
+  visibility: hidden;
 }
 
 .pubTab-wrapper .pubTab .pubTab-icon-area .pubTab-icon {
@@ -45,14 +49,13 @@
   background: #f5f5f5;
 }
 
+.pubTab-wrapper .pubTab .pubTab-item-cont .pubTab-icon-hover-hide {
+  visibility: hidden;
+}
+
 .pubTab-wrapper .pubTab .pubTab-item-cont:hover .pubTab-icon-area {
   visibility: visible;
   display: table-cell;
-}
-
-.pubTab-wrapper .pubTab .pubTab-item-cont.pubTab-icon-hover-hide .pubTab-icon-area {
-  visibility: hidden;
-  display: none;
 }
 
 .pubTab-wrapper .pubTab .active .pubTab-item-cont .pubTab-icon-area {
@@ -114,33 +117,31 @@
   right: 0px;
   top: 0px;
   margin-top: 1px;
-  min-width: 32px;
+  min-width: 20px;
   line-height: 23px;
 }
 
-.pubTab-wrapper .pubTab-move-area i:hover {
-  color: #716e6e;
-}
-
-.pubTab-wrapper .pubTab-move-area .pubTab-right-arrow, .pubTab-wrapper .pubTab-move-area .pubTab-left-arrow {
-  padding: 0px;
+.pubTab-wrapper .pubTab-move-area .pubTab-more-button {
+  padding: 0px 3px;
+  width: 13px;
   margin: 0px;
   width: 12px;
   color: #989494;
   font-style: inherit;
   float: left;
-  margin: 0px;
+  letter-spacing: -4px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-.pubTab-wrapper .pubTab-move-area .pubTab-left-arrow:before {
-  content: '\25C0';
+.pubTab-wrapper .pubTab-move-area .pubTab-more-button:hover {
+  background: #dddddd;
+}
+
+.pubTab-wrapper .pubTab-move-area .pubTab-more-button:before {
+  content: '>>';
   margin: 0 0px 0 0;
   text-align: right;
-}
-
-.pubTab-wrapper .pubTab-move-area .pubTab-right-arrow:after {
-  content: '\25B6';
-  text-align: center;
 }
 
 .pubTab-wrapper .pubTab-move-area .pubTab-move-dim {

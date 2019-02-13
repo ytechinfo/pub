@@ -26,11 +26,15 @@
 		
 		.pubTab-icon-area{
 			display:table-cell;
-			visibility: hidden;
+			visibility: visible;
 			padding-right: 3px;
 			margin-top: 0px;
 			vertical-align: middle;
-	
+
+			&.hide{
+				visibility: hidden;	
+			}
+
 			.pubTab-icon{
 				cursor:pointer;
 			}
@@ -44,14 +48,13 @@
 			line-height: 21px;
 			background: tabColorInfo($g_default_theme_name,"tab_background");
 				
+			.pubTab-icon-hover-hide{
+				visibility: hidden;
+			}
+
 			&:hover .pubTab-icon-area{
 				visibility: visible;
 				display:table-cell;
-			}
-			
-			&.pubTab-icon-hover-hide .pubTab-icon-area{
-				visibility: hidden;
-				display:none;
 			}
 		}
 	
@@ -116,34 +119,33 @@
 		right:0px;
 		top:0px;
 		margin-top: 1px;
-		min-width:32px;
+		min-width:20px;
 		line-height: 23px;
 	
-		i:hover{
-			color: colorInfo($g_default_theme_name , "arrow_active_color");
-		}
-		
-		.pubTab-right-arrow , .pubTab-left-arrow{
-			padding: 0px;
+		.pubTab-more-button {
+			padding: 0px 3px;
+    		width: 13px;
 			margin: 0px;
 			width: 12px;
 			color: colorInfo($g_default_theme_name , "arrow_color");
 			font-style: inherit;
 			float: left;
-			margin: 0px;
+			
+			letter-spacing: -4px;
+			font-weight: bold;
+			cursor: pointer;
+
+			&:hover{
+				background: colorInfo($g_default_theme_name , "background_thick_color");
+			}
 		}
 	
-		.pubTab-left-arrow:before {
-			content:'\25C0';
+		.pubTab-more-button:before {
+			content:'>>';
 			margin: 0 0px 0 0;
 			text-align: right;
 		}
-	
-		.pubTab-right-arrow:after {
-			content:'\25B6';
-			text-align: center;	
-		}
-	
+		
 		.pubTab-move-dim{
 			background: colorInfo($g_default_theme_name , "background_color");
 			position:absolute; 
