@@ -21,7 +21,7 @@
 .pubGrid-wrapper .pubGrid {
   position: relative;
   border: 1px solid #bcbcbd;
-  background: #ffffff;
+  background: transparent;
   -webkit-box-sizing: content-box !important;
   box-sizing: content-box !important;
 }

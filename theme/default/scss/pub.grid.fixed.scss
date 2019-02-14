@@ -23,7 +23,7 @@
 	.pubGrid {
 		position: relative;
 		border : 1px solid colorInfo($g_default_theme_name , "border_thick_color");
-		background: colorInfo($g_default_theme_name , "background_color");
+		background: transparent;
 		@include box-sizing($box_sizing_content);
 		
 		input,select,button{
