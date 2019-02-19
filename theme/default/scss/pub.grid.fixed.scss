@@ -24,7 +24,7 @@
 		position: relative;
 		border : 1px solid colorInfo($g_default_theme_name , "border_thick_color");
 		background: transparent;
-		@include box-sizing($box_sizing_content);
+		@include box-sizing($box_sizing_border);
 		
 		input,select,button{
 			background: colorInfo($g_default_theme_name , "background_color");
@@ -366,7 +366,7 @@
 		height:100%; 
 		width:100%;
 		padding : 0px 10px 0px 10px;
-		margin-top: 1px;
+		margin-top: 0px;
 	}
 	
 	.pubGrid-hscroll-bar-bg{

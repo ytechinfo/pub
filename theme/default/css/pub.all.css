@@ -22,8 +22,8 @@
   position: relative;
   border: 1px solid #bcbcbd;
   background: transparent;
-  -webkit-box-sizing: content-box !important;
-  box-sizing: content-box !important;
+  -webkit-box-sizing: border-box !important;
+  box-sizing: border-box !important;
 }
 
 .pubGrid-wrapper .pubGrid input, .pubGrid-wrapper .pubGrid select, .pubGrid-wrapper .pubGrid button {
@@ -373,7 +373,7 @@
   height: 100%;
   width: 100%;
   padding: 0px 10px 0px 10px;
-  margin-top: 1px;
+  margin-top: 0px;
 }
 
 .pubGrid-wrapper .pubGrid-hscroll-bar-bg {
