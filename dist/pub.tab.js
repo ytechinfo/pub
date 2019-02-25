@@ -255,7 +255,7 @@
 		}
 		/**
 		 * @method setActive
-		 * @description set item active 
+		 * @description set active item  
 		 */
 		,setActive: function (item){
 			var tabEle= this.tabElement.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]');
@@ -268,6 +268,18 @@
 			this._setHistory(tabEle.attr('data-tab-id'));
 			tabEle.addClass('active');
 			this.movePosition(tabEle.index());
+		}
+		/**
+		 * @method getActive
+		 * @description get active item  
+		 */
+		,getActive : function(){
+			var sEle = this.tabElement.find('.pubTab-item.active'); 
+			var idx = sEle.index(); 
+			return {
+				idx : idx
+				,item : this.options.items[idx]
+			};
 		}
 		/**
 		 * @method movePosition
