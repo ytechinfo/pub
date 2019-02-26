@@ -16,6 +16,7 @@
 			speed : 150
 			,width:'auto'
 			,itemMaxWidth : -1
+			,activeFirstItem : true	//로드시 첫번째 item 활성화 여부
 			,autoMove : false
 			,itemPadding: 5
 			,height : '22px'
@@ -108,6 +109,12 @@
 			_this.draw();
 
 			_this.initEvt();
+
+			if(this.options.activeFirstItem===true && this.getItemLength() > 0){
+				setTimeout(function (){
+					_this.itemClick();
+				},100);
+			}
 		}
 		,_setConfigInfo : function (){
 			this.config = {tabWidth :[] , tabHistory : [] , tabIdx : 0};

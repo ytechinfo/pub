@@ -107,7 +107,8 @@ var pubTab = {
 		
 			,overItemViewMode :'drop'
 			,click : function (item){
-				console.log('isActive : ',$.pubTab('#pubTabId').isActive(item) , item)
+				console.log(pubTabObj);
+				console.log('isActive : ',pubTabObj.isActive(item) , item)
 
 			}
 			,itemKey :{							// item key mapping

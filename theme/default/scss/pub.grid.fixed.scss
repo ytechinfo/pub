@@ -218,9 +218,9 @@
 		border-bottom:1px solid colorInfo($g_default_theme_name , "border_thin_color");
 	}
 	
-	.pubGrid-body-cont{
-		.al{text-align:left;}
-		.ar{text-align:right;}
+	.pubGrid-body-cont, .pubGrid-body-aside-cont{
+		.al{text-align:left; padding-left: 5px;}
+		.ar{text-align:right; padding-right: 5px;}
 		.ac{text-align:center;}
 	} 
 	
@@ -468,10 +468,6 @@
 	
 	.pubGrid-body-aside-cont th:last-child, .pubGrid-header-left-cont th:last-child,.pubGrid-body-left-cont td:last-child{
 		border-right:0px;
-	}
-	
-	.pubGrid-body-aside .pub-body-aside-td  .aside-content {
-		text-align: center;
 	}
 	
 	// navigation
