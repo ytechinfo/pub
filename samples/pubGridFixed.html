@@ -28,10 +28,10 @@ html , body {
 	<button class="exceldown" type="button">excel download</button>
 	<button type="button" onclick="fn_init()">regrid</button>
 	<select id="itemCount">
-		<option value="1">0</option>
+		<option value="1" selected>0</option>
 		<option value="5" >5</option>
 		<option value="10" >10</option>
-		<option value="20" selected>20</option>
+		<option value="20" >20</option>
 		<option value="100">100</option>
 		<option value="500">500</option>
 		<option value="1000">1000</option>
@@ -112,7 +112,7 @@ function getItem (type){
 		for(var i =0 ;i <itemCount; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 20 ;j++){
+			for(var j =0 ; j< 3 ;j++){
 				var colName = 'col'+j ; 
 				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
@@ -151,12 +151,16 @@ function fn_init(){
 	aaa =item.aaa;
 	colItem  = item.colItem;
 	
-
+	
 	if(parseInt($('#itemCount').val(),10) == 1){
 		aaa = [];
 	}
-	
-	gridDraw('#asdfasdf',aaa, colItem);
+	var gridObj = $.pubGrid('#asdfasdf')
+	if(gridObj){
+		gridObj.setData(aaa,'reDraw');
+	}else{
+		gridDraw('#asdfasdf',aaa, colItem);
+	}
 
 	//gridDraw('#asdfasdf1',aaa, colItem);
 	//gridDraw('#asdfasdf1',aaa, colItem);

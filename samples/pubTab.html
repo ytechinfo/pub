@@ -85,8 +85,8 @@ var pubTab = {
 			,dropItemWidth : '50px'
 			,titleIcon :{
 				left :{
-					overView : false		// mouseover icon view  여부
-					,visible : true
+					overview : false		// mouseover icon view  여부
+					,visible : false
 					,html : '<i class="fa fa-refresh">R</i>'
 					,click : function (item, idx){
 						pubTabObj.removeItem(idx);
@@ -95,7 +95,7 @@ var pubTab = {
 					}
 				}
 				,right : {
-					overView : true		// mouseover icon view  여부
+					overview : true		// mouseover icon view  여부
 					,html : '<i class="fa fa-refresh">X</i>'				// 활성시 추가할 html
 					,click : function (item, idx){
 						//pubTabObj.removeItem(idx);

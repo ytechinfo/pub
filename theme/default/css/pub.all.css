@@ -975,7 +975,7 @@
   vertical-align: middle;
 }
 
-.pubTab-wrapper .pubTab .pubTab-icon-area.hide {
+.pubTab-wrapper .pubTab .pubTab-icon-area.visible-hide {
   visibility: hidden;
 }
 
@@ -992,13 +992,13 @@
   background: #f5f5f5;
 }
 
-.pubTab-wrapper .pubTab .pubTab-item-cont .pubTab-icon-hover-hide {
-  visibility: hidden;
-}
-
 .pubTab-wrapper .pubTab .pubTab-item-cont:hover .pubTab-icon-area {
   visibility: visible;
   display: table-cell;
+}
+
+.pubTab-wrapper .pubTab .pubTab-item-cont .pubTab-icon-area.pubTab-icon-hover-hide {
+  display: none;
 }
 
 .pubTab-wrapper .pubTab .active .pubTab-item-cont .pubTab-icon-area {

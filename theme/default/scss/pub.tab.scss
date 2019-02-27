@@ -31,7 +31,7 @@
 			margin-top: 0px;
 			vertical-align: middle;
 
-			&.hide{
+			&.visible-hide{
 				visibility: hidden;	
 			}
 
@@ -48,13 +48,14 @@
 			line-height: 21px;
 			background: tabColorInfo($g_default_theme_name,"tab_background");
 				
-			.pubTab-icon-hover-hide{
-				visibility: hidden;
-			}
-
+			
 			&:hover .pubTab-icon-area{
 				visibility: visible;
 				display:table-cell;
+			}
+
+			.pubTab-icon-area.pubTab-icon-hover-hide{
+				display: none;
 			}
 		}
 	
