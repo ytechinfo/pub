@@ -16,10 +16,6 @@
 		@include box-sizing($box_sizing_border)
 	}
 
-	.pubGrid-header-left-cont, .pubGrid-body-left-cont{
-		border-right:1px solid gridColorInfo($g_default_theme_name,"border_colfixed_color");
-	}
-
 	.pubGrid {
 		position: relative;
 		border : 1px solid colorInfo($g_default_theme_name , "border_thick_color");
@@ -152,7 +148,6 @@
 	// header panel ->  content
 	.pubGrid-header-aside-cont, .pubGrid-header-cont, .pubGrid-header-left-cont{
 		table-layout: fixed;
-		border:0px;
 		border-bottom:1px solid colorInfo($g_default_theme_name , "border_thick_color");
 	}
 	
@@ -190,7 +185,7 @@
 		display:table-row;
 	
 		td{
-			padding: 0px 2px 0px 2px;
+			padding: 0px 5px 0px 5px;
 			margin: 0;
 			border-width : 1px;
 			border-style : solid; 
@@ -219,11 +214,15 @@
 	}
 	
 	.pubGrid-body-cont, .pubGrid-body-aside-cont{
-		.al{text-align:left; padding-left: 5px;}
-		.ar{text-align:right; padding-right: 5px;}
-		.ac{text-align:center;}
+		.al{text-align:left;}
+		.ar{text-align:right;}
+		.ac{text-align:center;padding:0px;}
 	} 
-	
+
+	.pubGrid-header-left-cont, .pubGrid-body-left-cont{
+		border-right:1px solid gridColorInfo($g_default_theme_name,"border_colfixed_color");
+	}
+
 	.pubGrid-empty-msg-area{
 		position: relative; 
 		text-align:center;
@@ -568,10 +567,6 @@
 			color:colorInfo($pThemeName , "font_color") !important;
 		}
 
-		.pubGrid-header-left-cont, .pubGrid-body-left-cont{
-			border-right:1px solid gridColorInfo($pThemeName,"border_colfixed_color");
-		}
-
 		.pubGrid {
 			border : 1px solid colorInfo($pThemeName , "border_thick_color");
 			background: colorInfo($pThemeName , "background_color");
@@ -641,7 +636,11 @@
 		.pubGrid-icon-info {
 			color: colorInfo($pThemeName , "font_thin_color");
 		}
-			
+		
+		.pubGrid-header-left-cont, .pubGrid-body-left-cont{
+			border-right:1px solid gridColorInfo($pThemeName,"border_colfixed_color");
+		}
+		
 		// setting area (search area , scroll speen , column fixed)
 		.pubGrid-setting-wrapper{
 		

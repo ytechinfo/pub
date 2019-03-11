@@ -1526,8 +1526,8 @@ Plugin.prototype ={
 		}
 
 		this.element.pubGrid.addClass(pubGridClass)
-		this.element.header.find('.pubGrid-header-aside-cont').css({'line-height': header_height+'px' , 'height' : header_height+'px'})
-		this.element.header.find('.aside-label-wrapper').css('height',header_height-1+'px');
+		this.element.header.find('.pubGrid-header-aside-cont').css({'line-height': (header_height-1)+'px' , 'height' : (header_height-1)+'px'})
+		//this.element.header.find('.aside-label-wrapper').css('height',header_height-1+'px'); // 20190311
 
 		$('#'+this.prefix+'_vscroll .pubGrid-scroll-top-area').css({'line-height': header_height+'px' , 'height' : header_height+'px'});
 			
