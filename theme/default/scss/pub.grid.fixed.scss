@@ -114,14 +114,27 @@
 			}
 	
 			.label-wrapper{
+				.pub-sort-icon{
+					position: absolute;
+					width: 8px;
+					height: 8px;
+					top: 0px;
+					right: 1px;
+					display: none;
+				}
+
 				&.sortasc{
-					background: url(./images/sort-asc.png) center 0 no-repeat;
-					background-position: 50% -3px;
+					.pubGrid-sort-up{
+						display: block;
+					}
 				}
+
 				&.sortdesc{
-					background: url(./images/sort-desc.png) center 0 no-repeat;
-					background-position: 50% -2px;
+					.pubGrid-sort-down{
+						display: block;
+					}
 				}
+
 			}
 		}
 	
@@ -336,7 +349,7 @@
 			margin-right:5px;
 		}
 	}
-	
+
 	// scroll 
 	.pubGrid-hscroll{
 		width:100%;
