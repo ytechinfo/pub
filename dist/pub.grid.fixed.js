@@ -2277,6 +2277,8 @@ Plugin.prototype ={
 		var beforeClickObj; 
 		//headerCol.off('click.pubGridHeader.sort');
 		
+		var dataSortEvent = 'dblclick.pubGridHeader.sort';
+
 		if(headerOpt.isColSelectAll ===true){
 			// column select
 			_this.element.header.on('click.pubGridHeader.select','.pub-header-cont',function (e){
@@ -2299,10 +2301,12 @@ Plugin.prototype ={
 					,curr : curr
 				}, initFlag , true);
 			});
+		}else{
+			dataSortEvent = 'click.pubGridHeader.sort';
 		}
 		
 		// sort
-		_this.element.header.on('dblclick.pubGridHeader.sort','.pub-header-cont.sort-header',function (e){
+		_this.element.header.on(dataSortEvent,'.pub-header-cont.sort-header',function (e){
 			var selEle = $(this)
 				,col_idx = selEle.attr('col_idx')
 				,sortType = selEle.attr('sort_type');
