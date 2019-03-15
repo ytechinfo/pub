@@ -28,12 +28,12 @@ html , body {
 	<button class="exceldown" type="button">excel download</button>
 	<button type="button" onclick="fn_init()">regrid</button>
 	<select id="itemCount">
-		<option value="1" selected>0</option>
-		<option value="5" >5</option>
+		<option value="1" >0</option>
+		<option value="5">5</option>
 		<option value="10" >10</option>
 		<option value="20" >20</option>
 		<option value="100">100</option>
-		<option value="500">500</option>
+		<option value="500" selected>500</option>
 		<option value="1000">1000</option>
 		<option value="10000">10000</option>
 		<option value="100000">100000</option>
@@ -112,7 +112,7 @@ function getItem (type){
 		for(var i =0 ;i <itemCount; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 3 ;j++){
+			for(var j =0 ; j< 5 ;j++){
 				var colName = 'col'+j ; 
 				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
@@ -176,6 +176,7 @@ function gridDraw(selector, aaa, colItem){
 				,displayLineNumber : true	 // 라인 넘버 보기.
 				,displayRowSelector : false	 // row selecotr checkbox 보기
 				,displayModifyInfo : false	 // 수정여부 보기
+				,isColSelectAll : false		 // 컬럼 세로 선택 여부.
 				,colFixedIndex : 0
 				,resize:{
 					enabled : true
