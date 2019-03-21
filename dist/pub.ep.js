@@ -31,6 +31,7 @@ _defaultOption ={
 	method :'post'
 	,cache: false
 	,dataType: "json"
+	,header:{}
 }
 ,globalOption ={
 	httpMethod :{
@@ -216,6 +217,14 @@ _$base.req ={
 		var ajaxOpt =_$base.util.objectMerge({}, _defaultAjaxOption,option); 
 		
 		ajaxOpt.beforeSend = function (xhr){
+			
+			var optHeader = ajaxOpt.header; 
+			if(optHeader){
+				for(var key in optHeader){
+					xhr.setRequestHeader(key, optHeader[key]);
+				}
+			}
+			
 			if($(loadSelector).length > 0){
 				$(loadSelector).centerLoading({
 					contentClear:false 

@@ -73,14 +73,14 @@
 		max-width: 100%;
 		margin-bottom: 0px;
 		font-weight: bold;
+		width: 100%;
 	}
 
 	input[type=checkbox], input[type=radio] {
 		vertical-align: baseline;
 		position: relative;
-		top: 3px;
-		margin: 0 3px 0 0;
-		padding: 0px;
+		width: 20px;
+		float: left;
 	}
 
 	.pub-context-header {
@@ -135,13 +135,15 @@
 			display: none;
 		}
 
-		&:hover > .pub-context-menu {
+		&.on .pub-context-menu{
 			display: block;
 		}
-
+		
 		&.disabled .pub-context-menu{
-			display: none;
+			display: none !important;
 		}
+
+		
 	}
 }
 
