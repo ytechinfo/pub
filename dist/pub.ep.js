@@ -236,6 +236,22 @@ _$base.req ={
 			}
 		}
 		
+		ajaxOpt.success =  function (data, status, jqXHR) {
+			
+			if($.isFunction(_defaultAjaxOption.beforeSuccess)){
+				if(_defaultAjaxOption.beforeSuccess(data, status, jqXHR) === false){
+					return ; 
+				}
+			}
+			
+			try{
+				option.success.call(this, data, status, jqXHR);
+			}catch(e){
+				$(loadSelector).centerLoadingClose();
+				console.log(e);
+			}
+		}
+		
 		$.ajax(ajaxOpt).done(function (xhr){
 			if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
 		}).fail(function (xhr){

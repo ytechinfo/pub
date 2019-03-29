@@ -8,8 +8,16 @@
 <link href="../theme/default/css/pub.context.css" rel="stylesheet">
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
+
+<!-- excel 처리 -->
+<script src="../plugins/excel/exceljs.js"></script>
+<script src="../plugins/filesaver/FileSaver.min.js"></script>
+
+<!-- context menu -->
 <script src="../dist/pub.context.js"></script>
 <script src="../dist/pub.grid.fixed.js"></script>
+
+
 
 <style>
 html , body {
@@ -20,9 +28,16 @@ html , body {
 }
 
 </style>
+
 </HEAD>
 <BODY>
 <div>
+
+	<div>
+		excel download시 <br/>
+		<a href="https://github.com/eligrey/FileSaver.js/"> FileSaver.js </a> ,<a href="https://github.com/exceljs/exceljs">exceljs.js</a>필요함.
+	</div>
+
 	<i class="fa fa-address-book" aria-hidden="true"></i>
 	item generate count<div id="genCount"></div>
 	<button class="exceldown" type="button">excel download</button>
@@ -66,7 +81,17 @@ $(document).ready(function (){
 	fn_init();
 
 	$('.exceldown').on('click', function (){
-		$.pubGrid('#asdfasdf').excelExport({type:'download', fileName:'aaa.xls'});
+
+		var ws_name = 'downloadExcel';
+    	var gridObj = $.pubGrid('#asdfasdf'); 
+
+		var allDataInfo = $.pubGrid('#asdfasdf').getData({dataType:'json'});
+
+    	getExcelDownload({
+			header: allDataInfo.header 
+			,data :  allDataInfo.data
+			,fileName : 'pubGridExcel'
+		});
 	})
 });
 
@@ -114,7 +139,12 @@ function getItem (type){
 
 			for(var j =0 ; j< 5 ;j++){
 				var colName = 'col'+j ; 
-				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
+				if(j ==0){
+					tmpItem[colName] =  i+j;
+				}else{
+					tmpItem[colName] =  ('cont'+i+" _ "+j) ;
+				}
+				
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
 			}
 
@@ -130,6 +160,7 @@ function getItem (type){
 					key :key
 					,label:'한글'+key
 					,width:100
+					,type : (keyIdx==0 ? 'number':'string')
 				});
 
 				keyIdx++;
@@ -168,7 +199,14 @@ function fn_init(){
 function gridDraw(selector, aaa, colItem){
 		var gridObj = $.pubGrid(selector,{
 			asideOptions :{
-				lineNumber : {enable : true	,width : 30}
+				lineNumber : {enabled : true,width : 30}
+				,rowSelector :{
+					enabled :true
+					,key : 'checkbox'
+					,name : 'V'
+					,width : 25
+				}
+				
 			}
 			,headerOptions:{
 				view : true
@@ -234,7 +272,7 @@ function gridDraw(selector, aaa, colItem){
 				}
 			}
 			,setting : {
-				enable : true
+				enabled : true
 				,click : false
 				,enableSearch : true
 				,enableSpeed : true
@@ -373,4 +411,112 @@ _special = _evt.special.pubgridResize = {
 };
 
 })(jQuery);
+
+</script>
+
+
+<script type="text/javascript">
+
+/* exceljs ie 처리 위해 추가. */
+if (!Object.assign) {
+  Object.defineProperty(Object, 'assign', {
+    enumerable: false,
+    configurable: true,
+    writable: true,
+    value: function(target) {
+      'use strict';
+      if (target === undefined || target === null) {
+        throw new TypeError('Cannot convert first argument to object');
+      }
+
+      var to = Object(target);
+      for (var i = 1; i < arguments.length; i++) {
+        var nextSource = arguments[i];
+        if (nextSource === undefined || nextSource === null) {
+          continue;
+        }
+        nextSource = Object(nextSource);
+
+        var keysArray = Object.keys(Object(nextSource));
+        for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+          var nextKey = keysArray[nextIndex];
+          var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+          if (desc !== undefined && desc.enumerable) {
+            to[nextKey] = nextSource[nextKey];
+          }
+        }
+      }
+      return to;
+    }
+  });
+}
+// excel style 
+function getHeaderStyle(type){
+	var headerStyle = {
+		border : {
+			top: {style:'thin', color: {argb:'FF000000'}},
+			left: {style:'thin', color: {argb:'FF000000'}},
+			bottom: {style:'thin', color: {argb:'FF000000'}},
+			right: {style:'thin', color: {argb:'FF000000'}}
+		}
+		,fill : {
+			type: "pattern",
+			pattern: "solid",
+			fgColor: {
+				argb: "FFF8F8F8"
+			}
+		}
+	}
+	return headerStyle[type] || {};
+}
+
+
+function getExcelDownload(excelInfo) {
+	
+	var name = excelInfo.fileName; 
+	var headers = excelInfo.header;
+
+	var workbook = new ExcelJS.Workbook();
+	var worksheet = workbook.addWorksheet(name);
+	
+	var columns = [];
+	
+	for(var i =0, len = headers.length; i < len; i++){
+		var headerInfo = headers[i]; 
+		
+		var cellStyle = {alignment: {wrapText: true} };
+
+		if(headerInfo.type=='number'){
+			cellStyle = {alignment: {horizontal: 'right'},numFmt:'@'};
+		}
+		columns.push({
+			key : headerInfo.key
+			,header: headerInfo.label
+			,width : Math.floor(headerInfo.width/6)
+			,style: cellStyle
+		})
+	}
+
+	worksheet.columns = columns;
+
+	var firstRow = worksheet.getRow(1);
+
+	firstRow.eachCell(function(cell, rowNumber) {
+		cell.fill = getHeaderStyle('fill');
+		cell.border = getHeaderStyle('border');
+	});
+
+	firstRow.font = { name: 'New Times Roman', family: 4, size: 10, bold: true, color: {argb:'FF000000'} };
+	firstRow.alignment = { vertical: 'middle', horizontal: 'center'};
+	firstRow.height = 20;
+	
+	
+	worksheet.addRows(excelInfo.data);
+	
+	var buff = workbook.xlsx.writeBuffer().then(function (data) {
+		var blob = new Blob([data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+		saveAs(blob, name+".xlsx");
+
+	});
+}
 </script>

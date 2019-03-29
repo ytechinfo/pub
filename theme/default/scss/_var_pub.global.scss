@@ -5,6 +5,7 @@
 $theme_colors: (
   'light': (
     'font_color': #000000 			// font color
+    ,'font_active': #5970f5
     ,'font_warning_color': #ff3400 			// font color
     ,'font_disable_color': #999999
     ,'font_thin_color': #969494 			// font color
@@ -47,6 +48,7 @@ $theme_colors: (
   )
   ,'dark' :(
     'font_color': #c5c3c3 			// font color
+    ,'font_active': #5970f5
     ,'font_warning_color': #ff3400 			// font color
     ,'font_disable_color': #999999
     ,'font_thin_color': #969494 			// font color

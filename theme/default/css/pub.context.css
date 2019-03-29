@@ -70,14 +70,14 @@
   max-width: 100%;
   margin-bottom: 0px;
   font-weight: bold;
+  width: 100%;
 }
 
 .pub-context-menu input[type=checkbox], .pub-context-menu input[type=radio] {
   vertical-align: baseline;
   position: relative;
-  top: 3px;
-  margin: 0 3px 0 0;
-  padding: 0px;
+  width: 20px;
+  float: left;
 }
 
 .pub-context-menu .pub-context-header {
@@ -129,12 +129,12 @@
   display: none;
 }
 
-.pub-context-top .pub-context-submenu:hover > .pub-context-menu {
+.pub-context-top .pub-context-submenu.on .pub-context-menu {
   display: block;
 }
 
 .pub-context-top .pub-context-submenu.disabled .pub-context-menu {
-  display: none;
+  display: none !important;
 }
 
 .pub-context-item-title {

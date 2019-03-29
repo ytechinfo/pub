@@ -90,7 +90,8 @@ $(document).ready(function (){
 			,{divider:true}
 			,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
 				,subMenu : [
-					{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
+					{checkbox : true , name:'selet data' , key:'sqlGridResultSelect'}
+					,{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
 					,{ key : "mybatis_update","name": "update" ,mode:"update" ,param_yn:'Y'}
 					,{ key : "mybatis_delete","name": "delete" ,mode:"delete",param_yn:'Y'}
 				]

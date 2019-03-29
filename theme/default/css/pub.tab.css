@@ -109,6 +109,7 @@
 .pubTab-wrapper .pubTab-scroll {
   overflow: hidden;
   padding: 2px 0px 0px 0px;
+  width: 100%;
 }
 
 .pubTab-wrapper .pubTab-move-area {
