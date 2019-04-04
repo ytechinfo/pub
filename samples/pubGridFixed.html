@@ -32,16 +32,11 @@ html , body {
 </HEAD>
 <BODY>
 <div>
-
 	<div>
 		excel download시 <br/>
 		<a href="https://github.com/eligrey/FileSaver.js/"> FileSaver.js </a> ,<a href="https://github.com/exceljs/exceljs">exceljs.js</a>필요함.
 	</div>
-
-	<i class="fa fa-address-book" aria-hidden="true"></i>
-	item generate count<div id="genCount"></div>
-	<button class="exceldown" type="button">excel download</button>
-	<button type="button" onclick="fn_init()">regrid</button>
+	row
 	<select id="itemCount">
 		<option value="1" >0</option>
 		<option value="5">5</option>
@@ -53,6 +48,22 @@ html , body {
 		<option value="10000">10000</option>
 		<option value="100000">100000</option>
 	</select>
+
+	cell
+	<select id="cellCount">
+		<option value="1" >0</option>
+		<option value="5">5</option>
+		<option value="10">10</option>
+		<option value="20" selected>20</option>
+		<option value="100">100</option>
+	</select>
+	<button type="button" onclick="fn_init()">regrid</button>
+	
+	<button class="exceldown" type="button">excel download</button>
+
+	
+
+	
 </div>
 <table style="width:100%;height:100%;">
 	<colgroup>
@@ -99,6 +110,8 @@ function getItem (type){
 	var aaa = [];
 	var colItem = [];
 	var	itemCount = parseInt($('#itemCount').val(),10);
+	var cellCount = parseInt($('#cellCount').val(),10);
+	
 	if(type ==1){
 		for(var i =0 ;i <itemCount; i++){
 			aaa.push({
@@ -112,11 +125,20 @@ function getItem (type){
 				,h:'hhhh'+i
 				,i:'iiii'+i
 				,j:'jjjj'+i
+				,idx: i
 			});
 		}
 		colItem = [
 			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
-			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)}}
+			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)},styleClass : function (idx, item){
+				
+				if(item.idx%2==0){
+					return 'pub-bg-primary';
+				}else{
+					return 'pub-bg-success';
+				}
+				
+			}}
 			,{key :'c', label:'씨',width:100, align:'center', type : 'money', render:'html'}
 			,{key :'d', label:'디',width:100 ,type : 'number', formatter : function (rowInfo){
 				
@@ -124,12 +146,12 @@ function getItem (type){
 				return rowInfo.formatter(item['c'],0);
 			}}
 			,{key :'e', label:'이',width:100}
-			,{key :'f', label:'이',width:100}
-			,{key :'g', label:'이',width:100}
-			,{key :'h', label:'이',width:100}
-			,{key :'i', label:'이',width:100}
-			,{key :'k', label:'이',width:100}
-			,{key :'j', label:'이',width:100}
+			,{key :'f', label:'f',width:100}
+			,{key :'g', label:'g',width:100}
+			,{key :'h', label:'h',width:100}
+			,{key :'i', label:'i',width:100}
+			,{key :'k', label:'k',width:100}
+			,{key :'j', label:'j',width:100}
 			//,{key :'d', label:'디', hidden:true}
 		]
 	}else{
@@ -137,7 +159,7 @@ function getItem (type){
 		for(var i =0 ;i <itemCount; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 5 ;j++){
+			for(var j =0 ; j< cellCount ;j++){
 				var colName = 'col'+j ; 
 				if(j ==0){
 					tmpItem[colName] =  i+j;
@@ -177,21 +199,24 @@ function getItem (type){
 var aaa, colItem;
 function fn_init(){
 	
-	var	item=getItem ( 2 );
+	var	item=getItem ( 1 );
 
 	aaa =item.aaa;
 	colItem  = item.colItem;
-	
 	
 	if(parseInt($('#itemCount').val(),10) == 1){
 		aaa = [];
 	}
 	var gridObj = $.pubGrid('#asdfasdf')
+	/*
 	if(gridObj){
 		gridObj.setData(aaa,'reDraw');
 	}else{
-		gridDraw('#asdfasdf',aaa, colItem);
+		gridDraw('#asdfasdf',aaa, colItem);	
 	}
+	*/
+
+	gridDraw('#asdfasdf',aaa, colItem);
 
 	//gridDraw('#asdfasdf1',aaa, colItem);
 	//gridDraw('#asdfasdf1',aaa, colItem);
@@ -231,8 +256,7 @@ function gridDraw(selector, aaa, colItem){
 					]
 				}
 			}
-			,height : 'auto'
-			,height1:400
+			,height:400
 			,scroll :{
 				vertical : {
 					onUpdate : function (item){	// 스크롤 업데이트. 
@@ -454,10 +478,10 @@ if (!Object.assign) {
 function getHeaderStyle(type){
 	var headerStyle = {
 		border : {
-			top: {style:'thin', color: {argb:'FF000000'}},
-			left: {style:'thin', color: {argb:'FF000000'}},
-			bottom: {style:'thin', color: {argb:'FF000000'}},
-			right: {style:'thin', color: {argb:'FF000000'}}
+			top: {style:'thin', color: {argb:'FFbcbcbd'}},
+			left: {style:'thin', color: {argb:'FFbcbcbd'}},
+			bottom: {style:'thin', color: {argb:'FFbcbcbd'}},
+			right: {style:'thin', color: {argb:'FFbcbcbd'}}
 		}
 		,fill : {
 			type: "pattern",
@@ -484,10 +508,10 @@ function getExcelDownload(excelInfo) {
 	for(var i =0, len = headers.length; i < len; i++){
 		var headerInfo = headers[i]; 
 		
-		var cellStyle = {alignment: {wrapText: true} };
+		var cellStyle = {alignment: {wrapText: true} ,font :{  family: 4, size: 10}};
 
 		if(headerInfo.type=='number'){
-			cellStyle = {alignment: {horizontal: 'right'},numFmt:'@'};
+			cellStyle = {alignment: {horizontal: 'right'},numFmt:'@',font :{  family: 4, size: 10 }};
 		}
 		columns.push({
 			key : headerInfo.key
@@ -506,7 +530,7 @@ function getExcelDownload(excelInfo) {
 		cell.border = getHeaderStyle('border');
 	});
 
-	firstRow.font = { name: 'New Times Roman', family: 4, size: 10, bold: true, color: {argb:'FF000000'} };
+	firstRow.font = { family: 4, size: 10, bold: true, color: {argb:'FF000000'} };
 	firstRow.alignment = { vertical: 'middle', horizontal: 'center'};
 	firstRow.height = 20;
 	

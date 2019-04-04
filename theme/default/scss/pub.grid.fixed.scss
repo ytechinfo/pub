@@ -12,6 +12,7 @@
 		border-spacing:0;
 		border-collapse:collapse;
 		font-size:colorInfo($g_default_theme_name , "font_size");
+		font-family: sans-serif;
 		color:colorInfo($g_default_theme_name , "font_color");
 		@include box-sizing($box_sizing_border)
 	}
@@ -108,16 +109,17 @@
 			.pub-header-cont{
 				width: 100%;
 				height: 100%;
+				font-weight: normal;
+				
 				.pub-inner {
 					vertical-align: middle;
 					text-align: center;
 					.centered {
 						position: relative;
-						padding: 0px 5px;
+						padding: 0px 8px 0px 5px;
 						white-space: nowrap;
 						overflow: hidden;
 						text-overflow: ellipsis;
-						font-weight:normal;
 					}
 				}
 	
@@ -132,7 +134,7 @@
 					width: 8px;
 					height: 8px;
 					top: 0px;
-					right: 1px;
+					right: 2px;
 					display: none;
 				}
 
@@ -218,6 +220,27 @@
 			border-color : colorInfo($g_default_theme_name , "border_thin_color");
 			border-top: 0px solid transparent;
 			border-left: 0px solid transparent;
+		}
+
+		.pub-bg-{
+			&primary{
+				background-color :colorInfo($g_default_theme_name , "background-primary");
+			}
+			&danger{
+				background-color :colorInfo($g_default_theme_name , "background-danger");
+			}
+			&warning{
+				background-color :colorInfo($g_default_theme_name , "background-warning");
+			}
+			&info{
+				background-color :colorInfo($g_default_theme_name , "background-info");
+			}
+			&success{
+				background-color :colorInfo($g_default_theme_name , "background-success");
+			}
+			&default{
+				background-color :colorInfo($g_default_theme_name , "background_color");
+			}
 		}
 	
 		.col-active{
@@ -368,6 +391,9 @@
 			width:50px;
 			height:23px;
 			margin:0px 5px 0px 0px;
+			padding:0px;
+			-webkit-appearance: menulist;
+			-moz-appearance: menulist;
 		}
 	
 		>input{

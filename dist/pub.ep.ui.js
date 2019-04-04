@@ -72,7 +72,8 @@ _$base.dialog={
 		
 		dialogEle.closest('.ui-dialog.ui-widget').find('.ui-dialog-titlebar .ui-dialog-titlebar-close').trigger('click');
 		
-		var isScroll = (document.body.clientHeight > window.innerHeight) || $('html').css('overflow-y') == 'scroll';
+		var htmlEle = $('html').get(0); 
+		var isScroll = (htmlEle.scrollHeight > window.innerHeight)||(htmlEle.scrollWidth > window.innerWidth) || $('html').css('overflow-y') == 'scroll';
 		
 		isScroll = _opener.$('.pub-ep-ui-overlay').length > 0 ? false :isScroll; 
 		
@@ -139,7 +140,8 @@ _$base.dialog={
 			$('#'+_targetId).css('overflow', 'auto');
 		}
 		
-		var isScroll = (document.body.clientHeight > window.innerHeight) || $('html').css('overflow-y') == 'scroll';
+		var htmlEle = $('html').get(0); 
+		var isScroll = (htmlEle.scrollHeight > window.innerHeight)||(htmlEle.scrollWidth > window.innerWidth) || $('html').css('overflow-y') == 'scroll';
 		
 		isScroll = _opener.$('.pub-ep-ui-overlay').length > 0 ? false :isScroll;
 		
