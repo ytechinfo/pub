@@ -28,6 +28,65 @@
 .toast_layer .open.on{background: url(./images/toast_open_on.png) no-repeat; }
 .toast_layer .open.off{background: url(./images/toast_open.png) no-repeat; }
 
+.pubep-modal-wrapper{
+	position: fixed;
+	left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.pubep-modal{
+	min-width: 100px;
+	min-height: 100px;
+	padding: 0px 0px 0px;
+	background: #ffffff;
+}
+
+.pubep-modal > .pubep-modal-header{
+	height: 30px;
+    line-height: 30px;
+    background: #000000;
+    color: #ffffff;
+	font-weight: bold;
+	padding: 5px 10px 5px;
+}
+
+.pubep-modal > .pubep-modal-body{
+	height: 30px;
+	padding: 10px;
+}
+
+.pubep-modal > .pubep-modal-footer{
+	height: 35px;
+	padding: 0px 10px 0px;
+	position: absolute;
+	bottom: 0px;
+	text-align: center;
+	width: 100%;
+}
+
+.pubep-modal .pubep-modal-btn {
+	padding: 7px;
+	border: 1px solid #c5bdbd;
+	min-width : 40px;
+	margin-right: 10px;
+	outline: none;
+	color: #000;
+}
+.pubep-modal .pubep-modal-btn:hover {
+	opacity: 0.6;
+}
+
+.pubep-modal .pubep-modal-btn.white{
+	background: #ffffff;
+}
+
+.pubep-modal .pubep-modal-btn.black{
+	background: #c5bdbd;
+	color:#000;
+}
+
+
 /*select box */
 .pub-select-box-wrapper{
 	position:relative;

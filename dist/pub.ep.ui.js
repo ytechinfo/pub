@@ -21,13 +21,48 @@ if (typeof window != "undefined") {
 
 var _$base = {},
 _defaultOption ={
-	version:'0.1'
+	version:'0.1.0'
 	,author:'ytkim'
-	,contextPath: (typeof global_page_context_path === 'undefined' ? '/' : global_page_context_path)
 }
 ,globalUIOption ={
 	dialogBgIframe : true
+	,dialog:{
+		targetID : '_main_div_dialog_frame_id_'
+		,title : '설정'
+		,width : '480'
+		,height : '355'
+		,scrolling : 'no'
+		,directCall : true
+		,useScrollHidden : true
+		,modal: true
+		, autoOpen : false
+		, resizable : false
+		, draggable: true
+		, titleClass : ''
+	}
+	,modal:{
+		cancleBtn :'Cancle'
+		,okBtn:'OK'
+		,width:'300px'
+		,useCancle : false
+		, height:'auto'
+		, title :'Confirm'
+	}
+	,toast : {
+		hideAfter: 2000
+		, position: {left:"50%",top:"50%"}
+		, textColor: '#fff'
+		, stack:false
+		, showHideTransition: 'fade'
+		, position: 'mid-center'
+		, loader :false
+		//, beforeShow : function(){$('.jq-toast-wrap').css("margin" , "0 0 0 -155px") }
+	}
 };
+
+_$base.init = function (initOpt){
+	globalUIOption=PubEP.util.objectMerge(globalUIOption,initOpt);
+}
 
 _$base.replaceHtm={
 	title :function(option){
@@ -114,19 +149,7 @@ _$base.dialog={
 		}
 		
 		opt.height = opt.height+'';
-		var options = PubEP.util.objectMerge({}, {
-			targetID : '_main_div_dialog_frame_id_'
-			,title : '설정'
-			,width : '480'
-			,height : '355'
-			,scrolling : 'no'
-			,directCall : true
-			,useScrollHidden : true
-		} ,opt);
-		
-		if(typeof options.position ==='undefined' && opt.onlyCenter===true){
-			options.position= { my: "center center", at: "center center", of: window }
-		}
+		var options = PubEP.util.objectMerge({}, globalUIOption.dialog ,opt);
 		
 		var _targetId = options.targetID; 
 		
@@ -145,25 +168,22 @@ _$base.dialog={
 		
 		isScroll = _opener.$('.pub-ep-ui-overlay').length > 0 ? false :isScroll;
 		
-		var modalOption = {
-			 modal: true
-			, autoOpen : false
-			, resizable : false
-			, draggable: true
-			, titleClass : ''
-			, close : function (event, ui){
-				if(opt.closeOverflowAuto !==false){
-					if(isScroll){
-						if(options.useScrollHidden !== false){
-							_opener.$('html').css('overflow','');
-							_opener.$('body').css('overflow-y','');
-						}
+		var modalOption =PubEP.util.objectMerge({},options);
+		
+		modalOption.close = function (event, ui){
+			if(opt.closeOverflowAuto !==false){
+				if(isScroll){
+					if(options.useScrollHidden !== false){
+						_opener.$('html').css('overflow','');
+						_opener.$('body').css('overflow-y','');
 					}
 				}
 			}
 		}
 		
-		modalOption =PubEP.util.objectMerge({},modalOption,options);
+		if(typeof options.position ==='undefined' && options.onlyCenter===true){
+			modalOption.position= { my: "center center", at: "center center", of: window }
+		}
 		
 		if(isScroll){
 			if(options.useScrollHidden !== false){
@@ -173,6 +193,9 @@ _$base.dialog={
 			}
 		}
 		
+		modalOption.width = (modalOption.width+'').replace('px','');
+		modalOption.height = (modalOption.height+'').replace('px','');
+				
 		var dialogEle;
 		if(mode == 'html'){
 			dialogEle =_opener.$(dialogInfo);
@@ -206,7 +229,7 @@ _$base.dialog={
 			        preview.write(dialogInfo);
 			        preview.close();
 				}
-				dialogHtm = '<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width.replace('px','')+'px;height:'+options.height.replace('px','')+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>';
+				dialogHtm = '<iframe id="'+_targetId+'iframe" name="'+_targetId+'iframe" src="" style="width:'+options.width+'px;height:'+options.height+'px" frameborder="0" scrolling="'+options.scrolling+'"></iframe>';
 			}else if(mode=='text'){
 				modalOption.width = options.width;
 				modalOption.height =options.height;
@@ -240,7 +263,6 @@ _$base.dialog={
 		var _uuid = 'bgiframe-'+PubEP.util.generateUUID();
 		
 		var overLayEle = uiDiloagWidgetEle.nextAll('.ui-widget-overlay.ui-front:not(.pub-ep-ui-overlay)'); 
-		
 		overLayEle.addClass('pub-ep-ui-overlay');
 		overLayEle.append('<div class="bg-iframe-overlay '+_uuid+'" style="display:block;position:fixed;z-index:1;top:0px;left:0px;width:100%;height:100%;opacity:0;"></div>')
 		
@@ -259,6 +281,129 @@ _$base.dialog={
 				dialogEle.dialog("close");
 			})
 		}
+		
+		return dialogEle; 
+	}
+}
+
+_$base.modal = {
+	modalEle : false
+	,template : function (opt){
+		var strHtm = [];
+		strHtm.push('<dl class="pubep-modal" style="width:#width#;height:#height#;">');
+		strHtm.push('	<dt class="pubep-modal-header">#title#</dt>');
+		strHtm.push('	<dd class="pubep-modal-body">');
+		strHtm.push('		#message#</dd>');
+		strHtm.push('	<dd class="pubep-modal-footer">');
+		
+		if(opt.useCancle !== false){
+			strHtm.push('		<a href="javascript:void(0);" class="pubep-modal-btn white pubEpModalCancle">');
+			strHtm.push('			#cancleBtn#');
+			strHtm.push('		</a>');
+		}
+		
+		if(opt.useOk !== false){
+			strHtm.push('		<a href="javascript:void(0);" class="pubep-modal-btn black pubEpModalOk">');
+			strHtm.push('			#okBtn#');
+			strHtm.push('		</a>');
+		}
+
+		strHtm.push('	</dd>');
+		strHtm.push('</dl>');
+		
+		return strHtm.join('');
+	}
+	/* opt {
+		message : '메시지'
+		width:  넓이
+		height : 높이 
+		cancleCallback : 취소 메소드 또는 string
+		okCallback :  ok 메소드 또는 string
+		cancleBtn : cancle 문구
+		okBtn : ok 문구
+		
+	}
+	*/
+	,open : function (opt){
+		
+		var _opener = window;
+		var isFrame = false; 
+		
+		if(typeof top.PubEPUI !=='undefined' && top != window){
+			_opener = top; 
+			isFrame =true;
+		}else if(typeof parent.PubEPUI !=='undefined'){
+			_opener = parent; 
+			isFrame =true;
+		}
+		
+		opt.isFrame = isFrame;
+		_opener.PubEPUI.modal._open(opt);
+	}
+	,close : function(){
+		var _opener = getOpenWin();
+		//console.log(_opener.location.href);
+		
+		_opener.PubEPUI.dialog.closeDialog('#pubEpUiModalArea', false);
+	}
+	,getElementVal : function (selector){
+		return getOpenWin().$(selector).val();
+	}
+	,_open : function (opt){
+		var _this = this; 
+		
+		opt = PubEP.util.objectMerge({},globalUIOption.modal,opt);
+		
+		var confirmHtml = PubEP.util.replaceParam(_this.template(opt), opt);
+		
+		if($('#pubEpUiModalArea').length < 1){
+			$('body').append('<div id="pubEpUiModalArea" class="pubep-modal-wrapper"></div>');
+			
+			_this.modalEle = $('#pubEpUiModalArea');
+		}
+		
+		_this.modalEle.off('click.pubepui.modal');
+				
+		_this.modalEle.on("click.pubepui.modal",'.pubEpModalCancle,.btn_close',function (){
+			PubEPUI.dialog.closeDialog('#pubEpUiModalArea', false);
+			
+			if(PubEP.isUndefined(opt.cancleCallback)) return ; 
+			
+			if(PubEP.isFunction(opt.cancleCallback)){
+				opt.cancleCallback();
+			}else{
+				if(opt.isFrame){
+					$('#epContentViewFrame').get(0).contentWindow[opt.cancleCallback]();
+				}else{
+					window[opt.cancleCallback]();
+				}
+			}
+		});
+		
+		_this.modalEle.on("click.pubepui.modal",'.pubEpModalOk', function (){
+			
+			if(opt.autoClose !==false ){
+				PubEPUI.dialog.closeDialog('#pubEpUiModalArea',false);
+			}
+			
+			if(PubEP.isUndefined(opt.okCallback)) return ; 
+			
+			if(PubEP.isFunction(opt.okCallback)){
+				opt.okCallback();
+			}else{
+				if(opt.isFrame){
+					$('#epContentViewFrame').get(0).contentWindow[opt.okCallback]();
+				}else{
+					window[opt.okCallback]();
+				}
+			}
+		})
+		
+		_this.modalEle.empty().html(confirmHtml);
+		
+		//console.log({overlayHide :false ,parentCheck :false , width:(opt.width||'auto'),height:(opt.height||'auto'),titleHide:true});
+		
+		return _$base.dialog.html('#pubEpUiModalArea',{overlayHide :false ,parentCheck :false , width:(opt.width||'auto'),height:'auto', onlyCenter :true,titleHide:true});
 	}
 }
 
@@ -328,16 +473,7 @@ _$base.toast = {
 		opt = opt?opt : this.options['info'];
 		
 		// 기본 옵션 셋팅
-		var setOpt = $.extend({}, {
-			 hideAfter: 2000
-			, position: {left:"50%",top:"50%"}
-			, textColor: '#fff'
-			, stack:false
-			, showHideTransition: 'fade'
-			, position: 'mid-center'
-			, loader :false
-			//, beforeShow : function(){$('.jq-toast-wrap').css("margin" , "0 0 0 -155px") }
-		},opt);
+		var setOpt = PubEP.util.objectMerge({},globalUIOption.toast,opt);
 		
 		var _opener = window;
 		

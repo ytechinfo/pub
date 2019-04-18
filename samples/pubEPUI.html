@@ -9,7 +9,7 @@
 
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
-<script src="../plugins/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="../plugins/jquery-ui-1.12.1.min.js"></script>
 <script src="../plugins/jquery.toast.min.js"></script>
 <script src="../dist/pub.ep.js"></script>
 <script src="../dist/pub.ep.ui.js"></script>
@@ -101,6 +101,31 @@
 		</code>
 				</td>
 			</tr>
+
+			<tr>
+				<td>
+		<div class="code-runner text-right">
+			<a href="#" class="copy-btn">copy</a>
+			<a href="#" class="eval-js">demo modal</a>
+		<pre class="text-left"><code class="text-to-copy">PubEPUI.modal.open({
+		message : '메시지'
+		,width:  '400px'
+		,height : '200px'
+		,okCallback :  function (){
+		alert('1')
+}
+		,okBtn : '확인'
+		
+	});</code></pre>
+		</div>
+				</td>
+				<td>
+		<code>
+		옵션은 jquery.toast 동일합니다.  
+		</code>
+				</td>
+			</tr>
+
 
 		</table>
 	</div>

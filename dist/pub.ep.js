@@ -111,7 +111,6 @@ _defaultOption ={
 _$base.init = function (gOption , ajaxOpt){
 	globalOption=_$base.util.objectMerge(globalOption,gOption);
 	_defaultAjaxOption=_$base.util.objectMerge(_defaultAjaxOption,ajaxOpt);
-	return _$base; 
 }
 /**
  * @method getOption
