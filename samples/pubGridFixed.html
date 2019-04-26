@@ -63,7 +63,8 @@ html , body {
 	</select>
 	<button type="button" onclick="fn_init()">regrid</button>
 	
-	<button class="exceldown" type="button">excel download</button>
+	<button class="exceldown" mode="all" type="button">excel download</button>
+	<button class="exceldown" mode="select" type="button">select data excel download</button>
 
 	<button class="pdfdown" type="button">pdf download</button>
 
@@ -98,11 +99,17 @@ $(document).ready(function (){
 	fn_init();
 
 	$('.exceldown').on('click', function (){
+		var sEle = $(this);
+
+		var mode = sEle.attr('mode');
 
 		var ws_name = 'downloadExcel';
     	var gridObj = $.pubGrid('#asdfasdf'); 
 
-		var allDataInfo = $.pubGrid('#asdfasdf').getData({dataType:'json'});
+		var allDataInfo = $.pubGrid('#asdfasdf').getData({dataType:'json' ,isSelect: (mode=='select'? true :false)});
+		
+
+		
 
     	getExcelDownload({
 			header: allDataInfo.header 
@@ -183,7 +190,7 @@ function getItem (type){
 		}
 		colItem = [
 			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
-			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)},styleClass : function (idx, item){
+			,{key :'b', label:'비', width:100,visible : true, colClick :function (idx,item){ console.log(idx, item)},styleClass : function (idx, item){
 				
 				if(item.idx%2==0){
 					return 'pub-bg-primary';
@@ -198,8 +205,8 @@ function getItem (type){
 				var item  = rowInfo.item;
 				return rowInfo.formatter(item['c'],0);
 			}}
-			,{key :'e', label:'이',width:100}
-			,{key :'f', label:'f',width:100}
+			,{key :'e', label:'이',width:100 , visible : false}
+			,{key :'f', label:'f',width:100 , visible : false}
 			,{key :'g', label:'g',width:100}
 			,{key :'h', label:'h',width:100}
 			,{key :'i', label:'i',width:100}
@@ -252,7 +259,7 @@ function getItem (type){
 var aaa, colItem;
 function fn_init(){
 	
-	var	item=getItem ( 2 );
+	var	item=getItem ( 1 );
 
 	aaa =item.aaa;
 	colItem  = item.colItem;
@@ -309,6 +316,7 @@ function gridDraw(selector, aaa, colItem){
 					]
 				}
 			}
+			,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
 			,height:400
 			,itemMaxCount :20	// add max count
 			,scroll :{

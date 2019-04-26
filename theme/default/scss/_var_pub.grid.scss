@@ -3,13 +3,15 @@
 $pubgrid_colors: (
   'light': (
     'border_colfixed_color' : #848486 // column fixed border
-    ,'navigation_font_color' :  #fbf8f8 
+    ,'navigation_font_color' :  #fbf8f8
+    ,'cell_selection' :#5266f7
     // scroll 
     
   )
   ,dark : (
     'border_colfixed_color' : #9898a0 // column fixed border
     ,'navigation_font_color' :  #fbf8f8 
+    ,'cell_selection' :#a5ffdd
   )
 );
 
@@ -24,4 +26,13 @@ $pubgrid_colors: (
     @error 'theme gridColorInfo name ['+$themeName+'] key ['+ $type+'] not found';
     @return 'style not found';
   }
+}
+
+// grid selection border
+@mixin grid_box_shadow($themeName: 'light'){
+  $color : gridColorInfo($themeName , "cell_selection");
+  //border-right: 1px solid $color ;
+  -webkit-box-shadow:  inset inset 0.1px 0px 0px 1px $color;
+	-moz-box-shadow:  inset 0.1px 0px 0px 1px $color;
+  box-shadow:  inset 0.1px 0px 0px 1px $color;
 }
