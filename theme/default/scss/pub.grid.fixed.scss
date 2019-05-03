@@ -17,6 +17,13 @@
 		@include box-sizing($box_sizing_border)
 	}
 
+	.pubGrid-disoff{
+		display: none;
+		visibility: hidden;
+		width: 0px !important;
+		overflow: hidden;
+	}
+
 	.pubGrid {
 		position: relative;
 		border : 1px solid colorInfo($g_default_theme_name , "border_thick_color");
@@ -247,8 +254,11 @@
 			background: colorInfo($g_default_theme_name , "column_active_background");
 			color: colorInfo($g_default_theme_name , "column_active_color");
 		}
-	
 		
+		.selection-start-col{
+			@include grid_box_shadow($g_default_theme_name);
+		}
+				
 		tr.pub-body-tr{
 			&:nth-child(even) {
 				background: colorInfo($g_default_theme_name , "table_tr_even");
@@ -267,7 +277,8 @@
 			&:nth-child(odd) {
 				background: colorInfo($g_default_theme_name , "table_tr_even");
 			}
-		} 
+		}
+
 		
 	}
 	
@@ -341,7 +352,7 @@
 	.pubGrid-footer.on{
 		display: table-row;
 	}
-	
+
 	// setting area (search area , scroll speen , column fixed)
 	.pubGrid-setting-wrapper{
 		position:absolute;left:7px;top:2px;z-index:10;display:none;
@@ -370,6 +381,12 @@
 			select {
 				height:23px;
 				margin:0 5px;
+			}
+
+			.pubGrid-colfixed-area{
+				select{
+					max-width: 122px;
+				}
 			}
 	
 			.pubgrid-btn{
@@ -514,6 +531,19 @@
 		
 		&.active , &:hover {
 			background: colorInfo($g_default_theme_name , "scrollbar_active_color");
+		}
+
+		.pubGrid-vscroll-bar-tip{
+			position:absolute;
+			min-width: 30px;
+			height: 21px;
+			border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+			top: 0px;
+			background: colorInfo($g_default_theme_name , "background_color");
+			display:none;
+			padding: 2px 4px;
+			border-radius: 4px;
+			text-align: center;
 		}
 	}
 	
@@ -689,6 +719,10 @@
 			.col-active{
 				background: colorInfo($pThemeName , "column_active_background");
 				color: colorInfo($pThemeName , "column_active_color");
+			}
+
+			.selection-start-col{
+				@include grid_box_shadow($pThemeName);
 			}
 		
 			tr.pub-body-tr{

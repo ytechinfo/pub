@@ -3722,6 +3722,10 @@ Plugin.prototype ={
 
 		var selectItem = [];
 		var addRowFlag; 
+
+		if(!$.isArray(itemKeys)){
+			itemKeys = [itemKeys];
+		}
 		var keyLen = itemKeys.length; 
 		
 		var hi = _this.config.headerInfo[_this.config.headerInfo.length-1];

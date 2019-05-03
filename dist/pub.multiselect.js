@@ -52,6 +52,7 @@ var pluginName = "pubMultiselect"
 		,useHtmlData : false // html element 를 직접사용할경우. 
 		,searchAttrName : '_name'
 		,searchAttrKey : ''
+		,emptyMessage:''
 		,items: []
 		,click : false	// 클릭시 이벤트
 		,render: function (item){	// 아이템 추가될 템플릿.
@@ -63,6 +64,7 @@ var pluginName = "pubMultiselect"
 		,optTxt : 'CODE_NM'
 		,useHtmlData : false // html element 를 직접사용할경우. 
 		,items: []
+		,emptyMessage:''
 		,click : false
 		,dblclick : false
 		,render: function (item){	// 아이템 추가될 템플릿.
@@ -270,7 +272,7 @@ Plugin.prototype ={
 					_this.config.itemKey.sourceIdx[tmpSelctOptVal] = i;
 				}
 			}else{
-				strHtm.push(_this.getEmptyMessage());
+				strHtm.push(_this.getEmptyMessage(tmpSourceItem.emptyMessage));
 			}
 			_this.sourceElement.empty().html(strHtm.join(''));
 			
@@ -397,7 +399,9 @@ Plugin.prototype ={
 					var addHtm = _this.sourceMove(true);
 
 					uiItem.replaceWith(addHtm);
-				}			
+				}else{
+					// 정렬에 대한 item 순서 처리.
+				}
 			}
 			,change : function (e,ui){
 				var uiItem = $(ui.position.top);
@@ -808,8 +812,8 @@ Plugin.prototype ={
 	 * @method getEmptyMessage
 	 * @description empty item message
 	 */	
-	,getEmptyMessage : function (){
-		return '<li class="empty-message">'+this.options.pageInfo.emptyMessage+'</li>';
+	,getEmptyMessage : function (msg){
+		return '<li class="empty-message">'+(msg||this.options.pageInfo.emptyMessage)+'</li>';
 	}
 	/**
 	 * @method getItemHtml
