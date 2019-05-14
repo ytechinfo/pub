@@ -792,6 +792,58 @@ Plugin.prototype ={
 	,addData : function (pData, opt){
 		this.setData(pData, 'addData', opt);
 	}
+	,addRow : function (pData, opt){
+		this.setData(pData, 'addData', opt);
+	}
+	/**
+     * @method removeRow
+	 * @param idx {Integer,String} //number index ,'first' , 'last','checked'  - remove row item
+     * @description 데이타 그리기
+     */
+	,removeRow : function (idx){
+		var removeRowInfo=[];
+		if(idx =='checked'){
+			var idxArr = this.getCheckItems('index');
+			
+			idxArr.sort(function (a,b){
+				return a < b;
+			});
+
+			for(var i =idxArr.length-1; i >= 0 ;i--){
+				removeRowInfo.push(this.options.tbodyItem.splice(idxArr[i], 1)[0]);
+			}
+		}else{
+			if(idx =='first'){
+				idx = 0; 
+			}else if(idx =='last'){
+				idx = this.options.tbodyItem.length -1;
+			}else if(!isNaN(idx)){
+				idx = parseInt(idx,10);
+			}
+
+			removeRowInfo = this.options.tbodyItem.splice(idx, 1);
+		}
+		
+		this.setData(this.options.tbodyItem,'reDraw');	
+		return removeRowInfo; 
+	}
+	/**
+     * @method updateRow
+	 * @param idx {Integer} - update position index
+	 * @param rowItem {Object} - update item
+     * @description 데이타 그리기
+     */
+	,updateRow : function (idx ,rowItem){
+
+		var updItem = this.options.tbodyItem[idx];
+
+		if(updItem){
+			this.options.tbodyItem[idx] = objectMerge(this.options.tbodyItem[idx] , rowItem);
+			this.setData(this.options.tbodyItem,'reDraw');	
+		}
+
+		return updItem; 
+	}
 	/**
      * @method setData
 	 * @param data {Array} - 데이타
@@ -2443,15 +2495,20 @@ Plugin.prototype ={
 	}
 	/**
      * @method getCheckItems
+	 * @param  type {String} // default = 'item', 'index'  return type
      * @description check item 값 얻기.
      */
-	,getCheckItems: function (){
+	,getCheckItems: function (type){
 		var tbodyItem =this.options.tbodyItem; 
 		var reval = [];
 		for(var i =0, len=tbodyItem.length;i < len; i++){
 			var item = tbodyItem[i]; 
 			if(item['_pubcheckbox']===true){
-				reval.push(item)
+				if(type=='index'){
+					reval.push(i);
+				}else{
+					reval.push(item);
+				}
 			}
 		}
 		return reval;
@@ -3554,9 +3611,11 @@ Plugin.prototype ={
 	,getData : function (opt){
 		var _this = this; 
 			
-		opt = objectMerge({isSelect :false,dataType : 'text'} ,opt);
+		opt = objectMerge({isSelect :false,dataType : 'text', isFormatValue: false} ,opt);
 		
-		var dataType =opt.dataType; 
+		var dataType =opt.dataType
+			,isFormatValue = opt.isFormatValue===true;
+	
 		if(opt.isSelect===true){
 			return _this.selectionData(dataType);
 		}else{
@@ -3579,8 +3638,19 @@ Plugin.prototype ={
 					if(colItem.visible===false) continue;
 				
 					var tmpKey = colItem.key; 
-
-					var tmpVal = _this.valueFormatter( i, colItem,item,null,true); 
+					
+					var tmpVal = '';
+					
+					if(isFormatValue){
+						if(colItem.render=='html'){
+							tmpVal = item[tmpKey];
+						}else{
+							tmpVal = _this.valueFormatter( i, colItem,item,null,true); 
+						}
+					}else{
+						tmpVal = item[tmpKey];
+					}
+					
 					if(dataType=='json'){
 						keyInfo[j] = colItem;
 						rowItem[tmpKey] = tmpVal;
