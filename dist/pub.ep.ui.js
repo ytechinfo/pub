@@ -87,7 +87,10 @@ _$base.replaceHtm={
  * @description dialog
  */
 _$base.dialog={
-	closeDialog : function (selector, parentWinChk){
+	close : function (selector, parentWinChk){
+		this.closeDialog(selector, parentWinChk);
+	}
+	,closeDialog : function (selector, parentWinChk){
 		var _opener = window;
 		
 		if(parentWinChk !== false){
@@ -116,8 +119,6 @@ _$base.dialog={
 			_opener.$('html').css('overflow','');
 			_opener.$('body').css('overflow-y','');
 		}
-		
-		
 	}
 	,html : function (selector , opt){
 		this._dialog('html',selector ,opt);

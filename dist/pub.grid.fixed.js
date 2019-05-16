@@ -273,19 +273,9 @@ function copyStringToClipboard (prefix , copyText) {
 		return ; 
 	}
 
-	var _id = prefix+'copyTextId'; 
+	var _id = prefix+'_pubGridCopyArea'; 
 	var copyArea = document.getElementById(_id); 
-	if(!copyArea){
-		var fakeElem = document.createElement('textarea');
-		var yPosition = window.pageYOffset || document.documentElement.scrollTop;
-		fakeElem.id =_id;
-		fakeElem.style = 'top:'+yPosition+'px;font-size : 12pt;border:0;padding:0;margin:0;position:absolute;' +(isRTL ? 'right' : 'left')+':-9999px';
-		fakeElem.setAttribute('readonly', '');
-
-		document.body.appendChild(fakeElem);
-		copyArea = document.getElementById(_id);
-	}
-
+	
 	copyArea.value = copyText;
 	copyArea.select();
 	
@@ -326,6 +316,7 @@ function objectMerge() {
 	}
 	return dst;
 }
+
 
 _$doc.on('mouseup.pubgrid', function (){
 	for(var key in _datastore){
@@ -785,15 +776,15 @@ Plugin.prototype ={
 	}
 	/**
      * @method addData
-	 * @param data {Array} - 데이타
-	 * @param opt {Object} - add option { prepend : 앞에 넣을지 여부 (true or false) ,focus : 스크롤 이동 여부 (true or false) }
+	 * @param data {Object , Array} - 데이타
+	 * @param opt {Object} - add option { index : index ,'first','last' ,focus : 스크롤 이동 여부 (true or false) }
      * @description 데이타 add
      */
-	,addData : function (pData, opt){
-		this.setData(pData, 'addData', opt);
-	}
 	,addRow : function (pData, opt){
-		this.setData(pData, 'addData', opt);
+		if(!$.isArray(pData)){
+			pData = [pData];
+		}
+		this.setData(pData, 'addData', opt||{});
 	}
 	/**
      * @method removeRow
@@ -867,21 +858,26 @@ Plugin.prototype ={
 			data = pdata.items;
 			pageInfo = pdata.page; 
 		}
-
+		
 		if(data){
 			if(gridMode == 'addData'){
 				var rowIdx =0;
+
+				var addIdx = addOpt.index; 
 				
-				if(addOpt.prepend ===true){
+				if(addIdx =='first'){
 					Array.prototype.unshift.apply(_this.options.tbodyItem, data);
 					//_this.options.tbodyItem = _this.options.tbodyItem.unshift(data);	
+				}else if(!isNaN(addIdx)){
+					addIdx = parseInt(addIdx,10);
+					Array.prototype.splice.apply(_this.options.tbodyItem, [addIdx,0].concat(data));
 				}else{
 					_this.options.tbodyItem = _this.options.tbodyItem.concat(data);	
 				}
 				
-				if(_this.options.tbodyItem.length > opt.itemMaxCount){
+				if(opt.itemMaxCount > 0 &&_this.options.tbodyItem.length > opt.itemMaxCount){
 					var removeCount = _this.options.tbodyItem.length-opt.itemMaxCount; 
-					if(addOpt.prepend ===true){
+					if(addIdx =='first'){
 						_this.options.tbodyItem.splice(opt.itemMaxCount,removeCount)
 					}else{
 						_this.options.tbodyItem.splice(0,removeCount)
@@ -960,16 +956,25 @@ Plugin.prototype ={
 				
 		_this.setScrollSpeed();
 
-		if(gridMode != 'addData'){
-			_this.drawGrid(mode,true);
-		}else{
+		if(gridMode == 'addData'){
+			var rowIdx =_this.config.scroll.viewIdx; 
 			if(addOpt.focus ===true){
-				if(addOpt.prepend ===true){
-					_this.moveVerticalScroll({rowIdx : 0})
+				if(addOpt.index =='first'){
+					rowIdx =0; 
+				}else if(!isNaN(addIdx)){
+					rowIdx = parseInt(addOpt.index,10);
 				}else{
-					_this.moveVerticalScroll({rowIdx : _this.config.dataInfo.orginRowLen})
+					rowIdx = _this.config.dataInfo.orginRowLen;
 				}	
 			}
+						
+			if(_this.config.scroll.viewIdx <= rowIdx && rowIdx < _this.config.scroll.viewIdx +_this.config.scroll.viewCount){
+				_this.drawGrid(mode,true);
+			}else if(addOpt.focus===true){
+				_this.moveVerticalScroll({rowIdx : rowIdx});
+			}
+		}else{
+			_this.drawGrid(mode,true);
 		}
 
 		_this.setPage(pageInfo);
@@ -1052,7 +1057,7 @@ Plugin.prototype ={
 			,vArrowWidth = _this.options.scroll.vertical.width-2
 			,hArrowWidth = _this.options.scroll.horizontal.height-2;
 	
-		return '<div class="pubGrid-wrapper"><div id="'+_this.prefix+'_pubGrid" class="pubGrid pubGrid-noselect"  style="overflow:hidden;width:'+_this.config.container.width+'px;">'
+		return '<div class="pubGrid-wrapper" tabindex="0" style="outline: none !important;"><div id="'+_this.prefix+'_pubGrid" class="pubGrid pubGrid-noselect"  style="overflow:hidden;width:'+_this.config.container.width+'px;">'
 			+' 	<div id="'+_this.prefix+'_container" class="pubGrid-container" style="overflow:hidden;">'
 			+'    <div class="pubGrid-setting-wrapper pubGrid-layer" data-pubgrid-layer="'+_this.prefix+'"><div class="pubGrid-setting"><svg version="1.1" width="'+vArrowWidth+'px" height="'+vArrowWidth+'px" viewBox="0 0 54 54" style="enable-background:new 0 0 54 54;">	'
 			+'<g><path id="'+_this.prefix+'_settingBtn" d="M51.22,21h-5.052c-0.812,0-1.481-0.447-1.792-1.197s-0.153-1.54,0.42-2.114l3.572-3.571	'
@@ -1135,7 +1140,7 @@ Plugin.prototype ={
 			+' 	</div>'
 			+' 	<div id="'+_this.prefix+'_navigation" class="pubGrid-navigation"><div class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'_status" class="pubgGrid-count-info"></div>'
 			+' 	</div>'
-			+' </div></div>';
+			+' </div><textarea id="'+_this.prefix+'_pubGridCopyArea" style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"></textarea></div>';
 
 	}
 	,getTbodyAsideHtml : function (mode){
@@ -2491,6 +2496,23 @@ Plugin.prototype ={
 			return this.options.tbodyItem;
 		}else{
 			return this.options.tbodyItem[idx]
+		}
+	}
+	/**
+     * @method getFieldValues
+	 * @param  key {String} item key
+     * @description filed 값 얻기.
+     */
+	,getFieldValues:function (key){
+		if(isUndefined(key)) return [];
+		else {
+			var tbodyItem =this.options.tbodyItem; 
+			var reval = [];
+			for(var i =0, len=tbodyItem.length;i < len; i++){
+				tbodyItem[i]; 
+				reval.push(tbodyItem[i][key]);
+			}
+			return reval;
 		}
 	}
 	/**
@@ -4241,6 +4263,16 @@ Plugin.prototype ={
 		this.gridElement.removeClass('pub-theme-'+this.options.theme);
 		this.options.theme = themeName;
 		this.gridElement.addClass('pub-theme-'+themeName);
+	}
+	/**
+     * @method getRowCheckValue
+	 * @param  rowItem {object} row item
+	 * @param  checkFlag {Boolean} check 여부
+     * @description get rowitem check value
+     */
+	,getRowCheckValue : function (rowItem,checkFlag){
+		rowItem['_pubcheckbox']	= (checkFlag===false?false: true); 
+		return rowItem; 
 	}
 	/**
      * @method getTheme

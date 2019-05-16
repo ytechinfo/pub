@@ -25,8 +25,9 @@
 			,selectCls : 'selected'
 			,emptyMessage : 'no data'
 			,searchDelay : -1
+			,zIndex : 99999
 			,items :[]
-			,charZeroConfig : false
+			,charZeroConfig : false 
 			,alwaysSourceCheck : false
 			,filter : function (itemVal , searchVal) {
 				searchVal = searchVal.toLowerCase();
@@ -151,7 +152,7 @@
 				
 				if (isWordCharacter || isBackspaceOrDelete) {
 					var searchVal = _this.selectorElement.val();
-					if(searchVal.length==0  && charZeroFnFlag){
+					if(searchVal.length < _this.options.minLength  && charZeroFnFlag){
 						_this._charZeroEvent();
 						return ; 
 					}else if(_this.options.alwaysSourceCheck !==true && searchVal.length <= _this.options.minLength){
@@ -291,7 +292,7 @@
 				var autotemplate = '<div id='+_this.autocompleteEleId+' class="pub-autocomplete-item-wrapper" style="max-height:'+_this.options.height+'px;"><ul class="pub-autocomplete-item-area"></ul></div>';
 				
 				var allTemplateHtm = [];
-				allTemplateHtm.push('<div class="pub-autocomplete-wrapper">');
+				allTemplateHtm.push('<div class="pub-autocomplete-wrapper" style="z-index:'+_this.options.zIndex+';">');
 																
 				if($.isFunction(_this.options.autocompleteTemplate)){
 					allTemplateHtm.push(_this.options.autocompleteTemplate(autotemplate));
