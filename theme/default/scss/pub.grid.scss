@@ -69,7 +69,8 @@
 	.pubGrid-container{
 		position: relative;
 		vertical-align: top;
-		border-bottom: 0px solid transparent;
+		height: 100%;
+		border-bottom: 0px none transparent;
 	
 		[rowinfo="0"]>td {
 			border-top:0px solid transparent;
@@ -105,6 +106,7 @@
 		}
 
 		.pub-header-checkbox{
+			text-align: center; 
 			&.pub-check-all{
 				color: colorInfo($g_default_theme_name , "font_active");
 				font-weight: bold;
@@ -132,6 +134,21 @@
 	
 				&.sort-header{
 					cursor: pointer;
+				}
+			}
+
+			.pub-header-help{
+				position: relative;
+				top:-3px;
+
+				.pub-header-help-btn{
+					position:absolute;
+					top: 0px;
+					left: 0px;
+					width: 20px;
+					height: 6px;
+					z-index: 1;
+					background: #000;
 				}
 			}
 	
@@ -299,9 +316,17 @@
 	}
 
 	.pubGrid-empty-msg-area{
-		position: relative; 
-		text-align:center;
-		display: block;
+		position:absolute;
+		top:0;
+		right:0;
+		bottom:0;
+		left:0;
+		display:flex;
+		display:-webkit-flex;
+		align-items:center;
+		-webkit-align-item:center;
+		justify-content:center;
+		-webkit-justify-content:center;
 	}
 	
 	.pubGrid-empty-msg{
@@ -309,6 +334,7 @@
 		font-size: 24px;
 		display: inline-block;
 		position: relative;
+		padding-bottom: 20px;
 		.empty-text{
 			padding-left: 10px;
 		}
@@ -676,7 +702,7 @@
 				background: colorInfo($pThemeName , "background_color");
 			}
 		} 
-			
+		
 		.pubGrid-container-wrapper {
 			border-color: colorInfo($pThemeName , "border_thick_color");
 		}
