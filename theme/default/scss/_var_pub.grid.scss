@@ -5,13 +5,17 @@ $pubgrid_colors: (
     'border_colfixed_color' : #848486 // column fixed border
     ,'navigation_font_color' :  #fbf8f8
     ,'cell_selection' :#5266f7
+    ,'help_btn' : #9bb5ff
+    ,'help_btn_hover' : #8cdef3
     // scroll 
     
   )
   ,dark : (
-    'border_colfixed_color' : #9898a0 // column fixed border
+    'border_colfixed_color' : #ececf7 // column fixed border
     ,'navigation_font_color' :  #fbf8f8 
     ,'cell_selection' :#a5ffdd
+    ,'help_btn' : #d8d1d1
+    ,'help_btn_hover' : #d8d1d1
   )
 );
 
