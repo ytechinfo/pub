@@ -125,11 +125,12 @@
 				,bgDelay : 100		// 스크롤 빈공간 mousedown delay
 				,btnDelay : 100		// 방향키 mousedown delay
 				,dragDelay : 5		// 스크롤 bar drag delay
-				,speed :  'auto'	// 스크롤 스피드
+				,speed : 1			// 스크롤 스피드 row 1
 				,onUpdate : function (item){	// 스크롤 업데이트. 
 					return true; 
 				}
 				,tooltip : false		// item count tooltip
+				
 			}
 			,horizontal :{
 				height: 12			// 가로 스크롤 높이
@@ -372,6 +373,7 @@
 				, selection :{
 					startCell :{}
 				}
+				,isResize : false
 				,focus : false
 				,mouseEnter :false
 			};
@@ -716,7 +718,7 @@
 		 */
 		,_calcElementWidth : function (mode){
 			
-			if(this.options.headerOptions.colWidthFixed === true){
+			if(this.options.widthFixed === true){
 				return ;
 			}
 	
@@ -888,6 +890,12 @@
 				pageInfo = pdata.page; 
 			}
 			
+			var resizeFlag = false; 
+			if((_this.options.tbodyItem.length == 0 && data.length > 0)
+				||_this.options.tbodyItem.length > 0 && data.length == 0){
+				resizeFlag = true; 
+			}
+			
 			if(data){
 				if(gridMode == 'addData'){
 					var rowIdx =0;
@@ -979,11 +987,9 @@
 			if(gridMode=='reDraw' || gridMode == 'addData'){
 				_this._setHeaderInitInfo();
 				_this._setSelectionRangeInfo({}, true);
-	
-				_this.calcDimension(gridMode);
+				
+				_this.calcDimension(gridMode);	
 			}
-					
-			_this.setScrollSpeed();
 	
 			if(gridMode == 'addData'){
 				var rowIdx =_this.config.scroll.viewIdx; 
@@ -1023,8 +1029,9 @@
 				val= parseInt(val,10);
 			}else{
 				//val = Math.ceil(this.config.dataInfo.rowLen /100);
+				val = 1; 
 			}
-			this.options.scroll.vertical.speed =  val; 
+			this.options.scroll.vertical.speed =  1; 
 			return val;
 		}
 		,_setHeaderInitInfo : function (){
@@ -1797,10 +1804,8 @@
 						_addW = (_reiszeW*(colItem.width/_currGridMain*100)/100);
 						
 						colItem.width = colItem.width + _addW;
-						
-						$('#'+_this.prefix+'colHeader'+i).css('width',colItem.width+'px');
-						$('#'+_this.prefix+'colbody'+i).css('width',colItem.width +'px');
-										
+
+						_this.setColumnWidth(i ,colItem.width);
 					}
 	
 					cfg.gridWidth.main = _currGridMain +(_reiszeW);
@@ -1817,10 +1822,36 @@
 			var mainHeight = opt.height - cfg.navi.height;
 			
 			var  bodyH = mainHeight - cfg.header.height - cfg.footer.height
-				, itemTotHeight = cfg.dataInfo.rowLen * cfg.rowHeight
+				, itemTotHeight = (cfg.dataInfo.rowLen-1) * cfg.rowHeight
 				, vScrollFlag = itemTotHeight > bodyH ? true :false
 				, bodyW = (cfg.container.width-(vScrollFlag?this.options.scroll.vertical.width:0))
 				, hScrollFlag = cfg.gridWidth.total > bodyW  ? true : false;
+
+			if(cfg.isResize !== true && !cfg.scroll.hUse && type == 'reDraw' && cfg.scroll.vUse != vScrollFlag){
+				var colItems = cfg.tColItem
+					,colLen  = colItems.length; 
+				
+				var _w = this.options.scroll.vertical.width/colLen; 
+	
+				for(var i=0; i<colLen; i++){
+					var colItem = colItems[i]; 
+					if(vScrollFlag){					
+						colItem.width = colItem.width - _w;
+					}else{
+						colItem.width = colItem.width + _w;
+					}
+
+					_this.setColumnWidth(i ,colItem.width);
+				}
+
+				if(vScrollFlag){					
+					cfg.gridWidth.main -= this.options.scroll.vertical.width;
+					hScrollFlag = cfg.gridWidth.total-this.options.scroll.vertical.width > bodyW  ? true : false;
+				}else{
+					cfg.gridWidth.main += this.options.scroll.vertical.width;
+					hScrollFlag = cfg.gridWidth.total+this.options.scroll.vertical.width > bodyW  ? true : false;
+				}
+			}
 				 
 			bodyH -= hScrollFlag? this.options.scroll.horizontal.height :0;
 			_this._setPanelElementWidth();
@@ -1932,6 +1963,9 @@
 					}
 				}
 			}
+		}
+		,setColWidth : function (){
+		
 		}
 		/**
 		 * @method _setPanelElementWidth
@@ -4129,9 +4163,11 @@
 			}
 	
 			if(mode=='end'){
+				this.config.isResize = true; 
+
 				w = (w > _this.options.colOptions.minWidth? w : _this.options.colOptions.minWidth);
 	
-				_this.setHeaderWidth(drag.resizeIdx , w , drag.colHeader);
+				_this.setColumnWidth(drag.resizeIdx , w , drag.colHeader);
 	
 				if(isFunction(_this.options.headerOptions.resize.update)){
 					_this.options.headerOptions.resize.update.call(null , {index:drag.resizeIdx , width: w});
@@ -4145,13 +4181,14 @@
 			}
 		}
 		/**
-		 * @method setHeaderWidth
+		 * @method setColumnWidth
 		 * @param  idx : heder index
 		 * @param  w : width
 		 * @param  colHeaderEle , header element
 		 * @description set header width
 		 */
-		,setHeaderWidth : function (idx,w, colHeaderEle){
+		,setColumnWidth : function (idx,w, colHeaderEle){
+			
 			if(w <= this.options.colOptions.minWidth){
 				w =this.options.colOptions.minWidth;
 			}

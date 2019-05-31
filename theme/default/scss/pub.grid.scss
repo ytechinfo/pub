@@ -229,6 +229,7 @@
 			margin: 0;
 			padding: 0;
 			height:25px;
+			vertical-align: middle;
 			border-right: 1px solid colorInfo($g_default_theme_name , "border_thick_color");
 			border-bottom:1px solid colorInfo($g_default_theme_name , "border_thick_color");
 		}
@@ -328,7 +329,6 @@
 	.pubGrid-body-aside-cont, .pubGrid-body-left-cont, .pubGrid-body-cont {
 		table-layout: fixed;
 		border:0px;
-		border-bottom:1px solid colorInfo($g_default_theme_name , "border_thin_color");
 	}
 	
 	.pubGrid-body-cont, .pubGrid-body-aside-cont{
@@ -844,7 +844,6 @@
 		}
 		
 		.pubGrid-body-aside-cont, .pubGrid-body-left-cont, .pubGrid-body-cont {
-			border-bottom:1px solid colorInfo($pThemeName , "border_thin_color");
 			background: colorInfo($pThemeName , "background_color");
 		}
 		

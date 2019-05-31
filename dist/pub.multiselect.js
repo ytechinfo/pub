@@ -207,8 +207,8 @@ Plugin.prototype ={
 	,_initItem : function (){
 		var _this = this
 		
-		_this.setItem('source',_this.options.sourceItem.items);
 		_this.setItem('target',_this.options.targetItem.items);
+		_this.setItem('source',_this.options.sourceItem.items);
 	}
 	/**
 	 * @method setItem
@@ -288,6 +288,7 @@ Plugin.prototype ={
 			if(tmpTargetItem.useHtmlData===true){
 				tmpTargetItem.items=[];
 				var idx = 0; 
+				
 				_this.targetElement.find(_opts.itemSelector).each(function (i ,item){
 					var sObj = $(this);
 					var addItem = {};
@@ -302,9 +303,12 @@ Plugin.prototype ={
 					_this.addItemList[_this.config.currPage][_key]=addItem; 
 					tmpTargetItem.items.push(addItem);
 					
-					_this.sourceElement.find(_opts.itemSelector+'[data-val="'+addItem[valKey] +'"]').addClass(_opts.addItemClass);
+					_this.addSourceItemSelecClass(_opts, addItem[valKey] );
 					++idx;
 				});
+				
+				_this.sourceItemSelectCheck(_opts);
+
 				len = idx; 
 
 				items = tmpTargetItem.items;
@@ -339,8 +343,10 @@ Plugin.prototype ={
 
 					_this.config.pageNumInfo[tmpItem[pageNumKey]||_this.config.currPage].push(_this.getItemHtml(type,tmpSelctOptVal, tmpItem))
 
-					_this.sourceElement.find(_opts.itemSelector+'[data-val="'+tmpSelctOptVal+'"]').addClass(_opts.addItemClass);
+					_this.addSourceItemSelecClass(_opts, tmpSelctOptVal);
 				}
+				
+				_this.sourceItemSelectCheck(_opts);
 
 				if(_this.config.pageNumInfo[_this.config.currPage].length > 0){
 					_this.targetElement.empty().html(_this.config.pageNumInfo[_this.config.currPage].join(''));
@@ -353,6 +359,22 @@ Plugin.prototype ={
 			}
 		}
 	}
+	// sources select item add class
+	,addSourceItemSelecClass : function (_opts, tmpSelctOptVal ){
+		this.sourceElement.find(_opts.itemSelector+'[data-val="'+tmpSelctOptVal +'"]').addClass(_opts.addItemClass+ ' target-check');
+	}
+	// source 체크 된 item unselect
+	,sourceItemSelectCheck: function (_opts){
+		this.sourceElement.find(_opts.itemSelector).each(function (){
+			var sEle = $(this); 
+			if(!sEle.hasClass('target-check')){
+				sEle.removeClass(_opts.addItemClass);
+			}
+
+			sEle.removeClass('target-check')
+		})
+	}
+
 	/**
 	 * @method initSourceEvt
 	 * @description source 소스 이벤트 초기화
