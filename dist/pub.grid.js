@@ -31,6 +31,8 @@
 			,click : false //row(tr) click event
 			,contextMenu : false // row(tr) contextmenu event
 			,addStyle : false	// 추가할 style method
+			,dblClick : false	// row dblclick event
+			,dblClickCheck : false	// double click row checkbox checked true 여부.
 		}
 		,formatter :{
 			money :{prefix :'$', suffix :'원' , fixed : 0}	// money 설정 prefix 앞에 붙일 문구 , suffix : 마지막에 뭍일것 , fixed : 소수점 
@@ -1180,9 +1182,11 @@
 				+' 		</div>'
 				+' 		<div id="'+_this.prefix+'_resizeHelper" class="pubGrid-resize-helper"></div>'
 				+' 	</div>'
-				+' 	<div id="'+_this.prefix+'_navigation" class="pubGrid-navigation"><div class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'_status" class="pubgGrid-count-info"></div>'
-				+' 	</div>'
-				+' </div><textarea id="'+_this.prefix+'_pubGridCopyArea" style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"></textarea></div>';
+				+' </div>'
+				+' <textarea id="'+_this.prefix+'_pubGridCopyArea" style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"></textarea>'
+				+' <div id="'+_this.prefix+'_navigation" class="pubGrid-navigation"><div class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'_status" class="pubgGrid-count-info"></div>'
+				+' </div>'
+				+' </div>';
 	
 		}
 		,getTbodyAsideHtml : function (mode){
@@ -1541,6 +1545,7 @@
 					_this._setBodyEvent();
 					_this.getTbodyHtml('init');
 					_this.setTheme(_this.options.theme);
+					_this._initFooterEvent();
 				}else{
 					_this.element.header.find('.pubGrid-header-left-cont').empty().html(_this.theadHtml('left'));
 					_this.element.header.find('.pubGrid-header-cont').empty().html(_this.theadHtml('cont'));
@@ -1658,9 +1663,9 @@
 					if(tmpItem.key == 'lineNumber'){
 						addEle.textContent = (itemIdx+1);	
 					}else if(tmpItem.key == 'checkbox'){
-						addEle.innerHTML = '<input type="checkbox" class="pub-row-check" '+(tbiItem['_pubcheckbox']?'checked':'')+'/>';	
+						_$util.setCheckBoxCheck(addEle , tbiItem);
 					}else if(tmpItem.key == 'modify'){
-						addEle.innerHTML = 'V';
+						addEle.textContent = 'V';
 					}
 				};
 				
@@ -1712,7 +1717,9 @@
 				_this.element.container.find('[rowinfo="'+(viewCount-1)+'"]').show();
 			}
 			
-			_this._statusMessage(viewCount);	
+			if(this.options.page !== false && this.options.page.status === true){
+				_this._statusMessage(viewCount);	
+			}
 		}
 		/**
 		 * @method setElementDimensionAndMessage
@@ -2495,11 +2502,14 @@
 		}
 		,_statusMessage : function (viewCnt){
 			var startVal = this.config.scroll.viewIdx +1
-				,endVal = isNaN(viewCnt)? (startVal+ this.config.scroll.viewCount) : (startVal+ viewCnt);
+				,endVal = startVal+ this.config.scroll.insideViewCount;
+			
+			endVal = endVal >= this.config.dataInfo.orginRowLen? this.config.dataInfo.orginRowLen: endVal;
+
 			this.element.status.empty().html(this.options.message.pageStatus({
 				currStart :startVal
-				,currEnd : (endVal-1)
-				,total : this.config.dataInfo.rowLen
+				,currEnd : endVal
+				,total : this.config.dataInfo.orginRowLen
 			}))
 		}
 		/**
@@ -2624,6 +2634,7 @@
 		,setCheckItems: function (idxArr, checkFlag){
 			var tbodyItem =this.options.tbodyItem; 
 			var item;
+			checkFlag = isUndefined(checkFlag)?true:checkFlag; 
 			if(idxArr=='all'){
 				for(var i =0, len=tbodyItem.length;i < len; i++){
 					tbodyItem[i]['_pubcheckbox']= checkFlag; 
@@ -2631,7 +2642,7 @@
 			}else{
 				for(var i =0, len=idxArr.length;i < len; i++){
 					item = tbodyItem[idxArr[i]];
-					if(item) item['_pubcheckbox'] = true; 
+					if(item) item['_pubcheckbox'] = checkFlag; 
 				}
 			}
 	
@@ -2783,6 +2794,23 @@
 			if(_this.options.setting.enabled ===true){
 				_this.setGridSettingInfo();
 			}
+		}
+		,_initFooterEvent : function (){
+			var _this = this; 
+
+			var pageCallback = _this.options.page.callback;
+			_this.element.navi.on('click', '.page-num',function() {
+				var sEle = $(this); 
+				var pageno =sEle.attr('pageno');
+
+				_this.element.navi.find('li.active').removeClass('active');
+				_this.element.navi.find('li[pageno="'+pageno+'"]').addClass('active');
+				
+				if (isFunction(pageCallback)) {
+					_this.config.pageNo = pageno;
+					pageCallback(pageno);
+				}
+			});
 		}
 		/**
 		 * @method toggleSettingArea
@@ -3053,10 +3081,12 @@
 							
 				});
 			}
-			
-			// body cell double click
-			if(isFunction(_this.options.bodyOptions.cellDblClick)){
-				
+			// row cell double click event
+			var dblCheckFlag = _this.options.rowOptions.dblClickCheck===true; 
+
+			if(dblCheckFlag || isFunction(_this.options.rowOptions.dblClick) || isFunction(_this.options.bodyOptions.cellDblClick)){
+				var fnDblClick = _this.options.rowOptions.dblClick || _this.options.bodyOptions.cellDblClick ||(function (){});
+
 				_this.element.body.find('.pubGrid-body-container').on('dblclick.pubgrid.td','.pub-body-td',function (e){
 					var selRow = $(this)
 						,tdInfo=selRow.data('grid-position')
@@ -3066,8 +3096,16 @@
 						,colIdx = intValue(rowColArr[1]); 
 	
 					var rowItem = _this.options.tbodyItem[rowIdx];
-									
-					_this.options.bodyOptions.cellDblClick.call(selRow ,{item : rowItem ,r: rowIdx ,c:colIdx , keyItem : _this.config.tColItem[colIdx] } );
+
+					if(dblCheckFlag){
+						_this.options.tbodyItem[rowIdx] = _this.getRowCheckValue(rowItem,rowItem['_pubcheckbox']===true?false:true);
+
+						var addEle =$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-aside-cont').querySelector('[data-aside-position="'+rowColArr[0]+',checkbox"]>.aside-content');
+
+						_$util.setCheckBoxCheck(addEle , rowItem);
+					}
+					
+					fnDblClick.call(selRow ,{item : rowItem ,r: rowIdx ,c:colIdx , keyItem : _this.config.tColItem[colIdx] } );
 				});
 			}
 	
@@ -4254,15 +4292,15 @@
 			if (currE == "0") currE = 1;
 			var nextO = 1 * currP + 1;
 			var preO = currP - 1;
-			var strHTML = new Array();
+			var strHTML = [];
 			strHTML.push('<ul>');
 			if (new Boolean(preP_is) == true) {
-				strHTML.push(' <li><a href="javascript:" class="page-click" pageno="'+preO+'">&laquo;</a></li>');
+				strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
 			} else {
 				if (currP <= 1) {
-					strHTML.push(' <li class="disabled"><a href="javascript:">&laquo;</a></li>');
+					strHTML.push(' <li class="disabled page-icon"><a href="javascript:">&laquo;</a></li>');
 				} else {
-					strHTML.push(' <li><a href="javascript:" class="page-click" pageno="'+preO+'">&laquo;</a></li>');
+					strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
 				}
 			}
 			var no = 0;
@@ -4270,35 +4308,24 @@
 				if (no == currP) {
 					strHTML.push(' <li class="active"><a href="javascript:">'+ no + '</a></li>');
 				} else {
-					strHTML.push(' <li class="page-click" pageno="'+no+'"><a href="javascript:" >'+ no + '</a></li>');
+					strHTML.push(' <li class="page-num" pageno="'+no+'"><a href="javascript:" >'+ no + '</a></li>');
 				}
 			}
 	
 			if (new Boolean(nextP_is) == true) {
-				strHTML.push(' <li class="page-click" pageno="'+nextO+'"><a href="javascript:" >&raquo;</a></li>');
+				strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
 			} else {
 				if (currP == currE) {
 					strHTML.push(' <li class="disabled"><a href="javascript:">&raquo;</a></li>');
 				} else {
-					strHTML.push(' <li class="page-click" pageno="'+nextO+'"><a href="javascript:" >&raquo;</a></li>');
+					strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
 				}
 			}
 			strHTML.push('</ul>');
-			
-			$('#'+_this.prefix+'pubGrid-pageNav').addClass('page-'+(options.position || 'center'))
-			$('#'+_this.prefix+'pubGrid-pageNav').empty().html(strHTML.join(''));
-			
-			$('#'+_this.prefix+'pubGrid-pageNav .page-click').on('click', function() {
-				var pageno = $(this).attr('pageno');
-				
-				$('#'+_this.prefix+'pubGrid-pageNav').find('li.active').removeClass('active');
-				$('#'+_this.prefix+'pubGrid-pageNav').find('[pageno="'+pageno+'"]').addClass('active');
-	
-				if (typeof options.callback == 'function') {
-					_this.config.pageNo = pageno;
-					options.callback(pageno);
-				}
-			});
+
+			var pageNaviEle = _this.element.navi.find('.pubGrid-page-navigation'); 
+			pageNaviEle.addClass('page-'+(options.position || 'center'));
+			pageNaviEle.empty().html(strHTML.join(''));
 			
 			return this; 
 		}
@@ -4447,8 +4474,7 @@
 		}
 	};
 	
-		
-	 var _$util = {
+	var _$util = {
 		/**
 		 * @method _isMultipleSelection
 		 * @description is multiple selection mode
@@ -4484,7 +4510,13 @@
 	
 			return {startCol : _startCol, endCol : _endCol};
 		}
-	 }
+		/**
+		*
+		*/
+		,setCheckBoxCheck : function (checkEle, item){
+			checkEle.innerHTML = '<input type="checkbox" class="pub-row-check" '+(item['_pubcheckbox']?'checked':'')+'/>';	
+		}
+	}
 	
 	
 	// background click check 

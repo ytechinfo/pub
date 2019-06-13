@@ -37,7 +37,7 @@
 		.pubGrid-setting-area{
 			background: colorInfo($g_default_theme_name , "background_color");
 		}
-
+		
 		input{
 			line-height: normal;
 			margin: 0; 
@@ -646,8 +646,10 @@
 		position : relative;
 		display:none;
 		width:100%;
-		height:30px;
-		border-top: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+		height:36px;
+		padding-top: 2px;
+		border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+		border-top: 0px solid colorInfo($g_default_theme_name , "border_thin_color");
 		@include background_gradident($g_default_theme_name);
 	}
 	.pubGrid-page-navigation {
@@ -690,7 +692,7 @@
 				}
 			}
 	
-			active > a, > .active > span, > .active > a:hover, > .active > span:hover, > .active > a:focus,> .active > span:focus {
+			.active > a, > .active > span, > .active > a:hover, > .active > span:hover, > .active > a:focus,> .active > span:focus {
 				z-index: 3;
 				color: #fff;
 				cursor: default;
