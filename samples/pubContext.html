@@ -51,8 +51,7 @@ html , body {
 
 $(document).ready(function (){
 	var opt = {
-		compress:true
-		,beforeSelect :function (){
+		beforeSelect :function (){
 			$(this).trigger('click');
 		}
 		,callback: function(key,sObj) {

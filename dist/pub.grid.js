@@ -2314,7 +2314,7 @@
 			if(updateChkFlag !== false){
 				var onUpdateFn = this.options.scroll.vertical.onUpdate; 
 				if(drawFlag !== false && isFunction(onUpdateFn)){
-					if(onUpdateFn.call(null, {scrollTop : topVal, height :  this.config.scroll.vTrackHeight , barPosition : barPos }) === false){
+					if(onUpdateFn.call(null, {scrollTop : topVal, height :  this.config.scroll.vTrackHeight, barPosition : barPos }) === false){
 						return ; 
 					}
 				}
@@ -2640,6 +2640,10 @@
 					tbodyItem[i]['_pubcheckbox']= checkFlag; 
 				}
 			}else{
+				if(!$.isArray(idxArr)){
+					idxArr = [idxArr];
+				}
+
 				for(var i =0, len=idxArr.length;i < len; i++){
 					item = tbodyItem[idxArr[i]];
 					if(item) item['_pubcheckbox'] = checkFlag; 

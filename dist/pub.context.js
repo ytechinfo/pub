@@ -17,20 +17,17 @@ var pluginName = "pubContextMenu"
 	,isContextView = false
 	,_$win = $(window)
 	,defaults = {
-		fadeSpeed: 100			
-		,filter: function ($obj) {
+		fadeSpeed: 100				// 숨김 속도 
+		,filter: function ($obj) {		// 필터 
 			// Modify $obj, Do not return
 		}
-		,bgiframe:true
-		,theme : 'light'
-		,above: 'auto'
-		,preventDoubleContext: true
-		,compress: true
-		,selectCls : 'item_select'
-		,callback:function (key){
+		,theme : 'light'			// 테마  light , dark
+		,preventDoubleContext: true		//
+		,selectCls : 'item_select'	// item select class
+		,callback:function (key){	// item click callback
 			alert(key)
 		}
-		,beforeSelect :function (item){
+		,beforeSelect :function (item){	// 선택전 이벤트.
 			
 		}
 	};

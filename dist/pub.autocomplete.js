@@ -15,34 +15,34 @@
 		,pubElement= false
         ,defaults = {
 			_currMode : 'default'
-			,viewAreaSelector : false
-			,showHideSelector : false
-			,useFilter : true
-			,minLength: 1
-			,autoClose : true
-			,itemkey : 'title'
-			,height : 200
-			,selectCls : 'selected'
-			,emptyMessage : 'no data'
-			,searchDelay : -1
-			,zIndex : 99999
-			,items :[]
-			,charZeroConfig : false 
+			,viewAreaSelector : false	// autocomplete 보여질 selector
+			,showHideSelector : false	// 보이기, 숨기기 할  selector
+			,useFilter : true			// filter 사용여부. 
+			,minLength: 1				// 최소 글자수 체크. 
+			,autoClose : true			// 자동으로 창닫을지 여부. 
+			,itemkey : 'title'			// 검색결과가 object인경우 검색할 object key 
+			,height : 200				// max height
+			,selectCls : 'selected'		// 선택시 표시될 클래스
+			,emptyMessage : 'no data'	// 결과 없을때 보여줄 메시지
+			,searchDelay : -1			// 검색 지연 시간. 
+			,zIndex : 99999				// z-index 값
+			,items :[]					// 자동완성 데이터
+			,charZeroConfig : false		// 아무것도 없을때 보여줄것이 있는경우. 
 			,alwaysSourceCheck : false
-			,filter : function (itemVal , searchVal) {
+			,filter : function (itemVal , searchVal) {	// 검색 필터. 
 				searchVal = searchVal.toLowerCase();
 				return ~(itemVal).toLowerCase().indexOf(searchVal);
 			}
-			,source: function (request, response){
+			,source: function (request, response){	//items 구할때 사용. 
 				response(this.items);
 			}
-			,select : function (event,item){
+			,select : function (event,item){	// 선택시 이벤트
 				console.log('onSelect : ' + item);
 			}
 			,focus : function (e){
 				
 			}
-			,renderItem : function (matchData,item){
+			,renderItem : function (matchData,item){	// 아이템 html 입힐때 사용.
 				return matchData;				
 			}
 			,hilightTemplate : '<b>$1</b>'
