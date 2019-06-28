@@ -501,10 +501,11 @@
 		width:100%;
 		height:12px;
 		position:absolute;
+		vertical-align: middle;
 		bottom:0px;
 		z-index:2;
 		padding:1px;
-		border-top: 1px solid colorInfo($g_default_theme_name , "scroll_border_color");
+		border-top: 1px solid transparent;
 		background:colorInfo($g_default_theme_name , "scroll_background_color");
 	}
 	
@@ -547,6 +548,7 @@
 		left:0px;
 		width: 100px;
 		margin :0px 10px 0px 10px;
+		@include opacity_val(0.6);
 		height: 100%;
 		border: 1px solid colorInfo($g_default_theme_name , "scrollbar_border_color");
 		background: colorInfo($g_default_theme_name , "scrollbar_background_color");
@@ -562,11 +564,12 @@
 		height:100%;
 		width:12px;
 		position:absolute;
+		text-align: center;
 		right:0px;
 		top:0px;
 		z-index: 3;
 		padding:1px;
-		border-left: 1px solid colorInfo($g_default_theme_name , "scroll_border_color");
+		border-left: 1px solid transparent;
 		background:colorInfo($g_default_theme_name , "scroll_background_color");
 	}
 	.pubGrid-vscroll-btn{
@@ -585,7 +588,7 @@
 		height:100%; 
 		width:100%;
 		padding : 10px 0 10px 0;
-		border-bottom: 1px solid colorInfo($g_default_theme_name , "scroll_border_color");
+		border-bottom: 1px solid transparent;
 	}
 	
 	.pubGrid-vscroll-bar-bg{
@@ -599,6 +602,7 @@
 		top:0px;
 		width:100%;
 		height:100px; 
+		@include opacity_val(0.6);
 		border: 1px solid colorInfo($g_default_theme_name , "scrollbar_border_color");
 		background:colorInfo($g_default_theme_name , "scrollbar_background_color");
 		border-radius: 0.5em !important;
@@ -882,7 +886,6 @@
 		
 		// scroll 
 		.pubGrid-hscroll{
-			border-top: 1px solid colorInfo($pThemeName , "scroll_border_color");
 			background:colorInfo($pThemeName , "scroll_background_color");
 		}
 		
@@ -896,12 +899,7 @@
 		}
 		
 		.pubGrid-vscroll{
-			border-left: 1px solid colorInfo($pThemeName , "scroll_border_color");
 			background:colorInfo($pThemeName , "scroll_background_color");
-		}
-		
-		.pubGrid-vscroll-bar-area{
-			border-bottom: 1px solid colorInfo($pThemeName , "scroll_border_color");
 		}
 		
 		.pubGrid-vscroll-bar{

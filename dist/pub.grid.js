@@ -9,7 +9,7 @@
 */
 
 ;(function($, window, document) {
-	"use strict";
+	"use stric1t";
 	
 	var _initialized = false
 	,_$doc = $(document)
@@ -123,7 +123,7 @@
 		,scroll :{	// 스크롤 옵션
 			isPreventDefault : true	// 이벤트 전파 여부.	
 			,vertical : {
-				width : 12			// 세로 스크롤 
+				width : 14			// 세로 스크롤 
 				,bgDelay : 100		// 스크롤 빈공간 mousedown delay
 				,btnDelay : 100		// 방향키 mousedown delay
 				,dragDelay : 5		// 스크롤 bar drag delay
@@ -135,7 +135,7 @@
 				
 			}
 			,horizontal :{
-				height: 12			// 가로 스크롤 높이
+				height: 14			// 가로 스크롤 높이
 				,bgDelay : 100		
 				,btnDelay : 100		// 방향키 버튼 속도.
 				,dragDelay : 7		// 스크롤 bar drag delay
@@ -387,7 +387,9 @@
 	
 			_this.drag ={};
 			_this.addStyleTag();
-	
+
+			_this._setSearchInfo();
+			
 			_this._setThead();
 			_this.setData(_this.options.tbodyItem , 'init');
 			
@@ -404,15 +406,19 @@
 		 * @method _setGridContainerWidth
 		 * @description grid 넓이 구하기
 		 */
-		,_setGridContainerWidth : function (width){
-			this.config.container.width = width;		
+		,_setGridContainerWidth : function (width, mode){
+			if(mode=='headerResize'){
+				this.config.container.width = width;		// border 값 빼주기.
+			}else{
+				this.config.container.width = width-2;		// border 값 빼주기.
+			}
 		}
 		/**
 		 * @method getGridWidth
 		 * @description grid width
 		 */
 		,getGridWidth : function(){
-			 return this.gridElement.innerWidth() -1; // border 값 빼주기.
+			return this.gridElement.width();
 		}
 		/**
 		 * @method setOptions
@@ -683,12 +689,13 @@
 				++viewColCount; 
 	
 				if(viewAllLabel){
-					tciItem.width = tciItem.label.length * 11; 
+					tciItem.width = tciItem.label.length * 5; 
 				}else{
 					tciItem.width = isNaN(tciItem.width) ? 0 :tciItem.width; 
 				}
 				
 				tciItem.width = Math.max(tciItem.width, opt.colOptions.minWidth);
+				
 				tciItem['_alignClass'] = tciItem.align=='right' ? 'ar' : (tciItem.align=='center'?'ac':'al');
 				cfg.tColItem[j] = tciItem;
 	
@@ -740,8 +747,6 @@
 			var resizeFlag = _totW  < _gw ? true : false;
 			var remainderWidth = Math.floor((_gw -_totW)/tciLen)
 				, lastSpaceW = (_gw -_totW)-remainderWidth *tciLen;
-	
-			lastSpaceW = lastSpaceW; // border 겹치는 현상때문에 -2 빼줌.
 	
 			if(resizeFlag){
 				var leftGridWidth = 0, mainGridWidth=0;
@@ -869,6 +874,38 @@
 			return updItem; 
 		}
 		/**
+		 * @method _setSearchInfo
+		 * @description 검색 정보 셋팅
+		 */
+		,_setSearchInfo: function (){
+			var settingOpt = this.options.setting; 
+	
+			this.config.orginData = this.options.tbodyItem;
+			
+			if(settingOpt.enabled ===true  && settingOpt.enableSearch ===true){
+				try{
+					var schField = settingOpt.configVal.search.field ||''
+						,schVal = settingOpt.configVal.search.val ||'';
+
+					if(schField != '' && schVal !=''){
+						var tbodyItem = this.options.tbodyItem
+							,schArr =[];
+
+						schVal =schVal.toLowerCase();
+						
+						for(var i =0 , len  = tbodyItem.length; i < len;i++){
+							var tmpItem =tbodyItem[i]; 
+
+							if(settingOpt.util.searchFilter(tmpItem,schField,schVal)){
+								schArr.push(tmpItem);
+							}
+						}
+						this.options.tbodyItem = schArr;
+					}
+				}catch(e){}
+			}
+		}
+		/**
 		 * @method setData
 		 * @param data {Array} - 데이타
 		 * @param gridMode {String} - 그리드 모드 
@@ -951,31 +988,8 @@
 			if(gridMode == 'search'){
 				gridMode = 'reDraw';
 			}else{
-				var settingOpt = _this.options.setting; 
-	
-				_this.config.orginData = _this.options.tbodyItem;
-				
-				if(settingOpt.enabled ===true  && settingOpt.enableSearch ===true){
-					try{
-						var schField = settingOpt.configVal.search.field ||''
-							,schVal = settingOpt.configVal.search.val ||'';
-	
-						if(schField != '' && schVal !=''){
-							var tbodyItem = _this.options.tbodyItem
-								,schArr =[];
-	
-							schVal =schVal.toLowerCase();
-							
-							for(var i =0 , len  = tbodyItem.length; i < len;i++){
-								var tmpItem =tbodyItem[i]; 
-	
-								if(settingOpt.util.searchFilter(tmpItem,schField,schVal)){
-									schArr.push(tmpItem);
-								}
-							}
-							_this.options.tbodyItem = schArr;
-						}
-					}catch(e){}
+				if(gridMode !='init'){
+					_this._setSearchInfo();
 				}
 			}
 			
@@ -1183,8 +1197,8 @@
 				+' 		<div id="'+_this.prefix+'_resizeHelper" class="pubGrid-resize-helper"></div>'
 				+' 	</div>'
 				+' </div>'
-				+' <textarea id="'+_this.prefix+'_pubGridCopyArea" style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"></textarea>'
 				+' <div id="'+_this.prefix+'_navigation" class="pubGrid-navigation"><div class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'_status" class="pubgGrid-count-info"></div>'
+				+' <textarea id="'+_this.prefix+'_pubGridCopyArea" style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"></textarea>'
 				+' </div>'
 				+' </div>';
 	
@@ -1774,9 +1788,10 @@
 		 * @description 그리드 수치 계산 . 
 		 */
 		, calcDimension : function (type, opt){
-	
+
 			var _this = this
 				,cfg = _this.config; 
+
 			var dimension;
 			
 			if(type =='headerResize'){
@@ -1784,93 +1799,106 @@
 			}else{
 				dimension = {width : _this.getGridWidth(), height :(_this.options.height =='auto' ? _this.gridElement.height() : _this.options.height)};
 			}
-			
-			opt = objectMerge(dimension ,opt);
+
+			opt = objectMerge(dimension ,opt);						
+			cfg.container.height = opt.height;
+			var mainHeight = opt.height - cfg.navi.height;
 	
-			if(type =='init'  ||  type =='resize'){
-				_this.element.pubGrid.css('height',opt.height+'px');
+			if(type =='init' || type =='resize'){
+
+				_this.element.pubGrid.css('height',mainHeight+'px');
 				_this.element.pubGrid.css('width',opt.width+'px');
+
+				var currentContainerWidth = cfg.container.width // border 값 
+					, resizeWidth = opt.width-2; 
 				
-				if(cfg.container.width != opt.width && type=='resize' && _this.options.autoResize !==false && _this.options.autoResize.responsive ===true){
+				if(currentContainerWidth != resizeWidth && type=='resize' && _this.options.autoResize !==false && _this.options.autoResize.responsive ===true){
 	
 					var _totW = cfg.gridWidth.total; 
-					var _overW = (_totW+_this.options.scroll.vertical.width) - cfg.container.width;
-		
-					if(_overW > 0){
-						_overW = (opt.width*(_overW/cfg.container.width*100)/100);
-					}else{
-						_overW = 0; 
-					}
-					
-					var _reiszeW = (opt.width+_overW-_this.options.scroll.vertical.width) -(_totW); 
+
+					var _overW = resizeWidth - currentContainerWidth;
 					var _currGridMain = cfg.gridWidth.main;
-					var _addW = 0 ; 
-					_overW = _overW > 0 ? _overW : 0;
-	
+					var _addW = 0; 
+					var _totColWidth =0;
+					
 					var colItems = cfg.tColItem;
 	
 					for(var i=0 ,colLen  = colItems.length; i<colLen; i++){
 						var colItem = colItems[i]; 
-						_addW = (_reiszeW*(colItem.width/_currGridMain*100)/100);
-						
-						colItem.width = colItem.width + _addW;
+						_addW = (_overW*(colItem.width/_currGridMain*100)/100);
+						_this.setColumnWidth(i, (colItem.width+_addW), null, false);
 
-						_this.setColumnWidth(i ,colItem.width);
+						_totColWidth+=colItem.width;
 					}
-	
-					cfg.gridWidth.main = _currGridMain +(_reiszeW);
+
+					cfg.gridWidth.main = _totColWidth;
 				}
 			}
-			
-			// grid total width
+
 			cfg.gridWidth.total = cfg.gridWidth.aside+cfg.gridWidth.left+ cfg.gridWidth.main;
-	
-			_this._setGridContainerWidth(opt.width);
-	
-			cfg.container.height = opt.height;
-			
-			var mainHeight = opt.height - cfg.navi.height;
-			
+
+			_this._setGridContainerWidth(opt.width, type);
+							
 			var  bodyH = mainHeight - cfg.header.height - cfg.footer.height
 				, itemTotHeight = (cfg.dataInfo.rowLen-1) * cfg.rowHeight
-				, vScrollFlag = itemTotHeight > bodyH ? true :false
+				, vScrollFlag = (itemTotHeight > bodyH)
 				, bodyW = (cfg.container.width-(vScrollFlag?this.options.scroll.vertical.width:0))
-				, hScrollFlag = cfg.gridWidth.total > bodyW  ? true : false;
-				
-			//console.log(itemTotHeight , bodyH, cfg.scroll.vUse , vScrollFlag)
+				, hScrollFlag = (Math.floor(cfg.gridWidth.total) > bodyW);
+
+			vScrollFlag = (!vScrollFlag && hScrollFlag) ? (itemTotHeight > bodyH-this.options.scroll.horizontal.height) : vScrollFlag;
+			hScrollFlag = (!hScrollFlag && vScrollFlag) ? (Math.floor(cfg.gridWidth.total) > cfg.container.width-this.options.scroll.vertical.width) : hScrollFlag;
+			
+			bodyW = (cfg.container.width-(vScrollFlag?this.options.scroll.vertical.width:0))
+
+			console.log(Math.floor(cfg.gridWidth.total) , cfg.container.width-this.options.scroll.vertical.width);
+			console.log(hScrollFlag, cfg.gridWidth.aside, cfg.gridWidth.left , cfg.gridWidth.main)
 
 			if(cfg.isResize !== true && !cfg.scroll.hUse && type == 'reDraw' && cfg.scroll.vUse != vScrollFlag){
-				var colItems = cfg.tColItem
-					,colLen  = colItems.length; 
+				var colItems = cfg.tColItem; 
+				var colLen = colItems.length; 
 				
-				var _w = this.options.scroll.vertical.width/colLen; 
-	
+				var _w =0, lastSpaceW=0; 
+
+				if(vScrollFlag){
+					_w =  (this.options.scroll.vertical.width/colLen)*-1; 
+					lastSpaceW = this.options.scroll.vertical.width+(_w *colLen);	
+				}else{
+					_w = (cfg.container.width - cfg.gridWidth.total)/colLen;
+					lastSpaceW = cfg.container.width - cfg.gridWidth.total+(_w *colLen);	
+				}
+
+				var _totColWidth =0;
+
 				for(var i=0; i<colLen; i++){
 					var colItem = colItems[i]; 
-					if(vScrollFlag){					
-						colItem.width = colItem.width - _w;
-					}else{
-						colItem.width = colItem.width + _w;
-					}
+					
+					_this.setColumnWidth(i ,colItem.width + _w, null, false);
 
-					_this.setColumnWidth(i ,colItem.width);
+					_totColWidth+=colItem.width;
+
+					console.log(_totColWidth,colItem.width)
 				}
+
+				console.log('lastSpaceW',_totColWidth, lastSpaceW);
+				
+				_this.setColumnWidth(colLen-1 ,colItems[colLen-1].width +lastSpaceW , null, false);
+
+				cfg.gridWidth.main = _totColWidth+lastSpaceW;
+				cfg.gridWidth.total = cfg.gridWidth.aside+cfg.gridWidth.left+ cfg.gridWidth.main;
 
 				if(vScrollFlag){					
-					cfg.gridWidth.main -= this.options.scroll.vertical.width;
-					hScrollFlag = cfg.gridWidth.total-this.options.scroll.vertical.width > bodyW  ? true : false;
+					hScrollFlag = cfg.gridWidth.total > bodyW  ? true : false;
 				}else{
-					cfg.gridWidth.main += this.options.scroll.vertical.width;
-					hScrollFlag = cfg.gridWidth.total+this.options.scroll.vertical.width > bodyW  ? true : false;
+					hScrollFlag = cfg.gridWidth.total > bodyW  ? true : false;
 				}
 			}
-				 
+
+			console.log('bodyW', cfg.gridWidth.aside, cfg.gridWidth.left , cfg.gridWidth.main)
+			
 			bodyH -= hScrollFlag? this.options.scroll.horizontal.height :0;
 			_this._setPanelElementWidth();
 			
 			_this.element.body.css('height',(bodyH)+'px');
-	
-			//console.log(vScrollFlag,mainHeight , cfg.header.height , cfg.footer.height ,hScrollFlag, (hScrollFlag?this.options.scroll.horizontal.height:0))
 	
 			var beforeViewCount = cfg.scroll.viewCount ; 
 			cfg.scroll.viewCount = itemTotHeight > bodyH ? Math.ceil(bodyH / cfg.rowHeight) : cfg.dataInfo.rowLen;
@@ -1909,6 +1937,8 @@
 				cfg.scroll.vUse = false; 
 				$('#'+_this.prefix+'_vscroll').hide();
 			}
+
+			console.log('hScrollFlag',hScrollFlag);
 	
 			var leftVal =0;
 			if(hScrollFlag){
@@ -2535,8 +2565,8 @@
 			this._headerResize(false);
 		}
 		,_windowResize :function (){
-			var _this = this; 
-			
+			var _this = this;
+
 			if(_this.options.autoResize ===false || _this.options.autoResize.enabled === false) return false; 
 			
 			var _evt = $.event,
@@ -2564,7 +2594,7 @@
 					if ( resizeTimeout ) {
 						clearTimeout( resizeTimeout );
 					}
-	
+
 					execAsap ?
 						dispatch() :
 						resizeTimeout = setTimeout( dispatch, _special.threshold );
@@ -4222,7 +4252,7 @@
 
 				w = (w > _this.options.colOptions.minWidth? w : _this.options.colOptions.minWidth);
 	
-				_this.setColumnWidth(drag.resizeIdx , w , drag.colHeader);
+				_this.setColumnWidth(drag.resizeIdx, w, drag.colHeader);
 	
 				if(isFunction(_this.options.headerOptions.resize.update)){
 					_this.options.headerOptions.resize.update.call(null , {index:drag.resizeIdx , width: w});
@@ -4240,9 +4270,10 @@
 		 * @param  idx : heder index
 		 * @param  w : width
 		 * @param  colHeaderEle , header element
+		 * @param  calcFlag , calcDimension call flag
 		 * @description set header width
 		 */
-		,setColumnWidth : function (idx,w, colHeaderEle){
+		,setColumnWidth : function (idx,w, colHeaderEle , calcFlag){
 			
 			if(w <= this.options.colOptions.minWidth){
 				w =this.options.colOptions.minWidth;
@@ -4264,8 +4295,10 @@
 			}
 	
 			$('#'+this.prefix+'colbody'+idx).css('width',w+'px');
-	
-			this.calcDimension('headerResize');
+			
+			if(calcFlag !== false){
+				this.calcDimension('headerResize');
+			}
 		}
 		/**
 		 * @method getHeaderWidth

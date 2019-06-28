@@ -7,7 +7,10 @@
 <link href="../theme/default/css/pub.grid.css" rel="stylesheet">
 <link href="../theme/default/css/pub.context.css" rel="stylesheet">
 
+<link href="../plugins/css/jquery-ui.min.css" rel="stylesheet">
+
 <script src="../plugins/jquery-1.10.2.min.js"></script>
+<script src="../plugins/jquery-ui-1.12.1.min.js"></script>
 
 <!-- excel 처리 -->
 <script src="../plugins/excel/exceljs.js"></script>
@@ -47,10 +50,10 @@ html , body {
 	row
 	<select id="itemCount">
 		<option value="1" >0</option>
-		<option value="5" >5</option>
+		<option value="5" selected>5</option>
 		<option value="10" >10</option>
 		<option value="20" >20</option>
-		<option value="100" selected>100</option>
+		<option value="100" >100</option>
 		<option value="500">500</option>
 		<option value="1000">1000</option>
 		<option value="10000">10000</option>
@@ -59,13 +62,20 @@ html , body {
 
 	cell
 	<select id="cellCount">
-		<option value="1" selected>1</option>
+		<option value="1" >1</option>
 		<option value="5" >5</option>
-		<option value="10">10</option>
+		<option value="10"selected>10</option>
 		<option value="20" >20</option>
 		<option value="100">100</option>
 	</select>
+	theme
+	<select id="themeInfo">
+		<option value="light selected" >light</option>
+		<option value="dark" >dark</option>
+	</select>
 	<button type="button" onclick="fn_init()">regrid</button>
+
+	<button type="button" class="set-data">setData</button>
 	
 	<button class="exceldown" mode="all" type="button">excel download</button>
 	<button class="exceldown" mode="select" type="button">select data excel download</button>
@@ -78,23 +88,38 @@ html , body {
 </div>
 <table style="width:100%;height:100%;">
 	<colgroup>
+		<col width="70%">
 		<col width="50%">
 	</colgroup>
 	<tr>
 		<td>
 			<div class="asdfasdfWrapper">
-				<div id="asdfasdf" style="height:500px"></div>
+				<div id="asdfasdf" style="height:calc(100vh - 200px)"></div>
 			</div>
+		</td>
+		<td>
 		</td>
 	</tr>
 </table>
 </BODY>
 </HTML>
 <script>
-
+var itemType = 2; 
 $(document).ready(function (){
 	//$.pubGrid('#asdfasdf').resizeDraw({});
 	fn_init();
+
+	$('#themeInfo').on('change', function (){
+		$.pubGrid('#asdfasdf').setTheme($(this).val());
+	});
+	var toggleFlag = false; 
+	$('.set-data').on('click', function (){
+		toggleFlag  = !toggleFlag;
+		$('#itemCount').val(toggleFlag ? 100 :5);
+		var	item=getItem (itemType );
+		$.pubGrid('#asdfasdf').setData(item.aaa,'reDraw');
+
+	});
 
 	$('.exceldown').on('click', function (){
 		var sEle = $(this);
@@ -106,15 +131,20 @@ $(document).ready(function (){
 
 		var allDataInfo = $.pubGrid('#asdfasdf').getData({dataType:'json' ,isSelect: (mode=='select'? true :false)});
 		
-
-		
-
     	getExcelDownload({
 			header: allDataInfo.header 
 			,data :  allDataInfo.data
 			,fileName : 'pubGridExcel'
 		});
 	})
+
+
+	$('.asdfasdfWrapper').resizable({
+		handles: 'e',
+		resize: function(){
+			//console.log(arguments)
+		}
+	});
 
 	$('.pdfdown').on('click', function (){
 		
@@ -235,7 +265,7 @@ function getItem (type){
 				colItem.push( {
 					key :key
 					,label:'한글'+key
-					,width:100
+					,width:45
 					,type : (keyIdx==0 ? 'number':'string')
 				});
 
@@ -252,8 +282,10 @@ function getItem (type){
 
 var aaa, colItem;
 function fn_init(){
+
+	$('asdfasdf').removeAttr('class');
 	
-	var	item=getItem (2 );
+	var	item=getItem (itemType );
 
 	aaa =item.aaa;
 	colItem  = item.colItem;
@@ -262,228 +294,192 @@ function fn_init(){
 		aaa = [];
 	}
 	var gridObj = $.pubGrid('#asdfasdf')
-	/*
-	if(gridObj){
-		gridObj.setData(aaa,'reDraw');
-	}else{
-		gridDraw('#asdfasdf',aaa, colItem);	
-	}
-	*/
-
+	
+	
 	gridDraw('#asdfasdf',aaa, colItem);
 
 	//gridDraw('#asdfasdf1',aaa, colItem);
 	//gridDraw('#asdfasdf1',aaa, colItem);
 }
 function gridDraw(selector, aaa, colItem){
-		var gridObj = $.pubGrid(selector,{
-			colFixedIndex : 0
-			,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
-			,widthFixed : false
-			,height:400
-			,asideOptions :{
-				lineNumber : {enabled : false,width : 30}
-				,rowSelector :{
-					enabled : false
-					,key : 'checkbox'
-					,name : 'V'
-					,width : 25
-				}
-				
-			}
-			,headerOptions:{
-				view : true
-				,sort : true
-				,height :33
-				,displayLineNumber : true	 // 라인 넘버 보기.
-				,displayRowSelector : false	 // row selecotr checkbox 보기
-				,displayModifyInfo : false	 // 수정여부 보기
-				,isColSelectAll : false		 // 컬럼 세로 선택 여부.
-				,resize:{
-					enabled : true
-					,update :  function (item){
-						//console.log(item);
-					}
-				}
-				,contextMenu :{
-					callback: function(key,sObj) {
-						console.log('header context',this,key,sObj);
-					}
-					,items: [
-						{key : "refresh" , "name": "새로고침"}
-					]
-				}
-				,helpBtn:{
-					enabled : true	// header help btn 활성 여부.
-					,dblclick :  function (clickInfo){	// click event
-						console.log('clickInfo : ', clickInfo)
-					}
-				}
-			}
-			//,itemMaxCount :20	// add max count
-			,scroll :{
-				vertical : {
-					onUpdate : function (item){	// 스크롤 업데이트. 
-						//console.log(item);
-						//return true; 
-					}
-				}
-				,horizontal :{
-					
-				}
-			}
-			//,bigData :false
-			,bigData : {
-				enabled : true 
-				,gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
-				,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
-				,horizontalEnableCount : 50
-			}
-			,message :{
-				'asdf':''
-				,empty: '데이타 없음'
-				//,empty: function (){ return '데이타 없음'}
-				
-			}
-			,page : false
-			,page1 :{
-				enabeld :true
-				,status :true
-				,totalCount :1000
-				, currPage :1
-				, countPerPage :10
-				, unitPage :10
-				,position : 'left'
-				,callback : function (no){
-					console.log(no);
-					gridObj.setData(aaa);
-				}
-			}
-			,setting : {
+	var gridObj = $.pubGrid(selector,{
+		colFixedIndex : 0
+		,selectionMode : 'multiple-row'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
+		,widthFixed : false
+		,theme : $('#themeInfo').val()
+		,height:'auto'
+		,asideOptions :{
+			lineNumber : {enabled : true,width : 30}
+			,rowSelector :{
 				enabled : true
-				,click : false
-				,enableSearch : true
-				,enableSpeed : true
-				,enableColumnFix :true
-				,callback : function (data){
-					//console.log(data)
-				}
-				,configVal : {}
+				,key : 'checkbox'
+				,name : 'V'
+				,width : 25
 			}
-			,tColItem : colItem
-			
-			,theadGroup1 :[ 
-				[
-				{key :'a',label:'ac2<br/>asdf',colspan:4 , style:''}
-				,{key :'c',label:'rc2',rowspan: 3 }
-				]
-				,[
-					{label:'aaaa',colspan:2 , style:''}
-					,{label:'bbbb',colspan:2 , style:''}
-				]
-				,[
-					{key :'a'}
-					,{key :'b'}
-					,{key :'c'}
-					,{key :'d'}
-				]
-			]
-			,bodyOptions : {
-				cellDblClick : function (itemInfo){
-					//console.log('cellDblClick', itemInfo)
-				}
-			}
-			,tbodyItem : aaa
-			,tfootItem :['asdf']
-			,rowOptions :{
-				height : 50
-				,click : function (itemInfo){
-					//console.log('rowOptions click' ,itemInfo)
-					
-					return ; 
-
-				}
-				,contextMenu :{
-					beforeSelect :function (){
-						$(this).trigger('click');
-					}
-					,callback: function(key,sObj) {
-						console.log(this,key,sObj);
-
-						if(key =='copy'){
-							gridObj.copyData();
-						}
-					}
-					,items: [
-						{key : "refresh" , "name": "새로고침"}
-						,{key : "copy" , "name": "복사", hotkey:'Ctrl+C'}
-						,{key : "sql_create", "name": "sql생성" 
-							,subMenu: [
-								{ key : "selectStar","name": "select *" , mode: "selectStar"}
-								,{ key : "select","name": "select column" ,mode:"select"}
-								,{ key : "insert","name": "insert" , mode:"insert"}
-								,{ key : "update","name": "update" ,mode:"update"}
-								,{ key : "delete","name": "delete" ,mode:"delete"}
-								,{ key : "drop","name": "drop" , mode:"drop"}
-							]
-						}
-						,{key : "create_ddl","name": "DDL 보기" ,hotkey:'Ctrl+shift+C'
-							
-						}
-						,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
-							,subMenu : [
-								{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
-								,{ key : "mybatis_update","name": "update" ,mode:"update" ,param_yn:'Y'}
-								,{ key : "mybatis_delete","name": "delete" ,mode:"delete",param_yn:'Y'}
-							]
-						}
-						,{key :'export', "name": "내보내기" 
-							,subMenu:[
-								{key : "export_data","name": "데이타 내보내기"}
-								,{key : "export_column","name": "컬럼정보 내보내기"}
-							]
-						}
-					]
-				}
-			}
-		});
-	}
-
-(function($) {
-
-var _evt = $.event,
-	_special,
-	resizeTimeout;
-
-_special = _evt.special.pubgridResize = {
-	setup: function() {
-		$( this ).on( "resize", _special.handler );
-	},
-	teardown: function() {
-		$( this ).off( "resize", _special.handler );
-	},
-	handler: function( event, execAsap ) {
-		// Save the context
-		var context = this,
-			args = arguments,
-			dispatch = function() {
-				// set correct event type
-				event.type = "pubgridResize";
-				_evt.dispatch.apply( context, args );
-			};
-
-		if ( resizeTimeout ) {
-			clearTimeout( resizeTimeout );
 		}
+		,headerOptions:{
+			view : true
+			,sort : true
+			,height :33
+			,displayLineNumber : true	 // 라인 넘버 보기.
+			,displayRowSelector : false	 // row selecotr checkbox 보기
+			,displayModifyInfo : false	 // 수정여부 보기
+			,isColSelectAll : false		 // 컬럼 세로 선택 여부.
+			,resize:{
+				enabled : true
+				,update :  function (item){
+					//console.log(item);
+				}
+			}
+			,contextMenu :{
+				callback: function(key,sObj) {
+					console.log('header context',this,key,sObj);
+				}
+				,items: [
+					{key : "refresh" , "name": "새로고침"}
+				]
+			}
+			,helpBtn:{
+				enabled : true	// header help btn 활성 여부.
+				,dblclick :  function (clickInfo){	// click event
+					console.log('clickInfo : ', clickInfo)
+				}
+			}
+		}
+		//,itemMaxCount :20	// add max count
+		,scroll :{
+			vertical : {
+				onUpdate : function (item){	// 스크롤 업데이트. 
+					//console.log(item);
+					//return true; 
+				}
+			}
+			,horizontal :{
+				
+			}
+		}
+		//,bigData :false
+		,bigData : {
+			enabled : true 
+			,gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+			,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
+			,horizontalEnableCount : 50
+		}
+		,message :{
+			'asdf':''
+			,empty: '데이타 없음'
+			//,empty: function (){ return '데이타 없음'}
+			
+		}
+		,page : false
+		,page1 :{
+			enabeld :true
+			,status : true
+			,totalCount :1000
+			, currPage : 15
+			, countPerPage :10
+			, unitPage :10
+			,position : 'center'
+			,callback : function (no){
+				console.log(no);
+				//gridObj.setData(aaa);
+			}
+		}
+		,setting : {
+			enabled : true
+			,click : false
+			,enableSearch : true
+			,enableSpeed : true
+			,enableColumnFix :true
+			,callback : function (data){
+				//console.log(data)
+			}
+			,configVal1 : {search : {field:'col1', val : '111'}}
+		}
+		,tColItem : colItem
+		
+		,theadGroup1 :[ 
+			[
+			{key :'a',label:'ac2<br/>asdf',colspan:4 , style:''}
+			,{key :'c',label:'rc2',rowspan: 3 }
+			]
+			,[
+				{label:'aaaa',colspan:2 , style:''}
+				,{label:'bbbb',colspan:2 , style:''}
+			]
+			,[
+				{key :'a'}
+				,{key :'b'}
+				,{key :'c'}
+				,{key :'d'}
+			]
+		]
+		,bodyOptions : {
+			cellDblClick : function (itemInfo){
+				//console.log('cellDblClick', itemInfo)
+			}
+		}
+		,tbodyItem : aaa
+		,tfootItem :['asdf']
+		,rowOptions :{
+			height : 50
+			,dblClickCheck :true
+			,dblClick1: function (){
+				console.log('dblclick')
+			}
+			,click : function (itemInfo){
+				//console.log('rowOptions click' ,itemInfo)
+				
+				return ; 
 
-		execAsap ?
-			dispatch() :
-			resizeTimeout = setTimeout( dispatch, $special.threshold );
-	},
-	threshold: 150
-};
+			}
+			,contextMenu :{
+				beforeSelect :function (){
+					$(this).trigger('click');
+				}
+				,callback: function(key,sObj) {
+					console.log(this,key,sObj);
 
-})(jQuery);
+					if(key =='copy'){
+						gridObj.copyData();
+					}
+				}
+				,items: [
+					{key : "refresh" , "name": "새로고침"}
+					,{key : "copy" , "name": "복사", hotkey:'Ctrl+C'}
+					,{key : "sql_create", "name": "sql생성" 
+						,subMenu: [
+							{ key : "selectStar","name": "select *" , mode: "selectStar"}
+							,{ key : "select","name": "select column" ,mode:"select"}
+							,{ key : "insert","name": "insert" , mode:"insert"}
+							,{ key : "update","name": "update" ,mode:"update"}
+							,{ key : "delete","name": "delete" ,mode:"delete"}
+							,{ key : "drop","name": "drop" , mode:"drop"}
+						]
+					}
+					,{key : "create_ddl","name": "DDL 보기" ,hotkey:'Ctrl+shift+C'
+						
+					}
+					,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
+						,subMenu : [
+							{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
+							,{ key : "mybatis_update","name": "update" ,mode:"update" ,param_yn:'Y'}
+							,{ key : "mybatis_delete","name": "delete" ,mode:"delete",param_yn:'Y'}
+						]
+					}
+					,{key :'export', "name": "내보내기" 
+						,subMenu:[
+							{key : "export_data","name": "데이타 내보내기"}
+							,{key : "export_column","name": "컬럼정보 내보내기"}
+						]
+					}
+				]
+			}
+		}
+	});
+}
+
+
 
 </script>
 
