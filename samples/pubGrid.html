@@ -73,6 +73,9 @@ html , body {
 		<option value="light selected" >light</option>
 		<option value="dark" >dark</option>
 	</select>
+	
+	
+
 	<button type="button" onclick="fn_init()">regrid</button>
 
 	<button type="button" class="set-data">setData</button>
@@ -86,6 +89,7 @@ html , body {
 
 	
 </div>
+
 <table style="width:100%;height:100%;">
 	<colgroup>
 		<col width="70%">
@@ -304,7 +308,8 @@ function fn_init(){
 function gridDraw(selector, aaa, colItem){
 	var gridObj = $.pubGrid(selector,{
 		colFixedIndex : 0
-		,selectionMode : 'multiple-row'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
+		,editable : true
+		,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
 		,widthFixed : false
 		,theme : $('#themeInfo').val()
 		,height:'auto'

@@ -15,9 +15,12 @@
 	,_$doc = $(document)
 	,_datastore = {}
 	,_defaults = {
-		colFixedIndex : 0	// 고정 컬럼 
+		blankSpaceWidth : 1		// 오른쪽 끝 공백 값
+		,copyMode : 'single'		// copy mode	single, multiple, none
+		,colFixedIndex : 0	// 고정 컬럼 
 		,widthFixed : false  // 넓이 고정 여부.
 		,useDefaultFormatter: true // 기본 포멧터 사용여부
+		,editable :false	// 편집 모드 활성화
 		,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
 		,theme : 'light'
 		,height: 'auto'
@@ -109,6 +112,9 @@
 				,key : 'checkbox'
 				,name : 'V'
 				,width : 25
+				,click : function (rowInfo){ // click event , return false 일경우 체크 안함. 
+					
+				}
 			}
 			,modifyInfo :{	// 수정 여부
 				enabled :false
@@ -408,9 +414,9 @@
 		 */
 		,_setGridContainerWidth : function (width, mode){
 			if(mode=='headerResize'){
-				this.config.container.width = width;		// border 값 빼주기.
+				this.config.container.width = width;
 			}else{
-				this.config.container.width = width-2;		// border 값 빼주기.
+				this.config.container.width = width- this.options.blankSpaceWidth;		// border 값 빼주기.
 			}
 		}
 		/**
@@ -462,7 +468,11 @@
 			}else{
 				_this.options.headerOptions.contextMenu =false; 
 			}
-		
+
+			
+			// space width
+			this.options.blankSpaceWidth = 2+(this.options.blankSpaceWidth>0?this.options.blankSpaceWidth :0);
+					
 			// header element height 	
 			if(_this.options.headerOptions.view !== false){
 				this.config.header.height = _this.options.headerOptions.height * (this.options.theadGroup.length > 0 ?this.options.theadGroup.length : 1);
@@ -1197,8 +1207,9 @@
 				+' 		<div id="'+_this.prefix+'_resizeHelper" class="pubGrid-resize-helper"></div>'
 				+' 	</div>'
 				+' </div>'
+				+' <div style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"><textarea id="'+_this.prefix+'_pubGridPasteArea"></textarea>' // copy 하기위한 textarea 꼭 위치해야함. 
+				+' <textarea id="'+_this.prefix+'_pubGridCopyArea"></textarea></div>' // copy 하기위한 textarea 꼭 위치해야함. 
 				+' <div id="'+_this.prefix+'_navigation" class="pubGrid-navigation"><div class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'_status" class="pubgGrid-count-info"></div>'
-				+' <textarea id="'+_this.prefix+'_pubGridCopyArea" style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"></textarea>'
 				+' </div>'
 				+' </div>';
 	
@@ -1523,7 +1534,7 @@
 	
 					_this.element.pubGrid = $('#'+_this.prefix +'_pubGrid');
 					_this.element.hidden = $('#'+_this.prefix +'_hiddenArea');
-					
+									
 					_this.element.container = $('#'+_this.prefix+'_container');
 					_this.element.left = $('#'+_this.prefix+'_left');
 					_this.element.header= $('#'+_this.prefix+'_headerContainer');
@@ -1539,6 +1550,9 @@
 					// query selector 
 					_this.element.leftContent = $pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-left-cont');
 					_this.element.bodyContent = $pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont');
+
+					//hidden area element
+					_this.element.pasteArea = $('#'+_this.prefix +'_pubGridPasteArea');
 					
 					// header html 만들기
 					if(headerOpt.view===false){
@@ -1810,7 +1824,7 @@
 				_this.element.pubGrid.css('width',opt.width+'px');
 
 				var currentContainerWidth = cfg.container.width // border 값 
-					, resizeWidth = opt.width-2; 
+					, resizeWidth = opt.width-this.options.blankSpaceWidth; 
 				
 				if(currentContainerWidth != resizeWidth && type=='resize' && _this.options.autoResize !==false && _this.options.autoResize.responsive ===true){
 	
@@ -1848,52 +1862,51 @@
 			vScrollFlag = (!vScrollFlag && hScrollFlag) ? (itemTotHeight > bodyH-this.options.scroll.horizontal.height) : vScrollFlag;
 			hScrollFlag = (!hScrollFlag && vScrollFlag) ? (Math.floor(cfg.gridWidth.total) > cfg.container.width-this.options.scroll.vertical.width) : hScrollFlag;
 			
-			bodyW = (cfg.container.width-(vScrollFlag?this.options.scroll.vertical.width:0))
+			bodyW = (cfg.container.width-(vScrollFlag?this.options.scroll.vertical.width:0));
 
-			console.log(Math.floor(cfg.gridWidth.total) , cfg.container.width-this.options.scroll.vertical.width);
-			console.log(hScrollFlag, cfg.gridWidth.aside, cfg.gridWidth.left , cfg.gridWidth.main)
-
-			if(cfg.isResize !== true && !cfg.scroll.hUse && type == 'reDraw' && cfg.scroll.vUse != vScrollFlag){
+			//if(cfg.isResize !== true && !cfg.scroll.hUse && type == 'reDraw' && cfg.scroll.vUse != vScrollFlag){
+			if(cfg.isResize !== true && (type == 'reDraw'||type=='resize') && cfg.scroll.vUse != vScrollFlag){
 				var colItems = cfg.tColItem; 
 				var colLen = colItems.length; 
 				
 				var _w =0, lastSpaceW=0; 
 
 				if(vScrollFlag){
-					_w =  (this.options.scroll.vertical.width/colLen)*-1; 
+					_w =  (this.options.scroll.vertical.width/colLen)*-1;
 					lastSpaceW = this.options.scroll.vertical.width+(_w *colLen);	
 				}else{
-					_w = (cfg.container.width - cfg.gridWidth.total)/colLen;
-					lastSpaceW = cfg.container.width - cfg.gridWidth.total+(_w *colLen);	
+					if(cfg.container.width > cfg.gridWidth.total){
+						var addW = cfg.container.width-cfg.gridWidth.total;
+						if(addW > colLen){
+							_w = (addW /colLen);
+							lastSpaceW = addW - (_w *colLen);	
+						}else{
+							lastSpaceW =addW;
+						}
+					}
 				}
+			
+				if(_w != 0 || lastSpaceW != 0){
 
-				var _totColWidth =0;
-
-				for(var i=0; i<colLen; i++){
-					var colItem = colItems[i]; 
+					var _totColWidth =0;
 					
-					_this.setColumnWidth(i ,colItem.width + _w, null, false);
+					for(var i=0; i<colLen; i++){
+						var colItem = colItems[i]; 
+						
+						_this.setColumnWidth(i ,colItem.width + _w, null, false);					
+						_totColWidth+=colItem.width;
+					}
+					
+					_this.setColumnWidth(colLen-1 ,colItems[colLen-1].width +lastSpaceW , null, false);
 
-					_totColWidth+=colItem.width;
-
-					console.log(_totColWidth,colItem.width)
-				}
-
-				console.log('lastSpaceW',_totColWidth, lastSpaceW);
+					cfg.gridWidth.main = _totColWidth+lastSpaceW;
+					cfg.gridWidth.total = cfg.gridWidth.aside+cfg.gridWidth.left+ cfg.gridWidth.main;
 				
-				_this.setColumnWidth(colLen-1 ,colItems[colLen-1].width +lastSpaceW , null, false);
-
-				cfg.gridWidth.main = _totColWidth+lastSpaceW;
-				cfg.gridWidth.total = cfg.gridWidth.aside+cfg.gridWidth.left+ cfg.gridWidth.main;
-
-				if(vScrollFlag){					
-					hScrollFlag = cfg.gridWidth.total > bodyW  ? true : false;
-				}else{
-					hScrollFlag = cfg.gridWidth.total > bodyW  ? true : false;
+					hScrollFlag = Math.floor(cfg.gridWidth.total) > bodyW  ? true : false;
 				}
 			}
 
-			console.log('bodyW', cfg.gridWidth.aside, cfg.gridWidth.left , cfg.gridWidth.main)
+			//console.log('bodyW', cfg.gridWidth.aside, cfg.gridWidth.left , cfg.gridWidth.main)
 			
 			bodyH -= hScrollFlag? this.options.scroll.horizontal.height :0;
 			_this._setPanelElementWidth();
@@ -1937,9 +1950,7 @@
 				cfg.scroll.vUse = false; 
 				$('#'+_this.prefix+'_vscroll').hide();
 			}
-
-			console.log('hScrollFlag',hScrollFlag);
-	
+				
 			var leftVal =0;
 			if(hScrollFlag){
 				var gridContTotW = cfg.gridWidth.total;
@@ -2405,7 +2416,15 @@
 		,moveHorizontalScroll : function (moveObj){
 			var _this =this; 
 	
-			if(!_this.config.scroll.hUse && moveObj.resizeFlag !== true){ return ; }
+			if(!_this.config.scroll.hUse){
+				if(this.config.scroll.left > 0){
+					this.moveHScrollPosition(0, moveObj.drawFlag);
+				}
+
+				if(moveObj.resizeFlag !== true){
+					return ; 
+				}
+			}
 	
 			var posVal = moveObj.pos;
 	
@@ -2935,7 +2954,7 @@
 				schSelEle.val(settingOpt.configVal.search.val);
 				
 				// 검색
-				schSelEle.on('keydown',function(e) {
+				schSelEle.on('keydown.pubGrid.search',function(e) {
 					if (e.keyCode == '13') {
 						settingWrapper.find('[data-setting-mode="search"]').trigger('click');
 						return false; 
@@ -3085,6 +3104,9 @@
 			}
 	
 			if(asideOpt.rowSelector.enabled === true){
+				
+				var fnRowChkClick = asideOpt.rowSelector.click; 
+
 				// checkbox click
 				_this.element.body.find('.pubGrid-body-aside').on('click.pubGrid.check','.pub-row-check',function (e){
 					var selEle = $(this)
@@ -3093,6 +3115,12 @@
 					rowinfo = _this.config.scroll.viewIdx+intValue(rowinfo);
 	
 					var selItem = _this.options.tbodyItem[rowinfo];
+				
+					if(isFunction(fnRowChkClick) && fnRowChkClick.call(selEle ,{item : selItem ,r: rowinfo})===false){
+						selEle.prop('checked',false);
+						selItem['_pubcheckbox'] =false;
+						return ; 
+					}
 	
 					selItem['_pubcheckbox'] = selItem['_pubcheckbox'] === true ? false :true;
 				});
@@ -3321,7 +3349,62 @@
 					_this.config.focus = false;
 				}
 			});
+			
+			if(_this.options.editable===true){
+				// paste event
+				_this.element.pasteArea.on('paste.pubGrid', function (e){
+					
+					var orginEvt = e.originalEvent;
+					var content ='';
+					if( orginEvt.clipboardData && orginEvt.clipboardData.getData ){
+						content = orginEvt.clipboardData.getData('text');
+					}else if( e.clipboardData && e.clipboardData.getData ){
+						content = e.clipboardData.getData('text/plain');
+					}else if( window.clipboardData  && window.clipboardData.getData ){
+						content = window.clipboardData.getData('Text');
+					}
+
+					if(content !=''){
+						var contentArr = content.split(/\r\n|\r|\n/);
+						
+						var startCellInfo = _this.config.selection.startCell;
+						
+						var tColItem = _this.config.tColItem
+							,tbodyItem = _this.options.tbodyItem;
+						
+						var startIdx = startCellInfo.startIdx
+							,startCol = startCellInfo.startCol
+							,tColLen =tColItem.length
+							,tbodyLen =tbodyItem.length;
+
+						for(var i =0 , len = contentArr.length; i<len; i++){
+							var addCont = contentArr[i];
+							
+							var addRowIdx = startIdx+i;
+
+							if(addRowIdx >= tbodyLen){
+								break; 
+							}
+
+							var selItem = _this.options.tbodyItem[addRowIdx]; 
+							
+							var addContArr = addCont.split(/\t/);
+							for(var j =0,jLen=addContArr.length; j <jLen; j++){
+								var addColIdx = startCol+j; 
+
+								if(addColIdx < tColLen){
+									selItem[tColItem[addColIdx].key] = addContArr[j];
+								}
+							}
+						}
+
+						_this.setData(tbodyItem,'reDraw');	
+					}
+				})
+			}
 		
+			var copyMode = _this.options.copyMode; 
+			var selectionMode = _this.options.selectionMode;
 			// window keydown 처리.  tabindex 처리 확인 해볼것.
 			$(window).on("keydown." + _this.prefix, function (e) {
 	
@@ -3335,8 +3418,25 @@
 				if (e.metaKey || e.ctrlKey) { // copy 
 	
 					if (evtKey == 67) { // ctrl+ c
+						if(copyMode =='none'){
+							return ; 
+						}
 						
-						var copyData = _this.selectionData();
+						var copyData = '';
+
+						if(selectionMode =='row' && copyMode =='single' ){
+							var startCellInfo = _this.config.selection.startCell;
+							var selItem = _this.options.tbodyItem[startCellInfo.startIdx]; 
+							
+							if(isUndefined(selItem)){
+								return ; 
+							}
+
+							copyData = _this.options.tbodyItem[startCellInfo.startIdx][_this.config.tColItem[startCellInfo.startCol].key];
+						}else{
+							copyData = _this.selectionData();
+						}
+						
 						try{
 							copyStringToClipboard(_this.prefix, copyData);
 						}catch(e){
@@ -3348,6 +3448,9 @@
 						}
 						_this.allItemSelect();
 						return false; 
+					}else if(evtKey==86){ // ctrl + v
+						_this.element.pasteArea.focus();
+						return true; 
 					}
 				}
 				
