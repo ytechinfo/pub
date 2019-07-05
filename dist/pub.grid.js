@@ -159,8 +159,10 @@
 		  ,"align": "center"	// align
 		  ,"type": "money"		// value type
 		  ,"render": "html"		// render mode
+		  ,defaultValue : ''	// add item default value
 		  ,colClick :function (idx,item){ console.log(idx, item)}		// cell click event
 		  ,styleClass : function (idx, item){return 'pub-bg-private';}	// cell add class
+		  
 		}
 		*/
 		,tColItem : [] //head item 
@@ -928,12 +930,15 @@
 				,tci = _this.config.tColItem;
 			var data = pdata;
 			var pageInfo = opt.page;
-	
+			
 			mode = mode||'reDraw'; 
-	
-			var gridMode = mode.split('_')[0];
-	
+
+			var modeInfo = mode.split('_');
+			var gridMode = modeInfo[0]
+				,subMode = modeInfo[1] ||'';
+				
 			gridMode = gridMode||'reDraw';
+
 			if(!$.isArray(pdata)){
 				data = pdata.items;
 				pageInfo = pdata.page; 
@@ -1004,7 +1009,7 @@
 			}
 			
 			_this.config.dataInfo.orginRowLen = _this.options.tbodyItem.length;
-	
+
 			if(_this.config.dataInfo.orginRowLen > 0){
 				_this.config.dataInfo.rowLen= _this.config.dataInfo.orginRowLen+1;
 				_this.config.dataInfo.lastRowIdx= _this.config.dataInfo.orginRowLen-1;
@@ -1015,15 +1020,22 @@
 			
 			if(gridMode=='reDraw' || gridMode == 'addData'){
 				_this._setHeaderInitInfo();
-				_this._setSelectionRangeInfo({}, true);
-				
-				_this.calcDimension(gridMode);	
+
+				if(subMode !='paste'){
+					_this._setSelectionRangeInfo({}, true);
+				}
+
+				_this.calcDimension(gridMode);
 			}
 	
-			if(gridMode == 'addData'){
+			if(gridMode == 'addData' || subMode =='paste'){
+
 				var rowIdx =_this.config.scroll.viewIdx; 
+
+				var addIdx = addOpt.index; 
+
 				if(addOpt.focus ===true){
-					if(addOpt.index =='first'){
+					if(addIdx =='first'){
 						rowIdx =0; 
 					}else if(!isNaN(addIdx)){
 						rowIdx = parseInt(addOpt.index,10);
@@ -1346,7 +1358,6 @@
 			}
 	
 			return false; 
-			
 		}
 		/**
 		 * @method valueFormatter
@@ -3145,20 +3156,31 @@
 			}
 			// row cell double click event
 			var dblCheckFlag = _this.options.rowOptions.dblClickCheck===true; 
-
-			if(dblCheckFlag || isFunction(_this.options.rowOptions.dblClick) || isFunction(_this.options.bodyOptions.cellDblClick)){
+			
+			var editable = _this.options.editable;
+			if(editable || dblCheckFlag || isFunction(_this.options.rowOptions.dblClick) || isFunction(_this.options.bodyOptions.cellDblClick)){
 				var fnDblClick = _this.options.rowOptions.dblClick || _this.options.bodyOptions.cellDblClick ||(function (){});
-
+				
 				_this.element.body.find('.pubGrid-body-container').on('dblclick.pubgrid.td','.pub-body-td',function (e){
 					var selRow = $(this)
 						,tdInfo=selRow.data('grid-position')
 						,rowColArr  = tdInfo.split(',');
-					
+
 					var rowIdx = _this.config.scroll.viewIdx+intValue(rowColArr[0])
 						,colIdx = intValue(rowColArr[1]); 
-	
-					var rowItem = _this.options.tbodyItem[rowIdx];
+					
+					var rowItem = _this.options.tbodyItem[rowIdx]
+						colItem = _this.config.tColItem[colIdx]; 
 
+					if(editable ===true){
+						selRow.append(_$util.getEditForm(selRow,colItem ,rowItem));
+						var editEl = selRow.find('input'); 
+
+						editEl.val(rowItem[colItem.key]);
+						editEl.focus();
+						return ; 
+					}
+	
 					if(dblCheckFlag){
 						_this.options.tbodyItem[rowIdx] = _this.getRowCheckValue(rowItem,rowItem['_pubcheckbox']===true?false:true);
 
@@ -3167,7 +3189,7 @@
 						_$util.setCheckBoxCheck(addEle , rowItem);
 					}
 					
-					fnDblClick.call(selRow ,{item : rowItem ,r: rowIdx ,c:colIdx , keyItem : _this.config.tColItem[colIdx] } );
+					fnDblClick.call(selRow ,{item : rowItem ,r: rowIdx ,c:colIdx , keyItem : colItem} );
 				});
 			}
 	
@@ -3276,6 +3298,7 @@
 						,isSelect : true
 						,curr : (_this.config.selection.isSelect?'add':'')
 						,isMouseDown : true
+						,startCell : {startIdx : selIdx, startCol : selectRangeInfo.startCol}
 					}, false, true);
 				
 				}else{
@@ -3369,36 +3392,54 @@
 						
 						var startCellInfo = _this.config.selection.startCell;
 						
-						var tColItem = _this.config.tColItem
-							,tbodyItem = _this.options.tbodyItem;
-						
+						var tColItems = _this.config.tColItem
+							,tbodyItems = _this.options.tbodyItem;
+
 						var startIdx = startCellInfo.startIdx
 							,startCol = startCellInfo.startCol
-							,tColLen =tColItem.length
-							,tbodyLen =tbodyItem.length;
-
-						for(var i =0 , len = contentArr.length; i<len; i++){
+							,tColLen =tColItems.length
+							,tbodyLen =tbodyItems.length;
+						
+						var maxCol=0
+							,iLen = contentArr.length;
+						
+						if(startCellInfo.startIdx+iLen > tbodyLen){ // 붙여 넣기가 row가 더 많으면 추가 item 생성. 
+							tbodyItems = tbodyItems.concat(_$util.newItems(tColItems, startCellInfo.startIdx+iLen -tbodyLen));	
+							tbodyLen =tbodyItems.length;
+						}
+						
+						for(var i =0; i<iLen; i++){
 							var addCont = contentArr[i];
 							
 							var addRowIdx = startIdx+i;
-
+							
 							if(addRowIdx >= tbodyLen){
 								break; 
 							}
 
-							var selItem = _this.options.tbodyItem[addRowIdx]; 
-							
+							var selItem = tbodyItems[addRowIdx];
+
 							var addContArr = addCont.split(/\t/);
-							for(var j =0,jLen=addContArr.length; j <jLen; j++){
+							var jLen=addContArr.length; 
+							
+							selItem['_pubCUD'] = selItem['_pubCUD']=='_C'?'C':(selItem['_pubCUD']=='C'?'CU':'U');
+
+							for(var j =0; j <jLen; j++){
 								var addColIdx = startCol+j; 
 
 								if(addColIdx < tColLen){
-									selItem[tColItem[addColIdx].key] = addContArr[j];
+									maxCol = Math.max(maxCol,addColIdx);
+									selItem[tColItems[addColIdx].key] = addContArr[j];
 								}
 							}
 						}
 
-						_this.setData(tbodyItem,'reDraw');	
+						_this._setSelectionRangeInfo({
+							rangeInfo :  {startIdx : startCellInfo.startIdx,endIdx : startCellInfo.startIdx+iLen-1, startCol:startCellInfo.startCol,endCol :maxCol}
+							,startCell : startCellInfo
+						},true, false);
+
+						_this.setData(tbodyItems,'reDraw_paste' ,{focus:true,index: _this.config.scroll.viewIdx});
 					}
 				})
 			}
@@ -3645,6 +3686,8 @@
 		}
 		/**
 		 * @method _setSelectionRangeInfo
+		 * @param  initFlag {boolean} init flag
+		 * @param  tdSelectFlag {boolean} select flag
 		 * @description 선택 영역 정보 셋팅.
 		 */
 		,_setSelectionRangeInfo : function(selectionInfo, initFlag, tdSelectFlag){
@@ -4616,10 +4659,44 @@
 	
 	var _$util = {
 		/**
+		 * @method newItems
+		 * @description get new item default object 
+		 */	
+		newItems : function (tColItems, newCount){
+			var len = tColItems.length;
+
+			newCount=newCount||1;
+
+			var reArr=[];
+			for(var i=0; i <newCount; i++){
+				var addItem = {'_pubCUD':'_C'};
+				for(var j= 0; j <len; j++){
+					var tColItem = tColItems[j];
+					addItem[tColItem.key]  = tColItem.defaultValue ||'';
+				}
+
+				reArr.push(addItem);
+			}
+
+			return reArr; 
+		}
+		/**
+		 * @method getEditForm
+		 * @description get edit form
+		 */	
+		,getEditForm : function (editEle, tColItem){
+			
+			var reForm =[];
+
+			reForm.push( '<input type="text" class="pubGrid-edit-input">');
+
+			return reForm.join('');
+		}
+		/**
 		 * @method _isMultipleSelection
 		 * @description is multiple selection mode
 		 */	
-		isMultipleSelection : function (selectionMode){
+		,isMultipleSelection : function (selectionMode){
 			return (selectionMode=='multiple-row' || selectionMode =='multiple-cell')
 		}
 		/**

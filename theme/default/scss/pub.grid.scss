@@ -151,8 +151,6 @@
 			}
 		}
 
-		
-
 		.pub-header-checkbox{
 			text-align: center; 
 			&.pub-check-all{
@@ -274,6 +272,7 @@
 			margin: 0;
 			border-right : 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 			border-bottom : 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+			position: relative;
 		}
 
 		.pub-bg-{
@@ -323,6 +322,14 @@
 			&:nth-child(odd) {
 				background: colorInfo($g_default_theme_name , "table_tr_even");
 			}
+		}
+
+		.pubGrid-edit-input{
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			width: 100%;
+			height: 100%;	
 		}
 	}
 	
