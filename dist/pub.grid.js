@@ -1278,7 +1278,7 @@
 		* @description view row count
 		*/
 		,getViewRow: function (){
-			return this.config.scroll.viewCount;
+			return this.config.scroll.bodyViewCount;
 		}
 		/**
 		 * @method getTbodyHtml
@@ -1926,6 +1926,7 @@
 	
 			var beforeViewCount = cfg.scroll.viewCount ; 
 			cfg.scroll.viewCount = itemTotHeight > bodyH ? Math.ceil(bodyH / cfg.rowHeight) : cfg.dataInfo.rowLen;
+			cfg.scroll.bodyViewCount = Math.ceil(bodyH/cfg.rowHeight);
 			cfg.scroll.insideViewCount = Math.floor(bodyH/cfg.rowHeight);
 			cfg.container.bodyHeight = bodyH;
 			
@@ -4185,17 +4186,41 @@
 			}
 		}
 		/**
+		 * @method setSorting
+		 * @param  sortInfo {Object} [{key, val, sortType}]column key , value ,sortType ="a" or "d"
+		 * @description data sorting
+		 */
+		,setSorting : function (sortInfoArr){
+			if(!$.isArray(sortInfoArr)){
+				sortInfoArr = [sortInfoArr];
+			}
+
+			var tColItem = this.config.tColItem;
+
+			var keyIdx = {};
+			for(var i =0; i< tColItem.length;i++){
+				keyIdx[tColItem[i].key]= i; 
+			}
+
+			for(var i =0, len = sortInfoArr.length;i < len; i++){
+				var sortInfo = sortInfoArr[i]; 
+				this.setData(this.getSortList(keyIdx[sortInfo.key], sortInfo.sortType=='d'?'desc':'asc', sortInfo.val) ,'sort');
+			}
+		}
+		/**
 		 * @method getSortList
 		 * @param  idx {Integer} item index
 		 * @param  sortType {String} 정렬 타입 ex(asc,desc)
+		 * @param  val {String,Integer} 정렬값
 		 * @description data sorting 처리.
 		 */
-		,getSortList :function (idx, sortType){
+		,getSortList :function (idx, sortType, val){
 			var _this = this
 				,opt = _this.options
 				,tci = _this.config.tColItem
-				,tbi = opt.tbodyItem;
-			
+				,tbi = opt.tbodyItem
+				,val  = val ||'';
+
 			if(idx < 0 || tbi.length < 1 || idx >= tci.length){
 				return [];
 			}
@@ -4218,13 +4243,27 @@
 				tbi.sort(function (a,b){
 					var v1 = getItemVal(a)
 						,v2 = getItemVal(b);
-					return v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
+
+					if(v1 == v2) return 0;
+					
+					if(val != ''){
+						return (v1==val?-1:(v2==val)?1:0);
+					}else{
+						return v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
+					}
 				});
 			}else if(sortType=='desc'){
 				tbi.sort(function (a,b){ // 내림차순
 					var v1 = getItemVal(a)
 						,v2 = getItemVal(b);
-					return v1 > v2 ? -1 : v1 < v2 ? 1 : 0;
+
+					if(v1 == v2) return 0;
+					
+					if(val != ''){
+						return (v1==val?1:(v2==val)?-1:0);
+					}else{
+						return v1 > v2 ? -1 : v1 < v2 ? 1 : 0;
+					}					
 				});
 			}else{
 				tbi = _this.config.sort[_key].orginList;
