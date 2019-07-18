@@ -1676,6 +1676,11 @@
 				}
 			}
 			
+			// remove edit area
+			if(_this.config.isCellEdit ===true){
+				_this._setEditAreaData();
+			}
+			
 			// row color change
 			if(itemIdx%2==0){
 				_this.element.body.find('.pubGrid-body-container').removeClass('even');
@@ -1690,7 +1695,7 @@
 					$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont [rowinfo="'+i+'"]').setAttribute('style', (fnAddStyle.call(null,tbiItem)||''));
 				}
 				
-				var overRowFlag = (itemIdx >= this.config.dataInfo.orginRowLen)
+				var overRowFlag = (itemIdx >= this.config.dataInfo.orginRowLen);
 				var addEle ,tdEle;
 	
 				for(var j =0 ; j < asideItem.length ;j++){
@@ -3141,7 +3146,7 @@
 			// row click event
 			if(isFunction(_this.options.rowOptions.click)){	
 	
-				_this.element.body.find('.pubGrid-body-container').on('click.pubgrid.row','.pub-body-tr',function (e){
+				_this.element.body.on('click.pubgrid.row','.pub-body-tr',function (e){
 					var selRow = $(this)
 						,rowinfo=intValue(selRow.attr('rowinfo'));
 	
@@ -3162,7 +3167,7 @@
 			if(editable || dblCheckFlag || isFunction(_this.options.rowOptions.dblClick) || isFunction(_this.options.bodyOptions.cellDblClick)){
 				var fnDblClick = _this.options.rowOptions.dblClick || _this.options.bodyOptions.cellDblClick ||(function (){});
 				
-				_this.element.body.find('.pubGrid-body-container').on('dblclick.pubgrid.td','.pub-body-td',function (e){
+				_this.element.body.on('dblclick.pubgrid.td','.pub-body-td',function (e){
 					var selRow = $(this)
 						,tdInfo=selRow.data('grid-position')
 						,rowColArr  = tdInfo.split(',');
@@ -3174,11 +3179,14 @@
 						colItem = _this.config.tColItem[colIdx]; 
 
 					if(editable ===true){
-						selRow.append(_$util.getEditForm(selRow,colItem ,rowItem));
-						var editEl = selRow.find('input'); 
-
-						editEl.val(rowItem[colItem.key]);
-						editEl.focus();
+						_this.config.isCellEdit = true; 
+						_this.config.editRowInfo = {
+							idx : rowIdx
+							,colItem : colItem
+							,rowItem : rowItem
+						};
+						
+						_$util.getEditForm(selRow,colItem ,rowItem);
 						return ; 
 					}
 	
@@ -3193,6 +3201,16 @@
 					fnDblClick.call(selRow ,{item : rowItem ,r: rowIdx ,c:colIdx , keyItem : colItem} );
 				});
 			}
+			
+			// edit focusout event
+			_this.element.body.on('focusout.pubgrid.edit','.pubGrid-edit-area',function (e){
+				e.preventDefault();
+				e.stopPropagation();
+
+				if(_this.config.isCellEdit===false) return ; 
+				
+				_this._setEditAreaData();
+			});
 	
 			_this._setSelectionRangeInfo({isMouseDown : false});
 			
@@ -3213,7 +3231,7 @@
 			}
 			
 			// body  selection 처리. 
-			_this.element.body.find('.pubGrid-body-container').on('mousedown.pubgrid.col','.pub-body-td',function (e){
+			_this.element.body.on('mousedown.pubgrid.col','.pub-body-td',function (e){
 				
 				if(e.which ===3){
 					return true; 
@@ -3423,8 +3441,8 @@
 							var addContArr = addCont.split(/\t/);
 							var jLen=addContArr.length; 
 							
-							selItem['_pubCUD'] = selItem['_pubCUD']=='_C'?'C':(selItem['_pubCUD']=='C'?'CU':'U');
-
+							_$util.setCUD(selItem);
+							
 							for(var j =0; j <jLen; j++){
 								var addColIdx = startCol+j; 
 
@@ -3503,6 +3521,42 @@
 					_this.gridKeyCtrl(e, evtKey);
 				}
 			});
+		}
+		/**
+		 * @method _setEditAreaData
+		 * @description remove edit area element
+		 */
+		,_setEditAreaData :function (){
+			if(this.config.isCellEdit===true){
+								
+				var selRow = this.element.body.find('.pubGrid-edit-area');
+				
+				var editRowInfo = this.config.editRowInfo
+					rowIdx = editRowInfo.idx
+					,rowItem = editRowInfo.rowItem
+					,colItem = editRowInfo.colItem;
+				
+				var newVal = selRow.find('.pubGrid-edit-field').val(); 
+
+				if(newVal != rowItem[colItem.key]){
+
+					colItem.maxWidth = Math.max(getCharLength(newVal||''),colItem.maxWidth);
+
+					rowItem[colItem.key] = selRow.find('.pubGrid-edit-field').val();
+					_$util.setCUD(rowItem);
+				}
+
+				var tdEle = selRow.closest('.pub-body-td').get(0);
+				
+				var addEle =tdEle.querySelector('.pub-content');
+
+				this._setCellStyle(tdEle, rowIdx ,colItem, rowItem);
+				this.valueFormatter( rowIdx, colItem,rowItem , addEle);
+				
+				this.config.isCellEdit = false;
+				this.config.editRowInfo = {};
+				selRow.remove();
+			}
 		}
 		/**
 		 * @method gridKeyCtrl
@@ -4316,7 +4370,7 @@
 	
 					var selColItem = _this.config.tColItem[_this.drag.resizeIdx]; 
 					
-					var resizeW = selColItem.maxWidth || -1; 
+					var resizeW = selColItem.maxWidth || -1;
 	
 					if(resizeW < 1){
 						var tbodyItem = _this.options.tbodyItem
@@ -4337,8 +4391,12 @@
 						resizeW = resizeW*_this.options.headerOptions.oneCharWidth+10;
 						selColItem.maxWidth=resizeW; 
 					}
-	
-					_this._setHeaderResize(e,_this, 'end' , Math.min(resizeW,_this.options.colOptions.maxWidth ));
+					
+					if(_this.options.colOptions.maxWidth != -1){
+						resizeW = Math.min(resizeW,_this.options.colOptions.maxWidth );
+					}
+
+					_this._setHeaderResize(e,_this, 'end' , resizeW);
 				})
 				
 				resizeEle.css('cursor',_this.options.headerOptions.resize.cursor);
@@ -4723,13 +4781,20 @@
 		 * @method getEditForm
 		 * @description get edit form
 		 */	
-		,getEditForm : function (editEle, tColItem){
+		,getEditForm : function (selEl, colItem, rowItem){
 			
 			var reForm =[];
+			
+			reForm.push( '<div class="pubGrid-edit-area">');
+			reForm.push( '	<input type="text" class="pubGrid-edit-field">');
+			reForm.push( '</div>');
 
-			reForm.push( '<input type="text" class="pubGrid-edit-input">');
+			selEl.append(reForm.join(''));
 
-			return reForm.join('');
+			var editEl = selEl.find('input'); 
+
+			editEl.val(rowItem[colItem.key]);
+			editEl.focus();
 		}
 		/**
 		 * @method _isMultipleSelection
@@ -4765,6 +4830,14 @@
 			}
 	
 			return {startCol : _startCol, endCol : _endCol};
+		}
+		/**
+		 * @method setCUD
+		 * @description CUD모드 변경. (c = create , u = update , d =delete)
+		 */	
+		,setCUD : function (selItem){
+			selItem['_pubCUD'] = selItem['_pubCUD']=='_C'?'C':(selItem['_pubCUD']=='C'?'CU':'U');
+			return selItem;
 		}
 		/**
 		*

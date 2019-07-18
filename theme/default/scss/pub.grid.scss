@@ -324,13 +324,25 @@
 			}
 		}
 
-		.pubGrid-edit-input{
+		.pubGrid-edit-area{
 			position: absolute;
 			top: 0px;
 			left: 0px;
 			width: 100%;
-			height: 100%;	
+			height: inherit;
+			z-index:1;
+
+			.pubGrid-edit-field{
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: inherit;
+				z-index:1;
+			}
 		}
+
+		
 	}
 	
 	.pubGrid-body-aside-cont, .pubGrid-body-left-cont, .pubGrid-body-cont {
