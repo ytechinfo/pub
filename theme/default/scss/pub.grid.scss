@@ -259,6 +259,25 @@
 		position : relative;
 		z-index: 0;
 		height: 100%;
+
+		tr.pub-body-tr{
+			&:nth-child(even) {
+				background: colorInfo($g_default_theme_name , "table_tr_even");
+			}
+			&:nth-child(odd) {
+				background: colorInfo($g_default_theme_name , "table_tr_odd");
+			}
+		}
+		
+		&.even tr.pub-body-tr{
+			&:nth-child(even) {
+				background: colorInfo($g_default_theme_name , "table_tr_odd");
+			}
+
+			&:nth-child(odd) {
+				background: colorInfo($g_default_theme_name , "table_tr_even");
+			}
+		}
 	}
 	
 	.pubGrid-body-container{
@@ -305,25 +324,6 @@
 			@include grid_box_shadow($g_default_theme_name);
 		}
 				
-		tr.pub-body-tr{
-			&:nth-child(even) {
-				background: colorInfo($g_default_theme_name , "table_tr_even");
-			}
-			&:nth-child(odd) {
-				background: colorInfo($g_default_theme_name , "table_tr_odd");
-			}
-		}
-		
-		&.even tr.pub-body-tr{
-			&:nth-child(even) {
-				background: colorInfo($g_default_theme_name , "table_tr_odd");
-			}
-
-			&:nth-child(odd) {
-				background: colorInfo($g_default_theme_name , "table_tr_even");
-			}
-		}
-
 		.pubGrid-edit-area{
 			position: absolute;
 			top: 0px;
@@ -831,6 +831,28 @@
 				}
 			}
 		}
+
+		.pubGrid-body-container-warpper{
+			
+			tr.pub-body-tr{
+				&:nth-child(even) {
+					background: colorInfo($pThemeName , "table_tr_even");
+				}
+				&:nth-child(odd) {
+					background: colorInfo($pThemeName , "table_tr_odd");
+				}
+			}
+			
+			&.even tr.pub-body-tr{
+				&:nth-child(even) {
+					background: colorInfo($pThemeName , "table_tr_odd");
+				}
+	
+				&:nth-child(odd) {
+					background: colorInfo($pThemeName , "table_tr_even");
+				}
+			}
+		}
 		
 		.pubGrid-body-container{
 			td{
@@ -846,26 +868,6 @@
 			.selection-start-col{
 				@include grid_box_shadow($pThemeName);
 			}
-		
-			tr.pub-body-tr{
-				&:nth-child(even) {
-					background: colorInfo($pThemeName , "table_tr_even");
-				}
-				&:nth-child(odd) {
-					background: colorInfo($pThemeName , "table_tr_odd");
-				}
-			}
-			
-	
-			&.even tr.pub-body-tr{
-				&:nth-child(even) {
-					background: colorInfo($pThemeName , "table_tr_odd");
-				}
-	
-				&:nth-child(odd) {
-					background: colorInfo($pThemeName , "table_tr_even");
-				}
-			} 
 		}
 		
 		.pubGrid-body-aside-cont, .pubGrid-body-left-cont, .pubGrid-body-cont {

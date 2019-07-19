@@ -27,7 +27,7 @@
 		,itemMaxCount : -1	// add시 item max로 유지할 카운트
 		,colOptions : {	// 컬럼 옵션
 			minWidth : 50  // 컬럼 최소 넓이
-			,maxWidth : 200  // 컬럼 최대 넓이
+			,maxWidth : -1  // 컬럼 최대 넓이
 		}
 		,rowOptions:{	// 로우 옵션. 
 			height: 22	// cell 높이
@@ -162,7 +162,13 @@
 		  ,defaultValue : ''	// add item default value
 		  ,colClick :function (idx,item){ console.log(idx, item)}		// cell click event
 		  ,styleClass : function (idx, item){return 'pub-bg-private';}	// cell add class
-		  
+		  ,editor : {
+			type : "text", "text, select, textarea, number, custom"
+			editorBtn : false,		// 버튼 보일지 여부.
+			editorBtnOver : false, // 오버시 버튼 보이기
+			items : [],
+			validator : function (){}
+		  }
 		}
 		*/
 		,tColItem : [] //head item 
@@ -223,7 +229,7 @@
 		return parseInt(val , 10);
 	}
 	
-	function getCharLength(s){
+	function getCharLength(s , charW){
 		var w_1 =0 , w_15 =0 , w_2=0, w_3 =0 ; // 글자 크기.
 	
 		for(var i=0,l=s.length; i<l; i++){
@@ -241,8 +247,12 @@
 				}
 			}
 		}
-	
-		return w_1 + (w_15*1.3) + (w_2*2) + (w_3*2.1);
+		
+		if(isNaN(charW)){
+			return (w_1 + (w_15*1.3) + (w_2*2) + (w_3*2.1));
+		}else{
+			return (w_1 + (w_15*1.3) + (w_2*2) + (w_3*2.1) ) * charW +10;
+		}
 	}
 	
 	var formatter= {
@@ -695,7 +705,8 @@
 			var strHtm = [], leftWidth=0, mainWidth=0 , viewColCount= 0;
 			for(var j=0; j<tci.length; j++){
 				var tciItem = tci[j];
-	
+				tciItem.maxWidth = -1;	// max width 
+
 				if(tciItem.visible===false) continue; 
 				
 				++viewColCount; 
@@ -1683,9 +1694,9 @@
 			
 			// row color change
 			if(itemIdx%2==0){
-				_this.element.body.find('.pubGrid-body-container').removeClass('even');
+				_this.element.body.removeClass('even');
 			}else{
-				_this.element.body.find('.pubGrid-body-container').addClass('even');
+				_this.element.body.addClass('even');
 			}
 			
 			for(var i =0 ; i < viewCount; i++){
@@ -3179,7 +3190,10 @@
 						colItem = _this.config.tColItem[colIdx]; 
 
 					if(editable ===true){
+						if(colItem.editor===false) return ; 
+
 						_this.config.isCellEdit = true; 
+
 						_this.config.editRowInfo = {
 							idx : rowIdx
 							,colItem : colItem
@@ -3539,10 +3553,10 @@
 				var newVal = selRow.find('.pubGrid-edit-field').val(); 
 
 				if(newVal != rowItem[colItem.key]){
+					
+					colItem.maxWidth = Math.max(getCharLength(newVal||'', this.options.headerOptions.oneCharWidth),colItem.maxWidth);
 
-					colItem.maxWidth = Math.max(getCharLength(newVal||''),colItem.maxWidth);
-
-					rowItem[colItem.key] = selRow.find('.pubGrid-edit-field').val();
+					rowItem[colItem.key] = newVal;
 					_$util.setCUD(rowItem);
 				}
 
@@ -4383,12 +4397,11 @@
 	
 							currLen = tmpVal.length;
 							if(currLen > beforeLen){
-								resizeW = Math.max(getCharLength(tmpVal||''),resizeW);
+								resizeW = Math.max(getCharLength(tmpVal||'',_this.options.headerOptions.oneCharWidth),resizeW);
 							}
-	
 							beforeLen= currLen;
 						}
-						resizeW = resizeW*_this.options.headerOptions.oneCharWidth+10;
+
 						selColItem.maxWidth=resizeW; 
 					}
 					
@@ -4785,13 +4798,29 @@
 			
 			var reForm =[];
 			
-			reForm.push( '<div class="pubGrid-edit-area">');
-			reForm.push( '	<input type="text" class="pubGrid-edit-field">');
+			var editor = colItem.editor||{};; 
+			
+			reForm.push( '<div class="pubGrid-edit-area pubGrid-edit-type-'+editor.type+'">');
+			if(editor.type =='select'){
+				reForm.push( '<select class="pubGrid-edit-field">');
+				var items = editor.items||[];
+				for(var i =0, len = items.length;i < len; i++){
+					var item = items[i];
+					reForm.push( '<option value="'+item.CODE+'">'+item.LABEL+'</option>');
+				}
+				reForm.push( '</select>');
+			}else if(editor.type =='textarea'){
+				reForm.push( '<textarea class="pubGrid-edit-field"></textarea>');
+			}else if(editor.type =='number'){
+				reForm.push( '<input type="number" class="pubGrid-edit-field">');
+			}else{
+				reForm.push( '<input type="text" class="pubGrid-edit-field">');
+			}
 			reForm.push( '</div>');
 
 			selEl.append(reForm.join(''));
 
-			var editEl = selEl.find('input'); 
+			var editEl = selEl.find('.pubGrid-edit-field'); 
 
 			editEl.val(rowItem[colItem.key]);
 			editEl.focus();

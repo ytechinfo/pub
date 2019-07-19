@@ -266,12 +266,36 @@ function getItem (type){
 			
 			var keyIdx =0; 
 			for(var key in colFirstItem){
-				colItem.push( {
+				
+				 var addColItem = {
 					key :key
 					,label:'한글'+key
 					,width:45
 					,type : (keyIdx==0 ? 'number':'string')
-				});
+					,editor : true
+				}
+
+				if(keyIdx==1){
+					addColItem.editor = {
+						type:'text'
+					}
+				}else if(keyIdx==2){
+					addColItem.editor = {
+						type:'select'
+						,items :[
+							{CODE: '111', LABEL: "파폭"}, {CODE: '2222', LABEL: "크롬"}
+						]
+					}
+				}else if(keyIdx==3){
+					addColItem.editor = {
+						type:'textarea'
+					}
+				}else if(keyIdx==4){
+					addColItem.editor = {
+						type:'number'
+					}
+				}
+				colItem.push(addColItem);
 
 				keyIdx++;
 			}
