@@ -16,10 +16,6 @@
 <script src="../plugins/excel/exceljs.js"></script>
 <script src="../plugins/filesaver/FileSaver.min.js"></script>
 
-<!-- pdf 처리 -->
-<script src="../plugins/pdf/jspdf.min.js"></script>
-<script src="../plugins/pdf/jspdf.plugin.autotable.min.js"></script>
-
 <!-- context menu -->
 <script src="../dist/pub.context.js"></script>
 <script src="../dist/pub.grid.js"></script>
@@ -335,6 +331,7 @@ function gridDraw(selector, aaa, colItem){
 		,editable : true
 		,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
 		,widthFixed : false
+		,showTooltip : true			// tooltip flag
 		,theme : $('#themeInfo').val()
 		,height:'auto'
 		,asideOptions :{

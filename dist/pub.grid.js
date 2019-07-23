@@ -22,6 +22,7 @@
 		,useDefaultFormatter: true // 기본 포멧터 사용여부
 		,editable :false	// 편집 모드 활성화
 		,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
+		,showTooltip : false			// tooltip flag
 		,theme : 'light'
 		,height: 'auto'
 		,itemMaxCount : -1	// add시 item max로 유지할 카운트
@@ -87,8 +88,9 @@
 			}
 			,util : {
 				searchFilter : function (item, key,searchVal){
-					
 					var itemVal = (item[key]||'')+'';
+
+
 	
 					if(itemVal.toLowerCase().indexOf(searchVal) > -1){
 						return true; 
@@ -158,10 +160,19 @@
 		  ,"sort": true		// sort flag
 		  ,"align": "center"	// align
 		  ,"type": "money"		// value type
-		  ,"render": "html"		// render mode
+		  ,"render": "html"		// render mode (html or text default text)
+		  ,formatter : function (obj){	// 보여질 값을 처리.
+				return obj.item.STATE;
+		  }
 		  ,defaultValue : ''	// add item default value
 		  ,colClick :function (idx,item){ console.log(idx, item)}		// cell click event
 		  ,styleClass : function (idx, item){return 'pub-bg-private';}	// cell add class
+		  ,tooltip : {
+			 show : true	// 툴팁 보일지 여부. 
+			 ,formatter : function (obj){	// 툴팁 내용
+				return obj.val;
+			 }
+		  }
 		  ,editor : {
 			type : "text", "text, select, textarea, number, custom"
 			editorBtn : false,		// 버튼 보일지 여부.
@@ -169,6 +180,7 @@
 			items : [],
 			validator : function (){}
 		  }
+		  
 		}
 		*/
 		,tColItem : [] //head item 
@@ -354,8 +366,7 @@
 	
 		return reval; 
 	}
-	
-	
+		
 	_$doc.on('mouseup.pubgrid', function (){
 		for(var key in _datastore){
 			_datastore[key]._setMouseDownFlag(false);
@@ -389,13 +400,14 @@
 				, orginData: []
 				, dataInfo : {colLen : 0, allColLen : 0, rowLen : 0, lastRowIdx : 0}
 				, rowOpt :{}
-				, sort : {}
+				, sort : {current :''}
 				, selection :{
 					startCell :{}
 				}
-				,isResize : false
-				,focus : false
-				,mouseEnter :false
+				, searchOn : false
+				, isResize : false
+				, focus : false
+				, mouseEnter :false
 			};
 			_this.eleCache = {};
 			_this._initScrollData();
@@ -406,7 +418,7 @@
 			_this.drag ={};
 			_this.addStyleTag();
 
-			_this._setSearchInfo();
+			_this._setSearchData('init');
 			
 			_this._setThead();
 			_this.setData(_this.options.tbodyItem , 'init');
@@ -897,35 +909,57 @@
 			return updItem; 
 		}
 		/**
-		 * @method _setSearchInfo
+		 * @method _setSearchData
 		 * @description 검색 정보 셋팅
 		 */
-		,_setSearchInfo: function (){
+		,_setSearchData: function (mode){
 			var settingOpt = this.options.setting; 
-	
-			this.config.orginData = this.options.tbodyItem;
+			
+			if(mode != 'search'){
+				this.config.orginData = this.options.tbodyItem;
+			}
 			
 			if(settingOpt.enabled ===true  && settingOpt.enableSearch ===true){
-				try{
-					var schField = settingOpt.configVal.search.field ||''
-						,schVal = settingOpt.configVal.search.val ||'';
+				var schArr = [];
+				var orginData = this.config.orginData;
 
-					if(schField != '' && schVal !=''){
-						var tbodyItem = this.options.tbodyItem
-							,schArr =[];
+				var schField = settingOpt.configVal.search.field ||''
+					,schVal = settingOpt.configVal.search.val ||'';
+				
+				schVal = _$util.trim(schVal); 
 
-						schVal =schVal.toLowerCase();
-						
-						for(var i =0 , len  = tbodyItem.length; i < len;i++){
-							var tmpItem =tbodyItem[i]; 
+				if(schField != '' && schVal !=''){
+					var schArr =[];
 
-							if(settingOpt.util.searchFilter(tmpItem,schField,schVal)){
-								schArr.push(tmpItem);
-							}
+					schVal =schVal.toLowerCase();
+					
+					for(var i =0 , len  = orginData.length; i < len;i++){
+						var tmpItem =orginData[i]; 
+
+						if(settingOpt.util.searchFilter(tmpItem,schField,schVal)){
+							schArr.push(tmpItem);
 						}
-						this.options.tbodyItem = schArr;
 					}
-				}catch(e){}
+
+					this.config.searchOn = true; 
+				}else{
+					this.config.searchOn = false; 
+					schArr = this.config.orginData;
+				}
+
+				if(mode =='search'){ 
+					var currSortKey = this.config.sort.current;
+
+					// 검색 시 정렬 필드 체크 해서 검색 결과 정렬하기
+					if(currSortKey !=''){ 
+						this.options.tbodyItem = schArr;
+						schArr = this._getSortList(currSortKey,this.config.sort[currSortKey].sortType);
+					}
+
+					this.setData(schArr,'search');
+				}else{
+					this.options.tbodyItem = schArr;
+				}
 			}
 		}
 		/**
@@ -992,30 +1026,19 @@
 	
 			if(gridMode =='init'){
 				// sort 값이 있으면 초기 데이타 정렬
-				if(opt.headerOptions.sort !==false){
-					var _key ='', _sortType='asc', _idx = -1;
-					if(typeof opt.headerOptions.sort ==='object'){
-						_key = opt.headerOptions.sort.key;
-						_sortType = opt.headerOptions.sort.type=='desc'?'desc':'asc';
-					}else{
-						_key = opt.headerOptions.sort;
-					}
-	
-					for(var i=0 ;i < tci.length ; i++){
-						if(tci[i].key == _key){
-							_idx = i; 
-							break; 
-						}
-					}
-					if(_idx != -1) _this.getSortList(_idx, _sortType);
+				if(typeof opt.headerOptions.sort ==='object'){
+					var _key = opt.headerOptions.sort.key
+						,_sortType = opt.headerOptions.sort.type=='desc'?'desc':'asc';
+					
+					_this.options.tbodyItem = _this._getSortList(_key, _sortType);
 				}
 			}
 			
 			if(gridMode == 'search'){
 				gridMode = 'reDraw';
 			}else{
-				if(gridMode !='init'){
-					_this._setSearchInfo();
+				if(gridMode == 'reDraw' || gridMode =='addData'){
+					_this._setSearchData(gridMode);
 				}
 			}
 			
@@ -1065,8 +1088,8 @@
 			}
 	
 			_this.setPage(pageInfo);
-	
-			if(_this.config.orginData != _this.options.tbodyItem){
+
+			if(_this.config.searchOn===true){
 				_this.gridElement.find('.pubGrid-setting').addClass('search-on');
 			}else{
 				_this.gridElement.find('.pubGrid-setting').removeClass('search-on');
@@ -1376,7 +1399,7 @@
 		 * @param  item {Object} row 값
 		 * @description foot 데이타 셋팅
 		 */
-		,valueFormatter : function (_idx ,thiItem, rowItem, addEle, returnFlag){
+		,valueFormatter : function (_idx ,thiItem, rowItem, addEle){
 			
 			var type = thiItem.type || 'string';
 			var itemVal = rowItem[thiItem.key];
@@ -1398,15 +1421,16 @@
 				}
 			}
 			
-			if(returnFlag){
-				return itemVal;
-			}else{
+			if(addEle){
 				if(thiItem.render=='html'){
 					addEle.innerHTML = itemVal||'';
 				}else{
 					addEle.textContent = itemVal;	
 				}
 			}
+
+			return itemVal;
+			
 		}
 		/**
 		 * @method _setCellStyle
@@ -1615,47 +1639,15 @@
 				_this.element.body.removeClass('pubGrid-data-empty');
 			}
 			
-			var itemIdx = _this.config.scroll.viewIdx;
-			var viewCount = _this.config.scroll.viewCount;
-	
 			var startCol=this.config.scroll.startCol 
 				, endCol=this.config.scroll.endCol;
 			
-			var tbiItem , thiItem;
-			var viewCount = _this.config.scroll.viewCount; 
-			
-			var asideItem =_this.config.aside.items; 
-	
-			var colFixedIndex = this.options.colFixedIndex;
 			var startCellInfo = _this.config.selection.startCell;
-	
-			function setSelectCell(row , col, addEle){
-				var tdEle = addEle.parentElement; 
-				if(startCellInfo.startIdx == row  && startCellInfo.startCol == col ){
-					tdEle.classList.add('col-active');
-					tdEle.classList.add('selection-start-col');
-					return ; 
-				}
-	
-				if(_this._isAllSelect()){
-					if(_this.isAllSelectUnSelectPosition(row , col)){
-						tdEle.classList.remove('col-active' );
-					}else{
-						tdEle.classList.add('col-active' );
-					}
-				}else{
-					tdEle.classList.remove('col-active' );
-	
-					if(_this.isSelectPosition(row , col)){
-						tdEle.classList.add('col-active' );
-					}
-				}
-	
-				return false; 
-			}
-	
+		
 			var fnAddStyle = _this.options.rowOptions.addStyle; 
 			
+			var itemIdx = _this.config.scroll.viewIdx;
+			var viewCount = _this.config.scroll.viewCount;
 			// aside number size check
 			if(_this.options.asideOptions.lineNumber.enabled ===true){
 				var itemViewMaxCnt = itemIdx+viewCount; 
@@ -1698,6 +1690,12 @@
 			}else{
 				_this.element.body.addClass('even');
 			}
+				
+			var tbiItem , colItem;
+			var tooltipFlag = _this.options.showTooltip===true?true:false; 
+			var asideItem =_this.config.aside.items; 
+	
+			var colFixedIndex = this.options.colFixedIndex;
 			
 			for(var i =0 ; i < viewCount; i++){
 				tbiItem = tbi[itemIdx] ||{};
@@ -1729,13 +1727,18 @@
 						tdEle =_this.element.leftContent.querySelector('[data-grid-position="'+(i+','+j)+'"]');
 						addEle =tdEle.querySelector('.pub-content');
 						
-						_this._setCellStyle(tdEle, i ,tci[j] , tbiItem)
+						colItem = tci[j];
+						_this._setCellStyle(tdEle, i ,colItem , tbiItem)
 	
 						if(overRowFlag){
 							addEle.textContent='';
 						}else{
-							this.valueFormatter( i, tci[j],tbiItem , addEle); 
-							setSelectCell(itemIdx , j ,  addEle);
+							var val = this.valueFormatter( i, colItem, tbiItem, addEle); 
+							_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
+
+							if(tooltipFlag){
+								tdEle.title = val;
+							}
 						}
 						
 						tdEle = null; 
@@ -1750,14 +1753,20 @@
 					
 					if(tdEle){
 						addEle =tdEle.querySelector('.pub-content');
-	
-						_this._setCellStyle(tdEle, i ,tci[j] , tbiItem)
+						
+						colItem = tci[j];
+
+						_this._setCellStyle(tdEle, i ,colItem , tbiItem)
 	
 						if(overRowFlag){
 							addEle.textContent='';
 						}else{
-							this.valueFormatter( i, tci[j],tbiItem , addEle);
-							setSelectCell(itemIdx , j ,  addEle);
+							var val = this.valueFormatter( i, colItem, tbiItem, addEle);
+							_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
+
+							if(tooltipFlag){
+								tdEle.title = val;
+							}
 						}
 					}
 					tdEle = null; 
@@ -2865,8 +2874,8 @@
 				}
 	
 				beforeClickObj = selEle;
-			
-				_this.setData(_this.getSortList(col_idx, sortType) ,'sort');
+				
+				_this.setSorting({key : _this.config.tColItem[col_idx].key, sortType : sortType});
 			});
 			
 			if(headerOpt.contextMenu !== false){
@@ -2989,12 +2998,13 @@
 					}
 				});
 				
-				//속도 . 
+				//버튼 클릭. 
 				settingWrapper.on('click','[data-setting-mode]',function (e){
 					var sEle = $(this)
 						,btnMode = sEle.data('setting-mode');
 	
 					if('search' == btnMode){
+					
 						var schField = schFieldEle.val()
 							,schVal = schSelEle.val();
 	
@@ -3003,23 +3013,9 @@
 							,val : schVal
 						}
 						
-						var schArr = [];
-						var orgData = _this.config.orginData;
-						
-						if($.trim(schVal)!=''){
-							schVal = schVal.toLowerCase();
-	
-							for(var i =0 , len  = orgData.length; i < len;i++){
-								if(settingOpt.util.searchFilter(orgData[i],schField,schVal)){
-									schArr.push(orgData[i]);
-								}
-							}
-							_this.setData(schArr,'search');	
-						}else{
-							_this.setData(_this.config.orginData,'search');	
-						}
-	
-						settingOpt.configVal.search = settingVal.search;						
+						settingOpt.configVal.search = settingVal.search;
+
+						_this._setSearchData('search');
 					}
 	
 					if(isFunction(settingOpt.callback)){
@@ -4069,7 +4065,7 @@
 							if(colItem.render=='html'){
 								tmpVal = item[tmpKey];
 							}else{
-								tmpVal = _this.valueFormatter( i, colItem,item,null,true); 
+								tmpVal = _this.valueFormatter( i, colItem,item); 
 							}
 						}else{
 							tmpVal = item[tmpKey];
@@ -4153,9 +4149,9 @@
 						 
 						if(dataType=='json'){
 							keyInfo[j] = colItem;
-							rowItem[tmpKey] = _this.valueFormatter( i, colItem,item,null,true);
+							rowItem[tmpKey] = _this.valueFormatter( i, colItem,item);
 						}else{
-							rowText.push(_this.valueFormatter( i, colItem,item,null,true));
+							rowText.push(_this.valueFormatter( i, colItem,item));
 						}
 					}else{
 						rowText.push('');
@@ -4259,55 +4255,48 @@
 		 * @description data sorting
 		 */
 		,setSorting : function (sortInfoArr){
+
 			if(!$.isArray(sortInfoArr)){
 				sortInfoArr = [sortInfoArr];
 			}
 
-			var tColItem = this.config.tColItem;
-
-			var keyIdx = {};
-			for(var i =0; i< tColItem.length;i++){
-				keyIdx[tColItem[i].key]= i; 
-			}
-
 			for(var i =0, len = sortInfoArr.length;i < len; i++){
 				var sortInfo = sortInfoArr[i]; 
-				this.setData(this.getSortList(keyIdx[sortInfo.key], sortInfo.sortType=='d'?'desc':'asc', sortInfo.val) ,'sort');
+				this.setData(this._getSortList(sortInfo.key, sortInfo.sortType, sortInfo.val) ,'sort');
 			}
 		}
 		/**
-		 * @method getSortList
+		 * @method _getSortList
 		 * @param  idx {Integer} item index
 		 * @param  sortType {String} 정렬 타입 ex(asc,desc)
 		 * @param  val {String,Integer} 정렬값
 		 * @description data sorting 처리.
 		 */
-		,getSortList :function (idx, sortType, val){
+		,_getSortList :function (key, sortType, val){
 			var _this = this
-				,opt = _this.options
-				,tci = _this.config.tColItem
-				,tbi = opt.tbodyItem
+				,tbi = _this.options.tbodyItem
 				,val  = val ||'';
-
-			if(idx < 0 || tbi.length < 1 || idx >= tci.length){
-				return [];
-			}
 	
-			var _key = tci[idx].key;
+			var _key = key;
 	
 			if(isUndefined(_this.config.sort[_key])){
 				_this.config.sort[_key]= {sortType : sortType};
 			}else{
 				_this.config.sort[_key].sortType=sortType;
 			}
-			
+
+			if(_this.config.sort.current != _key){
+				_this.config.sort.orginData = tbi.slice(0);
+			}
+
+			_this.config.sort.current = _key;
+						
 			function getItemVal(itemObj){
 				return itemObj[_key];
 			}
 			
 			if(sortType=='asc'){  // 오름차순
-				_this.config.sort[_key].orginList = tbi.slice(0);
-	
+				
 				tbi.sort(function (a,b){
 					var v1 = getItemVal(a)
 						,v2 = getItemVal(b);
@@ -4334,7 +4323,8 @@
 					}					
 				});
 			}else{
-				tbi = _this.config.sort[_key].orginList;
+				_this.config.sort.current = '';
+				tbi = _this.config.sort.orginData;
 			}
 	
 			return tbi; 
@@ -4789,6 +4779,41 @@
 			}
 
 			return reArr; 
+		}
+		/**
+		 * @method trim
+		 * @description trim
+		 */	
+		,trim : function(str) { 
+			return str.replace(/^\s+|\s+$/g,""); 
+		}
+		/**
+		 * @method setSelectCell
+		 * @description cell 선택
+		 */	
+		,setSelectCell : function(gridObj,startCellInfo, row , col, addEle){
+			var tdEle = addEle.parentElement; 
+			if(startCellInfo.startIdx == row  && startCellInfo.startCol == col ){
+				tdEle.classList.add('col-active');
+				tdEle.classList.add('selection-start-col');
+				return ; 
+			}
+
+			if(gridObj._isAllSelect()){
+				if(gridObj.isAllSelectUnSelectPosition(row , col)){
+					tdEle.classList.remove('col-active' );
+				}else{
+					tdEle.classList.add('col-active' );
+				}
+			}else{
+				tdEle.classList.remove('col-active' );
+
+				if(gridObj.isSelectPosition(row , col)){
+					tdEle.classList.add('col-active' );
+				}
+			}
+
+			return false; 
 		}
 		/**
 		 * @method getEditForm
