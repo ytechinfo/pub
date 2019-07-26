@@ -10,7 +10,11 @@
 
 ;(function($, window, document) {
 	"use stric1t";
-	
+
+/**
+af :  add function
+ap  : add parameter
+*/
 	var _initialized = false
 	,_$doc = $(document)
 	,_datastore = {}
@@ -720,6 +724,12 @@
 				tciItem.maxWidth = -1;	// max width 
 
 				if(tciItem.visible===false) continue; 
+
+				if(!isUndefined(tciItem.tooltip) && isFunction(tciItem.tooltip.formatter)){
+					tciItem.afTooltipFormatter = tciItem.tooltip.formatter;
+				}else {
+					tciItem.afTooltipFormatter = false; 
+				}
 				
 				++viewColCount; 
 	
@@ -1737,6 +1747,9 @@
 							_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
 
 							if(tooltipFlag){
+								if(colItem.afTooltipFormatter){
+									val = colItem.afTooltipFormatter({item : tbiItem ,r: i ,c: j , keyItem : colItem});
+								}
 								tdEle.title = val;
 							}
 						}
@@ -1765,7 +1778,12 @@
 							_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
 
 							if(tooltipFlag){
+							
+								if(colItem.afTooltipFormatter){
+									val = colItem.afTooltipFormatter({item : tbiItem ,r: i ,c: j , keyItem : colItem});
+								}
 								tdEle.title = val;
+								
 							}
 						}
 					}
