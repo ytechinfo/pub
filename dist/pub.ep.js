@@ -309,7 +309,8 @@ jQuery.fn.centerLoading = function(options) {
 		loadingImg : globalOption.loadingImg,
 		cursor:	'wait',
 		content :'',
-		contentClear : false
+		contentClear : false,
+		contentStyle : 'color:#444'
 	}
 	
 	var id,w,h,opacity;
@@ -326,7 +327,7 @@ jQuery.fn.centerLoading = function(options) {
 	strHtm.push('<div class="pub-center-loading" style="z-index:'+config.zIndex+';position:'+config.position+';width:100%;height:'+h+'px;cursor:'+config.cursor+';">');
 	strHtm.push('<div class="pub-center-loading-bg" style="background:'+config.bgColor+';opacity:'+opacity+';filter: alpha(opacity='+(parseFloat('0.4')*100)+');-moz-opacity:'+opacity+';-khtml-opacity: '+opacity+';'+(!config.contentClear?"position:absolute;":"")+'width:100%; height:'+h+'px;"></div>');
 	strHtm.push('<table style="position:absolute;z-index:3;width:100%;height:100%;"><tr><td style="vertical-align:middle;text-align:center;">')
-	strHtm.push('<div><div><img src="'+config.loadingImg+'"></div><div class="center-loading-content" style="color:#ffffff;"></div></div></td></tr></table>')
+	strHtm.push('<div><div><img src="'+config.loadingImg+'"></div><div class="center-loading-content" style="'+config.contentStyle+';"></div></div></td></tr></table>')
 	strHtm.push('</div>');
 	
 	if(!config.contentClear){
@@ -1537,7 +1538,8 @@ function contains(arr , element) {
 }
 
 function getParameterVal(name){
-	var results = new RegExp('[\?&]'+name+'=([^&#]*)').exec(window.location.href);
+	var regExp = new RegExp('[\?&]'+name+'=([^&#]*)'); 
+	var results = document.URL.match(regExp);
 	if(results==null){
 		return '';
 	}else{
