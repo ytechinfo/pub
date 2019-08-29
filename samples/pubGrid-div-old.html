@@ -16,6 +16,17 @@ html , body {
 .asdfasdfWrapper {
     height: calc(100% - 20%) !important;
 }
+
+.pubGrid-body .pub-body-tr > td .pub-content-ellipsis, .pubGrid-body .pub-body-tr > td .pub-content-ellipsis >* {
+	white-space: inherit;
+	overflow: auto;
+    text-overflow: ellipsis;
+	word-break: break-word;
+    padding: 0px;
+    margin: 0px;
+    text-align: left;
+}
+
 </style>
 </HEAD>
 <BODY>
@@ -43,36 +54,13 @@ function getItem (type){
 	var aaa = [];
 	var colItem = [];
 
-	if(type ==1){
-		for(var i =0 ;i <100000; i++){
-			aaa.push({
-				a:'aaasdfasdfasdfasdfasdfasdfa'+i
-				,b:'ddd_'+i+'asdf'
-				,c: (i*10000)
-				,d:'ddd_'+i
-				,e:'eee_'+i
-			});
-		}
-		colItem = [
-			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
-			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)}}
-			,{key :'c', label:'씨',width:100, align:'center', type : 'money'}
-			,{key :'d', label:'디',width:100 ,type : 'number', formatter : function (rowInfo){
-				
-				var item  = rowInfo.item;
-				return rowInfo.formatter(item['c'],0);
-			}}
-			,{key :'e', label:'이',width:100}
-			//,{key :'d', label:'디', hidden:true}
-		]
-	}else{
 
 		for(var i =0 ;i <1000; i++){
 			var tmpItem = {};
 
-			for(var j =0 ; j< 5;j++){
+			for(var j =0 ; j< 1;j++){
 				var colName = 'col'+j ; 
-				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
+				tmpItem[colName] =  ('contcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontcon<br/>tcontcontcontcontcontcont<br/>contcontcontcontcontcontcontcontcontcont'+i+" _ "+j) ;
 				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
 			}
 
@@ -88,7 +76,7 @@ function getItem (type){
 				,width:100
 			})
 		}
-	}
+	
 
 	return {
 		"aaa": aaa
@@ -115,7 +103,7 @@ function fn_init(){
 		,height : 'auto'
 		,height1 : 200
 		,scroll :{
-			lazyLoad : true // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
+			lazyLoad : false // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
 			,lazyLoadTime : 0 // scroll 로드 타임. 
 		}
 		,autoResize : {
@@ -129,7 +117,6 @@ function fn_init(){
 			,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
 			,horizontalEnableCount : 50
 		}
-		,page1 : false
 		,page :{
 			totalCount :1000
 			, currPage :1
@@ -137,8 +124,7 @@ function fn_init(){
 			, unitPage :10
 			,position : 'left'
 			,callback : function (no){
-				console.log(no);
-				gridObj.setData(aaa);
+				
 			}
 		}
 		,tColItem : colItem
@@ -163,7 +149,7 @@ function fn_init(){
 		,tbodyItem :aaa
 		,tfootItem :['asdf']
 		,rowOptions :{
-			height:50
+			height:30
 			,click : function (idx, item){
 				console.log(idx, item);
 			}

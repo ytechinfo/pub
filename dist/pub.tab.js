@@ -255,6 +255,22 @@
 			
 			//$(this.tabElement.find('.pubTab-item').get(idx)).find('.pubTab-item-cont').trigger('click');
 		}
+		// right icon click
+		,rightIconClick: function (item){
+			var ele; 
+			if(typeof item ==='object'){
+				ele = this.tabElement.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]');
+				ele.find('.pubTab-icon[data-posistion="right"]').trigger('click.pubtab.icon');
+			}
+		}
+		// left icon click
+		,leftIconClick: function (item){
+			var ele; 
+			if(typeof item ==='object'){
+				ele = this.tabElement.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]');
+				ele.find('.pubTab-icon[data-posistion="left"]').trigger('click.pubtab.icon');
+			}
+		}
 		/**
 		 * @method isActive
 		 * @description item active 체크.

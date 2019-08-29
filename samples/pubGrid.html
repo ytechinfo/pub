@@ -275,6 +275,11 @@ function getItem (type){
 					addColItem.editor = {
 						type:'text'
 					}
+					addColItem.tooltip ={
+						formatter: function (obj){
+							return 'asdfasdf'
+						}
+					}
 				}else if(keyIdx==2){
 					addColItem.editor = {
 						type:'select'
@@ -329,7 +334,7 @@ function gridDraw(selector, aaa, colItem){
 	var gridObj = $.pubGrid(selector,{
 		colFixedIndex : 0
 		,editable : true
-		,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
+		,selectionMode : 'row'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
 		,widthFixed : false
 		,showTooltip : true			// tooltip flag
 		,theme : $('#themeInfo').val()
@@ -463,8 +468,8 @@ function gridDraw(selector, aaa, colItem){
 
 			}
 			,contextMenu :{
-				beforeSelect :function (){
-					$(this).trigger('click');
+				beforeSelect :function (info){
+					
 				}
 				,callback: function(key,sObj) {
 					console.log(this,key,sObj);
