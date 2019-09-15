@@ -740,13 +740,14 @@ Plugin.prototype ={
 			++viewColCount; 
 
 			if(viewAllLabel){
-				tciItem.width = tciItem.label.length * 5; 
+				var labelWidth = tciItem.label.length * 5;
+				tciItem.width = labelWidth > tciItem.width ? labelWidth: tciItem.width;
 			}else{
-				tciItem.width = isNaN(tciItem.width) ? 0 :tciItem.width; 
+				tciItem.width = isNaN(tciItem.width) ? opt.colOptions.minWidth :tciItem.width; 
 			}
-			
+
 			tciItem.width = Math.max(tciItem.width, opt.colOptions.minWidth);
-			
+						
 			tciItem['_alignClass'] = tciItem.align=='right' ? 'ar' : (tciItem.align=='center'?'ac':'al');
 			cfg.tColItem[j] = tciItem;
 
