@@ -588,7 +588,7 @@ Plugin.prototype ={
 		}
 
 		if(itemHeight%unitHeight != 0){
-			itemHeightHtm.push('<div style="height:'+itemHeight%unitHeight+'px;"></div>');
+			itemHeightHtm.push('<div class="bodyHeight" style="height:'+itemHeight%unitHeight+'px;"></div>');
 			topHeightHtm.push('<div data-top-idx="'+(loopCnt)+'" style="height:0px;"></div>');
 			loopCnt+=1;
 		}
@@ -1107,7 +1107,7 @@ Plugin.prototype ={
 						scrIdx = Math.ceil(scrIdxVal);
 
 						if(scrIdx - viewIdx > 1){
-							scrIdx =  scrIdx > scrollData.maxViewItemIdx ? scrollData.maxViewItemIdx : scrIdx;
+							//scrIdx =  scrIdx > scrollData.maxViewItemIdx ? scrollData.maxViewItemIdx : scrIdx;
 							jumpFlag = true; 
 						}
 					}else if( updown=='up'){
@@ -1119,6 +1119,12 @@ Plugin.prototype ={
 							scrIdx = scrIdx -1; 
 						}
 					}
+					
+					if(scrollData.maxViewItemIdx < scrIdx){
+						//$('.bodyHeight').height($('.bodyHeight').height() +3000)
+					}
+					//$('.bodyHeight').height() + ;
+					console.log(scrollData.maxViewItemIdx, scrIdx, viewIdx, _conf.scroll.viewItemIdx)
 					
 					//console.log('-------------	##################-------------------------------------')
 					
