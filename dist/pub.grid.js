@@ -3232,16 +3232,13 @@ Plugin.prototype ={
 		if(isFunction(_this.options.rowOptions.click)){	
 
 			_this.element.body.on('click.pubgrid.row','.pub-body-tr',function (e){
-				var selRow = $(this)
-					,rowinfo=intValue(selRow.attr('rowinfo'));
+				var selRow = $(this);
 
 				if(selRow.closest('.pubGrid-body-aside-cont').length > 0){
 					return true; 
 				}
 				
-				rowinfo = _this.config.scroll.viewIdx+rowinfo;
-
-				_this.options.rowOptions.click.call(selRow ,{item : _this.options.tbodyItem[rowinfo] ,r: rowinfo} );
+				_this.options.rowOptions.click.call(null , _this.getCurrentClickInfo());
 						
 			});
 		}
@@ -3384,12 +3381,14 @@ Plugin.prototype ={
 			}	
 			var selectRangeInfo = _$util.getSelectionModeColInfo( selectionMode ,colIdx , _this.config.dataInfo ,_this.config.selection.isMouseDown);
 			
-			var selItem = _this.options.tbodyItem[selRow];
+			var selItem = _this.options.tbodyItem[selIdx];
 			var colItem = _this.config.tColItem[colIdx]; 
 
 			_this.config.currentClickInfo ={
 				column : colItem
 				,item : selItem
+				,r : selIdx
+				,c : colIdx
 			};
 			
 			if(multipleFlag && e.shiftKey) {	// shift key
