@@ -75,6 +75,7 @@ var pluginName = "pubMultiselect"
 	,message : { // 방향키 있을때 메시지
 		addEmpty : false
 		,delEmpty : false
+		,duplicate :false
 	}
 	,beforeMove : false
 	,beforeItemMove : false
@@ -692,9 +693,8 @@ Plugin.prototype ={
 
 			var addItemCount = _this.targetElement.find(opts.itemSelector+':not(.ui-draggable)').length;
 
-			_this.targetElement.find('.empty-message').remove();
-
 			var addItemKey = [];
+			var addElements = [];
 
 			selectVal.each(function (i, item){
 				tmpObj = $(item);
@@ -742,7 +742,7 @@ Plugin.prototype ={
 
 				strHtm.push(_this.getItemHtml('target',tmpVal ,selectItem ));
 
-				tmpObj.addClass(opts.addItemClass);
+				addElements.push(tmpObj);
 
 				if($.isFunction(opts.afterSourceMove)){
 					opts.afterSourceMove(tmpObj);
@@ -754,9 +754,15 @@ Plugin.prototype ={
 			}
 
 			if($.isFunction(opts.compleateSourceMove)){
-				opts.compleateSourceMove(addItemKey);
+				if(opts.compleateSourceMove(addItemKey)===false) return false;
 			}
 
+			_this.targetElement.find('.empty-message').remove();
+
+			for(var i =0; i <addElements.length; i++){
+				addElements[i].addClass(opts.addItemClass);
+			}
+			
 			if(returnFlag===true){
 				return strHtm.join('');
 			}else{
@@ -798,7 +804,7 @@ Plugin.prototype ={
 				removeItem = _this.options.sourceItem.items[_this.config.itemKey.sourceIdx[tmpKey]];
 
 				if($.isFunction(_this.options.beforeTargetMove)){
-					_this.options.beforeTargetMove($(item));
+					if(_this.options.beforeTargetMove($(item))===false) return false;
 				}
 
 				var removeFlag = false;
@@ -826,7 +832,7 @@ Plugin.prototype ={
 					_this.options.afterTargetMove(removeItem);
 				}
 			});
-
+			
 			if(Object.keys(_this.addItemList[_this.config.currPage]).length < 1){
 				_this.targetElement.empty().html(_this.getEmptyMessage());
 			}
