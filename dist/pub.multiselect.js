@@ -696,20 +696,18 @@ Plugin.prototype ={
 			var addItemKey = [];
 			var addElements = [];
 			var addItemMap = {};
+			var dupChkFlag = true;
 
 			selectVal.each(function (i, item){
 				tmpObj = $(item);
 				tmpVal=_this.getItemVal(tmpObj);
-
-				if(opts.duplicateCheck===true && _this.addItemList[_this.config.currPage][tmpVal]){
-				  if($.isFunction(opts.message.duplicate)){
-						opts.message.duplicate.call();
-					}else if(opts.message.duplicate !== false){
-						alert(opts.message.duplicate);
-					}
-
-					return false;
+				
+				var addChkFlag = typeof _this.addItemList[_this.config.currPage][tmpVal] ==='undefined'; 
+				if(dupChkFlag && addChkFlag){
+					dupChkFlag = false; 
 				}
+
+				if(!addChkFlag) return true; 
 
 				if($.isFunction(opts.beforeItemMove)){
 					if(opts.beforeItemMove(tmpObj) === false){
@@ -752,6 +750,16 @@ Plugin.prototype ={
 
 			if(addItemKey.length  < 1){
 				return ;
+			}
+
+			if(opts.duplicateCheck===true && dupChkFlag){
+			  if($.isFunction(opts.message.duplicate)){
+					opts.message.duplicate.call();
+				}else if(opts.message.duplicate !== false){
+					alert(opts.message.duplicate);
+				}
+
+				return false;
 			}
 
 			if($.isFunction(opts.compleateSourceMove)){
