@@ -695,6 +695,7 @@ Plugin.prototype ={
 
 			var addItemKey = [];
 			var addElements = [];
+			var addItemMap = {};
 
 			selectVal.each(function (i, item){
 				tmpObj = $(item);
@@ -738,7 +739,7 @@ Plugin.prototype ={
 
 				addItemKey.push(tmpVal);
 
-				_this.addItemList[_this.config.currPage][tmpVal] =_addItem;
+				addItemMap[tmpVal] =_addItem;
 
 				strHtm.push(_this.getItemHtml('target',tmpVal ,selectItem ));
 
@@ -761,6 +762,10 @@ Plugin.prototype ={
 
 			for(var i =0; i <addElements.length; i++){
 				addElements[i].addClass(opts.addItemClass);
+			}
+
+			for(var key in addItemMap){
+				_this.addItemList[_this.config.currPage][key] =addItemMap[key];
 			}
 			
 			if(returnFlag===true){
