@@ -468,6 +468,13 @@ function gridDraw(selector, aaa, colItem){
 				return ; 
 
 			}
+			,pasteBefore : function (a){
+				console.log('pasteBefore' ,a);
+				return a; 
+			}
+			,pasteAfter : function (a){
+				console.log('pasteAfter' ,a)
+			}
 			,contextMenu :{
 				beforeSelect :function (info){
 					
