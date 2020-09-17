@@ -1,7 +1,7 @@
 /**
- * pubGrid 1.0.0
+ * pubGrid v0.0.1
  * ========================================================================
- * Copyright 2016-2020 ytkim
+ * Copyright 2016-2019 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
  * url : https://github.com/ytechinfo/pub
@@ -9,7 +9,7 @@
 */
 
 ;(function($, window, document) {
-"use stric1t";
+"use strict";
 /**
 af :  add function
 ap  : add parameter
@@ -3322,7 +3322,7 @@ Plugin.prototype ={
 					,colIdx = intValue(rowColArr[1]);
 
 				var rowItem = _this.options.tbodyItem[rowIdx]
-					colItem = _this.config.tColItem[colIdx];
+					,colItem = _this.config.tColItem[colIdx];
 
 				if(editable ===true){
 					if(colItem.editor===false) return ;

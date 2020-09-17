@@ -7,7 +7,7 @@
  * url : https://github.com/ytechinfo/pub
  * demo : http://pub.moaview.com/
 */
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     var pluginName = "pubAutocomplete"
 		,initialized = false
@@ -15,49 +15,46 @@
 		,pubElement= false
         ,defaults = {
 			_currMode : 'default'
-			,viewAreaSelector : false	// autocomplete 보여질 selector
-			,showHideSelector : false	// 보이기, 숨기기 할  selector
-			,useFilter : true			// filter 사용여부. 
-			,minLength: 1				// 최소 글자수 체크. 
-			,autoClose : true			// 자동으로 창닫을지 여부. 
-			,itemkey : 'title'			// 검색결과가 object인경우 검색할 object key 
-			,height : 200				// max height
-			,selectCls : 'selected'		// 선택시 표시될 클래스
-			,emptyMessage : 'no data'	// 결과 없을때 보여줄 메시지
-			,searchDelay : -1			// 검색 지연 시간. 
-			,zIndex : 99999				// z-index 값
-			,items :[]					// 자동완성 데이터
-			,charZeroConfig : false		// 아무것도 없을때 보여줄것이 있는경우. 
-			,alwaysSourceCheck : false
-			,filter : function (itemVal , searchVal) {	// 검색 필터. 
+			,viewAreaSelector : false
+			,useFilter : true
+			,minLength: 1
+			,autoClose : true
+			,itemkey : 'title'
+			,height : 200
+			,selectCls : 'selected'
+			,emptyMessage : 'no data'
+			,searchDelay : -1
+			,items :[]
+			,charZeroConfig : false
+			,filter : function (itemVal , searchVal) {
 				searchVal = searchVal.toLowerCase();
 				return ~(itemVal).toLowerCase().indexOf(searchVal);
 			}
-			,source: function (request, response){	//items 구할때 사용. 
+			,source: function (request, response){
 				response(this.items);
 			}
-			,select : function (event,item){	// 선택시 이벤트
+			,select : function (event,item){
 				console.log('onSelect : ' + item);
 			}
 			,focus : function (e){
-				
+
 			}
-			,renderItem : function (matchData,item){	// 아이템 html 입힐때 사용.
-				return matchData;				
+			,renderItem : function (matchData,item){
+				return matchData;
 			}
 			,hilightTemplate : '<b>$1</b>'
 			,autocompleteTemplate : function (baseHtml){
 				return baseHtml;
 			}
 			,initTemplateElementEvent : function (){
-				
+
 			}
 		};
-        
+
     function Plugin(element, options) {
         this.selector = (typeof element=='object') ? element.selector : element;
 		this.selectorElement = $(this.selector);
-		this.autocompleteEle = false; 
+		this.autocompleteEle = false;
 		this.autocompleteEleId = pluginName+'-'+new Date().getTime();
         this.options = $.extend({}, defaults, options);
 		this.size = {eleH: 0,itemH : 0, itemAllH : 0};
@@ -65,7 +62,7 @@
 		this.config={
 			initStyleFlag : false
 		};
-		this.layerMouseOver =true; 
+		this.layerMouseOver =true;
 		if(pubElement ===false){
 			$('body').append('<div class="pub-autocomplete-area"></div>');
 			pubElement = $('.pub-autocomplete-area');
@@ -73,8 +70,8 @@
 
 		this._addAutocompleteTemplate();
 
-		this.init(); 
-				
+		this.init();
+
 		return element;
     }
 
@@ -82,7 +79,7 @@
 		/**
 		 * @method init
 		 * @description 자동완성 초기화
-		 */	
+		 */
 		init :function(){
 			var _this = this;
 			_this.initEvt();
@@ -90,16 +87,16 @@
 		/**
 		 * @method initEvt
 		 * @description 이벤트 초기화
-		 */	
+		 */
 		,initEvt : function (){
 			var _this = this;
-			
+
 			_this.selectorElement.on('blur.pubAutocomplete' , function (e){
 				if(!_this.layerMouseOver){
 					_this.hide();
 				}
 			});
-			
+
 			_this.selectorElement.on('focus.pubAutocomplete' , function (e){
 				if($.isFunction(_this.options.focus)){
 					_this.options.focus.call(_this,e);
@@ -110,74 +107,71 @@
 					_this._charZeroEvent();
 				}
 			});
-			
+
 			_this.selectorElement.on('keydown.pubAutocomplete' , function (e){
 				var key = window.event ? e.keyCode : e.which;
-				
+
 				switch(key){
 					case 40 : { //down
-						if(_this.getItems().length > 0){
-							_this.moveItem('down');
-						}
-						break; 
+						_this.moveItem('down');
+						break;
 					}
 					case 38 : { //up
-						if(_this.getItems().length > 0){
-							_this.moveItem('up');
-						}
-						break; 
+						_this.moveItem('up');
+						break;
 					}
 					case 27 : { //esc
 						_this.hide();
-						break; 
+						break;
 					}
 					case 13 : // enter
 					case 9 :{
 						if(_this.getSelectElement().length > 0){
 							_this.selectItem();
 						}
-						break; 
+						break;
 					}
 					default:{
-						break; 
+						break;
 					}
 				}
 			});
-			
-			var searchTimeout; 
-			var charZeroFnFlag = $.isFunction(this.options.charZeroConfig.init); 
+
+			var searchTimeout;
 			_this.selectorElement.on('keyup.pubAutocomplete' , function (e){
 				var isWordCharacter = e.key.length === 1;
 				var isBackspaceOrDelete = (e.keyCode == 8 || e.keyCode == 46);
-				
+
 				if (isWordCharacter || isBackspaceOrDelete) {
 					var searchVal = _this.selectorElement.val();
-					if(searchVal.length < _this.options.minLength  && charZeroFnFlag){
+					if(searchVal.length==0){
 						_this._charZeroEvent();
-						return ; 
-					}else if(_this.options.alwaysSourceCheck !==true && searchVal.length <= _this.options.minLength){
+						return ;
+					}else if(searchVal.length <= _this.options.minLength){
 						_this.hide();
-						return ; 
+						return ;
 					}
-					
+
 					if(_this.options.searchDelay !== -1){
-						if(searchTimeout) window.clearTimeout(searchTimeout); 
+						if(searchTimeout) window.clearTimeout(searchTimeout);
 						searchTimeout = window.setTimeout(function (){ // 검색어 완성시 검색 할수 있게 지연처리.
-							_this.gridItems('default',searchVal);	
-						}, _this.options.searchDelay ); 
+							_this.gridItems('default',searchVal);
+						}, _this.options.searchDelay );
 					}else{
-						_this.gridItems('default',searchVal);	
+						console.log(')searchVal ', searchVal)
+						_this.gridItems('default',searchVal);
 					}
+
 				}
 			});
 
 			_this.autocompleteEle.on('click','.pub-autocomplete-item',function (e){
 				var beforeSelectItem = $('.pub-autocomplete-item.'+_this.options.selectCls);
-				
+
 				if(beforeSelectItem.length > 0){
 					beforeSelectItem.removeClass(_this.options.selectCls);
 				}
-				
+
 				$(this).addClass(_this.options.selectCls);
 				_this.selectItem(e);
 			})
@@ -187,25 +181,25 @@
 			}
 		}
 		,setCssStyle : function (cssStyle){
-			var _this =this; 
+			var _this =this;
 			if(typeof cssStyle==='undefined'){
 				if(!_this.config.initStyleFlag){
 
-					var position = _this.selectorElement.offset(); 
-					
+					var position = _this.selectorElement.offset();
+
 					var pubAutocompleteWrapper = _this.autocompleteEle.closest('.pub-autocomplete-wrapper');
-					
-					var _width = this.options.width ||_this.selectorElement.outerWidth(); 
+
+					var _width = this.options.width ||_this.selectorElement.outerWidth();
 
 					pubAutocompleteWrapper.css('width',_width+'px');
 
 					if(_this.options.viewAreaSelector ===false){
-						pubAutocompleteWrapper.css({ 'left': position.left+'px' 
+						pubAutocompleteWrapper.css({ 'left': position.left+'px'
 							,'top':(position.top+_this.selectorElement.outerHeight())+'px'
 						})
 					}
-					
-					_this.config.initStyleFlag = true; 
+
+					_this.config.initStyleFlag = true;
 				}
 			}else{
 				_this.autocompleteEle.closest('.pub-autocomplete-wrapper').css(cssStyle);
@@ -213,7 +207,7 @@
 		}
 		/**
 		 * @method _charZeroEvent
-		 * @description 한글자도 입력되지 않았을때 
+		 * @description 한글자도 입력되지 않았을때
 		 */
 		,_charZeroEvent : function (){
 			if($.isFunction(this.options.charZeroConfig.init)){
@@ -224,7 +218,7 @@
 					this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html(reval);
 				}else{
 					this.calcSize();
-					
+
 					if(this.options.charZeroConfig.initEvt){
 						this.options.charZeroConfig.initEvt.call(this);
 					}
@@ -237,13 +231,13 @@
 		 * @method moveItem
 		 * @param mode {String} up or down
 		 * @description 자동완성 아래위  방향키 처리.
-		 */	
+		 */
 		,moveItem : function (mode){
 			var _this = this;
-			
+
 			if(!_this.autocompleteEle.is(':visible')){
 				_this.show();
-				return ; 
+				return ;
 			}
 
 			var selectItem;
@@ -268,10 +262,10 @@
 					}else if (sItemTop < 0){
 						_this.autocompleteEle.scrollTop(sItemTop + scrTop - _this.config.position.top);
 					}
-					
+
 					_this.selectorElement.val(unescape(selectItem.attr('data-val')));
 				}
-				
+
 			}else{
 				_this.autocompleteEle.scrollTop((upFlag ? _this.size.itemAllH :0));
 
@@ -285,15 +279,15 @@
 		/**
 		 * @method _addAutocompleteTemplate
 		 * @description 자동완성 기본 템플릿 넣기.
-		 */	
+		 */
 		,_addAutocompleteTemplate : function (){
-			var _this = this; 
+			var _this = this;
 			if($(_this.autocompleteEleId).length < 1){
 				var autotemplate = '<div id='+_this.autocompleteEleId+' class="pub-autocomplete-item-wrapper" style="max-height:'+_this.options.height+'px;"><ul class="pub-autocomplete-item-area"></ul></div>';
-				
+
 				var allTemplateHtm = [];
-				allTemplateHtm.push('<div class="pub-autocomplete-wrapper" style="z-index:'+_this.options.zIndex+';">');
-																
+				allTemplateHtm.push('<div class="pub-autocomplete-wrapper">');
+
 				if($.isFunction(_this.options.autocompleteTemplate)){
 					allTemplateHtm.push(_this.options.autocompleteTemplate(autotemplate));
 				}else{
@@ -307,12 +301,12 @@
 				}else{
 					pubElement.append(allTemplateHtm.join(''));
 				}
-				
+
 				_this.autocompleteEle =  $('#'+_this.autocompleteEleId);
 
 				if(_this.options.autoClose){
 					_this.autocompleteEle.closest('.pub-autocomplete-wrapper').on('mouseenter', function (e){
-						_this.layerMouseOver = true; 
+						_this.layerMouseOver = true;
 					}).on('mouseleave', function (e){
 						_this.layerMouseOver = false;
 					});
@@ -322,14 +316,14 @@
 		/**
 		 * @method getSelectElement
 		 * @description 선택된 html eleement 얻기.
-		 */	
+		 */
 		,getSelectElement : function (){
 			return this.autocompleteEle.find('.pub-autocomplete-item.'+ this.options.selectCls);
 		}
 		/**
 		 * @method getSelectElement
 		 * @description 선택된 html eleement 얻기.
-		 */	
+		 */
 		,getSelectItem : function (idx){
 			if(typeof idx !=='undefined'){
 				return this.getItems()[idx];
@@ -346,7 +340,7 @@
 		 * @method setEmptyMessage
 		 * @param msg {String} msg
 		 * @description empty message
-		 */	
+		 */
 		,setEmptyMessage : function (msg){
 			this.options.emptyMessage = msg;
 		}
@@ -354,15 +348,15 @@
 		 * @method setItems
 		 * @param items {Array} items
 		 * @description 자동완성 item
-		 */	
+		 */
 		,setItems : function (items){
-			this.options.items = items; 
+			this.options.items = items;
 		}
 		/**
 		 * @method getItems
 		 * @param mode {String} mode
 		 * @description 자동완성 모드에 따른 아이템 얻기.
-		 */	
+		 */
 		,getItems : function (){
 			return this._getOptionValue('items');
 		}
@@ -370,7 +364,7 @@
 		 * @method getOptions
 		 * @param mode {String} mode
 		 * @description 옵션 얻기.
-		 */	
+		 */
 		,getOptions : function (mode){
 			if(typeof mode !== 'undefined'){
 				return this.options[mode];
@@ -384,25 +378,17 @@
 		/**
 		 * @method hide
 		 * @description 숨기기
-		 */	
+		 */
 		,hide : function (){
-			if(this.options.showHideSelector !== false){
-				$(this.options.showHideSelector).hide();
-			}else{
-				this.autocompleteEle.closest('.pub-autocomplete-wrapper').hide();
-			}
+			this.autocompleteEle.closest('.pub-autocomplete-wrapper').hide();
 		}
 		/**
 		 * @method show
 		 * @description 보이기
-		 */	
+		 */
 		,show : function (){
-			if(this.options.showHideSelector !== false){
-				$(this.options.showHideSelector).show();
-			}else{
-				this.autocompleteEle.closest('.pub-autocomplete-wrapper').show();
-			}
-			
+			this.autocompleteEle.closest('.pub-autocomplete-wrapper').show();
+
 			if(!this.config.position){
 				this.config.position = this.autocompleteEle.position();
 			}
@@ -411,7 +397,7 @@
 		 * @method updatedefaults
 		 * @param opts {Object} 옵션
 		 * @description 기본 옵션 업데이트.
-		 */	
+		 */
 		,updatedefaults:function (opts){
 			defaults = $.extend({}, defaults, opts);
 		}
@@ -420,17 +406,17 @@
 		 * @param mode {String} 검색 모드
 		 * @param searchVal {String} 검색어
 		 * @description 자동완성 그리기.
-		 */	
+		 */
 		,gridItems : function (mode ,searchVal){
 			var _this = this;
-			
+
 			_this.options._currMode = mode;
 			_this.currentSearchVal = searchVal;
 
 			if(mode=='default' && $.isFunction(_this._getOptionValue('source'))){
 				_this._getOptionValue('source').call(this.options,searchVal, function (item){
 					_this.setItems(item);
-					_this._drawSearchData(mode,searchVal);	
+					_this._drawSearchData(mode,searchVal);
 				});
 			}else{
 				return _this._drawSearchData(mode,searchVal);
@@ -441,10 +427,10 @@
 		 * @param mode {String} 검색 모드
 		 * @param searchVal {String} 검색어
 		 * @description 자동완성 그리기.
-		 */	
+		 */
 		,_drawSearchData : function (mode,searchVal){
 			var _this = this;
-			
+
 			var opts =_this.getOptions()
 				,items = _this.getItems()
 				,len = items.length
@@ -456,8 +442,8 @@
 				var renderFn = _this._getOptionValue('renderItem')
 					,filterFn = _this._getOptionValue('filter')
 					,hilightTemplate = _this._getOptionValue('hilightTemplate')
-					,useFilter = _this._getOptionValue('useFilter'); 
-				
+					,useFilter = _this._getOptionValue('useFilter');
+
 				var tmpSearchVal = searchVal.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 				var re = new RegExp("(" + tmpSearchVal.split(' ').join('|') + ")", "gi");
 
@@ -465,14 +451,14 @@
 					var item = items[i];
 					var itemVal = (typeof item ==='string' ? item : item[_this._getOptionValue('itemkey')]);
 					if(searchVal==''){
-						emptyFlag = false; 
+						emptyFlag = false;
 						strHtm.push('<li class="pub-autocomplete-item" data-idx="'+i+'" data-val="'+escape(itemVal)+'">'+renderFn(itemVal,item)+'</li>');
 					}else if(useFilter===false){
-						emptyFlag = false; 
+						emptyFlag = false;
 						strHtm.push('<li class="pub-autocomplete-item" data-idx="'+i+'" data-val="'+escape(itemVal)+'">'+renderFn(_this.getHilightTemplateData(re, itemVal,hilightTemplate),item)+'</li>');
 					}else{
 						if(filterFn(itemVal , searchVal)){
-							emptyFlag = false; 
+							emptyFlag = false;
 							strHtm.push('<li class="pub-autocomplete-item" data-idx="'+i+'" data-val="'+escape(itemVal)+'">'+renderFn(_this.getHilightTemplateData(re, itemVal,hilightTemplate),item)+'</li>');
 						}
 					}
@@ -481,7 +467,7 @@
 			if(emptyFlag){
 				_this.viewEmptyMessage();
 			}else{
-				_this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html(strHtm.join('')); 
+				_this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html(strHtm.join(''));
 				_this.calcSize();
 				_this.show();
 			}
@@ -490,18 +476,18 @@
 		 * @method viewEmptyMessage
 		 * @param msg {String} message
 		 * @description 결과 없을때 보여줄 메소드
-		 */	
+		 */
 		,viewEmptyMessage : function (msg){
 			if(this._getOptionValue('emptyMessage') ===false){
 				this.hide();
 			}else{
 				if(msg){
-					this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html(msg); 
+					this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html(msg);
 				}else{
 					if($.isFunction(this._getOptionValue('emptyMessage'))){
-						this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html('<li>'+this._getOptionValue('emptyMessage').call(this)+'</li>'); 
+						this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html('<li>'+this._getOptionValue('emptyMessage').call(this)+'</li>');
 					}else{
-						this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html('<li>'+this._getOptionValue('emptyMessage')+'</li>'); 
+						this.autocompleteEle.find('.pub-autocomplete-item-area').empty().html('<li>'+this._getOptionValue('emptyMessage')+'</li>');
 					}
 				}
 			}
@@ -509,10 +495,10 @@
 		/**
 		 * @method selectItem
 		 * @description 아이템 선택
-		 */	
+		 */
 		,selectItem :  function (event){
 			this.hide();
-			
+
 			this.selectorElement.val(unescape(this.getSelectElement().attr('data-val')));
 			if($.isFunction(this.options.select)){
 				this.options.select.call(this,event,this.getSelectItem());
@@ -521,11 +507,11 @@
 		/**
 		 * @method calcSize
 		 * @description size 계산
-		 */	
+		 */
 		,calcSize : function (){
 			if(this.options.items.length > 0){
 				this.size = {
-					eleH : this.autocompleteEle.height() 
+					eleH : this.autocompleteEle.height()
 					,itemH : this.autocompleteEle.find('.pub-autocomplete-item:first').outerHeight()
 					,itemAllH : this.autocompleteEle.find('.pub-autocomplete-item-area').outerHeight()
 				};
@@ -542,7 +528,7 @@
 		 * @param item {Object} item
 		 * @param hilightTemplate {String} hilight template
 		 * @description hilight template 정보 얻기.
-		 */	
+		 */
 		,getHilightTemplateData: function (re,item, hilightTemplate){
 			return item.replace(re,hilightTemplate )
 		}
@@ -551,37 +537,37 @@
     $[ pluginName ] = function (selector,options) {
 
 		if(!selector){
-			return ; 
+			return ;
 		}
 
 		var _cacheObject = _datastore[selector];
 
 		if(typeof options === 'undefined'){
-			return _cacheObject||{}; 
+			return _cacheObject||{};
 		}
-		
+
 		if(!_cacheObject){
 			_cacheObject = new Plugin(selector, options);
 			_datastore[selector] = _cacheObject;
-			return _cacheObject; 
+			return _cacheObject;
 		}else if(typeof options==='object'){
 			_cacheObject = new Plugin(selector, options);
 			_datastore[selector] = _cacheObject;
-			return _cacheObject; 
+			return _cacheObject;
 		}
 
 		if(typeof options === 'string'){
-			var callObj =_cacheObject[options]; 
+			var callObj =_cacheObject[options];
 			if(typeof callObj ==='undefined'){
 				return options+' not found';
 			}else if(typeof callObj==='function'){
 				return _cacheObject[options].apply(_cacheObject,args);
 			}else {
-				return typeof callObj==='function'; 
+				return typeof callObj==='function';
 			}
 		}
 
-		return _cacheObject;	
+		return _cacheObject;
     };
 
 })(jQuery, window, document);
