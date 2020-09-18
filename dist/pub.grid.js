@@ -3714,7 +3714,7 @@ Plugin.prototype ={
 			var selRow = this.element.body.find('.pubGrid-edit-area');
 
 			var editRowInfo = this.config.editRowInfo
-				rowIdx = editRowInfo.idx
+				,rowIdx = editRowInfo.idx
 				,rowItem = editRowInfo.rowItem
 				,colItem = editRowInfo.colItem;
 
@@ -5027,7 +5027,7 @@ var _$util = {
 
 		var reForm =[];
 
-		var editor = colItem.editor||{};;
+		var editor = colItem.editor||{};
 
 		reForm.push( '<div class="pubGrid-edit-area pubGrid-edit-type-'+editor.type+'">');
 		if(editor.type =='select'){
