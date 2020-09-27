@@ -16,10 +16,10 @@
         ,defaults = {
 			_currMode : 'default'
 			,viewAreaSelector : false
-			,useFilter : true
+			,useFilter : true	// 필터 사용여부.
 			,minLength: 1
 			,autoClose : true
-			,itemkey : 'title'
+			,itemkey : 'title'	// string , function
 			,height : 200
 			,selectCls : 'selected'
 			,emptyMessage : 'no data'
@@ -67,6 +67,12 @@
 			$('body').append('<div class="pub-autocomplete-area"></div>');
 			pubElement = $('.pub-autocomplete-area');
 		}
+
+		this.selectorElement.attr('autocomplete',"off");
+
+		var itemKey = this.options.itemkey; 
+
+		this.config.itemKeyFn = $.isFunction(itemKey)?itemKey : function (item){return item[itemKey]};
 
 		this._addAutocompleteTemplate();
 
@@ -138,31 +144,32 @@
 			});
 
 			var searchTimeout;
-			_this.selectorElement.on('keyup.pubAutocomplete' , function (e){
-				var isWordCharacter = e.key.length === 1;
-				var isBackspaceOrDelete = (e.keyCode == 8 || e.keyCode == 46);
+			var beforeSearchVal = '';
+			_this.selectorElement.on('input.pubAutocomplete' , function (e){
+				var searchVal = _this.selectorElement.val();
 
-				if (isWordCharacter || isBackspaceOrDelete) {
-					var searchVal = _this.selectorElement.val();
-					if(searchVal.length==0){
-						_this._charZeroEvent();
-						return ;
-					}else if(searchVal.length <= _this.options.minLength){
-						_this.hide();
-						return ;
-					}
-
-					if(_this.options.searchDelay !== -1){
-						if(searchTimeout) window.clearTimeout(searchTimeout);
-						searchTimeout = window.setTimeout(function (){ // 검색어 완성시 검색 할수 있게 지연처리.
-							_this.gridItems('default',searchVal);
-						}, _this.options.searchDelay );
-					}else{
-						console.log(')searchVal ', searchVal)
-						_this.gridItems('default',searchVal);
-					}
-
+				if(beforeSearchVal == searchVal){
+					return ; 
 				}
+
+				if(searchVal.length==0){
+					_this._charZeroEvent();
+					return ;
+				}else if(searchVal.length <= _this.options.minLength){
+					_this.hide();
+					return ;
+				}
+
+				if(_this.options.searchDelay !== -1){
+					if(searchTimeout) window.clearTimeout(searchTimeout);
+					searchTimeout = window.setTimeout(function (){ // 검색어 완성시 검색 할수 있게 지연처리.
+						_this.gridItems('default',searchVal);
+					}, _this.options.searchDelay );
+				}else{
+					
+					_this.gridItems('default',searchVal);
+				}
+
 			});
 
 			_this.autocompleteEle.on('click','.pub-autocomplete-item',function (e){
@@ -438,18 +445,21 @@
 
 			var strHtm = [];
 
+
+
 			if(len > 0){
 				var renderFn = _this._getOptionValue('renderItem')
 					,filterFn = _this._getOptionValue('filter')
 					,hilightTemplate = _this._getOptionValue('hilightTemplate')
-					,useFilter = _this._getOptionValue('useFilter');
-
+					,useFilter = _this._getOptionValue('useFilter')
+					,itemKeyFn = _this.config.itemKeyFn;
+				
 				var tmpSearchVal = searchVal.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 				var re = new RegExp("(" + tmpSearchVal.split(' ').join('|') + ")", "gi");
 
 				for (var i=0; i<len; i++) {
 					var item = items[i];
-					var itemVal = (typeof item ==='string' ? item : item[_this._getOptionValue('itemkey')]);
+					var itemVal = (typeof item ==='string' ? item : itemKeyFn(item));
 					if(searchVal==''){
 						emptyFlag = false;
 						strHtm.push('<li class="pub-autocomplete-item" data-idx="'+i+'" data-val="'+escape(itemVal)+'">'+renderFn(itemVal,item)+'</li>');
