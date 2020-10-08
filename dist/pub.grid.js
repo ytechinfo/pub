@@ -2767,6 +2767,10 @@ Plugin.prototype ={
 	 * @description resize 하기
 	 */
 	,resizeDraw :function (opt){
+		if(this.gridElement.is(':visible') ===false){
+			return ;
+		}
+		
 		this.calcDimension('resize',opt);
 		return ;
 	}
