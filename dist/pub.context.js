@@ -1,7 +1,7 @@
 /**
  * pubContextMenu: v0.0.1
  * ========================================================================
- * Copyright 2016-2019 ytkim
+ * Copyright 2016-2020 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
  * url : https://github.com/ytechinfo/pub
