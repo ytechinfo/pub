@@ -1,5 +1,5 @@
 /**
- * pub.ep.js v0.0.1
+ * pub.ep.js v1.0.0
  * ========================================================================
  * Copyright 2016-2020 ytkim
  * Licensed under MIT
@@ -673,13 +673,18 @@ _$base.page ={
 			var tmpPopupObj=window.open('about:blank', tmpName, tmpPopOption);
 			
 			try{
+				try{tmpPopupObj.document.open();}catch(e){console.log(e)}
 				tmpPopupObj.document.write(inputStr.join(''));
 				tmpPopupObj.focus();
+				try{tmpPopupObj.document.close();}catch(e){console.log(e)}
+				
 			}catch(e){
 				tmpPopupObj=window.open('about:blank', tmpName+targetId, tmpPopOption);
 				try{
+					try{tmpPopupObj.document.open();}catch(e){console.log(e)}
 					tmpPopupObj.document.write(inputStr.join(''));
 					tmpPopupObj.focus();
+					try{tmpPopupObj.document.close();}catch(e){console.log(e)}
 				}catch(e1){
 					console.log(e1);
 				}
@@ -693,7 +698,11 @@ _$base.page ={
 		if(url==''){
 			try{
 				tmpiframe.attr('src','').on('load.pubep.evt', function() {
-					tmpiframe.get(0).contentWindow.document.write('<div>gubun : '+options.gubun+'</div><div>gubunkey : '+options.gubunkey+'</div><div><h2>Check iframe url : ['+url+']</h2></div>');
+					var tmpFrameObj = tmpiframe.get(0).contentWindow; 
+					try{tmpFrameObj.document.open();}catch(e){console.log(e)}
+					tmpFrameObj.document.write('<div>gubun : '+options.gubun+'</div><div>gubunkey : '+options.gubunkey+'</div><div><h2>Check iframe url : ['+url+']</h2></div>');
+					try{tmpFrameObj.document.close();}catch(e){console.log(e)}
+					
 					tmpiframe.off('load.pubep.evt');
 				});
 			}catch(e){console.log(e)}
