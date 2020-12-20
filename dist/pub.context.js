@@ -57,6 +57,7 @@ function Plugin(selector, options , uuid) {
 	this.options = $.extend({}, defaults, options);
 	this.contextData = {};
 	this.selectElement;
+	this.targetInfo;
 
 	if(pubContextElement ===false){
 		$('body').append('<div id="pub-context-area"></div>');
@@ -294,6 +295,20 @@ Plugin.prototype ={
      */
 	,getTheme : function (){
 		return this.options.theme;
+	}
+	/**
+     * @method setTargetInfo
+     * @description set context target item info
+     */
+	,setTargetInfo : function (targetInfo){
+		this.targetInfo = targetInfo;
+	}
+	/**
+     * @method setTargetInfo
+     * @description get context target item info
+     */
+	,getTargetInfo : function (){
+		return this.targetInfo;
 	}
 	/**
      * @method getCheckBoxId

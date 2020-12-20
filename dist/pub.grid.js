@@ -4754,6 +4754,14 @@ Plugin.prototype ={
 		return _this.config.tColItem[idx].width;
 	}
 	/**
+	 * @method getHeaderItems
+	 * @param  get header items
+	 * @description header items
+	 */
+	,getHeaderItems : function (){
+		return this.config.tColItem;
+	}
+	/**
 	 * @method pageNav
 	 * @param  options {Object} 옵션
 	 * @description 페이징 하기.
