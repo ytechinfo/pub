@@ -1039,9 +1039,12 @@ Plugin.prototype ={
 			if(schField != '' && schVal !=''){
 				var schArr =[];
 
-				schVal =schVal.toLowerCase();
-
-				var schRegExp = new RegExp(schVal, 'i');
+				var schRegExp;
+				try{
+					schRegExp = new RegExp(schVal, 'i');	
+				}catch(e){
+					schRegExp = new RegExp(schVal.replace(/([.?*+^$[\]\\(){}])/g, "\\$1"),'i');
+				}
 
 				for(var i =0 , len  = orginData.length; i < len;i++){
 					var tmpItem =orginData[i];
