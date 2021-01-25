@@ -93,10 +93,10 @@ var _initialized = false
 			,fixColumnPosition : -1	// fixed col position
 		}
 		,util : {
-			searchFilter : function (item, key,searchVal){
+			searchFilter : function (item, key,schRegExp){
 				var itemVal = (item[key]||'')+'';
 
-				if(itemVal.toLowerCase().indexOf(searchVal) > -1){
+				if(schRegExp.test(itemVal)){
 					return true;
 				}
 				return false;
@@ -1041,10 +1041,12 @@ Plugin.prototype ={
 
 				schVal =schVal.toLowerCase();
 
+				var schRegExp = new RegExp(schVal, 'i');
+
 				for(var i =0 , len  = orginData.length; i < len;i++){
 					var tmpItem =orginData[i];
 
-					if(settingOpt.util.searchFilter(tmpItem,schField,schVal)){
+					if(settingOpt.util.searchFilter(tmpItem, schField, schRegExp)){
 						schArr.push(tmpItem);
 					}
 				}
