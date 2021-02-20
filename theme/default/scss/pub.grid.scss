@@ -74,13 +74,13 @@
 		}
 	}
 	
-	.pubGrid-noselect {
-		-webkit-touch-callout: none;
-		-webkit-user-select: none;
-		-khtml-user-select: none;
-		-moz-user-select: none;
-		-ms-user-select: none;
-		user-select: none;		
+	.pubGrid-noselect *{
+		-webkit-touch-callout: none !important;
+		-webkit-user-select: none !important;
+		-khtml-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+		user-select: none !important;		
 	}
 	
 	.pubGrid-container-wrapper {
@@ -526,8 +526,7 @@
 		vertical-align: middle;
 		bottom:0px;
 		z-index:2;
-		padding:1px;
-		border-top: 1px solid transparent;
+		padding: 2px 0px 1px 0px;
 		background:colorInfo($g_default_theme_name , "scroll_background_color");
 	}
 	
@@ -572,7 +571,6 @@
 		margin :0px 10px 0px 10px;
 		@include opacity_val(0.6);
 		height: 100%;
-		border: 1px solid colorInfo($g_default_theme_name , "scrollbar_border_color");
 		background: colorInfo($g_default_theme_name , "scrollbar_background_color");
 		border-radius: 0.5em !important;
 		touch-action: none;
@@ -590,8 +588,7 @@
 		right:0px;
 		top:0px;
 		z-index: 3;
-		padding:1px;
-		border-left: 1px solid transparent;
+		padding:0px 1px 0px 2px;
 		background:colorInfo($g_default_theme_name , "scroll_background_color");
 	}
 	.pubGrid-vscroll-btn{
@@ -625,7 +622,6 @@
 		width:100%;
 		height:100px; 
 		@include opacity_val(0.6);
-		border: 1px solid colorInfo($g_default_theme_name , "scrollbar_border_color");
 		background:colorInfo($g_default_theme_name , "scrollbar_background_color");
 		border-radius: 0.5em !important;
 		touch-action: none;

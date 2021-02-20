@@ -46,10 +46,10 @@ html , body {
 	row
 	<select id="itemCount">
 		<option value="1" >0</option>
-		<option value="5" selected>5</option>
+		<option value="5" >5</option>
 		<option value="10" >10</option>
 		<option value="20" >20</option>
-		<option value="100" >100</option>
+		<option value="100" selected>100</option>
 		<option value="500">500</option>
 		<option value="1000">1000</option>
 		<option value="10000">10000</option>
@@ -60,8 +60,8 @@ html , body {
 	<select id="cellCount">
 		<option value="1" >1</option>
 		<option value="5" >5</option>
-		<option value="10"selected>10</option>
-		<option value="20" >20</option>
+		<option value="10">10</option>
+		<option value="20" selected>20</option>
 		<option value="100">100</option>
 	</select>
 	theme
@@ -452,6 +452,10 @@ function gridDraw(selector, aaa, colItem){
 		,bodyOptions : {
 			cellDblClick : function (itemInfo){
 				//console.log('cellDblClick', itemInfo)
+			}
+			// 방향키 컨트롤 . 
+			,keyNavHandler : function(moveInfo){
+				console.log(moveInfo);
 			}
 		}
 		,tbodyItem : aaa

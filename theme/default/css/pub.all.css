@@ -72,12 +72,12 @@
   z-index: 3;
 }
 
-.pubGrid-wrapper .pubGrid-noselect {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+.pubGrid-wrapper .pubGrid-noselect * {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
 }
 
 .pubGrid-wrapper .pubGrid-container-wrapper {
@@ -181,9 +181,9 @@
 
 .pubGrid-wrapper .pubGrid-header-container .pub-header-tr .pub-header-resizer {
   position: absolute;
-  right: -1px;
+  right: -2px;
   top: 0px;
-  width: 2px;
+  width: 4px;
   height: inherit;
   cursor: col-resize;
   z-index: 2;
@@ -536,8 +536,7 @@
   vertical-align: middle;
   bottom: 0px;
   z-index: 2;
-  padding: 1px;
-  border-top: 1px solid transparent;
+  padding: 2px 0px 1px 0px;
   background: #f1f1f1;
 }
 
@@ -600,7 +599,6 @@
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
   filter: alpha(opacity=60);
   height: 100%;
-  border: 1px solid #aaaaaa;
   background: #c1c1c1;
   border-radius: 0.5em !important;
   -ms-touch-action: none;
@@ -619,8 +617,7 @@
   right: 0px;
   top: 0px;
   z-index: 3;
-  padding: 1px;
-  border-left: 1px solid transparent;
+  padding: 0px 1px 0px 2px;
   background: #f1f1f1;
 }
 
@@ -665,7 +662,6 @@
   -khtml-opacity: 0.6;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
   filter: alpha(opacity=60);
-  border: 1px solid #aaaaaa;
   background: #c1c1c1;
   border-radius: 0.5em !important;
   -ms-touch-action: none;
