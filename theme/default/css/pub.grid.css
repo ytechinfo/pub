@@ -181,21 +181,24 @@
 
 .pubGrid-wrapper .pubGrid-header-container .pub-header-tr .pub-header-resizer {
   position: absolute;
-  right: -5px;
+  right: -1px;
   top: 0px;
-  width: 8px;
+  width: 2px;
   height: inherit;
   cursor: col-resize;
-  z-index: 1;
+  z-index: 2;
 }
 
 .pubGrid-wrapper .pubGrid-header-container .pub-header-tr .pub-header-resizer:hover {
   background: #82c5c0;
+  width: 12px;
+  right: -6px;
 }
 
 .pubGrid-wrapper .pubGrid-header-container .pub-header-tr .pub-header-help-wrapper {
   position: absolute;
   top: 0px;
+  z-index: 1;
 }
 
 .pubGrid-wrapper .pubGrid-header-container .pub-header-tr .pub-header-help-wrapper .pub-header-help {

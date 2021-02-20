@@ -185,21 +185,24 @@
 
 			.pub-header-resizer{
 				position: absolute;
-				right:-5px;
+				right:-1px;
 				top: 0px;
-				width: 8px;
+				width: 2px;
 				height:inherit;
 				cursor: col-resize;
-				z-index: 1;
+				z-index: 2;
 			}
 	
 			.pub-header-resizer:hover{
 				background:colorInfo($g_default_theme_name , "move_header_background");
+				width:12px;
+				right: -6px;
 			}
 
 			.pub-header-help-wrapper{
 				position: absolute;
 				top:0px;
+				z-index: 1;
 				
 				.pub-header-help{ 
 					position:absolute;
