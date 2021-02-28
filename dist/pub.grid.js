@@ -1370,6 +1370,7 @@ Plugin.prototype ={
 			+'			  <div class="pubGrid-hscroll-bar"></div>'
 			+' 			  <div class="pubGrid-hscroll-right pubGrid-hscroll-btn" data-pubgrid-btn="R"><svg width="8px" height="'+hArrowWidth+'px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="0,0 0,100 90,50" fill="#737171"/></g></svg></div>'
 			+'			</div>'
+			+'			<div class="pubGrid-hscroll-edge" style="right:'+(_this.options.scroll.vertical.width-1)+'px;"></div>'
 			+' 		</div>'
 			+' 		<div id="'+_this.prefix+'_resizeHelper" class="pubGrid-resize-helper"></div>'
 			+' 	</div>'
@@ -1749,6 +1750,7 @@ Plugin.prototype ={
 				_this.element.status = $('#'+_this.prefix+'_status');
 				_this.element.vScrollBar = $('#'+_this.prefix+'_vscroll .pubGrid-vscroll-bar');
 				_this.element.hScrollBar = $('#'+_this.prefix+'_hscroll .pubGrid-hscroll-bar');
+				_this.element.hScrollEdge = $('#'+_this.prefix+'_hscroll .pubGrid-hscroll-edge');
 				_this.element.resizeHelper = $('#'+_this.prefix+'_resizeHelper');	// resize helper
 
 				// query selector
@@ -2168,7 +2170,13 @@ Plugin.prototype ={
 			var gridContTotW = cfg.gridWidth.total;
 
 			cfg.scroll.hUse = true;
-			$('#'+_this.prefix+'_hscroll').css('padding-right',(vScrollFlag?_this.options.scroll.vertical.width:0));
+			if(vScrollFlag){
+				$('#'+_this.prefix+'_hscroll').css('padding-right',_this.options.scroll.vertical.width);
+				_this.element.hScrollEdge.show();
+			}else{
+				$('#'+_this.prefix+'_hscroll').css('padding-right',0);
+				_this.element.hScrollEdge.hide();
+			}
 			$('#'+_this.prefix+'_hscroll').show();
 
 			var hscrollW = $('#'+_this.prefix+'_hscroll').find('.pubGrid-hscroll-bar-area').width();

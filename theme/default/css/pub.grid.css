@@ -535,9 +535,20 @@
   position: absolute;
   vertical-align: middle;
   bottom: 0px;
-  z-index: 2;
-  padding: 2px 0px 1px 0px;
+  z-index: 3;
+  border-top: 1px solid #d5d5d8;
+  padding: 1px 0px 1px 0px;
   background: #f1f1f1;
+}
+
+.pubGrid-wrapper .pubGrid-hscroll .pubGrid-hscroll-edge {
+  position: absolute;
+  right: 13px;
+  top: 0px;
+  width: 1px;
+  height: 100%;
+  z-index: 10;
+  border-left: 1px solid #d5d5d8;
 }
 
 .pubGrid-wrapper .pubGrid-hscroll-btn {
@@ -617,7 +628,8 @@
   right: 0px;
   top: 0px;
   z-index: 3;
-  padding: 0px 1px 0px 2px;
+  border-left: 1px solid #d5d5d8;
+  padding: 0px 1px 0px 1px;
   background: #f1f1f1;
 }
 
@@ -920,7 +932,12 @@
 }
 
 .pub-theme-dark .pubGrid-wrapper .pubGrid-hscroll {
+  border-top: 1px solid #6d6d75;
   background: #262729;
+}
+
+.pub-theme-dark .pubGrid-wrapper .pubGrid-hscroll .pubGrid-hscroll-edge {
+  border-left: 1px solid #6d6d75;
 }
 
 .pub-theme-dark .pubGrid-wrapper .pubGrid-hscroll-bar {
@@ -933,6 +950,7 @@
 }
 
 .pub-theme-dark .pubGrid-wrapper .pubGrid-vscroll {
+  border-left: 1px solid #6d6d75;
   background: #262729;
 }
 
