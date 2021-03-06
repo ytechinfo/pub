@@ -16,6 +16,7 @@ ap  : add parameter
 */
 var _initialized = false
 ,_$doc = $(document)
+,pubGridLayoutElement = false
 ,_datastore = {}
 ,_defaults = {
 	blankSpaceWidth : 1		// 오른쪽 끝 공백 값
@@ -210,24 +211,7 @@ var _initialized = false
 		'sortup' : '<svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="50,0 0,100 100,100" fill="#737171"></polygon></g></svg>'
 		,'sortdown' : '<svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="0,0 100,0 50,90" fill="#737171"></polygon></g></svg>'
 	}
-}
-,agt = navigator.userAgent.toLowerCase()
-,_broswer = ((function (){
-	if (agt.indexOf("msie") != -1) return 'msie';
-	if (agt.indexOf("chrome") != -1) return 'chrome';
-	if (agt.indexOf("firefox") != -1) return 'firefox';
-	if (agt.indexOf("safari") != -1) return 'safari';
-	if (agt.indexOf("opera") != -1) return 'opera';
-	if (agt.indexOf("mozilla/5.0") != -1) return 'mozilla';
-	if (agt.indexOf("staroffice") != -1) return 'starOffice';
-	if (agt.indexOf("webtv") != -1) return 'WebTV';
-	if (agt.indexOf("beonex") != -1) return 'beonex';
-	if (agt.indexOf("chimera") != -1) return 'chimera';
-	if (agt.indexOf("netpositive") != -1) return 'netPositive';
-	if (agt.indexOf("phoenix") != -1) return 'phoenix';
-	if (agt.indexOf("skipstone") != -1) return 'skipStone';
-	if (agt.indexOf("netscape") != -1) return 'netscape';
-})());
+};
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -336,6 +320,12 @@ function copyStringToClipboard (prefix , copyText) {
 
 function Plugin(element, options) {
 	this._initialize(element, options);
+
+	if(pubGridLayoutElement ===false){
+		$('body').append('<div id="pub-grid-layout-area"></div>');
+		pubGridLayoutElement = $('#pub-grid-layout-area');
+	}
+
 	return this;
 }
 
@@ -3145,7 +3135,7 @@ Plugin.prototype ={
 			});
 		}else{
 
-			settingWrapper.find('.pubGrid-setting').on('click', function (e){
+			settingWrapper.find('.pubGrid-setting').on('click.pubgrid.setting', function (e){
 				if(settingWrapper.hasClass('open')){
 					settingWrapper.removeClass('open');
 				}else{
@@ -3683,8 +3673,10 @@ Plugin.prototype ={
 
 			if(!_this.config.focus) return ;
 
+			var evtTargetEle = $(e.target); 
+			
 			// 설정 영역 keydown 처리
-			if($(e.target).closest('.pubGrid-setting-area').length > 0) return true;
+			if(evtTargetEle.closest('.pubGrid-setting-area').length > 0) return true;
 
 			var evtKey = window.event ? e.keyCode : e.which;
 
@@ -3723,6 +3715,12 @@ Plugin.prototype ={
 					return false;
 				}else if(evtKey==86){ // ctrl + v
 					_this.element.pasteArea.focus();
+					return true;
+				}else if(evtKey==70){
+					e.preventDefault();
+					e.stopPropagation();
+					// to do ctrl+f 
+					//console.log('aaa');
 					return true;
 				}
 			}
@@ -5028,14 +5026,18 @@ var _$util = {
 		var reForm =[];
 
 		var editor = colItem.editor||{};
-
+		
 		reForm.push( '<div class="pubGrid-edit-area pubGrid-edit-type-'+editor.type+'">');
 		if(editor.type =='select'){
 			reForm.push( '<select class="pubGrid-edit-field">');
 			var items = editor.items||[];
+			var itemKey = objectMerge({code : 'CODE', label : 'LABEL'}, editor.itemKey) ;
+			var codeKey = itemKey.code;
+			var labelKey = itemKey.label;
+			
 			for(var i =0, len = items.length;i < len; i++){
 				var item = items[i];
-				reForm.push( '<option value="'+item.CODE+'">'+item.LABEL+'</option>');
+				reForm.push( '<option value="'+item[codeKey]+'">'+item[labelKey]+'</option>');
 			}
 			reForm.push( '</select>');
 		}else if(editor.type =='textarea'){
