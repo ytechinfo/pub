@@ -448,7 +448,8 @@
 			if(tabEle.length > 0){
 
 				var titEle = tabEle.find('.pubTab-item-title');
-
+				
+				tabEle.attr('title', tit);
 				titEle.empty().html(tit);
 
 				if(overwriteFlag){
@@ -480,7 +481,10 @@
 
 				this.options.items[tabEle.index()] = objectMerge(this.options.items[tabEle.index()], item);
 
-				titEle.empty().html(this.options.items[tabEle.index()][this.options.itemKey.title]);
+				var tit = this.options.items[tabEle.index()][this.options.itemKey.title];
+
+				tabEle.attr('title', tit);
+				titEle.empty().html(tit);
 
 				if(enabled !== false){
 					tabEle.find('.pubTab-item-cont').trigger('click');

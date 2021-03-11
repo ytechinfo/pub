@@ -284,6 +284,12 @@ var formatter= {
 	}
 }
 
+function evtPos(e){
+	var oe = e.originalEvent.touches
+		,evt = oe && oe[0] ? oe[0] : e;
+
+	return {x : evt.pageX, y : evt.pageY};
+}
 
 function getHashCode (str){
 	var hash = 0;
@@ -2388,16 +2394,15 @@ Plugin.prototype ={
 		_this.element.hScrollBar.on('touchstart.pubhscroll mousedown.pubhscroll',function (e){
 			e.stopPropagation();
 
-			var oe = e.originalEvent.touches;
 			var ele = $(this);
 			var data = {};
 
 			data.left = _this.config.scroll.left
-			data.pageX = oe ? oe[0].pageX : e.pageX;
+			data.pageX = evtPos(e).x;
 
 			ele.addClass('active');
 
-			$(document).on('touchmove.pubhscroll mousemove.pubhscroll', function (e){
+			$(document).on('touchmove.pubhscroll mousemove.pubhscroll', function (e1){
 
 				if(startTime==''){
 					startTime = new Date().getTime();
@@ -2409,13 +2414,13 @@ Plugin.prototype ={
 
 				scrollbarDragTimeer = setTimeout(function() {
 					startTime='';
-					_this.horizontalScroll(data, e, 'move');
+					_this.horizontalScroll(data, e1, 'move');
 				}, hDragDelay);
-			}).on('touchend.pubhscroll mouseup.pubhscroll mouseleave.pubhscroll', function (e){
+			}).on('touchend.pubhscroll mouseup.pubhscroll mouseleave.pubhscroll', function (e1){
 				ele.removeClass('active');
 				clearTimeout(scrollbarDragTimeer);
 				startTime='';
-				_this.horizontalScroll(data,e, 'end');
+				_this.horizontalScroll(data, e1, 'end');
 			});
 
 			return true;
@@ -2429,15 +2434,15 @@ Plugin.prototype ={
 		_this.element.vScrollBar.off('touchstart.pubvscroll mousedown.pubvscroll');
 		_this.element.vScrollBar.on('touchstart.pubvscroll mousedown.pubvscroll',function (e){
 			e.stopPropagation();
-			var oe = e.originalEvent.touches;
+			
 			var ele = $(this);
 			var data = {};
 			data.top= _this.config.scroll.top;
-			data.pageY = oe ? oe[0].pageY : e.pageY;
+			data.pageY = evtPos(e).y;
 
 			ele.addClass('active');
 
-			$(document).on('touchmove.pubvscroll mousemove.pubvscroll', function (e){
+			$(document).on('touchmove.pubvscroll mousemove.pubvscroll', function (e1){
 				if(startTime==''){
 					startTime = new Date().getTime();
 				}
@@ -2448,17 +2453,17 @@ Plugin.prototype ={
 
 				scrollbarDragTimeer = setTimeout(function() {
 					startTime='';
-					_this.verticalScroll( data,e , 'move');
+					_this.verticalScroll( data, e1, 'move');
 
 					if(tooltipFlag){
 						tooltipEle.text(_this.config.scroll.viewIdx+1);
 						tooltipEle.show();
 					}
 				}, vDragDelay);
-			}).on('touchend.pubvscroll mouseup.pubvscroll mouseleave.pubvscroll', function (e){
+			}).on('touchend.pubvscroll mouseup.pubvscroll mouseleave.pubvscroll', function (e1){
 				ele.removeClass('active');
 				clearTimeout(scrollbarDragTimeer);
-				_this.verticalScroll(data, e , 'end');
+				_this.verticalScroll(data, e1, 'end');
 				startTime='';
 
 				if(tooltipFlag){
@@ -2502,11 +2507,8 @@ Plugin.prototype ={
 	/**
 	* 세로 스크롤 드래그 이동
 	*/
-	,verticalScroll : function (data,e, type){
-		var oe = e.originalEvent.touches
-		,oy = oe ? oe[0].pageY : e.pageY;
-
-		oy = data.top+(oy - data.pageY);
+	,verticalScroll : function (data, e, type){
+		var oy = data.top+(evtPos(e).y - data.pageY);
 
 		this.moveVerticalScroll({pos :oy});
 		if(type=='end'){
@@ -2611,10 +2613,8 @@ Plugin.prototype ={
 	/**
 	* 가로 스크롤 드래그 이동
 	*/
-	,horizontalScroll : function (data ,e, type){
-		var oe = e.originalEvent.touches
-		,ox = oe ? oe[0].pageX : e.pageX;
-		ox = data.left+(ox - data.pageX);
+	,horizontalScroll : function (data, e, type){
+		var ox = data.left+(evtPos(e).x - data.pageX);
 
 		this.moveHorizontalScroll({pos : ox});
 
@@ -3408,11 +3408,11 @@ Plugin.prototype ={
 			if(e.which ===3){
 				return true;
 			}
+			var evtInfo = evtPos(e);
 
-			var oe = e.originalEvent.touches;
-			var startPageX = oe ? oe[0].pageX : e.pageX;
-			var startPageY = oe ? oe[0].pageY : e.pageY;
-
+			var	startPageX = evtInfo.x
+				,startPageY = evtInfo.y;
+			
 			var position  = _this.element.body.offset();
 
 			var _l  = position.left
@@ -3424,9 +3424,10 @@ Plugin.prototype ={
 				// mouse darg scroll
 				$(document).on('touchmove.pubgrid.body.drag mousemove.pubgrid.body.drag', function (e1){
 
-					var oe1 = e1.originalEvent.touches;
-					var movePageX = oe1 ? oe1[0].pageX : e1.pageX;
-					var movePageY = oe1 ? oe1[0].pageY : e1.pageY;
+					var evtInfo1 = evtPos(e1);
+
+					var movePageX = evtInfo1.x
+						, movePageY = evtInfo1.y;
 
 					_this.config.mouseScrollDirectionX =false;
 					if(movePageX < _l){
@@ -4587,13 +4588,13 @@ Plugin.prototype ={
 
 			resizeEle.css('cursor',_this.options.headerOptions.resize.cursor);
 			resizeEle.on('touchstart.pubresizer mousedown.pubresizer',function (e){
-				var oe = e.originalEvent.touches;
+				
 				var moveStart = false;
 				colResize(_this, $(this));
 
 				_this.element.resizeHelper.show().css('left', (_this.drag.positionLeft+_this.drag.totColW)+'px');
 
-				var startX = oe ? oe[0].pageX : e.pageX;
+				var startX = evtPos(e).x;
 				_this.drag.pageX = startX;
 				_this.drag.ele.addClass('pubGrid-move-header')
 
@@ -4603,8 +4604,7 @@ Plugin.prototype ={
 
 				_$doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e1){
 					if(!moveStart){
-						var oe1 = e1.originalEvent.touches;
-						var moveX = oe1 ? oe1[0].pageX : e1.pageX;
+						var moveX = evtPos(e).x;
 						if( moveX > startX+10 || moveX < startX-10){
 							_this.element.container.addClass('pubGrid-resize-mode');
 							moveStart =true;
@@ -4660,19 +4660,16 @@ Plugin.prototype ={
 	 * @param  mode {String} 그리드 모드
 	 * @description reisze 드래그 end
 	 */
-	,_setHeaderResize : function (e,_this , mode, resizeW){
+	,_setHeaderResize : function (e, _this, mode, resizeW){
 
 		if (!_this.drag) return false;
 
 		var drag = _this.drag;
 
-		var w = resizeW, ox;
+		var w = resizeW, ox = 0;
 
 		if(isUndefined(resizeW)){
-			var oe = e.originalEvent.touches;
-
-			ox = oe ? oe[0].pageX : e.pageX;
-
+			ox = evtPos(e).x;
 			w = resizeW ||(drag.colW + (ox - drag.pageX));
 		}
 
