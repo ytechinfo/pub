@@ -2271,8 +2271,8 @@ Plugin.prototype ={
 		var _this = this
 			,_conf = _this.config;
 
-		_this.element.body.off('mousewheel DOMMouseScroll');
-		_this.element.body.on('mousewheel DOMMouseScroll', function(e) {
+		_this.element.container.off('mousewheel DOMMouseScroll');
+		_this.element.container.on('mousewheel DOMMouseScroll', function(e) {
 			var oe = e.originalEvent;
 			var delta = 0;
 
@@ -2996,6 +2996,7 @@ Plugin.prototype ={
 						}
 					}
 				}
+				e.stopPropagation();
 			});
 		}
 
