@@ -433,7 +433,7 @@ Plugin.prototype ={
 	}
 	// 스크롤 데이터 초기화
 	,_initScrollData : function (){
-		this.config.scroll = {containerLeft :0, before:{},top :0 , left:0, startCol:0, endCol : 0, viewIdx : 0, vBarPosition :0 , hBarPosition :0 , maxViewCount:0, viewCount : 0, vTrackHeight:0,hTrackWidth:0};
+		this.config.scroll = {containerLeft :0, before:{},top :0 , left:0, startCol:0, endCol : 0, viewIdx : 0, vBarPosition :0 , hBarPosition :0 , maxViewCount:0, viewCount : 0, vTrackHeight:0, hTrackWidth:0, verticalScrollTimer: -1, horizontalScrollTimer: -1, mouseDown: false};
 	}
 	/**
 	 * @method _setGridContainerWidth
@@ -1486,66 +1486,9 @@ Plugin.prototype ={
 			this.getTbodyAsideHtml(mode);
 		}
 
-		function bodyHtm (_this , mode , type){
-			var clickFlag = false
-				,tci = _this.config.tColItem
-				,colLen = tci.length
-				,thiItem;
-
-			var strHtm = [];
-
-			var contTypeClass = type=='left'?'.pubGrid-body-left-cont':'.pubGrid-body-cont';
-			//console.log(mode, _this.config.scroll.maxViewCount);
-			var tmpeElementBody =  _this.element.body.find(contTypeClass);
-
-			var startCol =0, endCol = tci.length;
-
-			if(type=='left'){
-				endCol = _this.options.colFixedIndex;
-			}else if(type=='cont'){
-				startCol = _this.options.colFixedIndex;
-			}
-
-			for(var i =0 ; i < _this.config.scroll.maxViewCount; i++){
-
-				if(mode != 'init' && tmpeElementBody.find('[rowinfo="'+i+'"]').length > 0){
-					if(i >= _this.config.scroll.viewCount){
-						tmpeElementBody.find('[rowinfo="'+i+'"]').hide();
-					}else{
-						tmpeElementBody.find('[rowinfo="'+i+'"]').show();
-					}
-				}else{
-					strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
-
-					for(var j=startCol ;j < endCol; j++){
-						thiItem = tci[j];
-						clickFlag = thiItem.colClick;
-
-						strHtm.push('<td scope="col" class="pub-body-td" data-grid-position="'+i+','+j+'"><div class="pub-content pub-content-ellipsis ' +thiItem['_alignClass']+' '+ (clickFlag?'pub-body-td-click':'') +'"></div></td>');
-					}
-					strHtm.push('</tr>');
-				}
-			}
-
-			if(mode=='init'){
-				var bodyHtm = '';
-				bodyHtm +=_this._getColGroup(_this.prefix+'colbody', type);
-				bodyHtm += '<tbody class="pubGrid-body-tbody">'+strHtm.join('')+'</tbody>';
-
-				tmpeElementBody.empty().html(bodyHtm);
-
-			}else{
-				strHtm = strHtm.join('');
-				if(strHtm != ''){
-					tmpeElementBody.append(strHtm);
-				}
-				return true;
-			}
-		}
-
 		if(mode=='init' || this.config.dataInfo.rowLen > 0){
-			bodyHtm (this,mode,'left');
-			return bodyHtm (this,mode, 'cont');
+			_$template.bodyHtm (this, mode, 'left');
+			return _$template.bodyHtm (this, mode, 'cont');
 		}
 
 		return false;
@@ -2306,84 +2249,20 @@ Plugin.prototype ={
 			}
 		});
 
-		var scrollTimer , mouseDown = false
-			,vBgDelay = _this.options.scroll.vertical.bgDelay
-			,hBgDelay = _this.options.scroll.horizontal.bgDelay;
-
 		$('#'+_this.prefix+'_vscroll .pubGrid-vscroll-bar-bg').off('mousedown touchstart mouseup touchend mouseleave');
 		$('#'+_this.prefix+'_vscroll .pubGrid-vscroll-bar-bg').on('mousedown touchstart',function(e) {
-			mouseDown = true;
-			var evtY = e.offsetY;
-			var upFlag =evtY> _this.config.scroll.top ? false :true;
-			var loopcount =5;
-
-			function scrollMove(pEvtY, pTop, vThumbHeight, oneRowMove){
-				clearTimeout(scrollTimer);
-
-				pTop= pTop+((upFlag?-1:1) * (oneRowMove *loopcount));
-
-				if(upFlag){
-					if( pEvtY >= pTop ){
-						mouseDown = false
-						pTop = pEvtY;
-					}
-				}else{
-					if(pEvtY <= (pTop +vThumbHeight)){
-						mouseDown = false
-						pTop = pEvtY-vThumbHeight;
-					}
-				}
-
-				_this.moveVerticalScroll({pos :pTop});
-
-				if(mouseDown){
-					scrollTimer = setTimeout(function() {
-						scrollMove(pEvtY, pTop, vThumbHeight, oneRowMove*_this.options.scroll.horizontal.speed);
-					}, vBgDelay);
-				}
-			}scrollMove(evtY, _this.config.scroll.top, _this.config.scroll.vThumbHeight, _this.config.scroll.oneRowMove *_this.options.scroll.horizontal.speed);
-
+			_$scroll.verticalMove(_this, e.offsetY, _this.config.scroll.top, _this.config.scroll.vThumbHeight, _this.config.scroll.oneRowMove *_this.options.scroll.horizontal.speed);
 		}).on('mouseup touchend mouseleave',function(e) {
-			mouseDown = false;
-			clearTimeout(scrollTimer);
+			_this.config.scroll.mouseDown = false;
+			clearTimeout(_this.config.scroll.verticalScrollTimer);
 		});
 
 		$('#'+_this.prefix+'_hscroll .pubGrid-hscroll-bar-bg').off('mousedown touchstart mouseup touchend mouseleave');
 		$('#'+_this.prefix+'_hscroll .pubGrid-hscroll-bar-bg').on('mousedown touchstart',function(e) {
-			mouseDown = true;
-			var evtX = e.offsetX;
-			var leftFlag =evtX > _this.config.scroll.left ? false :true;
-			var loopcount =10;
-
-			function scrollMove(pEvtX, pLeft, hThumbWidth, oneColMove){
-				clearTimeout(scrollTimer);
-
-				pLeft = pLeft+((leftFlag?-1:1) * (oneColMove*loopcount));
-
-				if(leftFlag){
-					if( pEvtX >= pLeft ){
-						mouseDown = false
-						pLeft = pEvtX;
-					}
-				}else{
-					if(pEvtX <= (pLeft +hThumbWidth)){
-						mouseDown = false
-						pLeft = pEvtX-hThumbWidth;
-					}
-				}
-
-				_this.moveHorizontalScroll({pos : pLeft});
-
-				if(mouseDown){
-					scrollTimer = setTimeout(function() {
-						scrollMove(pEvtX, pLeft, hThumbWidth, oneColMove);
-					}, hBgDelay);
-				}
-			}scrollMove(evtX,_this.config.scroll.left , _this.config.scroll.hThumbWidth, _this.config.scroll.oneColMove);
-
+			_$scroll.horizontalMove(_this, e.offsetX, _this.config.scroll.left, _this.config.scroll.hThumbWidth, _this.config.scroll.oneColMove);
 		}).on('mouseup touchend mouseleave',function(e) {
-			mouseDown = false;
-			clearTimeout(scrollTimer);
+			_this.config.scroll.mouseDown = false;
+			clearTimeout(_this.config.scroll.horizontalScrollTimer);
 		});
 
 		var scrollbarDragTimeer;
@@ -3356,7 +3235,7 @@ Plugin.prototype ={
 						,rowItem : rowItem
 					};
 
-					_$util.getEditForm(selRow,colItem ,rowItem);
+					_$template.getEditForm(selRow, colItem, rowItem);
 					return ;
 				}
 
@@ -4957,6 +4836,172 @@ Plugin.prototype ={
 	}
 };
 
+// scroll 
+var _$scroll = {
+	verticalMove : function(ctx, pEvtY, pTop, vThumbHeight, oneRowMove){
+		ctx.config.scroll.mouseDown = true;
+
+		clearTimeout(ctx.config.scroll.verticalScrollTimer);
+
+		var upFlag =pEvtY> ctx.config.scroll.top ? false :true;
+		var loopcount =5;
+
+		pTop= pTop+((upFlag?-1:1) * (oneRowMove *loopcount));
+
+		if(upFlag){
+			if( pEvtY >= pTop ){
+				ctx.config.scroll.mouseDown = false
+				pTop = pEvtY;
+			}
+		}else{
+			if(pEvtY <= (pTop +vThumbHeight)){
+				ctx.config.scroll.mouseDown = false
+				pTop = pEvtY-vThumbHeight;
+			}
+		}
+
+		ctx.moveVerticalScroll({pos :pTop});
+
+		if(ctx.config.scroll.mouseDown){
+			ctx.config.scroll.verticalScrollTimer = setTimeout(function() {
+				_$scroll.verticalMove(ctx, pEvtY, pTop, vThumbHeight, oneRowMove*ctx.options.scroll.horizontal.speed);
+			}, ctx.options.scroll.vertical.bgDelay);
+		}
+	}
+	,horizontalMove : function (ctx, pEvtX, pLeft, hThumbWidth, oneColMove){
+		ctx.config.scroll.mouseDown = true;
+
+		clearTimeout(ctx.config.scroll.horizontalScrollTimer);
+
+		var leftFlag =pEvtX > ctx.config.scroll.left ? false :true;
+		var loopcount =10;
+
+		pLeft = pLeft+((leftFlag?-1:1) * (oneColMove*loopcount));
+
+		if(leftFlag){
+			if( pEvtX >= pLeft ){
+				ctx.config.scroll.mouseDown = false
+				pLeft = pEvtX;
+			}
+		}else{
+			if(pEvtX <= (pLeft +hThumbWidth)){
+				ctx.config.scroll.mouseDown = false
+				pLeft = pEvtX-hThumbWidth;
+			}
+		}
+
+		ctx.moveHorizontalScroll({pos : pLeft});
+
+		if(ctx.config.scroll.mouseDown){
+			ctx.config.scroll.horizontalScrollTimer = setTimeout(function() {
+				_$scroll.horizontalMove(ctx, pEvtX, pLeft, hThumbWidth, oneColMove);
+			}, ctx.options.scroll.horizontal.bgDelay);
+		}
+	}
+}
+
+var _$template = {
+	/**
+	 * @method bodyHtm
+	 * @description body template
+	 */
+	bodyHtm : function(_this, mode, type){
+		
+		var clickFlag = false
+			,tci = _this.config.tColItem
+			,thiItem;
+
+		var strHtm = [];
+
+		var contTypeClass = type=='left'?'.pubGrid-body-left-cont':'.pubGrid-body-cont';
+		//console.log(mode, _this.config.scroll.maxViewCount);
+		var tmpeElementBody=_this.element.body.find(contTypeClass);
+
+		var startCol=0, endCol=tci.length;
+
+		if(type=='left'){
+			endCol = _this.options.colFixedIndex;
+		}else if(type=='cont'){
+			startCol = _this.options.colFixedIndex;
+		}
+
+		for(var i =0 ; i < _this.config.scroll.maxViewCount; i++){
+
+			if(mode != 'init' && tmpeElementBody.find('[rowinfo="'+i+'"]').length > 0){
+				if(i >= _this.config.scroll.viewCount){
+					tmpeElementBody.find('[rowinfo="'+i+'"]').hide();
+				}else{
+					tmpeElementBody.find('[rowinfo="'+i+'"]').show();
+				}
+			}else{
+				strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
+
+				for(var j=startCol ;j < endCol; j++){
+					thiItem = tci[j];
+					clickFlag = thiItem.colClick;
+
+					strHtm.push('<td scope="col" class="pub-body-td" data-grid-position="'+i+','+j+'"><div class="pub-content pub-content-ellipsis ' +thiItem['_alignClass']+' '+ (clickFlag?'pub-body-td-click':'') +'"></div></td>');
+				}
+				strHtm.push('</tr>');
+			}
+		}
+
+		if(mode=='init'){
+			var bodyHtm = '';
+			bodyHtm +=_this._getColGroup(_this.prefix+'colbody', type);
+			bodyHtm += '<tbody class="pubGrid-body-tbody">'+strHtm.join('')+'</tbody>';
+
+			tmpeElementBody.empty().html(bodyHtm);
+
+		}else{
+			strHtm = strHtm.join('');
+			if(strHtm != ''){
+				tmpeElementBody.append(strHtm);
+			}
+			return true;
+		}
+	}
+	/**
+	 * @method getEditForm
+	 * @description get edit form
+	 */
+	 ,getEditForm : function (selEl, colItem, rowItem){
+
+		var reForm =[];
+
+		var editor = colItem.editor||{};
+		
+		reForm.push( '<div class="pubGrid-edit-area pubGrid-edit-type-'+editor.type+'">');
+		if(editor.type =='select'){
+			reForm.push( '<select class="pubGrid-edit-field">');
+			var items = editor.items||[];
+			var itemKey = objectMerge({code : 'CODE', label : 'LABEL'}, editor.itemKey) ;
+			var codeKey = itemKey.code;
+			var labelKey = itemKey.label;
+			
+			for(var i =0, len = items.length;i < len; i++){
+				var item = items[i];
+				reForm.push( '<option value="'+item[codeKey]+'">'+item[labelKey]+'</option>');
+			}
+			reForm.push( '</select>');
+		}else if(editor.type =='textarea'){
+			reForm.push( '<textarea class="pubGrid-edit-field"></textarea>');
+		}else if(editor.type =='number'){
+			reForm.push( '<input type="number" class="pubGrid-edit-field">');
+		}else{
+			reForm.push( '<input type="text" class="pubGrid-edit-field">');
+		}
+		reForm.push( '</div>');
+
+		selEl.append(reForm.join(''));
+
+		var editEl = selEl.find('.pubGrid-edit-field');
+
+		editEl.val(rowItem[colItem.key]);
+		editEl.focus();
+	}
+}
+
 var _$util = {
 	/**
 	 * @method newItems
@@ -5014,45 +5059,6 @@ var _$util = {
 		}
 
 		return false;
-	}
-	/**
-	 * @method getEditForm
-	 * @description get edit form
-	 */
-	,getEditForm : function (selEl, colItem, rowItem){
-
-		var reForm =[];
-
-		var editor = colItem.editor||{};
-		
-		reForm.push( '<div class="pubGrid-edit-area pubGrid-edit-type-'+editor.type+'">');
-		if(editor.type =='select'){
-			reForm.push( '<select class="pubGrid-edit-field">');
-			var items = editor.items||[];
-			var itemKey = objectMerge({code : 'CODE', label : 'LABEL'}, editor.itemKey) ;
-			var codeKey = itemKey.code;
-			var labelKey = itemKey.label;
-			
-			for(var i =0, len = items.length;i < len; i++){
-				var item = items[i];
-				reForm.push( '<option value="'+item[codeKey]+'">'+item[labelKey]+'</option>');
-			}
-			reForm.push( '</select>');
-		}else if(editor.type =='textarea'){
-			reForm.push( '<textarea class="pubGrid-edit-field"></textarea>');
-		}else if(editor.type =='number'){
-			reForm.push( '<input type="number" class="pubGrid-edit-field">');
-		}else{
-			reForm.push( '<input type="text" class="pubGrid-edit-field">');
-		}
-		reForm.push( '</div>');
-
-		selEl.append(reForm.join(''));
-
-		var editEl = selEl.find('.pubGrid-edit-field');
-
-		editEl.val(rowItem[colItem.key]);
-		editEl.focus();
 	}
 	/**
 	 * @method clearActiveColumn
