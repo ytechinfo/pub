@@ -4208,7 +4208,7 @@ Plugin.prototype ={
 	,getSelectionItem : function (itemKeys) {
 		var _this = this;
 
-		var sCol,eCol,sIdx,eIdx , chkFn;
+		var sIdx, eIdx;
 
 		var allSelectFlag = _this._isAllSelect();
 
