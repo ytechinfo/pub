@@ -339,26 +339,26 @@ function $pubSelector(selector){
 	return document.querySelector(selector);
 }
 
-function objectMerge() {
-	var objMergeRecursive = function (dst, src) {
+function objMergeRecursive(dst, src) {
 
-		for (var p in src) {
-			if (!src.hasOwnProperty(p)) {continue;}
+	for (var p in src) {
+		if (!src.hasOwnProperty(p)) {continue;}
 
-			var srcItem = src[p] ;
-			if (srcItem=== undefined) {continue;}
+		var srcItem = src[p] ;
+		if (srcItem=== undefined) {continue;}
 
-			if ( typeof srcItem!== 'object' || srcItem=== null) {
-				dst[p] = srcItem;
-			} else if (typeof dst[p]!=='object' || dst[p] === null) {
-				dst[p] = objMergeRecursive(srcItem.constructor===Array ? [] : {}, srcItem);
-			} else {
-				objMergeRecursive(dst[p], srcItem);
-			}
+		if ( typeof srcItem!== 'object' || srcItem=== null) {
+			dst[p] = srcItem;
+		} else if (typeof dst[p]!=='object' || dst[p] === null) {
+			dst[p] = objMergeRecursive(srcItem.constructor===Array ? [] : {}, srcItem);
+		} else {
+			objMergeRecursive(dst[p], srcItem);
 		}
-		return dst;
 	}
+	return dst;
+}
 
+function objectMerge() {
 	var reval = arguments[0];
 	if (typeof reval !== 'object' || reval === null) {	return reval;}
 	for (var i = 1, il = arguments.length; i < il; i++) {
@@ -1723,7 +1723,6 @@ Plugin.prototype ={
 				_this.element.header.find('.pubGrid-header-left-cont').empty().html(_this.theadHtml('left'));
 				_this.element.header.find('.pubGrid-header-cont').empty().html(_this.theadHtml('cont'));
 
-				_this._headerResize(headerOpt.resize.enabled);
 				_this.getTbodyHtml('init_colfixed');
 
 				_this.calcDimension('colfixed');
@@ -3805,37 +3804,7 @@ Plugin.prototype ={
 
 		var	rangeInfo = selectionInfo.rangeInfo;
 
-		function setSelectionInfo (cfgSelect, attrInfo){
-
-			for(var key in attrInfo){
-				if(key =='rangeInfo'){
-					;
-				}else if(key =='curr'){
-					if(attrInfo[key]=='add'){
-						cfgSelect.curr+=1;
-						cfgSelect.range = rangeInfo;
-						var rangeKey = rangeInfo._key ?  rangeInfo._key : cfgSelect.curr;
-
-						if(_this.isRangeKey(rangeKey)){
-							rangeInfo.mode = 'remove';
-							delete cfgSelect.allRange[rangeKey];
-						}else{
-							cfgSelect.allRange[rangeKey] = rangeInfo;
-						}
-					}else if(attrInfo[key]=='remove'){
-						cfgSelect.curr+=1;
-						cfgSelect.range = rangeInfo;
-						var rangeKey = rangeInfo._key ?  rangeInfo._key : cfgSelect.curr;
-						rangeInfo.mode = 'remove';
-						delete cfgSelect.allRange[rangeKey];
-					}
-				}else{
-					cfgSelect[key] = attrInfo[key];
-				}
-			}
-
-			return cfgSelect;
-		}
+		
 
 		if(initFlag === true){
 
@@ -3851,11 +3820,11 @@ Plugin.prototype ={
 				,minCol : -1 ,maxCol : -1
 				,startCell:{startIdx : -1, startCol : -1}
 			};
-			setSelectionInfo(initOpt, selectionInfo);
+			_$util.setSelectionInfo(_this, initOpt, selectionInfo, rangeInfo);
 			cfgSelect = this.config.selection = initOpt;
 			cfgSelect.allRange[initOpt.curr] =cfgSelect.range;
 		}else{
-			setSelectionInfo(cfgSelect, selectionInfo);
+			_$util.setSelectionInfo(_this, cfgSelect, selectionInfo, rangeInfo);
 		}
 
 		var currInfo = cfgSelect.range;
@@ -4000,32 +3969,17 @@ Plugin.prototype ={
 		}
 	}
 	/**
-	 * @method isRangeKey
-	 * @description header , col 선택 여부 확인
-	 */
-	,isRangeKey : function (key){
-		return this.config.selection.allRange[key] ?true :false;
-	}
-	/**
 	 * @method isSelectPosition
 	 * @description cell 선택 여부
 	 */
 	,isSelectPosition: function (row , col, currFlag){
-
-		function isSelRange(range,row,col){
-			if(col =='row'){
-				return range.minIdx <=row && row <= range.maxIdx;
-			}else{
-				return range.minIdx <=row && row <= range.maxIdx && range.minCol <=col && col <= range.maxCol;
-			}
-		}
 
 		if(hasProperty(this.config.selection.unSelectPosition, row+','+col)){
 			return false;
 		}else{
 
 			if(currFlag){
-				return isSelRange(this.config.selection.range, row , col);
+				return _$util.isSelRange(this.config.selection.range, row , col);
 			}else {
 
 				var allRange = this.config.selection.allRange;
@@ -4033,7 +3987,7 @@ Plugin.prototype ={
 				for(var key in allRange){
 					var tmpRange = allRange[key];
 
-					if(isSelRange(tmpRange, row , col)){
+					if(_$util.isSelRange(tmpRange, row , col)){
 						return true;
 					}
 				}
@@ -4355,15 +4309,11 @@ Plugin.prototype ={
 
 		_this.config.sort.current = _key;
 
-		function getItemVal(itemObj){
-			return itemObj[_key];
-		}
-
 		if(sortType=='asc'){  // 오름차순
 
 			tbi.sort(function (a,b){
-				var v1 = getItemVal(a)
-					,v2 = getItemVal(b);
+				var v1 = a[_key]
+					,v2 = b[_key];
 
 				if(v1 == v2) return 0;
 
@@ -4375,8 +4325,8 @@ Plugin.prototype ={
 			});
 		}else if(sortType=='desc'){
 			tbi.sort(function (a,b){ // 내림차순
-				var v1 = getItemVal(a)
-					,v2 = getItemVal(b);
+				var v1 = a[_key]
+					,v2 = b[_key];
 
 				if(v1 == v2) return 0;
 
@@ -4402,39 +4352,16 @@ Plugin.prototype ={
 		var _this = this
 			,resizeEle = _this.element.header.find('.pub-header-resizer');
 
-		function colResize(_this , sEle){
-			_this.drag = {};
-
-			_this.drag.ele = sEle;
-
-			_this.drag.resizeIdx = parseInt(_this.drag.ele.attr('data-resize-idx'),10);
-			_this.drag.isLeftContent  = _this._isFixedPostion(_this.drag.resizeIdx);
-			_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.resizeIdx);
-
-			// get absolute left position
-			var posLeft = _this.config.gridWidth.aside;
-			for(var i = 0;i < _this.drag.resizeIdx; i++ ){
-				posLeft+=$('#'+_this.prefix+'colHeader'+i).width();
-			}
-			_this.drag.positionLeft = posLeft;
-
-			_this.drag.totColW = _this.drag.colHeader.width();
-
-			_this.drag.colW = _this.config.tColItem[_this.drag.resizeIdx].width;
-			if(_this.drag.isLeftContent){
-				_this.drag.gridW = _this.config.gridWidth.left - _this.drag.colW;
-			}else{
-				_this.drag.positionLeft -= _this.config.scroll.containerLeft;
-				_this.drag.gridW = _this.config.gridWidth.main - _this.drag.colW;
-			}
-			_this.drag.gridBodyW = _this.config.container.width - _this.drag.colW;
+		if(_this.config.currentHeaderResizeFlag == flag){
 			return ;
 		}
+
+		_this.config.currentHeaderResizeFlag = flag; 
 
 		if(flag===true){
 
 			resizeEle.on('dblclick', function (e){
-				colResize(_this, $(this));
+				_$util.colResize(_this, $(this));
 
 				var selColItem = _this.config.tColItem[_this.drag.resizeIdx];
 
@@ -4470,7 +4397,7 @@ Plugin.prototype ={
 			resizeEle.on('touchstart.pubresizer mousedown.pubresizer',function (e){
 				
 				var moveStart = false;
-				colResize(_this, $(this));
+				_$util.colResize(_this, $(this));
 
 				_this.element.resizeHelper.show().css('left', (_this.drag.positionLeft+_this.drag.totColW)+'px');
 
@@ -4502,6 +4429,7 @@ Plugin.prototype ={
 			})
 		}else{
 			resizeEle.css('cursor','auto');
+			resizeEle.off('dblclick');
 			resizeEle.off('touchstart.pubresizer mousedown.pubresizer');
 		}
 	}
@@ -4705,15 +4633,8 @@ Plugin.prototype ={
 			}
 		}
 
-		function getMaxNum( allPage, list_num) {
-			if (allPage % list_num == 0) {
-				return allPage / list_num;
-			}
-			return allPage / list_num + 1;
-		}
-
-		var totalPage = getMaxNum(totalCount, countPerPage);
-
+		var totalPage = (totalCount % countPerPage == 0) ? (totalCount/countPerPage) : (totalCount/countPerPage + 1)
+		
 		if (totalPage < currPage)
 			currPage = totalPage;
 		var currEndCount;
@@ -5061,6 +4982,17 @@ var _$util = {
 		return false;
 	}
 	/**
+	 * @method isSelRange
+	 * @description 선택된 cell check
+	 */
+	,isSelRange: function (range,row,col){
+		if(col =='row'){
+			return range.minIdx <=row && row <= range.maxIdx;
+		}else{
+			return range.minIdx <=row && row <= range.maxIdx && range.minCol <=col && col <= range.maxCol;
+		}
+	}
+	/**
 	 * @method clearActiveColumn
 	 * @description clear active column
 	 */
@@ -5143,6 +5075,49 @@ var _$util = {
 			},true, true);
 		}
 	}
+
+	/**
+	 * @method isRangeKey
+	 * @description header , col 선택 여부 확인
+	 */
+	 ,isRangeKey : function (ctx, key){
+		return ctx.config.selection.allRange[key] ?true :false;
+	}
+	/**
+	 * @method setSelectionInfo
+	 * @description set selection info 
+	 */
+	,setSelectionInfo : function (ctx, cfgSelect, attrInfo, rangeInfo){
+
+		for(var key in attrInfo){
+			if(key =='rangeInfo'){
+				;
+			}else if(key =='curr'){
+				if(attrInfo[key]=='add'){
+					cfgSelect.curr+=1;
+					cfgSelect.range = rangeInfo;
+					var rangeKey = rangeInfo._key ?  rangeInfo._key : cfgSelect.curr;
+
+					if(this.isRangeKey(ctx, rangeKey)){
+						rangeInfo.mode = 'remove';
+						delete cfgSelect.allRange[rangeKey];
+					}else{
+						cfgSelect.allRange[rangeKey] = rangeInfo;
+					}
+				}else if(attrInfo[key]=='remove'){
+					cfgSelect.curr+=1;
+					cfgSelect.range = rangeInfo;
+					var rangeKey = rangeInfo._key ?  rangeInfo._key : cfgSelect.curr;
+					rangeInfo.mode = 'remove';
+					delete cfgSelect.allRange[rangeKey];
+				}
+			}else{
+				cfgSelect[key] = attrInfo[key];
+			}
+		}
+
+		return cfgSelect;
+	}
 	/**
 	 * @method insideScrollCheck
 	 * @description  cursor scroll inside check
@@ -5173,6 +5148,34 @@ var _$util = {
 			}
 		}
 		return reFlag;
+	}
+	,colResize : function (_this , sEle){
+		_this.drag = {};
+	
+		_this.drag.ele = sEle;
+	
+		_this.drag.resizeIdx = parseInt(_this.drag.ele.attr('data-resize-idx'),10);
+		_this.drag.isLeftContent  = _this._isFixedPostion(_this.drag.resizeIdx);
+		_this.drag.colHeader= $('#'+_this.prefix+'colHeader'+_this.drag.resizeIdx);
+	
+		// get absolute left position
+		var posLeft = _this.config.gridWidth.aside;
+		for(var i = 0;i < _this.drag.resizeIdx; i++ ){
+			posLeft+=$('#'+_this.prefix+'colHeader'+i).width();
+		}
+		_this.drag.positionLeft = posLeft;
+	
+		_this.drag.totColW = _this.drag.colHeader.width();
+	
+		_this.drag.colW = _this.config.tColItem[_this.drag.resizeIdx].width;
+		if(_this.drag.isLeftContent){
+			_this.drag.gridW = _this.config.gridWidth.left - _this.drag.colW;
+		}else{
+			_this.drag.positionLeft -= _this.config.scroll.containerLeft;
+			_this.drag.gridW = _this.config.gridWidth.main - _this.drag.colW;
+		}
+		_this.drag.gridBodyW = _this.config.container.width - _this.drag.colW;
+		return ;
 	}
 }
 
