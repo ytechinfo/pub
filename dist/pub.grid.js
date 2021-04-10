@@ -414,7 +414,7 @@ Plugin.prototype ={
 		};
 		_this.eleCache = {};
 		_this._initScrollData();
-		_this._setSelectionRangeInfo({},true);
+		_$util.setSelectionRangeInfo(_this, {}, true);
 
 		_this.setOptions(options, true);
 
@@ -972,7 +972,7 @@ Plugin.prototype ={
 
 		if(beforeSelectionClearFlag ===true){
 			_$util.clearActiveColumn(this.element);
-			this._setSelectionRangeInfo({}, true);
+			_$util.setSelectionRangeInfo(this, {}, true);
 		}
 
 		if(idxs.length < 1){
@@ -983,7 +983,7 @@ Plugin.prototype ={
 			var rowIdx = idxs[i];
 			var rangeKey = 'row'+rowIdx;
 
-			this._setSelectionRangeInfo({
+			_$util.setSelectionRangeInfo(this, {
 				rangeInfo : {_key : rangeKey, startIdx : rowIdx, endIdx : rowIdx, startCol : 0,  endCol :this.config.dataInfo.colLen-1}
 				,isSelect : true
 				,curr : 'add'
@@ -1009,7 +1009,7 @@ Plugin.prototype ={
 			var rowIdx = idxs[i];
 			var rangeKey = 'row'+rowIdx;
 
-			this._setSelectionRangeInfo({
+			_$util.setSelectionRangeInfo(this, {
 				rangeInfo : {_key : rangeKey, startIdx : rowIdx, endIdx : rowIdx, startCol : 0,  endCol :this.config.dataInfo.colLen-1}
 				,isSelect : false
 				,curr : 'remove'
@@ -1173,7 +1173,7 @@ Plugin.prototype ={
 			_this._setHeaderInitInfo();
 
 			if(subMode !='paste' && subMode != 'update'){
-				_this._setSelectionRangeInfo({}, true);
+				_$util.setSelectionRangeInfo(_this, {}, true);
 			}
 
 			_this.calcDimension(gridMode);
@@ -2839,7 +2839,7 @@ Plugin.prototype ={
 
 				var rangeKey = 'col'+col_idx;
 
-				_this._setSelectionRangeInfo({
+				_$util.setSelectionRangeInfo(_this, {
 					rangeInfo : {_key : rangeKey, startIdx : 0, endIdx : _this.config.dataInfo.lastRowIdx, startCol : col_idx,  endCol :col_idx}
 					,isSelect : true
 					,curr : curr
@@ -3111,53 +3111,6 @@ Plugin.prototype ={
 		}
 	}
 	/**
-	 * @method getSelectionCellInfo
-	 * @description 선택된 cell 영역 구하기.
-	 */
-	,getSelectionCellInfo :function(curr, allDataFlag){
-		var selectionInfo = this.config.selection.range;
-
-		var  startIdx = selectionInfo.startIdx
-			,endIdx = selectionInfo.endIdx
-			,startCol = selectionInfo.startCol
-			,endCol = selectionInfo.endCol
-			,startRow = -1
-			,endRow = -1;
-
-		if(startIdx > endIdx){
-			var tmp = endIdx;
-			endIdx = startIdx;
-			startIdx = tmp;
-		}
-
-		if(startCol > endCol){
-			var tmp = endCol;
-			endCol = startCol;
-			startCol = tmp;
-		}
-
-		if(this.config.scroll.viewIdx >= startIdx){
-			startRow = 0;
-		}else{
-			startRow = startIdx-this.config.scroll.viewIdx;
-		}
-
-		if(this.config.scroll.viewIdx+this.config.scroll.maxViewCount <= endIdx){
-			endRow = this.config.scroll.viewCount-1;
-		}else{
-			endRow = endIdx-this.config.scroll.viewIdx;
-		}
-
-		return {
-			startIdx : startIdx
-			,endIdx : endIdx
-			,startRow : startRow
-			,endRow : endRow
-			,startCol : startCol
-			,endCol : endCol
-		}
-	}
-	/**
 	 * @method _initBodyEvent
 	 * @description 바디 이벤트 초기화.
 	 */
@@ -3260,7 +3213,7 @@ Plugin.prototype ={
 			_this._setEditAreaData();
 		});
 
-		_this._setSelectionRangeInfo({isMouseDown : false});
+		_$util.setSelectionRangeInfo(_this, {isMouseDown : false});
 
 		var bodyDragTimer;
 		var bodyDragDelay = 150;
@@ -3365,14 +3318,14 @@ Plugin.prototype ={
 					rangeInfo.srartCol = selectRangeInfo.startCol;
 				}
 
-				_this._setSelectionRangeInfo({
+				_$util.setSelectionRangeInfo(_this, {
 					rangeInfo : rangeInfo
 					,isMouseDown : true
 				},false , true);
 
 			}else if(multipleFlag && e.ctrlKey){ // ctrl key
 
-				_this._setSelectionRangeInfo({
+				_$util.setSelectionRangeInfo(_this, {
 					rangeInfo : {startIdx : selIdx, endIdx : selIdx, startCol : selectRangeInfo.startCol, endCol: selectRangeInfo.endCol}
 					,isSelect : true
 					,curr : (_this.config.selection.isSelect?'add':'')
@@ -3381,7 +3334,7 @@ Plugin.prototype ={
 				}, false, true);
 
 			}else{
-				_this._setSelectionRangeInfo({
+				_$util.setSelectionRangeInfo(_this, {
 					rangeInfo : {startIdx : selIdx, endIdx : selIdx, startCol : selectRangeInfo.startCol, endCol: selectRangeInfo.endCol}
 					,isSelect : true
 					,allSelect : false
@@ -3431,7 +3384,7 @@ Plugin.prototype ={
 
 			var selectRangeInfo = _$util.getSelectionModeColInfo( selectionMode ,colIdx , _this.config.dataInfo);
 
-			_this._setSelectionRangeInfo({
+			_$util.setSelectionRangeInfo(_this, {
 				rangeInfo : {
 					endIdx : _this.config.scroll.viewIdx+intValue(selRow)
 					,endCol : selectRangeInfo.endCol
@@ -3442,7 +3395,7 @@ Plugin.prototype ={
 
 		_this.element.pubGrid.on('mouseup.'+_this.prefix,function (e) {
 			//_this.element.body.removeClass('pubGrid-noselect');
-			_this._setSelectionRangeInfo({isMouseDown : false});
+			_$util.setSelectionRangeInfo(_this, {isMouseDown : false});
 		}).on('mousedown.'+_this.prefix,function (e){ // focus in
 			_this.config.focus = true;
 		}).on('blur.'+_this.prefix,function (e){ //blur focus out
@@ -3532,7 +3485,7 @@ Plugin.prototype ={
 						}
 					}
 
-					_this._setSelectionRangeInfo({
+					_$util.setSelectionRangeInfo(_this, {
 						rangeInfo :  {startIdx : startCellInfo.startIdx,endIdx : startCellInfo.startIdx+iLen-1, startCol:startCellInfo.startCol,endCol :maxCol}
 						,startCell : startCellInfo
 					},true, false);
@@ -3789,68 +3742,6 @@ Plugin.prototype ={
 		return ;
 	}
 	/**
-	 * @method _setSelectionRangeInfo
-	 * @param  initFlag {boolean} init flag
-	 * @param  tdSelectFlag {boolean} select flag
-	 * @description 선택 영역 정보 셋팅.
-	 */
-	,_setSelectionRangeInfo : function(selectionInfo, initFlag, tdSelectFlag){
-		var _this =this;
-		var cfgSelect = this.config.selection;
-
-		if(initFlag !==true  && _this._isAllSelect()){
-			return ;
-		}
-
-		var	rangeInfo = selectionInfo.rangeInfo;
-
-		
-
-		if(initFlag === true){
-
-			var initOpt = {
-				curr :0
-				,range : {startIdx : -1,endIdx : -1, startCol : -1, endCol : -1}
-				,allRange:  {}
-				,isSelect : false
-				,isMouseDown:false
-				,unSelectPosition:{}
-				,allSelect : false
-				,minIdx : -1 ,maxIdx : -1
-				,minCol : -1 ,maxCol : -1
-				,startCell:{startIdx : -1, startCol : -1}
-			};
-			_$util.setSelectionInfo(_this, initOpt, selectionInfo, rangeInfo);
-			cfgSelect = this.config.selection = initOpt;
-			cfgSelect.allRange[initOpt.curr] =cfgSelect.range;
-		}else{
-			_$util.setSelectionInfo(_this, cfgSelect, selectionInfo, rangeInfo);
-		}
-
-		var currInfo = cfgSelect.range;
-
-		for(var key in rangeInfo){
-			currInfo[key] = rangeInfo[key];
-		}
-
-		cfgSelect.minIdx = ( cfgSelect.minIdx ==-1 ? Math.min(currInfo.startIdx, currInfo.endIdx) : Math.min(cfgSelect.minIdx, currInfo.startIdx, currInfo.endIdx) );
-		cfgSelect.maxIdx = Math.max(cfgSelect.maxIdx ,currInfo.endIdx , currInfo.startIdx);
-
-		cfgSelect.minCol = (cfgSelect.minCol == -1 ? Math.min( currInfo.endCol , currInfo.startCol): Math.min(cfgSelect.minCol ,currInfo.endCol , currInfo.startCol) );
-		cfgSelect.maxCol = Math.max(cfgSelect.maxCol ,currInfo.endCol , currInfo.startCol);
-
-		if(isUndefined(rangeInfo)) return ;
-
-		currInfo.minIdx = Math.min(currInfo.startIdx, currInfo.endIdx)
-		currInfo.maxIdx = Math.max(currInfo.endIdx ,currInfo.startIdx);
-		currInfo.minCol = Math.min( currInfo.endCol , currInfo.startCol);
-		currInfo.maxCol = Math.max( currInfo.endCol , currInfo.startCol);
-
-		if(tdSelectFlag){
-			_this._setCellSelect(initFlag);
-		}
-	}
-	/**
 	 * @method _isAllSelect
 	 * @description cell select
 	 */
@@ -3865,7 +3756,7 @@ Plugin.prototype ={
 		var _this =this;
 
 		var tmpCurr = _this.config.selection.curr;
-		var colInfo = _this.getSelectionCellInfo(tmpCurr, false);
+		var colInfo = _$util.getSelectionRangeInfo(this);
 		var startCellInfo = _this.config.selection.startCell; // start cell
 
 		var sIdx = colInfo.startIdx
@@ -4108,21 +3999,21 @@ Plugin.prototype ={
 
 		dataType = dataType||'text';
 
-		var sCol,eCol,sIdx,eIdx , chkFn;
+		var sCol,eCol,sIdx,eIdx;
 
 		var allSelectFlag = _this._isAllSelect();
 
 		if(allSelectFlag){
-			sCol= 0;
-			eCol= _this.config.tColItem.length-1;
-			sIdx= 0;
+			sCol = 0;
+			eCol = _this.config.tColItem.length-1;
+			sIdx = 0;
 			eIdx = _this.config.dataInfo.lastRowIdx;
 		}else{
 			var colInfo = _this.config.selection;
-			sCol= colInfo.minCol;
-			eCol =  colInfo.maxCol;
-			sIdx= colInfo.minIdx;
-			eIdx =  colInfo.maxIdx;
+			sCol = colInfo.minCol;
+			eCol = colInfo.maxCol;
+			sIdx = colInfo.minIdx;
+			eIdx = colInfo.maxIdx;
 		}
 
 		if(sIdx < 0 || eIdx < 0)
@@ -4149,13 +4040,13 @@ Plugin.prototype ={
 
 				var tmpKey = colItem.key;
 
-				if((allSelectFlag && !_this.isAllSelectUnSelectPosition( i,j)) || _this.isSelectPosition(i,j)) {
+				if((allSelectFlag && !_this.isAllSelectUnSelectPosition(i, j)) || _this.isSelectPosition(i, j)) {
 					addRowFlag = true;
 
 					if(colItem.render=='html'){
 						tmpVal = item[tmpKey];
 					}else{
-						tmpVal = _this.valueFormatter( i, colItem,item);
+						tmpVal = _this.valueFormatter(i, colItem, item);
 					}
 
 					if(dataType=='json'){
@@ -4192,6 +4083,62 @@ Plugin.prototype ={
 		}else{
 			return returnVal.join('\n');
 		}
+	}
+	/**
+	 * @method getSelectionColumnInfo
+	 * @description selection column info
+	 */
+	,getSelectionColInfos : function(){
+
+		var sCol,eCol,sIdx,eIdx;
+
+		var allSelectFlag = this._isAllSelect();
+
+		if(allSelectFlag){
+			sCol = 0;
+			eCol = this.config.tColItem.length-1;
+			sIdx = 0;
+			eIdx = 1;
+		}else{
+			var colInfo = this.config.selection;
+			sCol = colInfo.minCol;
+			eCol = colInfo.maxCol;
+			sIdx = colInfo.minIdx;
+			eIdx = colInfo.maxIdx;
+		}
+
+		if(sIdx < 0 || eIdx < 0)
+			return [];
+
+		var tColItem = this.config.tColItem;
+
+		var keyInfo ={};
+		
+		for(var i=sIdx; i<=eIdx; i++){
+			for(var j=sCol; j<=eCol; j++){
+				var colItem = tColItem[j];
+
+				if(colItem.visible===false) continue;
+
+				if((allSelectFlag && !this.isAllSelectUnSelectPosition(i, j)) || this.isSelectPosition(i, j)) {
+					if(!hasProperty(keyInfo ,j)){
+						keyInfo[j] = colItem;
+					}
+				}
+			}
+		}
+	
+		var sortKeyArr = Object.keys(keyInfo).sort(function(a, b) {
+			return (parseInt(a, 10) > parseInt(b, 10)? 1 : 0);
+		});
+
+		var sortResult = [];
+		
+		for (var i=0; i < sortKeyArr.length; i++) {
+			sortResult.push(keyInfo[sortKeyArr[i]]);
+		}
+	
+		return sortResult; 
 
 	}
 	/**
@@ -4309,7 +4256,9 @@ Plugin.prototype ={
 
 		_this.config.sort.current = _key;
 
-		if(sortType=='asc'){  // 오름차순
+		var reversed = (sortType=='asc') ? 1 : -1;
+
+		if(sortType=='asc' || sortType=='desc'){  // 오름차순
 
 			tbi.sort(function (a,b){
 				var v1 = a[_key]
@@ -4318,22 +4267,9 @@ Plugin.prototype ={
 				if(v1 == v2) return 0;
 
 				if(val != ''){
-					return (v1==val?-1:(v2==val)?1:0);
+					return (v1==val ? reversed * -1 : (v2==val ? reversed : 0));
 				}else{
-					return v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
-				}
-			});
-		}else if(sortType=='desc'){
-			tbi.sort(function (a,b){ // 내림차순
-				var v1 = a[_key]
-					,v2 = b[_key];
-
-				if(v1 == v2) return 0;
-
-				if(val != ''){
-					return (v1==val?1:(v2==val)?-1:0);
-				}else{
-					return v1 > v2 ? -1 : v1 < v2 ? 1 : 0;
+					return (v1 < v2 ? reversed * -1 : (v1 > v2 ? reversed : 0));
 				}
 			});
 		}else{
@@ -5064,18 +5000,17 @@ var _$util = {
 		var multipleFlag = this.isMultipleSelection(ctx.options.selectionMode);
 
 		if(multipleFlag && (evtKey != 9 && evt.shiftKey)){
-			ctx._setSelectionRangeInfo({
+			this.setSelectionRangeInfo(ctx, {
 				rangeInfo :  {endIdx : endIdx, endCol : endCol}
 				,startCell : {startIdx : endIdx, startCol : moveColIdx}
 			}, false,true);
 		}else{
-			ctx._setSelectionRangeInfo({
+			this.setSelectionRangeInfo(ctx, {
 				rangeInfo :  {startIdx : endIdx,endIdx : endIdx, startCol:startCol,endCol :endCol}
 				,startCell : {startIdx : endIdx, startCol : moveColIdx}
 			},true, true);
 		}
 	}
-
 	/**
 	 * @method isRangeKey
 	 * @description header , col 선택 여부 확인
@@ -5117,6 +5052,113 @@ var _$util = {
 		}
 
 		return cfgSelect;
+	}
+	/**
+	 * @method setSelectionRangeInfo
+	 * @param  initFlag {boolean} init flag
+	 * @param  tdSelectFlag {boolean} select flag
+	 * @description 선택 영역 정보 셋팅.
+	 */
+	 ,setSelectionRangeInfo : function(ctx, selectionInfo, initFlag, tdSelectFlag){
+		var _this =this;
+		var cfgSelect = ctx.config.selection;
+
+		if(initFlag !==true  && ctx._isAllSelect()){
+			return ;
+		}
+
+		var	rangeInfo = selectionInfo.rangeInfo;
+
+		if(initFlag === true){
+
+			var initOpt = {
+				curr :0
+				,range : {startIdx : -1,endIdx : -1, startCol : -1, endCol : -1}
+				,allRange:  {}
+				,isSelect : false
+				,isMouseDown:false
+				,unSelectPosition:{}
+				,allSelect : false
+				,minIdx : -1 ,maxIdx : -1
+				,minCol : -1 ,maxCol : -1
+				,startCell:{startIdx : -1, startCol : -1}
+			};
+			_this.setSelectionInfo(ctx, initOpt, selectionInfo, rangeInfo);
+			cfgSelect = ctx.config.selection = initOpt;
+			cfgSelect.allRange[initOpt.curr] =cfgSelect.range;
+		}else{
+			_this.setSelectionInfo(ctx, cfgSelect, selectionInfo, rangeInfo);
+		}
+
+		var currInfo = cfgSelect.range;
+
+		for(var key in rangeInfo){
+			currInfo[key] = rangeInfo[key];
+		}
+
+		cfgSelect.minIdx = ( cfgSelect.minIdx ==-1 ? Math.min(currInfo.startIdx, currInfo.endIdx) : Math.min(cfgSelect.minIdx, currInfo.startIdx, currInfo.endIdx) );
+		cfgSelect.maxIdx = Math.max(cfgSelect.maxIdx ,currInfo.endIdx , currInfo.startIdx);
+
+		cfgSelect.minCol = (cfgSelect.minCol == -1 ? Math.min( currInfo.endCol , currInfo.startCol): Math.min(cfgSelect.minCol ,currInfo.endCol , currInfo.startCol) );
+		cfgSelect.maxCol = Math.max(cfgSelect.maxCol ,currInfo.endCol , currInfo.startCol);
+
+		if(isUndefined(rangeInfo)) return ;
+
+		currInfo.minIdx = Math.min(currInfo.startIdx, currInfo.endIdx)
+		currInfo.maxIdx = Math.max(currInfo.endIdx, currInfo.startIdx);
+		currInfo.minCol = Math.min(currInfo.endCol, currInfo.startCol);
+		currInfo.maxCol = Math.max(currInfo.endCol, currInfo.startCol);
+
+		if(tdSelectFlag){
+			ctx._setCellSelect(initFlag);
+		}
+	}
+	/**
+	 * @method getSelectionRangeInfo
+	 * @description 선택된 cell 영역 구하기.
+	 */
+	 ,getSelectionRangeInfo :function(ctx){
+		var selectionInfo = ctx.config.selection.range;
+
+		var  startIdx = selectionInfo.startIdx
+			,endIdx = selectionInfo.endIdx
+			,startCol = selectionInfo.startCol
+			,endCol = selectionInfo.endCol
+			,startRow = -1
+			,endRow = -1;
+
+		if(startIdx > endIdx){
+			var tmp = endIdx;
+			endIdx = startIdx;
+			startIdx = tmp;
+		}
+
+		if(startCol > endCol){
+			var tmp = endCol;
+			endCol = startCol;
+			startCol = tmp;
+		}
+
+		if(ctx.config.scroll.viewIdx >= startIdx){
+			startRow = 0;
+		}else{
+			startRow = startIdx-ctx.config.scroll.viewIdx;
+		}
+
+		if(ctx.config.scroll.viewIdx+ctx.config.scroll.maxViewCount <= endIdx){
+			endRow = ctx.config.scroll.viewCount-1;
+		}else{
+			endRow = endIdx-ctx.config.scroll.viewIdx;
+		}
+
+		return {
+			startIdx : startIdx
+			,endIdx : endIdx
+			,startRow : startRow
+			,endRow : endRow
+			,startCol : startCol
+			,endCol : endCol
+		}
 	}
 	/**
 	 * @method insideScrollCheck
