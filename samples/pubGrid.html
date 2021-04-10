@@ -335,7 +335,7 @@ function gridDraw(selector, aaa, colItem){
 	var gridObj = $.pubGrid(selector,{
 		colFixedIndex : 0
 		,editable : true
-		,selectionMode : 'row'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
+		,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
 		,widthFixed : false
 		,showTooltip : true			// tooltip flag
 		,theme : $('#themeInfo').val()
@@ -376,6 +376,7 @@ function gridDraw(selector, aaa, colItem){
 			}
 			,helpBtn:{
 				enabled : true	// header help btn 활성 여부.
+				,title : 'test'
 				,dblclick :  function (clickInfo){	// click event
 					console.log('clickInfo : ', clickInfo)
 				}
@@ -406,19 +407,21 @@ function gridDraw(selector, aaa, colItem){
 			//,empty: function (){ return '데이타 없음'}
 			
 		}
-		,page : false
-		,page1 :{
-			enabeld :true
+		,navigation : {
+			usePaging : false
 			,status : true
-			,totalCount :1000
-			, currPage : 15
-			, countPerPage :10
-			, unitPage :10
-			,position : 'center'
+			,height :20
 			,callback : function (no){
 				console.log(no);
 				//gridObj.setData(aaa);
 			}
+		}
+		,page : {
+			totalCount :1000
+			, currPage : 15
+			, countPerPage :10
+			, unitPage :10
+			,position : 'center'
 		}
 		,setting : {
 			enabled : true
@@ -523,6 +526,7 @@ function gridDraw(selector, aaa, colItem){
 			}
 		}
 	});
+
 }
 
 

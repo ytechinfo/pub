@@ -687,61 +687,75 @@
 		border-top: 0px solid colorInfo($g_default_theme_name , "border_thin_color");
 		@include background_gradident($g_default_theme_name);
 	}
-	.pubGrid-page-navigation {
-		>ul {
-			display: inline-block;
-			padding-left: 0;
-			margin: 3px;
-			border-radius: 4px;
-			line-height:22px;
-	
-			> li {
-				display: inline;
-	
-				a,span{
-					position: relative;
-					float: left;
-					padding: 2px 7px;
-					margin-left: -1px;
-					color: gridColorInfo($g_default_theme_name,"navigation_font_color");
-					text-decoration: none;	
+	.pubGrid-paging {
+		display: table;
+		height: 100%;
+		width: 100%;
+		.pubGrid-paging-box{
+			display: table-cell;
+			vertical-align: middle;
+			>div{
+				display: table;
+				text-align: center;
+				margin: 0px auto;
+				>ul {
+					display: table-cell;
+					vertical-align: middle;
+					padding-left: 0;
+					margin: 3px;
+					border-radius: 4px;
+					text-align: center;
+					
+					> li {
+						display: inline;
+			
+						a,span{
+							position: relative;
+							float: left;
+							padding: 3px 7px;
+							margin-left: -1px;
+							color: gridColorInfo($g_default_theme_name,"navigation_font_color");
+							text-decoration: none;	
+						}
+			
+						&:first-child > a, &:first-child > span {
+							margin-left: 0;
+							border-top-left-radius: 4px;
+							border-bottom-left-radius: 4px;
+						
+						}
+			
+						&:last-child > a, &:last-child > span {
+							border-top-right-radius: 4px;
+							border-bottom-right-radius: 4px;
+						}
+			
+						> a:hover, > span:hover, > a:focus, > span:focus {
+							z-index: 2;
+							color: #23527c;
+							background-color: #d1e4f5;
+							border-color: colorInfo($g_default_theme_name , "border_thin_color");
+						}
+					}
+			
+					.active > a, > .active > span, > .active > a:hover, > .active > span:hover, > .active > a:focus,> .active > span:focus {
+						z-index: 3;
+						color: #fff;
+						cursor: default;
+						background-color: #337ab7;
+						border-color: #337ab7;
+						border-radius: 3px;
+					}
+			
+					> .disabled > span, > .disabled > span:hover, > .disabled > span:focus, > .disabled > a, > .disabled > a:hover, > .disabled > a:focus {
+						color: #777;
+						cursor: not-allowed;
+						border-color: colorInfo($g_default_theme_name , "border_thin_color");
+					}
 				}
-	
-				&:first-child > a, &:first-child > span {
-					margin-left: 0;
-					border-top-left-radius: 4px;
-					border-bottom-left-radius: 4px;
-				
-				}
-	
-				&:last-child > a, &:last-child > span {
-					border-top-right-radius: 4px;
-					border-bottom-right-radius: 4px;
-				}
-	
-				> a:hover, > span:hover, > a:focus, > span:focus {
-					z-index: 2;
-					color: #23527c;
-					background-color: #d1e4f5;
-					border-color: colorInfo($g_default_theme_name , "border_thin_color");
-				}
-			}
-	
-			.active > a, > .active > span, > .active > a:hover, > .active > span:hover, > .active > a:focus,> .active > span:focus {
-				z-index: 3;
-				color: #fff;
-				cursor: default;
-				background-color: #337ab7;
-				border-color: #337ab7;
-			}
-	
-			> .disabled > span, > .disabled > span:hover, > .disabled > span:focus, > .disabled > a, > .disabled > a:hover, > .disabled > a:focus {
-				color: #777;
-				cursor: not-allowed;
-				border-color: colorInfo($g_default_theme_name , "border_thin_color");
 			}
 		}
-	
+
 		&.page-left{
 			text-align:left;
 		}
@@ -754,8 +768,12 @@
 		}
 	}
 	
-	.pubgGrid-count-info{
-		position:absolute;top:0px;margin-top:8px;;right:5px;line-height:17px;
+	.pubgGrid-message-info{
+		position:absolute;top:0px;right:5px;height: 100%;display: table;
+		>div{
+			display: table-cell;
+			vertical-align: middle;
+		}
 	}
 
 	.pubGrid-setting svg path {

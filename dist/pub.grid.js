@@ -71,6 +71,7 @@ var _initialized = false
 		,contextMenu : false // header contextmenu event
 		,helpBtn:{			//	header help btn 설정
 			enabled : false	// header help btn 활성 여부.
+			,title : ''
 			,click :  function (clickInfo){}	// click event
 			,dblclick : function (clickInfo){} // double click event
 		}
@@ -194,6 +195,12 @@ var _initialized = false
 	,tbodyItem : []  // body item
 	,tbodyGroup : [] // body group
 	,tfootItem : []  // foot item
+	,navigation :{
+		usePaging : false
+		,status : false
+		,height : 35
+		,callback : function (no){}
+	}
 	,page : false	// paging info
 	,message : {
 		empty : 'no data'
@@ -1084,11 +1091,9 @@ Plugin.prototype ={
 	 */
 	,setData :function (pdata, mode, addOpt){
 		var _this = this
-			,opt = _this.options
-			,tci = _this.config.tColItem;
+			,opt = _this.options;
 		var data = pdata;
-		var pageInfo = opt.page;
-
+		
 		mode = mode||'reDraw';
 
 		var modeInfo = mode.split('_');
@@ -1099,13 +1104,6 @@ Plugin.prototype ={
 
 		if(!$.isArray(pdata)){
 			data = pdata.items;
-			pageInfo = pdata.page;
-		}
-
-		var resizeFlag = false;
-		if((_this.options.tbodyItem.length == 0 && data.length > 0)
-			||_this.options.tbodyItem.length > 0 && data.length == 0){
-			resizeFlag = true;
 		}
 
 		if(data){
@@ -1203,14 +1201,10 @@ Plugin.prototype ={
 		}else{
 			_this.drawGrid(mode,true);
 		}
-
-		_this.setPage(pageInfo);
-
-		if(_this.config.searchOn===true){
-			_this.gridElement.find('.pubGrid-setting').addClass('search-on');
-		}else{
-			_this.gridElement.find('.pubGrid-setting').removeClass('search-on');
-		}
+		
+		if(_this.options.navigation.usePaging === true) {
+			_this.setPage(mode=='init' ? opt.page : (pdata.page ||{}));
+		} 
 	}
 	/**
 	 * @method setScrollSpeed
@@ -1236,14 +1230,59 @@ Plugin.prototype ={
 	,setPage : function (pageInfo){
 		var _this =this;
 
-		if(pageInfo === false){
-			$('#'+_this.prefix+'pubGrid-footer-wrapper').hide();
-			return ;
+		if(_this.options.navigation.usePaging !== true) {
+			throw 'usePaging not enabled';
+		} 
+
+		var pagingInfo = _this.getPageInfo(pageInfo.totalCount , pageInfo.currPage, pageInfo.countPerPage, pageInfo.unitPage);
+
+		_this.config.pageNo = pageInfo.currPage;
+
+		var currP = pagingInfo.currPage;
+		if (currP == "0") currP = 1;
+		var preP_is = pagingInfo.prePage_is;
+		var nextP_is = pagingInfo.nextPage_is;
+		var currS = pagingInfo.currStartPage;
+		var currE = pagingInfo.currEndPage;
+		if (currE == "0") currE = 1;
+		var nextO = 1 * currP + 1;
+		var preO = currP - 1;
+		var strHTML = [];
+		strHTML.push('<ul>');
+		if (new Boolean(preP_is) == true) {
+			strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
+		} else {
+			if (currP <= 1) {
+				strHTML.push(' <li class="disabled page-icon"><a href="javascript:">&laquo;</a></li>');
+			} else {
+				strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
+			}
+		}
+		var no = 0;
+		for (no = currS * 1; no <= currE * 1; no++) {
+			if (no == currP) {
+				strHTML.push(' <li class="active"><a href="javascript:">'+ no + '</a></li>');
+			} else {
+				strHTML.push(' <li class="page-num" pageno="'+no+'"><a href="javascript:" >'+ no + '</a></li>');
+			}
 		}
 
-		if(typeof pageInfo ==='object'){
-			_this.pageNav(pageInfo);
+		if (new Boolean(nextP_is) == true) {
+			strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
+		} else {
+			if (currP == currE) {
+				strHTML.push(' <li class="disabled"><a href="javascript:">&raquo;</a></li>');
+			} else {
+				strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
+			}
 		}
+		strHTML.push('</ul>');
+
+		var pageNaviEle = $('#'+_this.prefix+'_page');
+		pageNaviEle.addClass('page-'+(pageInfo.position || 'center'));
+		pageNaviEle.empty().html(strHTML.join(''));
+
+		return this;
 	}
 	,initStyle : function (){
 
@@ -1373,10 +1412,10 @@ Plugin.prototype ={
 			+' </div>'
 			+' <div style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"><textarea id="'+_this.prefix+'_pubGridPasteArea"></textarea>' // copy 하기위한 textarea 꼭 위치해야함.
 			+' <textarea id="'+_this.prefix+'_pubGridCopyArea"></textarea></div>' // copy 하기위한 textarea 꼭 위치해야함.
-			+' <div id="'+_this.prefix+'_navigation" class="pubGrid-navigation"><div class="pubGrid-page-navigation"></div><div id="'+_this.prefix+'_status" class="pubgGrid-count-info"></div>'
+			+' <div id="'+_this.prefix+'_navigation" class="pubGrid-navigation" style="height:'+(_this.options.navigation.height) +'px">'
+			+'	 <div class="pubGrid-paging"><div class="pubGrid-paging-box"><div id="'+_this.prefix+'_page"></div></div></div><div class="pubgGrid-message-info"><div id="'+_this.prefix+'_status"></div></div>'
 			+' </div>'
 			+' </div>';
-
 	}
 	,getTbodyAsideHtml : function (mode){
 		var _this =this;
@@ -1580,7 +1619,7 @@ Plugin.prototype ={
 					if(ghItem.view){
 						strHtm.push(' <th '+ghItem.colspanhtm+' '+ghItem.rowspanhtm+' data-header-info="'+i+','+ghItem.resizeIdx+'" class="pubGrid-header-th" '+(ghItem.style?' style="'+ghItem.style+'" ':'')+'>');
 						if(_this.options.headerOptions.helpBtn.enabled === true){
-							strHtm.push('  <div class="pub-header-help-wrapper"><svg class="pub-header-help" viewBox="0 0 100 100"><g><polygon class="pub-header-help-btn" points="0 0,0 100,100 0"></polygon></g></svg> </div>');
+							strHtm.push('  <div class="pub-header-help-wrapper" title="'+_this.options.headerOptions.helpBtn.title+'"><svg class="pub-header-help" viewBox="0 0 100 100"><g><polygon class="pub-header-help-btn" points="0 0,0 100,100 0"></polygon></g></svg> </div>');
 						}
 						strHtm.push('  <div class="label-wrapper">');
 						strHtm.push('   <div class="pub-header-cont outer '+(ghItem.isSort===true?'sort-header':'')+'" col_idx="'+ghItem.resizeIdx+'"><div class="pub-inner"><div class="centered">'+ghItem.label+'</div></div>');
@@ -1719,6 +1758,12 @@ Plugin.prototype ={
 				_this.getTbodyHtml('init');
 				_this.setTheme(_this.options.theme);
 				_this._initFooterEvent();
+
+				if(_this.config.searchOn===true){
+					_this.gridElement.find('.pubGrid-setting').addClass('search-on');
+				}else{
+					_this.gridElement.find('.pubGrid-setting').removeClass('search-on');
+				}
 			}else{
 				_this.element.header.find('.pubGrid-header-left-cont').empty().html(_this.theadHtml('left'));
 				_this.element.header.find('.pubGrid-header-cont').empty().html(_this.theadHtml('cont'));
@@ -1893,7 +1938,7 @@ Plugin.prototype ={
 			_this.element.container.find('[rowinfo="'+(viewCount-1)+'"]').show();
 		}
 
-		if(this.options.page !== false && this.options.page.status === true){
+		if(this.options.navigation.usePaging === true || this.options.navigation.status === true){
 			_this._statusMessage(viewCount);
 		}
 	}
@@ -1906,7 +1951,7 @@ Plugin.prototype ={
 
 		this.config.navi.height = 0;
 
-		if(this.options.page !== false){
+		if(this.options.navigation.usePaging === true || this.options.navigation.status === true){
 			this.element.navi.show();
 			this.config.navi.height = this.element.navi.outerHeight();
 		}
@@ -2953,7 +2998,7 @@ Plugin.prototype ={
 	,_initFooterEvent : function (){
 		var _this = this;
 
-		var pageCallback = _this.options.page.callback;
+		var pageCallback = _this.options.navigation.callback;
 		_this.element.navi.on('click', '.page-num',function() {
 			var sEle = $(this);
 			var pageno =sEle.attr('pageno');
@@ -3240,10 +3285,6 @@ Plugin.prototype ={
 			if(e.which ===3){
 				return true;
 			}
-			var evtInfo = evtPos(e);
-
-			var	startPageX = evtInfo.x
-				,startPageY = evtInfo.y;
 			
 			var position  = _this.element.body.offset();
 
@@ -4491,58 +4532,8 @@ Plugin.prototype ={
 	 * @param  options {Object} 옵션
 	 * @description 페이징 하기.
 	 */
-	,pageNav : function(options) {
-		var _this =this;
-
-		var pagingInfo = _this.getPageInfo(options.totalCount , options.currPage , options.countPerPage, options.unitPage);
-
-		_this.config.pageNo = options.currPage;
-
-		var currP = pagingInfo.currPage;
-		if (currP == "0") currP = 1;
-		var preP_is = pagingInfo.prePage_is;
-		var nextP_is = pagingInfo.nextPage_is;
-		var currS = pagingInfo.currStartPage;
-		var currE = pagingInfo.currEndPage;
-		if (currE == "0") currE = 1;
-		var nextO = 1 * currP + 1;
-		var preO = currP - 1;
-		var strHTML = [];
-		strHTML.push('<ul>');
-		if (new Boolean(preP_is) == true) {
-			strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
-		} else {
-			if (currP <= 1) {
-				strHTML.push(' <li class="disabled page-icon"><a href="javascript:">&laquo;</a></li>');
-			} else {
-				strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
-			}
-		}
-		var no = 0;
-		for (no = currS * 1; no <= currE * 1; no++) {
-			if (no == currP) {
-				strHTML.push(' <li class="active"><a href="javascript:">'+ no + '</a></li>');
-			} else {
-				strHTML.push(' <li class="page-num" pageno="'+no+'"><a href="javascript:" >'+ no + '</a></li>');
-			}
-		}
-
-		if (new Boolean(nextP_is) == true) {
-			strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
-		} else {
-			if (currP == currE) {
-				strHTML.push(' <li class="disabled"><a href="javascript:">&raquo;</a></li>');
-			} else {
-				strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
-			}
-		}
-		strHTML.push('</ul>');
-
-		var pageNaviEle = _this.element.navi.find('.pubGrid-page-navigation');
-		pageNaviEle.addClass('page-'+(options.position || 'center'));
-		pageNaviEle.empty().html(strHTML.join(''));
-
-		return this;
+	,pageNav : function(pageInfo) {
+		
 	}
 	,getPageNo : function (){
 		return this.config.pageNo;
