@@ -2702,11 +2702,18 @@ Plugin.prototype ={
 		}))
 	}
 	/**
+	 * @method isVisible
+	 * @description display visible
+	 */
+	,isVisible : function (){
+		return this.gridElement.is(':visible');
+	}
+	/**
 	 * @method resizeDraw
 	 * @description resize 하기
 	 */
 	,resizeDraw :function (opt){
-		if(this.gridElement.is(':visible') ===false){
+		if(this.isVisible()===false){
 			return ;
 		}
 
