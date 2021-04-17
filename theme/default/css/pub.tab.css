@@ -237,52 +237,52 @@
   display: none;
 }
 
-.pub-theme-dark .pubTab-wrapper {
+[pub-theme="dark"] .pubTab-wrapper {
   background: inherit;
   color: #c5c3c3;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab .pubTab-icon-area .pubTab-icon:hover {
+[pub-theme="dark"] .pubTab-wrapper .pubTab .pubTab-icon-area .pubTab-icon:hover {
   color: #5970f5;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab .pubTab-item-cont {
+[pub-theme="dark"] .pubTab-wrapper .pubTab .pubTab-item-cont {
   background: #423f3f;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab .pubTab-drop-item-wrapper {
+[pub-theme="dark"] .pubTab-wrapper .pubTab .pubTab-drop-item-wrapper {
   border: 1px solid #6d6d75;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab .pubTab-drop-item-area {
+[pub-theme="dark"] .pubTab-wrapper .pubTab .pubTab-drop-item-area {
   background-color: #262729;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab .pubTab-drop-item:hover {
+[pub-theme="dark"] .pubTab-wrapper .pubTab .pubTab-drop-item:hover {
   background-color: #000000;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab-move-area i:hover {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-move-area i:hover {
   color: #cbc3c3;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab-move-area .pubTab-right-arrow, .pub-theme-dark .pubTab-wrapper .pubTab-move-area .pubTab-left-arrow {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-move-area .pubTab-right-arrow, [pub-theme="dark"] .pubTab-wrapper .pubTab-move-area .pubTab-left-arrow {
   color: #989494;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab-move-area .pubTab-move-dim {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-move-area .pubTab-move-dim {
   background: #262729;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab-item.active .pubTab-item-cont {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-item.active .pubTab-item-cont {
   background: #1b1b1b;
   color: #fbf8f8;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab-item-cont-wrapper {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-item-cont-wrapper {
   border: 1px solid #6d6d75;
 }
 
-.pub-theme-dark .pubTab-wrapper .pubTab-drop-open-btn:hover {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-drop-open-btn:hover {
   background: #000000;
 }

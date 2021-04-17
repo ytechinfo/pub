@@ -231,7 +231,7 @@
 
 @each $pThemeName in $g_theme_list_info {
 
-	.#{fn_themeName($pThemeName)} .pubTab-wrapper{
+	#{fn_themeName($pThemeName)} .pubTab-wrapper{
 		background: inherit; //colorInfo($pThemeName , "background_color");
 		color:colorInfo($pThemeName , "font_color");
 		

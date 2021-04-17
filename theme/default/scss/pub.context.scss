@@ -171,46 +171,50 @@
 
 @each $pThemeName in $g_theme_list_info {
 
-	.#{fn_themeName($pThemeName)} .pub-context-menu {
-		color : colorInfo($pThemeName , "font_color");
-		font-size: colorInfo($pThemeName , "font_size");
-		border: 1px solid colorInfo($pThemeName , "border_thin_color");
-		background-color: colorInfo($pThemeName , "background_color");
-		@include box_shadow($pThemeName);
-
-		.divider {
-			border-bottom: 1px solid colorInfo($pThemeName , "border_thick_color");
+	#{fn_themeName($pThemeName)} {
+		.pub-context-menu {
+			color : colorInfo($pThemeName , "font_color");
+			font-size: colorInfo($pThemeName , "font_size");
+			border: 1px solid colorInfo($pThemeName , "border_thin_color");
+			background-color: colorInfo($pThemeName , "background_color");
+			@include box_shadow($pThemeName);
+	
+			.divider {
+				border-bottom: 1px solid colorInfo($pThemeName , "border_thick_color");
+			}
+	
+			li > a:hover, .pub-context-submenu:hover > a {
+				color : colorInfo($pThemeName , "a_hover_font_color");
+				background-color: colorInfo($pThemeName , "a_hover_background_color");
+				border: 1px solid colorInfo($pThemeName , "a_hover_border_color");
+			}
+	
+			.disabled > a{
+				color: colorInfo($pThemeName , "font_disable_color") !important;
+			}
+	
+			.pub-context-header {
+				color: contxtMenuColorInfo($pThemeName , "context_menu_header_font_color");
+			}
 		}
 
-		li > a:hover, .pub-context-submenu:hover > a {
-			color : colorInfo($pThemeName , "a_hover_font_color");
-			background-color: colorInfo($pThemeName , "a_hover_background_color");
-			border: 1px solid colorInfo($pThemeName , "a_hover_border_color");
-		}
 
-		.disabled > a{
-			color: colorInfo($pThemeName , "font_disable_color") !important;
-		}
+		.pub-context-submenu {
 
-		.pub-context-header {
-			color: contxtMenuColorInfo($pThemeName , "context_menu_header_font_color");
+			> a:after {
+				border-left-color: colorInfo($pThemeName , "arrow_color");
+			}
+	
+			&:hover > a:after {
+				border-left-color: colorInfo($pThemeName , "arrow_active_color");
+			}
+	
+			&.disabled > a:after {
+				border-left-color: colorInfo($pThemeName , "arrow_color");
+			}
 		}
 	}
 
-	.#{fn_themeName($pThemeName)} .pub-context-submenu {
-
-		> a:after {
-			border-left-color: colorInfo($pThemeName , "arrow_color");
-		}
-
-		&:hover > a:after {
-			border-left-color: colorInfo($pThemeName , "arrow_active_color");
-		}
-
-		&.disabled > a:after {
-			border-left-color: colorInfo($pThemeName , "arrow_color");
-		}
-	}
 }
 
  

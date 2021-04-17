@@ -12,5 +12,5 @@ $css_theme_prefix : "pub-theme";
 
 // css theme name get function
 @function fn_themeName($themeName: 'light') {
-    @return $css_theme_prefix +'-'+ $themeName;
+    @return '['+$css_theme_prefix+'="'+ $themeName+'"]';
 }

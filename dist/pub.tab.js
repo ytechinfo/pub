@@ -1,5 +1,5 @@
 /**
- * pubTab v1.0.1
+ * pubTab v1.0.2
  * ========================================================================
  * Copyright 2016-2021 ytkim
  * Licensed under MIT
@@ -169,11 +169,11 @@ Plugin.prototype ={
 
 			if(opts.contextMenu !== false && typeof opts.contextMenu == 'object'){
 				var _cb = opts.contextMenu.callback;
-	
+
 				if(_cb){
 					opts.contextMenu.callback = function(key,sObj) {
-						var tabEle = this.element.closest('[data-tab-id]'); 
-						var tabId = tabEle.attr('data-tab-id');  
+						var tabEle = this.element.closest('[data-tab-id]');
+						var tabId = tabEle.attr('data-tab-id');
 						sObj = {
 							tabId : tabId
 							,tabItem : _this.getItem(tabId)
@@ -269,13 +269,13 @@ Plugin.prototype ={
 
 		customInfo = customInfo || {};
 		var clickEle = $(this.tabElement.find('.pubTab-item').get(idx));
-		
+
 		var opts = this.options;
-		var tabItem = opts.items[idx]; 
-		
-		
+		var tabItem = opts.items[idx];
+
+
 		if(opts.enableClickEventChange ===true && this.isActive(tabItem)){ // 변경 되었을때만 event 처리.
-			return ; 
+			return ;
 		}
 
 		this.setActive(tabItem);
@@ -472,7 +472,7 @@ Plugin.prototype ={
 		if(tabEle.length > 0){
 
 			var titEle = tabEle.find('.pubTab-item-title');
-			
+
 			tabEle.attr('title', tit);
 			titEle.empty().html(tit);
 
@@ -590,7 +590,7 @@ Plugin.prototype ={
 			if($.isFunction(this.options.removeItem)){
 				this.options.removeItem.call(null,'all');
 			}
-			return ; 
+			return ;
 		}
 
 		if(item =='other'){
@@ -606,7 +606,7 @@ Plugin.prototype ={
 			if($.isFunction(this.options.removeItem)){
 				this.options.removeItem.call(null,'other');
 			}
-			return ; 
+			return ;
 		}
 
 		if(typeof item ==='object'){
@@ -777,7 +777,7 @@ Plugin.prototype ={
 
 		strHtm.push('</span>');
 		strHtm.push('		</div>');
-		strHtm.push('	</div>'); 
+		strHtm.push('	</div>');
 		strHtm.push('</div>');
 
 		_this.tabElement.empty().html(strHtm.join(''));
@@ -820,9 +820,8 @@ Plugin.prototype ={
 	 * @description set theme
 	 */
 	,setTheme : function (themeName){
-		this.tabElement.removeClass('pub-theme-'+this.options.theme);
 		this.options.theme = themeName;
-		this.tabElement.addClass('pub-theme-'+themeName);
+		this.tabElement.attr('pub-theme', themeName);
 	}
 	/**
 	 * @method getTheme
