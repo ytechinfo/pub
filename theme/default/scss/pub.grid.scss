@@ -11,7 +11,6 @@
 	* {
 		border-spacing:0;
 		border-collapse:separate;
-		font-size:colorInfo($g_default_theme_name , "font_size");
 		font-family: sans-serif;
 		color:colorInfo($g_default_theme_name , "font_color");
 		@include box-sizing($box_sizing_border)

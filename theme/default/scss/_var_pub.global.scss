@@ -1,6 +1,23 @@
 
 @import '_variables.scss';
 
+$theme_size: (
+  'light' : (
+    'font' : 13px
+    ,'pre-font' : inherit
+    ,'process-tit-size' : 14px
+    ,'sql-edit' : 13px
+    
+   
+  )
+  ,'dark' : (
+    'font' : 13px
+    ,'pre-font' : inherit
+    ,'process-tit-size' : 14px
+    ,'sql-edit' : 13px
+  )
+);
+
 // theme color
 $theme_colors: (
   'light': (
@@ -154,5 +171,18 @@ $box_sizing_content: content-box;
   
     @error 'theme colorInfo name ['+$themeName+'] key ['+ $type+'] not found';
     @return 'style not found';
+  }
+}
+
+// get size info
+@function sizeInfo($themeName: 'light', $type: 'font') {
+  $map: map-get($theme_size, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme sizeInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'size not found';
   }
 }

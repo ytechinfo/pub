@@ -20,7 +20,6 @@
 	margin: 2px 0 0;
 	list-style: none;
 	color : colorInfo($g_default_theme_name , "font_color");
-	font-size: colorInfo($g_default_theme_name , "font_size");
 	border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 	background-color: colorInfo($g_default_theme_name , "background_color");
 	text-align:left;	
@@ -174,7 +173,6 @@
 	#{fn_themeName($pThemeName)} {
 		.pub-context-menu {
 			color : colorInfo($pThemeName , "font_color");
-			font-size: colorInfo($pThemeName , "font_size");
 			border: 1px solid colorInfo($pThemeName , "border_thin_color");
 			background-color: colorInfo($pThemeName , "background_color");
 			@include box_shadow($pThemeName);

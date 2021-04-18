@@ -17,7 +17,6 @@
   margin: 2px 0 0;
   list-style: none;
   color: #000000;
-  font-size: 12px;
   border: 1px solid #d5d5d8;
   background-color: #ffffff;
   text-align: left;
@@ -161,7 +160,6 @@
 
 [pub-theme="dark"] .pub-context-menu {
   color: #c5c3c3;
-  font-size: 12px;
   border: 1px solid #6d6d75;
   background-color: #262729;
   -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);

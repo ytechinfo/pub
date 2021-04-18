@@ -12,7 +12,6 @@
 	background: inherit;//colorInfo($g_default_theme_name , "background_color");
 	height: 25px;
 	width:100%;
-	font-size:colorInfo($g_default_theme_name , "font_size");
 	color:colorInfo($g_default_theme_name , "font_color");
 
 	*{
@@ -43,27 +42,71 @@
 				color:colorInfo($g_default_theme_name , "a_hover_thick_color");
 			}
 		}
+
+		.pubTab-item{
+			vertical-align: baseline;
+			padding: 0px 5px 0px 0px;
+			display: table-cell;
+			@include opacity_val(0.5);
 		
-		.pubTab-item-cont{
-			line-height: 21px;
-			background: tabColorInfo($g_default_theme_name,"tab_background");
-				
-			
-			&:hover .pubTab-icon-area{
-				visibility: visible;
-				display:table-cell;
+			.pub-title-ellipsis {
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				word-wrap: normal;
+				overflow: hidden;
 			}
 
-			.pubTab-icon-area.pubTab-icon-hover-hide{
-				display: none;
+			.pubTab-item-title{
+				display:inline-block;
+				padding: 0px 5px;
+				cursor:pointer;
+				white-space: nowrap;
+				display:table-cell;
+			}
+		
+			.pubTab-item-cont{
+				line-height: 21px;
+				background: tabColorInfo($g_default_theme_name,"tab_background");
+				padding :0px 3px 0px 3px;
+				
+				&:hover{
+					.pubTab-icon-area{
+						visibility: visible;
+						display:table-cell;
+					}
+				} 
+			
+				&:hover, &:focus{
+					@include opacity_val(0.8);
+					color:colorInfo($g_default_theme_name , "a_hover_font_color");
+					background: colorInfo($g_default_theme_name,"a_hover_background_color");
+				}
+	
+				.pubTab-icon-area.pubTab-icon-hover-hide{
+					display: none;
+				}
+			}
+			
+		
+			&.active{
+				@include opacity_val(1);
+		
+				.pubTab-item-cont{
+					background : tabColorInfo($g_default_theme_name , "tab_active_background");
+					color: tabColorInfo($g_default_theme_name , "tab_active_color");
+
+					.pubTab-icon-area{
+						visibility: visible;
+						display:table-cell;
+					}
+				}
+			}
+			
+			&.last {
+				padding: 0px 0px;
 			}
 		}
-	
-		.active .pubTab-item-cont .pubTab-icon-area{
-			visibility: visible;
-			display:table-cell;
-		}
-	
+			
 		.pubTab-drop-item-wrapper{
 			display:none;
 			position: absolute;
@@ -143,13 +186,13 @@
 		}
 	
 		.pubTab-more-button:before {
-			content:'>>';
+			content:' \25B6';
 			margin: 0 0px 0 0;
 			text-align: right;
 		}
 		
 		.pubTab-move-dim{
-			background: colorInfo($g_default_theme_name , "background_color");
+			background: tabColorInfo($g_default_theme_name , "tab_dim_background");
 			position:absolute; 
 			right:1px;
 			top:1px;
@@ -174,50 +217,11 @@
 		display: table;
 		padding: 0px 2px 0px 2px;
 	}
-	
-	.pubTab-item{
-		vertical-align: baseline;
-		padding: 0px 5px 0px 0px;
-		display: table-cell;
-		@include opacity_val(0.5);
-	
-		.pub-title-ellipsis {
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			word-wrap: normal;
-			overflow: hidden;
-		}
-	
-		.pubTab-item-cont{
-			padding :0px 3px 0px 3px;
-		}
-	
-		&.active{
-			@include opacity_val(1);
-	
-			.pubTab-item-cont{
-				background : tabColorInfo($g_default_theme_name , "tab_active_background");
-				color: tabColorInfo($g_default_theme_name , "tab_active_color");
-			}
-		}
 		
-		&.last {
-			padding: 0px 0px;
-		}
-	}
-	
 	.pubTab-item-cont-wrapper{
 		border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 		border-top-left-radius: 3px;
 		border-top-right-radius: 3px;
-	}
-	
-	.pubTab-item-title{
-		display:inline-block;
-		padding: 0px 5px;
-		cursor:pointer;
-		white-space: nowrap;
-		display:table-cell;
 	}
 	
 	.pubTab-drop-open-btn:hover{
@@ -232,25 +236,39 @@
 @each $pThemeName in $g_theme_list_info {
 
 	#{fn_themeName($pThemeName)} .pubTab-wrapper{
-		background: inherit; //colorInfo($pThemeName , "background_color");
+	
 		color:colorInfo($pThemeName , "font_color");
-		
+
 		.pubTab{
 			.pubTab-icon-area{
 				.pubTab-icon:hover{
 					color:colorInfo($pThemeName , "a_hover_thick_color");
 				}
 			}
-			
-			.pubTab-item-cont{
-				background: tabColorInfo($pThemeName,"tab_background");
-			}
+
+			.pubTab-item{
+				.pubTab-item-cont{
+					background: tabColorInfo($pThemeName,"tab_background");
 					
+					&:hover, &:focus{
+						color:colorInfo($pThemeName , "a_hover_font_color");
+						background: colorInfo($pThemeName,"a_hover_background_color");
+					}
+				}
+				
+				&.active{
+					@include opacity_val(1);
+					.pubTab-item-cont{
+						background : tabColorInfo($pThemeName , "tab_active_background");
+						color: tabColorInfo($pThemeName , "tab_active_color");
+					}
+				}
+			}
+				
 			.pubTab-drop-item-wrapper{
 				border: 1px solid colorInfo($pThemeName , "border_thin_color");
 			}
 			
-				
 			.pubTab-drop-item-area{
 				background-color: colorInfo($pThemeName , "background_color");
 			}
@@ -263,26 +281,16 @@
 		}
 		
 		.pubTab-move-area{
-		
-			i:hover{
-				color: colorInfo($pThemeName , "arrow_active_color");
-			}
 			
-			.pubTab-right-arrow , .pubTab-left-arrow{
+			.pubTab-more-button {
 				color: colorInfo($pThemeName , "arrow_color");
+				&:hover{
+					background: colorInfo($pThemeName , "background_thick_color");
+				}
 			}
 			
 			.pubTab-move-dim{
-				background: colorInfo($pThemeName , "background_color");
-			}
-		}
-
-		.pubTab-item{
-			&.active{
-				.pubTab-item-cont{
-					background : tabColorInfo($pThemeName , "tab_active_background");
-					color: tabColorInfo($pThemeName , "tab_active_color");
-				}
+				background: tabColorInfo($pThemeName , "tab_dim_background");
 			}
 		}
 		
