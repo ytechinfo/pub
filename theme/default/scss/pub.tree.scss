@@ -12,8 +12,8 @@ ul.pub-tree{
 	white-space: nowrap;
 	padding:0px;
 	margin:0px;
-
-	background: #fff;;
+	color:colorInfo($g_default_theme_name , "font_color");
+	background: colorInfo($g_default_theme_name,"background_color");
     
 	*{
 		line-height: 18px;
@@ -25,23 +25,11 @@ ul.pub-tree{
 	li {
 		list-style-type:none;
 		position:relative;
-		color: #000;
 		white-space: nowrap;
 		padding: 0px 4px 0px 1px !important;
 		margin: 0px;
 	}
-
 	
-	.pub-tree-atag-blur {
-		color: #333 ;
-		background-color:#ffffff;
-	}
-
-	.pub-tree-atag-focus {
-		color: #000000;
-   		background-color: #eae8e8;
-	}
-
 	.tree-empty-area{
 		padding-left:15px;
 	}
@@ -50,8 +38,18 @@ ul.pub-tree{
 		cursor:pointer;
 		text-decoration: none;
 		vertical-align: middle;
-		color: #000;
-		
+		color: colorInfo($g_default_theme_name , "font_color");
+
+		&:hover,&:focus{
+			color:colorInfo($g_default_theme_name , "a_hover_font_color");
+			background: treeColorInfo($g_default_theme_name,"node_hover_background");
+		}
+
+		&.pub-tree-atag-blur, &.pub-tree-atag-focus {
+			color:treeColorInfo($g_default_theme_name , "node_select_font_color");
+			background: treeColorInfo($g_default_theme_name,"node_select_background");
+		}
+	
 	}
 
 	.pub-tree-join-icon{
@@ -139,4 +137,26 @@ ul.pub-tree{
 		background:url('./images/tree/nolines_minus.gif');
 	}
 	/*--------------------icon --------------------*/
+}
+
+
+@each $pThemeName in $g_theme_list_info {
+
+	#{fn_themeName($pThemeName)} ul.pub-tree{
+		color:colorInfo($pThemeName , "font_color");
+		background: colorInfo($pThemeName,"background_color");
+		
+		.pubtree-item{
+			color: colorInfo($pThemeName , "font_color");
+			&:hover,&:focus{
+				color:colorInfo($pThemeName , "a_hover_font_color");
+				background: treeColorInfo($pThemeName,"node_hover_background");
+			}
+
+			&.pub-tree-atag-blur, &.pub-tree-atag-focus {
+				color:treeColorInfo($pThemeName , "node_select_font_color");
+				background: treeColorInfo($pThemeName,"node_select_background");
+			}
+		}
+	}
 }
