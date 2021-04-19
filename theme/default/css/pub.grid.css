@@ -293,6 +293,10 @@
   position: relative;
 }
 
+.pubGrid-wrapper .pubGrid-body-container td:hover {
+  background-color: #e8ecef;
+}
+
 .pubGrid-wrapper .pubGrid-body-container .pub-bg-primary {
   background-color: #286090;
 }
@@ -915,6 +919,10 @@
 [pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container td {
   border-right: 1px solid #6d6d75;
   border-bottom: 1px solid #6d6d75;
+}
+
+[pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container td:hover {
+  background-color: #4e5050;
 }
 
 [pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container .col-active {

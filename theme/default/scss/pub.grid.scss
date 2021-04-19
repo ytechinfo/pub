@@ -294,6 +294,10 @@
 			border-right : 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 			border-bottom : 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 			position: relative;
+
+			&:hover{
+				background-color: gridColorInfo($g_default_theme_name,"td_background_hover");
+			}
 		}
 
 		.pub-bg-{
@@ -887,6 +891,10 @@
 			td{
 				border-right : 1px solid colorInfo($pThemeName , "border_thin_color");
 				border-bottom : 1px solid colorInfo($pThemeName , "border_thin_color");
+
+				&:hover{
+					background-color: gridColorInfo($pThemeName,"td_background_hover");;
+				}
 			}
 		
 			.col-active{

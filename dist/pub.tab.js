@@ -80,8 +80,8 @@ function objectMerge() {
 }
 
 function Plugin(element, options) {
-	this.selector = (typeof element=='object') ? element.selector : element;
-	this.prefix =pluginName+new Date().getTime();
+	this.selector = element;
+	this.prefix = pluginName + new Date().getTime();
 	this.tabElement = $(element);
 
 	if(options.width != 'auto'){
@@ -90,8 +90,7 @@ function Plugin(element, options) {
 
 	options.width= isNaN(options.width) ?  this.tabElement.width() : options.width;
 	this.options = objectMerge({}, defaults, options);
-
-
+	
 	this.init();
 
 	return this;
@@ -831,7 +830,11 @@ Plugin.prototype ={
 		return this.options.theme;
 	}
 	,destroy:function (){
-
+		this.tabElement.find('*').off();
+		$._removeData(this.tabElement)
+		delete _datastore[this.selector];
+		$(this.selector).empty();
+		//this = {};
 	}
 };
 
