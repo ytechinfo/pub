@@ -1404,15 +1404,11 @@
 }
 
 .pubTab-wrapper .pubTab-move-area .pubTab-more-button {
-  padding: 0px 3px;
-  width: 13px;
+  padding: 0px 2px;
+  width: 14px;
   margin: 0px;
-  width: 12px;
   color: #989494;
   font-style: inherit;
-  float: left;
-  letter-spacing: -4px;
-  font-weight: bold;
   cursor: pointer;
 }
 
@@ -1421,7 +1417,7 @@
 }
 
 .pubTab-wrapper .pubTab-move-area .pubTab-more-button:before {
-  content: ' \25B6';
+  content: ' \25BC';
   margin: 0 0px 0 0;
   text-align: right;
 }

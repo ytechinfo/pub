@@ -168,16 +168,11 @@
 		line-height: 23px;
 	
 		.pubTab-more-button {
-			padding: 0px 3px;
-    		width: 13px;
+			padding: 0px 2px;
+    		width: 14px;
 			margin: 0px;
-			width: 12px;
 			color: colorInfo($g_default_theme_name , "arrow_color");
 			font-style: inherit;
-			float: left;
-			
-			letter-spacing: -4px;
-			font-weight: bold;
 			cursor: pointer;
 
 			&:hover{
@@ -186,7 +181,7 @@
 		}
 	
 		.pubTab-more-button:before {
-			content:' \25B6';
+			content:' \25BC';
 			margin: 0 0px 0 0;
 			text-align: right;
 		}
