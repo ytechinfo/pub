@@ -53,7 +53,9 @@ $theme_colors: (
     ,'table_tr_even' : #f3f6fa
 
     ,'arrow_color' : #989494	// sub menu right arrow border color
+    ,'arrow_background_color' : #d4d3d3	
     ,'arrow_active_color' : #716e6e	// sub menu right arrow active border color
+    ,'arrow_active_background_color' : #b8b8b8	
 
     //scroll
     ,'scroll_border_color' :  #cac3c3
@@ -100,8 +102,10 @@ $theme_colors: (
     ,'table_tr_odd' : #1a1616
     ,'table_tr_even' : #262729
 
-    ,'arrow_color' : #989494	// sub menu right arrow border color
-    ,'arrow_active_color' : #cbc3c3	// sub menu right arrow active border color
+    ,'arrow_color' : #777474	// sub menu right arrow border color
+    ,'arrow_background_color' : #cec8c8	
+    ,'arrow_active_color' : #403d3d	// sub menu right arrow active border color
+    ,'arrow_active_background_color' : #dcdcdc	
 
     // scroll 
     ,'scroll_border_color' :  #6d6d75

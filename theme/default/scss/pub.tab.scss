@@ -165,38 +165,30 @@
 		top:0px;
 		margin-top: 1px;
 		min-width:20px;
-		line-height: 23px;
-	
+		height: 23px;
+		
 		.pubTab-more-button {
-			padding: 0px 2px;
-    		width: 14px;
-			margin: 0px;
+			padding: 0px;
+    		text-align: center;
+			height: 22px;
 			color: colorInfo($g_default_theme_name , "arrow_color");
 			font-style: inherit;
 			cursor: pointer;
+			@include opacity_val(0.9);
+			background: colorInfo($g_default_theme_name , "arrow_background_color");
 
 			&:hover{
-				background: colorInfo($g_default_theme_name , "background_thick_color");
+				@include opacity_val(1);
+				color: colorInfo($g_default_theme_name , "arrow_active_color");
+				background: colorInfo($g_default_theme_name , "arrow_active_background_color");
 			}
-		}
-	
-		.pubTab-more-button:before {
-			content:' \25BC';
-			margin: 0 0px 0 0;
-			text-align: right;
-		}
-		
-		.pubTab-move-dim{
-			background: tabColorInfo($g_default_theme_name , "tab_dim_background");
-			position:absolute; 
-			right:1px;
-			top:1px;
-			bottom:0px;
-			left:0px;
-			z-index:-1;
-			box-shadow: none;
-			@include opacity_val(0.8);
-		}
+
+			&:before {
+				content:'\25BC';
+				line-height: 23px;
+				
+			}
+		}		
 	}
 	
 	.pubTab-prev ,.pubTab-next{
@@ -219,8 +211,13 @@
 		border-top-right-radius: 3px;
 	}
 	
-	.pubTab-drop-open-btn:hover{
-		background:colorInfo($g_default_theme_name , "background_thick_color");
+	.pubTab-drop-open-btn{
+		height: 23px;
+		margin-top: 1px;
+		position: relative;
+		&:hover{
+			background:colorInfo($g_default_theme_name , "background_thick_color");
+		}
 	}
 	
 	.pubTab-hide{
@@ -279,22 +276,17 @@
 			
 			.pubTab-more-button {
 				color: colorInfo($pThemeName , "arrow_color");
+				background: colorInfo($pThemeName , "arrow_background_color");
+
 				&:hover{
-					background: colorInfo($pThemeName , "background_thick_color");
+					color: colorInfo($pThemeName , "arrow_active_color");
+					background: colorInfo($pThemeName , "arrow_active_background_color");
 				}
-			}
-			
-			.pubTab-move-dim{
-				background: tabColorInfo($pThemeName , "tab_dim_background");
 			}
 		}
 		
 		.pubTab-item-cont-wrapper{
 			border: 1px solid colorInfo($pThemeName , "border_thin_color");
-		}
-		
-		.pubTab-drop-open-btn:hover{
-			background:colorInfo($pThemeName , "background_thick_color");
 		}
 	}
 }

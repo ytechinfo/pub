@@ -185,13 +185,13 @@
 }
 
 [pub-theme="dark"] .pub-context-submenu > a:after {
-  border-left-color: #989494;
+  border-left-color: #777474;
 }
 
 [pub-theme="dark"] .pub-context-submenu:hover > a:after {
-  border-left-color: #cbc3c3;
+  border-left-color: #403d3d;
 }
 
 [pub-theme="dark"] .pub-context-submenu.disabled > a:after {
-  border-left-color: #989494;
+  border-left-color: #777474;
 }

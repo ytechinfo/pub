@@ -767,14 +767,12 @@ Plugin.prototype ={
 		strHtm.push('		</div> ');
 		strHtm.push('		<div class="pubTab-move-area" style="z-index:'+_opts.moveZIndex+';">');
 
-		strHtm.push('		<span class="pubTab-drop-open-btn">');
-		strHtm.push('			<div class="pubTab-move-dim"></div>');
-		strHtm.push('			<i class="pubTab-more-button"></i>');
+		strHtm.push('		  <div class="pubTab-drop-open-btn pubTab-more-button">');
 		if(_opts.overItemViewMode =='drop'){
 			strHtm.push('		<div id="'+_this.prefix+'DropItem" style="width:'+_opts.dropItemWidth+'" class="pubTab-drop-item-wrapper"><ul class="pubTab-drop-item-area">'+dropItemHtml()+'</ul></div>');
 		}
 
-		strHtm.push('</span>');
+		strHtm.push('		  </div>');
 		strHtm.push('		</div>');
 		strHtm.push('	</div>');
 		strHtm.push('</div>');
