@@ -223,6 +223,22 @@
 	.pubTab-hide{
 		display:none;
 	}
+
+	/* for MS계열 브라우저 */
+	@include keyframe (blinkframe) {
+		0% { opacity: 1.0; }
+		50% { opacity: 0.5; }
+		100% { opacity: 1.0; } 
+	}
+	
+	.blinkcss {
+		*{
+			color : tabColorInfo($g_default_theme_name,"tab_blink_color");
+		}
+		@include animation (blinkframe, 0s, 2s, infinite);
+		animation-timing-function: linear;
+		background-color: tabColorInfo($g_default_theme_name,"tab_blink_background") !important;
+	}
 }
 
 @each $pThemeName in $g_theme_list_info {
@@ -288,5 +304,14 @@
 		.pubTab-item-cont-wrapper{
 			border: 1px solid colorInfo($pThemeName , "border_thin_color");
 		}
+
+		.blinkcss {
+			*{
+				color : tabColorInfo($pThemeName,"tab_blink_color");
+			}
+			background-color: tabColorInfo($pThemeName,"tab_blink_background") !important;
+		}
+
+
 	}
 }

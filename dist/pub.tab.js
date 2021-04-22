@@ -48,6 +48,7 @@ var pluginName = "pubTab"
 
 	}
 	,removeItem : false	// remove callback 옵션
+	,blinkClass : 'blinkcss'
 	,itemKey :{							// item key mapping
 		title :'name'
 		,id :'_tabid'
@@ -316,12 +317,48 @@ Plugin.prototype ={
 		return tabEle.length > 0 ? true : false;
 	}
 	/**
+	 * @method setTabBlink
+	 * @param item {Object or String} -tab item or tab id
+	 * @description set tab blink
+	 */
+	,setTabBlink : function (item){
+		var tabEle;
+		if(typeof item ==='object'){
+			tabEle= this.tabElement.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]');
+		}else{
+			tabEle= this.tabElement.find('.pubTab-item[data-tab-id="'+item+'"]');
+		}
+
+		if(tabEle.length > 0 && !tabEle.hasClass(this.options.blinkClass)){
+			tabEle.find('.pubTab-item-cont').addClass(this.options.blinkClass);
+		}
+	}
+	/**
+	 * @method removeTabBlink
+	 * @param item {Object or String} -tab item or tab id
+	 * @description remove tab blink
+	 */
+	,removeTabBlink : function (item){
+		var tabEle;
+		if(typeof item ==='object'){
+			tabEle= this.tabElement.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]');
+		}else{
+			tabEle= this.tabElement.find('.pubTab-item[data-tab-id="'+item+'"]');
+		}
+
+		if(tabEle.length > 0){
+			tabEle.find('.pubTab-item-cont').removeClass(this.options.blinkClass);
+		}
+	}
+	/**
 	 * @method setActive
 	 * @description set active item
 	 */
 	,setActive: function (item){
 		var tabEle= this.tabElement.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]');
 
+		this.removeTabBlink(item);
+		
 		if(tabEle.hasClass('active')){
 			return ;
 		}

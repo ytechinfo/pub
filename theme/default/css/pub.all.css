@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /*
  * pub.grid.fxied.css: 1.0.0
  * ========================================================================
@@ -46,6 +47,14 @@
 
 .pubGrid-wrapper .pubGrid input[type="checkbox"] {
   margin: auto;
+}
+
+.pubGrid-wrapper .pubGrid input, .pubGrid-wrapper .pubGrid textarea {
+  -webkit-touch-callout: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
 }
 
 .pubGrid-wrapper .pubGrid-resize-helper {
@@ -1238,6 +1247,7 @@
   height: 25px;
   width: 100%;
   color: #000000;
+  /* for MS계열 브라우저 */
 }
 
 .pubTab-wrapper * {
@@ -1467,6 +1477,52 @@
   display: none;
 }
 
+@-webkit-keyframes blinkframe {
+  0% {
+    opacity: 1.0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1.0;
+  }
+}
+
+@keyframes blinkframe {
+  0% {
+    opacity: 1.0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1.0;
+  }
+}
+
+.pubTab-wrapper .blinkcss {
+  animation-name: blinkframe;
+  animation-delay: 0s;
+  -webkit-animation-name: blinkframe;
+  -webkit-animation-delay: 0s;
+  -moz-animation-name: blinkframe;
+  -moz-animation-delay: 0s;
+  animation-duration: 2s;
+  -webkit-animation-duration: 2s;
+  -moz-animation-duration: 2s;
+  animation-iteration-count: infinite;
+  -webkit-animation-iteration-count: infinite;
+  -moz-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+          animation-timing-function: linear;
+  background-color: #252525 !important;
+}
+
+.pubTab-wrapper .blinkcss * {
+  color: #ffffff;
+}
+
 [pub-theme="dark"] .pubTab-wrapper {
   color: #c5c3c3;
 }
@@ -1521,6 +1577,14 @@
 
 [pub-theme="dark"] .pubTab-wrapper .pubTab-item-cont-wrapper {
   border: 1px solid #6d6d75;
+}
+
+[pub-theme="dark"] .pubTab-wrapper .blinkcss {
+  background-color: #dcdcdc !important;
+}
+
+[pub-theme="dark"] .pubTab-wrapper .blinkcss * {
+  color: #000000;
 }
 
 /*

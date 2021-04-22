@@ -190,3 +190,35 @@ $box_sizing_content: content-box;
     @return 'size not found';
   }
 }
+
+
+@mixin keyframe ($animation_name) {
+  @keyframes #{$animation_name} {
+      @content;
+  }
+}
+
+
+@mixin animation ($name, $delay, $duration, $loop) {
+  animation-name: $name;
+  animation-delay: $delay;
+  
+  -webkit-animation-name: $name;
+  -webkit-animation-delay: $delay;
+  
+  -moz-animation-name: $name;
+  -moz-animation-delay: $delay;
+
+  @if $duration != null{
+    animation-duration: $duration;
+    -webkit-animation-duration: $duration;
+    -moz-animation-duration: $duration;
+  }
+  
+
+  @if $loop != null{
+    animation-iteration-count: $loop;
+    -webkit-animation-iteration-count: $loop;
+    -moz-animation-iteration-count: $loop;
+  };
+}
