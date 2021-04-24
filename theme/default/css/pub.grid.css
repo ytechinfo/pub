@@ -79,6 +79,10 @@
   z-index: 3;
 }
 
+.pubGrid-wrapper .pubGrid-resize-mode .pubGrid-body-container td:hover {
+  background-color: transparent;
+}
+
 .pubGrid-wrapper .pubGrid-noselect * {
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;

@@ -80,6 +80,11 @@
 		.pubGrid-resize-helper{
 			z-index :3; 
 		}
+		.pubGrid-body-container td{
+			&:hover{
+				background-color: transparent;
+			}
+		}
 	}
 	
 	.pubGrid-noselect *{
