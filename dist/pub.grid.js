@@ -2171,7 +2171,7 @@ Plugin.prototype ={
 
 			cfg.scroll.hThumbWidth = barWidth;
 			cfg.scroll.hTrackWidth =hscrollW - barWidth;
-			cfg.scroll.oneColMove = gridContTotW/cfg.scroll.hTrackWidth;
+			cfg.scroll.oneColMove = gridContTotW/cfg.tColItem.length ; //gridContTotW/cfg.scroll.hTrackWidth;
 			leftVal = cfg.scroll.hTrackWidth* cfg.scroll.hBarPosition/100;
 			_this.element.hScrollBar.css('width',barWidth)
 		}else{
@@ -3273,14 +3273,41 @@ Plugin.prototype ={
 		var bodyDragDelay = 150;
 		var multipleFlag = _$util.isMultipleSelection(selectionMode);
 
-		function dragScrollMove(){
+		function dragScrollMove(ctx){
+			var cfg = ctx.config
+				, rangeInfo = cfg.selection.range; 
 			bodyDragTimer = setInterval(function() {
-				if(_this.config.mouseDragDirectionY !==false){
-					_this.moveVerticalScroll({pos :_this.config.mouseDragDirectionY});
+				if(cfg.mouseDragDirectionY !==false){
+					var endIdx = -1;
+					if(cfg.mouseDragDirectionY =='D'){
+						endIdx = rangeInfo.maxIdx+1;
+					}else{
+						endIdx = rangeInfo.startIdx > rangeInfo.minIdx ? rangeInfo.minIdx -1 : rangeInfo.maxIdx-1;
+					}
+					
+					_$util.setSelectionRangeInfo(ctx, {
+						rangeInfo :  {endIdx : endIdx}
+					},false, false);
+
+					ctx.moveVerticalScroll({pos :cfg.mouseDragDirectionY});
 				}
 
-				if(_this.config.mouseScrollDirectionX !==false){
-					_this.moveHorizontalScroll({pos :_this.config.mouseScrollDirectionX});
+				if(ctx.config.mouseScrollDirectionX !==false){
+					var endCol = -1;
+
+					if(cfg.mouseScrollDirectionX =='R'){
+						endCol = cfg.scroll.insideEndCol+1;
+					}else{
+						endCol = ctx.config.scroll.insideStartCol-1;
+					}
+
+					var reGridFlag = endCol < 0 || endCol >= cfg.tColItem.length ? true :false ;
+
+					_$util.setSelectionRangeInfo(ctx, {
+						rangeInfo :  {endCol : endCol}
+					},false, reGridFlag);
+					
+					ctx.moveHorizontalScroll({pos :cfg.mouseScrollDirectionX});
 				}
 			}, bodyDragDelay);
 		}
@@ -3323,9 +3350,9 @@ Plugin.prototype ={
 						_this.config.mouseDragDirectionY = 'U';
 					}else if(movePageY > _b){
 						_this.config.mouseDragDirectionY = 'D';
-					}
+					}				
 
-					if(!bodyDragTimer)dragScrollMove();
+					if(!bodyDragTimer) dragScrollMove(_this);
 
 				}).on('touchend.pubgrid.body.drag mouseup.pubgrid.body.drag mouseleave.pubgrid.body.drag', function (e1){
 					$(document).off('touchmove.pubgrid.body.drag mousemove.pubgrid.body.drag').off('touchend.pubgrid.body.drag mouseup.pubgrid.body.drag mouseleave.pubgrid.body.drag');
@@ -5078,16 +5105,16 @@ var _$util = {
 		if(initFlag === true){
 
 			var initOpt = {
-				curr :0
-				,range : {startIdx : -1,endIdx : -1, startCol : -1, endCol : -1}
-				,allRange:  {}
-				,isSelect : false
-				,isMouseDown:false
-				,unSelectPosition:{}
-				,allSelect : false
-				,minIdx : -1 ,maxIdx : -1
-				,minCol : -1 ,maxCol : -1
-				,startCell:{startIdx : -1, startCol : -1}
+				curr: 0
+				,range: {startIdx: -1, endIdx : -1, startCol: -1, endCol: -1}
+				,allRange: {}
+				,isSelect: false
+				,isMouseDown: false
+				,unSelectPosition: {}
+				,allSelect: false
+				,minIdx: -1, maxIdx: -1
+				,minCol: -1, maxCol: -1
+				,startCell: {startIdx : -1, startCol: -1}
 			};
 			_this.setSelectionInfo(ctx, initOpt, selectionInfo, rangeInfo);
 			cfgSelect = ctx.config.selection = initOpt;
