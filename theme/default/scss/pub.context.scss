@@ -49,6 +49,7 @@
 		clear: both;
 		font-weight: normal;
 		line-height: 20px;
+		color : colorInfo($g_default_theme_name , "font_color");
 		white-space: nowrap;
 		text-decoration: none;
 		border: 1px solid transparent;
@@ -176,6 +177,10 @@
 			border: 1px solid colorInfo($pThemeName , "border_thin_color");
 			background-color: colorInfo($pThemeName , "background_color");
 			@include box_shadow($pThemeName);
+
+			a {
+				color : colorInfo($pThemeName , "font_color");
+			}
 	
 			.divider {
 				border-bottom: 1px solid colorInfo($pThemeName , "border_thick_color");

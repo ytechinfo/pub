@@ -1089,6 +1089,7 @@
   clear: both;
   font-weight: normal;
   line-height: 20px;
+  color: #000000;
   white-space: nowrap;
   text-decoration: none;
   border: 1px solid transparent;
@@ -1209,6 +1210,10 @@
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
+[pub-theme="dark"] .pub-context-menu a {
+  color: #c5c3c3;
+}
+
 [pub-theme="dark"] .pub-context-menu .divider {
   border-bottom: 1px solid #5f5f68;
 }
@@ -1224,7 +1229,7 @@
 }
 
 [pub-theme="dark"] .pub-context-menu .pub-context-header {
-  color: #444040;
+  color: #e4e4e4;
 }
 
 [pub-theme="dark"] .pub-context-submenu > a:after {
