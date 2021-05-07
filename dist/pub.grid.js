@@ -292,9 +292,20 @@ var formatter= {
 }
 
 function evtPos(e){
-	var oe = e.originalEvent.touches
-		,evt = oe && oe[0] ? oe[0] : e;
+	var oe = e.originalEvent
+	var evt; 
+	if(oe){
+		if(oe.changedTouches){
+			evt =oe.changedTouches[0];
+		}else{
+			if( oe.touches){
+				evt = oet[0] 
+			}
+		}
+	}
 
+	evt = evt || e; 
+	
 	return {x : evt.pageX, y : evt.pageY};
 }
 
@@ -1718,8 +1729,7 @@ Plugin.prototype ={
 				_this.gridElement.empty().html(templateHtm);
 
 				_this.element.pubGrid = $('#'+_this.prefix +'_pubGrid');
-				_this.element.hidden = $('#'+_this.prefix +'_hiddenArea');
-
+				
 				_this.element.container = $('#'+_this.prefix+'_container');
 				_this.element.left = $('#'+_this.prefix+'_left');
 				_this.element.header= $('#'+_this.prefix+'_headerContainer');
@@ -4431,8 +4441,7 @@ Plugin.prototype ={
 
 			// resize시 select안되게 처리 . cursor처리
 			_$doc.attr("onselectstart", "return false");
-			_this.element.hidden.append("<style type='text/css'>*{cursor:" + _this.options.headerOptions.resize.cursor + "!important}</style>");
-
+			
 			_$doc.on('touchmove.colheaderresize mousemove.colheaderresize', function (e1){
 				if(!moveStart){
 					var moveX = evtPos(e1).x;
@@ -4473,7 +4482,7 @@ Plugin.prototype ={
 	,onGripDragEnd : function(e,_this) {
 
 		_$doc.removeAttr("onselectstart");_$doc.off('touchend.colheaderresize mouseup.colheaderresize').off('touchmove.colheaderresize mousemove.colheaderresize mouseleave.colheaderresize');
-		_this.element.hidden.empty();
+		
 
 		_this._setHeaderResize(e,_this, 'end');
 
