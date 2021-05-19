@@ -309,6 +309,10 @@ function evtPos(e){
 	return {x : evt.pageX, y : evt.pageY};
 }
 
+function isInputField(tagName){
+	return tagName.search(/(input|select|textarea)/i) > -1;
+}
+
 function getHashCode (str){
 	var hash = 0;
 	if (str.length == 0) return hash;
@@ -642,7 +646,7 @@ Plugin.prototype ={
 			thg.push(tci);
 		}
 
-		var tmpThgIdx=0,tmpColIdx=0,tmpThgItem , currentColSpanIdx=0  , beforeColSpanIdx=0 ;
+		var tmpThgIdx=0, tmpColIdx=0, currentColSpanIdx=0, beforeColSpanIdx=0;
 		var sortHeaderInfo = {};
 		for(var i=0,j=0 ;i <thg.length; i++ ){
 			thgItem = thg[i];
@@ -806,7 +810,6 @@ Plugin.prototype ={
 		}
 
 		var _this = this
-			,_containerWidth ,_w
 			,opt = _this.options
 			,_gw = _this.config.container.width
 			,tci = _this.config.tColItem
@@ -3593,10 +3596,12 @@ Plugin.prototype ={
 
 			if(!_this.config.focus) return ;
 
-			var evtTargetEle = $(e.target);
+			if(isInputField(e.target.tagName)){
+				return true; 
+			}
 
 			// 설정 영역 keydown 처리
-			if(evtTargetEle.closest('.pubGrid-setting-area').length > 0) return true;
+			if($(e.target).closest('.pubGrid-setting-area').length > 0) return true;
 
 			var evtKey = window.event ? e.keyCode : e.which;
 
@@ -3645,7 +3650,7 @@ Plugin.prototype ={
 				}
 			}
 
-			if( (32 < evtKey && evtKey <41) || evtKey == 13 || evtKey == 9){
+			if( (32 < evtKey && evtKey < 41) || evtKey == 13 || evtKey == 9){
 				e.preventDefault();
 				e.stopPropagation();
 
@@ -3703,8 +3708,6 @@ Plugin.prototype ={
 
 		var endIdx = startCell.startIdx
 			,endCol = startCell.startCol;
-
-		var isKeyNavHandler = _this.config.isKeyNavHandler;
 
 		switch(evtKey){
 			case 34 : // PageDown
