@@ -1077,6 +1077,8 @@ Plugin.prototype ={
 					}
 				}
 
+				console.log('test')
+
 				this.config.searchOn = true;
 			}else{
 				this.config.searchOn = false;
@@ -1774,11 +1776,7 @@ Plugin.prototype ={
 				_this.setTheme(_this.options.theme);
 				_this._initFooterEvent();
 
-				if(_this.config.searchOn===true){
-					_this.gridElement.find('.pubGrid-setting').addClass('search-on');
-				}else{
-					_this.gridElement.find('.pubGrid-setting').removeClass('search-on');
-				}
+				_this.setSearchOn();
 			}else{
 				_this.element.header.find('.pubGrid-header-left-cont').empty().html(_this.theadHtml('left'));
 				_this.element.header.find('.pubGrid-header-cont').empty().html(_this.theadHtml('cont'));
@@ -1955,6 +1953,17 @@ Plugin.prototype ={
 
 		if(this.options.navigation.usePaging === true || this.options.navigation.status === true){
 			_this._statusMessage(viewCount);
+		}
+	}
+	/**
+	 * @method setSearchOn
+	 * @description 검색 데이터가 있을때 세팅
+	 */
+	,setSearchOn : function (){
+		if(this.config.searchOn===true){
+			this.gridElement.find('.pubGrid-setting').addClass('search-on');
+		}else{
+			this.gridElement.find('.pubGrid-setting').removeClass('search-on');
 		}
 	}
 	/**
@@ -3148,6 +3157,7 @@ Plugin.prototype ={
 					settingOpt.configVal.search = settingVal.search;
 
 					_this._setSearchData('search');
+					_this.setSearchOn();
 				}
 
 				if(isFunction(settingOpt.callback)){
