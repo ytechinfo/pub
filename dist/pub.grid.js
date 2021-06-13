@@ -136,7 +136,7 @@ var _initialized = false
 		,keyNavHandler : false // arrows key handler function
 	}
 	,scroll :{	// 스크롤 옵션
-		isPreventDefault : true	// 이벤트 전파 여부.
+		isStopPropagation : false	// 이벤트 전파 여부.
 		,vertical : {
 			width : 14			// 세로 스크롤
 			,bgDelay : 100		// 스크롤 빈공간 mousedown delay
@@ -2297,20 +2297,24 @@ Plugin.prototype ={
 			if(_this.config.scroll.vUse){
 				_this.moveVerticalScroll({pos :(delta > 0? 'U' :'D') , speed : _this.options.scroll.vertical.speed});
 
-				if(_this.options.scroll.isPreventDefault === true){
+				if(_this.options.scroll.isStopPropagation === true){
 					e.preventDefault();
+					e.stopPropagation();
 				}else if(_this.config.scroll.top != 0 && _this.config.scroll.top != _this.config.scroll.vTrackHeight){
 					e.preventDefault();
+					e.stopPropagation();
 				}
 			}else{
 				if(_this.config.scroll.hUse){
 					_this.moveHorizontalScroll({pos :(delta > 0?'L':'R') , speed : _this.options.scroll.horizontal.speed});
 
-					if(_this.options.scroll.isPreventDefault===true){
+					if(_this.options.scroll.isStopPropagation===true){
 						e.preventDefault();
+						e.stopPropagation();
 					}else{
 						if(_this.config.scroll.left != 0 && _this.config.scroll.left != _this.config.scroll.hTrackWidth){
 							e.preventDefault();
+							e.stopPropagation();
 						}
 					}
 				}
@@ -2942,15 +2946,16 @@ Plugin.prototype ={
 				if(_this.config.scroll.hUse){
 					_this.moveHorizontalScroll({pos :(delta > 0?'L':'R') , speed : _this.options.scroll.horizontal.speed});
 
-					if(_this.options.scroll.isPreventDefault===true){
+					if(_this.options.scroll.isStopPropagation===true){
 						e.preventDefault();
+						e.stopPropagation();
 					}else{
 						if(_this.config.scroll.left != 0 && _this.config.scroll.left != _this.config.scroll.hTrackWidth){
 							e.preventDefault();
+							e.stopPropagation();
 						}
 					}
 				}
-				e.stopPropagation();
 			});
 		}
 
