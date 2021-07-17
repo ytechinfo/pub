@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../theme/default/css/pub.splitter.min.css" rel="stylesheet" type="text/css" />
+
+<script src="../plugins/jquery-3.3.1.min.js"></script>
+<script src="../dist/pub.splitter.js"></script>
+
+
+<title>splitter 보기</title>
+<style>
+html,body{
+	height: 100%;
+	width:100%;
+	padding: 0px;
+	margin: 0px;
+}
+
+.wh100{
+	position: relative;
+	height: 100%;
+	width:100%;
+}
+
+.main-container , .side-container{
+	border: 1px solid #ddd;
+}
+
+.main-container {
+	width:20%;
+	height: 100%;
+	display: inline-block;
+	padding: 10px;
+}
+
+.side-container{
+	height: 100%;
+	width: 30%;
+	padding: 10px;
+	display: inline-block;
+}
+
+#mainPage{
+	width:950px;
+	height: 300px;
+}
+
+.child-float-left{
+	border: 1px solid #000;
+	position: relative;
+	padding: 10px;
+}
+
+.child-float-left > div{
+	border: 1px solid #ddd;
+}
+
+.h-row{
+	width: 100%;
+	height: 50px;
+	border: 1px solid #ddd;
+}
+table td ,table th {
+	border-bottom:1px solid #ddd;
+}
+</style>
+</head>
+
+<body>
+	<table style="width:100%;border: 1px solid #000;">
+		<colgroup>
+			<col style="width:100px">
+			<col style="width:*">
+		</colgroup>
+		<tr>
+			<th>
+				세로
+			</th>
+			<td>
+				<div style="height: 100px;border:1px solid #000;">
+					<div class="h-row">bbbbbbbb</div>
+					<div class="main-spliter" data-prev-min-size="30" data-next-min-size="0" data-orientation="horizontal" data-percent="true"></div>
+					<div class="h-row">ccccccccc</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th>
+				가로 퍼센트
+			</th>
+			<td>
+				<div id="test1" class=" child-float-left" style="height: 50px;">
+					<div class="main-container" style="width:80%;">
+						A
+					</div>
+					<div class="main-spliter" data-percent="true1" data-prev-min-size="0" data-next-min-size="0"></div>
+					<div  class="side-container" style="width:10%;">
+						B
+					</div>
+					<div class="main-spliter" data-percent="true1" data-prev-min-size="0" data-next-min-size="10"></div>
+					<div  class="side-container" style="width:10%;">
+						C
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th>
+				가로 pixel
+			</th>
+			<td>
+				<div id="test1" class=" child-float-left" style="height: 50px;">
+					<div id="mainContainer" class="wh100" style="width:100px">
+						mainContainer
+					</div>
+					<div class="main-spliter" data-prev-min-size="10" data-next-min-size="15" data-percent="false"></div>
+					<div id="sideContainer" class="wh100" style="width:150px">
+						sideContainer
+					</div>
+					<div class="main-spliter" data-prev-min-size="7" data-next-min-size="5" data-percent="false"></div>
+					<div id="sideContainer" class="wh100" style="width:100px" >
+						sideContainer2222
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th>
+				혼합
+			</th>
+			<td>
+				<div class="child-float-left" style="height: 200px;margin-top: 20px;">
+					<div style="width:400px;height:100%;float: left;">
+						<div id="mainContainer" class="wh100" style="width:100px">
+							mainContainer
+						</div>
+						<div class="main-spliter" data-prev-min-size="10" data-next-min-size="15"></div>
+						<div id="sideContainer" class="wh100" style="width:150px">
+							sideContainer
+						</div>
+						<div class="main-spliter" data-prev-min-size="7" data-next-min-size="5" data-percent="false"></div>
+						<div id="sideContainer" class="wh100" style="width:100px" >
+							sideContainer2222
+						</div>
+					</div>
+					<div style="height: 200px;width:200px;">
+						<div style="height:70px">top</div>
+						<div class="main-spliter" data-orientation="horizontal" data-prev-min-size="0" data-next-min-size="0" data-percent="true"></div>
+						<div style="height:50px">bottom</div>
+					</div>
+				</div>
+			</td>
+		</tr>
+	</table>
+
+
+
+
+
+
+</body>
+</html>
+<script>
+
+$(function (){
+	$.pubSplitter('.main-spliter',{
+		mode : 'simple'			// wrapper
+		,orientation: 'vertical'
+		,handleSize : 10
+		,initAutoSize : true
+		,border : true
+		,useButton : true		// 한번에 이동 버튼 사용유무
+		,minSize: 50				// default pixel
+		,percent: {vertical : false, horizontal : true} //size percent 사용여부
+		,useHelper : false		// 위치 조정시 helper 사용여부.
+		,start:function (){
+			//console.log(arguments)
+		}
+		,move : function (){
+			//console.log(arguments)
+		}
+		,stop:function (){
+			//console.log('stop',arguments)
+		}
+	});
+});
+
+</script>

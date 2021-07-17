@@ -1,0 +1,259 @@
+/* * 
+pub.splitter.css: 0.0.1 
+======================================================================== 
+Copyright 2021 ytkim 
+Licensed under MIT 
+http://www.opensource.org/licenses/mit-license.php
+*/
+
+@import "_var_pub.global.scss";
+
+.pub-splitter-wrapper {
+    overflow: hidden;
+
+    &>* {
+        position: relative;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    &.vertical>* {
+        float: left;
+        vertical-align: top;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+
+    &.vertical:after {
+        content: '.';
+        height: 0px;
+        width: 0px;
+        clear: both;
+        visibility: hidden;
+    }
+
+    &.horizontal>* {}
+
+
+}
+
+.pub-splitter {
+    background-color: colorInfo($g_default_theme_name, "background_color");
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    display: block;
+    position: relative;
+    z-index: 100;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    overflow: initial;
+
+    &.vertical {
+        height: 100%;
+        width: 6px;
+        cursor: e-resize;
+
+        &.pub-border {
+            border-left: 1px solid colorInfo($g_default_theme_name, "border_thin_color");
+            border-right: 1px solid colorInfo($g_default_theme_name, "border_thin_color");
+        }
+    }
+
+    &.horizontal {
+        width: 100%;
+        height: 6px;
+        cursor: n-resize;
+
+        &.pub-border {
+            border-top: 1px solid colorInfo($g_default_theme_name, "border_thin_color");
+            border-bottom: 1px solid colorInfo($g_default_theme_name, "border_thin_color");
+        }
+    }
+
+    &.pub-border-none {
+        border: 1px solid transparent;
+    }
+
+    &:hover {
+        background-color: colorInfo($g_default_theme_name, "a_hover_background_color");
+    }
+
+    &.helper {
+        background-color: colorInfo($g_default_theme_name, "background_color");
+
+        >.pub-splitter-helper {
+            display: block;
+        }
+    }
+
+    >.pub-splitter-helper {
+        position: absolute;
+        display: none;
+        z-index: 4;
+        background-color: colorInfo($g_default_theme_name, "a_hover_background_color");
+        height: 100%;
+        width: 100%;
+    }
+
+    >.pub-splitter-overray{
+        position: fixed;
+        overflow: hidden;
+        display: none;
+        z-index: 2;
+        top: 0px;
+        left: 0px;
+        background-color: transparent;
+        height: 100%;
+        width: 100%;
+    }
+
+    >.pub-splitter-button {
+        position: absolute;
+        z-index: 5;
+        height: 100%;
+        width: 100%;
+        vertical-align: middle;
+        text-align: center;
+        font-size: 12px;
+
+        >span {
+            position: relative;
+            cursor: pointer;
+            padding: 0px;
+            margin: 0px;
+
+            &.left-arrow {
+                border-top:16px solid transparent;
+                border-bottom: 16px solid transparent;
+                border-right: 7px solid #737373;
+            }
+
+            &.right-arrow {
+                border-top:12px solid transparent;
+                border-bottom: 12px solid transparent;
+                border-left: 7px solid #737373;
+            }
+
+            &.top-arrow {
+                border-left:12px solid transparent;
+                border-right: 12px solid transparent;
+                border-bottom: 12px solid #737373;
+            }
+
+            &.bottom-arrow {
+                border-left:12px solid transparent;
+                border-right: 12px solid transparent;
+                border-top: 12px solid #737373;
+            }
+
+            /*
+            &.left-arrow:before{
+                content : "\2B9C"
+            }
+
+            &.right-arrow:before{
+                content : "\27A4"
+            }
+
+            &.top-arrow:before{
+                content : "\2B9D"
+            }
+
+            &.bottom-arrow:before{
+                content : "\2B9F"
+            }
+            */
+					
+
+            svg path {
+                fill: colorInfo($g_default_theme_name, "font_color");
+                stroke: colorInfo($g_default_theme_name, "font_color");
+            }
+
+            &:hover {
+                svg path {
+                    fill: colorInfo($g_default_theme_name, "font_active");
+                    stroke: colorInfo($g_default_theme_name, "font_active");
+                }
+            }
+        }
+
+        &.vertical {
+            >span {
+                height: 12px;
+                display: block;
+            }
+
+            .pub-prev-btn {
+                margin-bottom: 5px;
+            }
+        }
+
+        &.horizontal {
+            >span {
+                height: 100%;
+                display: inline-flex;
+                position: relative;
+            }
+
+            .pub-prev-btn {
+                margin-right: 5px;
+            }
+        }
+    }
+
+}
+
+@each $pThemeName in $g_theme_list_info {
+
+    #{fn_themeName($pThemeName)} .pub-splitter {
+        background-color: colorInfo($pThemeName, "background_color");
+
+        &.vertical {
+            &.pub-border {
+                border-left: 1px solid colorInfo($pThemeName, "border_thin_color");
+                border-right: 1px solid colorInfo($pThemeName, "border_thin_color");
+            }
+        }
+
+        &.horizontal {
+            &.pub-border {
+                border-top: 1px solid colorInfo($pThemeName, "border_thin_color");
+                border-bottom: 1px solid colorInfo($pThemeName, "border_thin_color");
+            }
+        }
+
+        &:hover {
+            background-color: colorInfo($pThemeName, "a_hover_background_color");
+        }
+
+        &.helper {
+            background-color: colorInfo($pThemeName, "background_color");
+        }
+
+        >.pub-splitter-helper {
+            background-color: colorInfo($pThemeName, "a_hover_background_color");
+        }
+
+        >.pub-splitter-button {
+            >span {
+                svg path {
+                    fill: colorInfo($pThemeName, "font_color");
+                    stroke: colorInfo($pThemeName, "font_color");
+                }
+
+                &:hover {
+                    svg path {
+                        fill: colorInfo($pThemeName, "font_active");
+                        stroke: colorInfo($pThemeName, "font_active");
+                    }
+                }
+            }
+        }
+
+    }
+
+}
