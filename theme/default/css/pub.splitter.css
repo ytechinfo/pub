@@ -73,7 +73,7 @@ http://www.opensource.org/licenses/mit-license.php
 }
 
 .pub-splitter:hover {
-  background-color: #ffffff;
+  background-color: #dddddd;
 }
 
 .pub-splitter.helper {
@@ -88,7 +88,7 @@ http://www.opensource.org/licenses/mit-license.php
   position: absolute;
   display: none;
   z-index: 4;
-  background-color: #ffffff;
+  background-color: #dddddd;
   height: 100%;
   width: 100%;
 }
@@ -112,7 +112,7 @@ http://www.opensource.org/licenses/mit-license.php
   width: 100%;
   vertical-align: middle;
   text-align: center;
-  font-size: 12px;
+  font-size: 0em;
 }
 
 .pub-splitter > .pub-splitter-button > span {
@@ -120,47 +120,6 @@ http://www.opensource.org/licenses/mit-license.php
   cursor: pointer;
   padding: 0px;
   margin: 0px;
-  /*
-            &.left-arrow:before{
-                content : "\2B9C"
-            }
-
-            &.right-arrow:before{
-                content : "\27A4"
-            }
-
-            &.top-arrow:before{
-                content : "\2B9D"
-            }
-
-            &.bottom-arrow:before{
-                content : "\2B9F"
-            }
-            */
-}
-
-.pub-splitter > .pub-splitter-button > span.left-arrow {
-  border-top: 16px solid transparent;
-  border-bottom: 16px solid transparent;
-  border-right: 7px solid #737373;
-}
-
-.pub-splitter > .pub-splitter-button > span.right-arrow {
-  border-top: 12px solid transparent;
-  border-bottom: 12px solid transparent;
-  border-left: 7px solid #737373;
-}
-
-.pub-splitter > .pub-splitter-button > span.top-arrow {
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-bottom: 12px solid #737373;
-}
-
-.pub-splitter > .pub-splitter-button > span.bottom-arrow {
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 12px solid #737373;
 }
 
 .pub-splitter > .pub-splitter-button > span svg path {
@@ -209,7 +168,7 @@ http://www.opensource.org/licenses/mit-license.php
 }
 
 [pub-theme="dark"] .pub-splitter:hover {
-  background-color: #262729;
+  background-color: #000000;
 }
 
 [pub-theme="dark"] .pub-splitter.helper {
@@ -217,7 +176,7 @@ http://www.opensource.org/licenses/mit-license.php
 }
 
 [pub-theme="dark"] .pub-splitter > .pub-splitter-helper {
-  background-color: #262729;
+  background-color: #000000;
 }
 
 [pub-theme="dark"] .pub-splitter > .pub-splitter-button > span svg path {

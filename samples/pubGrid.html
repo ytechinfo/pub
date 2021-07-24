@@ -48,8 +48,8 @@ html , body {
 		<option value="1" >0</option>
 		<option value="5" >5</option>
 		<option value="10" >10</option>
-		<option value="20" >20</option>
-		<option value="100" selected>100</option>
+		<option value="20" selected>20</option>
+		<option value="100">100</option>
 		<option value="500">500</option>
 		<option value="1000">1000</option>
 		<option value="10000">10000</option>
@@ -60,8 +60,10 @@ html , body {
 	<select id="cellCount">
 		<option value="1" >1</option>
 		<option value="5" >5</option>
-		<option value="10">10</option>
-		<option value="20" selected>20</option>
+		<option value="10" selected>10</option>
+		<option value="20" >20</option>
+		<option value="30">30</option>
+		<option value="50" >50</option>
 		<option value="100">100</option>
 	</select>
 	theme
@@ -104,6 +106,8 @@ html , body {
 </BODY>
 </HTML>
 <script>
+
+	
 var itemType = 2; 
 $(document).ready(function (){
 	//$.pubGrid('#asdfasdf').resizeDraw({});
@@ -426,9 +430,7 @@ function gridDraw(selector, aaa, colItem){
 		,setting : {
 			enabled : true
 			,click : false
-			,enableSearch : true
-			,enableSpeed : true
-			,enableColumnFix :true
+			,mode : 'full'
 			,callback : function (data){
 				//console.log(data)
 			}

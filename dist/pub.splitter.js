@@ -146,6 +146,7 @@ Plugin.prototype ={
 				sEle.css({
 					'height': _this.options.handleSize+'px'
 					,'margin-top': '-'+_this.options.handleSize+'px'
+					,'line-height' :_this.options.handleSize+'px'
 				});
 			}else{
 				sEle.css({
@@ -169,18 +170,11 @@ Plugin.prototype ={
 			if(_this.options.useButton===true){
 				var strHtm = '<div class="pub-splitter-button '+orientationInfo+'" >';
 				if(orientationInfo == 'vertical'){
-					//strHtm +='<span class="pub-toggle-btn" data-mode="prev" style="width:100%;height:16px;"><svg viewBox="0 0 6 12"><path d="M0 6 L6 12 L6 0 Z"></path></svg></span>'
-					//+'<span class="pub-toggle-btn" data-mode="next" style="width:100%;height:16px;"><svg viewBox="0 0 6 12"><g><path d="M0 0 L0 12 L6 6 Z"></path></g></svg></span>';
-
-					strHtm +='<span class="pub-toggle-btn left-arrow" data-mode="prev" style="width:100%;height:16px;"></span>'
-					+'<span class="pub-toggle-btn right-arrow" data-mode="next" style="width:100%;height:16px;"></span>';
+					strHtm +='<span class="pub-toggle-btn" data-mode="prev" style="width:100%;height:16px;margin-bottom:5px;"><svg viewBox="0 0 6 12"><path d="M0 6 L6 12 L6 0 Z"></path></svg></span>'
+					+'<span class="pub-toggle-btn" data-mode="next" style="width:100%;height:16px;"><svg viewBox="0 0 6 12"><g><path d="M0 0 L0 12 L6 6 Z"></path></g></svg></span>';
 				}else{
-					//strHtm 	+='<span class="pub-toggle-btn" data-mode="prev" style="width:16px;height:100%"><svg viewBox="0 0 12 6" style="position: absolute;top: -6px;"><g><path d="M6 0 L0 6 L12 6 Z"></path></g></svg></span>'
-					//+'<span class="pub-toggle-btn" data-mode="next" style="width:16px;height:100%;"><svg viewBox="0 0 12 6" style="position: absolute;top: -6px;"><g><path d="M0 0 L6 6 L12 0 Z"></path></g></svg></span>'
-
-					strHtm +='<span class="pub-toggle-btn top-arrow" data-mode="prev" style="width:16px;height:100%"></span>'
-					+'<span class="pub-toggle-btn bottom-arrow" data-mode="next" style="width:16px;height:100%;"></span>';
-					
+					strHtm 	+='<span class="pub-toggle-btn" data-mode="prev" style="width:16px;height:100%;margin-right:5px;"><svg viewBox="0 0 12 6" style="position: relative;"><g><path d="M6 0 L0 6 L12 6 Z"></path></g></svg></span>'
+					+'<span class="pub-toggle-btn" data-mode="next" style="width:16px;height:100%;"><svg viewBox="0 0 12 6" style="position: relative;"><g><path d="M0 0 L6 6 L12 0 Z"></path></g></svg></span>'					
 				}
 				strHtm+='</div>';
 
@@ -200,9 +194,9 @@ Plugin.prototype ={
 				,nextEle = sEle.next(); 
 
 			if(orientationInfo == 'vertical'){
-				prevEle.css('padding-right', _this.options.handleSize-2);
+				prevEle.css('padding-right', _this.options.handleSize);
 			}else{
-				prevEle.css('padding-bottom', _this.options.handleSize-2);
+				prevEle.css('padding-bottom', _this.options.handleSize);
 			}	
 
 			var confPercent = String(sEle.data('percent'));

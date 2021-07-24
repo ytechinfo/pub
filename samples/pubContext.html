@@ -85,7 +85,9 @@ $(document).ready(function (){
 				]
 			}
 			,{divider:true}
-			,{key : "create_ddl","name": "DDL 보기" ,hotkey:'Ctrl+shift+C'
+			,{key : "create_ddl","name": "DDL 보기" ,hotkey:'Ctrl+shift+C', callback : function (){
+						console.log('create_ddl')
+					}
 				
 			}
 			,{divider:true}

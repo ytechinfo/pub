@@ -65,6 +65,16 @@ html,body{
 table td ,table th {
 	border-bottom:1px solid #ddd;
 }
+
+.test111{
+	position: absolute;
+    left: 7px;
+    top: 2px;
+    z-index: 10;
+    cursor: pointer;
+    line-height: 1;
+	font-size: 0em;
+}
 </style>
 </head>
 
@@ -174,7 +184,7 @@ $(function (){
 		,useButton : true		// 한번에 이동 버튼 사용유무
 		,minSize: 50				// default pixel
 		,percent: {vertical : false, horizontal : true} //size percent 사용여부
-		,useHelper : false		// 위치 조정시 helper 사용여부.
+		,useHelper : true		// 위치 조정시 helper 사용여부.
 		,start:function (){
 			//console.log(arguments)
 		}

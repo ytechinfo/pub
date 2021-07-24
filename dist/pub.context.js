@@ -156,19 +156,24 @@ Plugin.prototype ={
 				return ;
 			}else{
 				skey = clickEle.attr('context-key');
+
+				var contentItem = _this.contextData[skey]; 
 				var sobj = {
 					key : skey
-					,item : _this.contextData[skey]
+					,item : contentItem
 					,list : _this.contextData
 					,element : _this.selectElement
 					,evt : e
 				}
 
-				if(jQuery.isFunction(_opt.callback)){
+				if(jQuery.isFunction(contentItem.callback)){
+					contentItem.callback.call(sobj, sobj.item.key, sobj.item , sobj.evt);
+				}else if(jQuery.isFunction(_opt.callback)){
 					_opt.callback.call(sobj, sobj.item.key, sobj.item , sobj.evt);
 				}else{
 					alert(skey);
 				}
+				
 				_this.closeContextMenu();
 			}
 		});
