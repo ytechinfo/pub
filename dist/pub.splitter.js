@@ -13,8 +13,7 @@ var pluginName = "pubSplitter"
 	,_datastore = {}
 	,_splitterSeq = 0
 	,defaults = {
-		fadeSpeed: 100				// 숨김 속도 
-		,mode : 'simple'			// wrapper
+		mode : 'simple'			// wrapper
 		,orientation: 'vertical'	// splitter 방향  default vertical
 		,border: false				// splitter border 
 		,initAutoSize :true			// panel width fix
@@ -24,8 +23,7 @@ var pluginName = "pubSplitter"
 		,useHelper: true		// 위치 조정시 helper 사용여부.
 		,useOverray: true		// 위치 조정시 helper 사용여부.
 		,theme: 'light'			// 테마  light , dark
-		,handleSize: 6
-		,autoResize :true
+		,handleSize: 6			// handle size
 		,start: function (splitterEle, splitterConf, moveData){}	// start event callback
 		,move: function (splitterEle, splitterConf, moveData){}	// move event callback
 		,stop: function (splitterEle, splitterConf, moveData){}	// stop event callback

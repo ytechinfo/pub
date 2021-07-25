@@ -24,9 +24,6 @@ var pluginName = "pubTab"
 	,dropItemHeight :'auto'		//drop item height
 	,dropItemWidth :'auto'		//drop item width
 	,moveZIndex : 9				// move 영역 z- index
-	,filter: function ($obj) {
-		// Modify $obj, Do not return
-	}
 	,titleIcon :{
 		left :{
 			overview : true		// mouseover icon view  여부
@@ -50,15 +47,15 @@ var pluginName = "pubTab"
 	,removeItem : false	// remove callback 옵션
 	,blinkClass : 'blinkcss'
 	,itemKey :{							// item key mapping
-		title :'name'
-		,id :'_tabid'
+		title :'name'				// tab item name
+		,id :'_tabid'				// tab item id
 	}
 	,beforeUpdate : function (){	// before update item callback
 	}
 	,afterUpdate : function (){		// after update item callback
 	}
-	,drag : {
-		enabled : false
+	,drag : {	// drag  이동
+		enabled : false	// 활성 여부
 		,dragStart : function (dragItem){} // drag start
 		,dragEnter : function (dragItem){} // drag enter
 		,dragDrop : function (dragItem){} // drag enter

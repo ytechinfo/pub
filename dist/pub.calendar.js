@@ -18,11 +18,11 @@ var _initialized = false
 ,_TIME_HALF_HEIGHT=21
 ,_defaultOption ={
 	viewMode : 'full-month'	// 달력 모드 (mini,full-month,full-week,full-day)
-	,viewDateFormat : 'YYYY-MM-DD HH:mm'
+	,viewDateFormat : 'YYYY-MM-DD HH:mm'	// 날짜 포멧
 	,customRangeDay : 20	// viewmode가 custom 일때 일자 범위 0 ~ 선택일까지
 	,useLunar : false		// 음력 기념일 사용여부.
 	,useYearInput : true //year 변경시 더블클릭하면 input 박스 나타날지 여부.
-	,todayDate : _$d.getFullYear() +'-' +(_$d.getMonth() + 1)+'-'+ _$d.getDate()
+	,todayDate : _$d.getFullYear() +'-' +(_$d.getMonth() + 1)+'-'+ _$d.getDate()	// 현재일 지정
 	,maxEventRow : 3
 	,useMemorialday : true // 기념일 보기 여부 
 	,width :'100%'		// 달력 넓이
@@ -51,7 +51,7 @@ var _initialized = false
 		yyyy:''
 		,mm:''
 	}
-	,lang : {
+	,lang : {	// 다국어 설정
 		mini : {	sun:'일',mon:'월',tue:'화',wed:'수',thu:'목',fri:'금',sat:'토'
 			,year :'년'	,month :'월'
 		}

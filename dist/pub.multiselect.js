@@ -30,43 +30,43 @@ var pluginName = "pubMultiselect"
 	,maxSize : -1	// 추가 가능한 max size
 	,maxSizeMsg : false	// 추가 가능한 max size가 넘었을경우 메시지
 	,useMultiSelect : false	// ctrl , shift key 이용해서 다중 선택하기 여부
-	,containment : ''
+	,containment : ''		// 경계 영역
 	,useDragMove : true	// drag해서 이동할지 여부.
 	,useDragSort : true // target drag 해서 정렬할지 여부.
 	,addPosition : 'last'	// 추가 되는 방향키로 추가시 어디를 추가할지. ex(source, last)
 	,duplicateCheck : true	// 중복 추가 여부.
 	,pageInfo :{	// 다중으로 관리할경우 처리.
-		max : 1
-		,currPage : 1
-		,selector : '#page_area'
-		,pageNumKey : 'pageNo'
-		,emptyMessage : '더블클릭해서 추가하세요'
+		max : 1		// max page 값
+		,currPage : 1	// 현재 값
+		,selector : '#page_area'	// page element
+		,pageNumKey : 'pageNo'	// page number key 
+		,emptyMessage : '더블클릭해서 추가하세요'	// item 없을때 메시지
 	}
-	,itemSelector :'.pub-select-item'
+	,itemSelector :'.pub-select-item'	// select item selector
 	,addItemClass :'selected'	// add item class
-	,selectClass : 'selected'
+	,selectClass : 'selected'	// select item class
 	,handleClass : 'pub-handle'	// item 선택 클래스.
-	,items :[]
-	,sourceItem : {
-		optVal : 'CODE_ID'
-		,optTxt : 'CODE_NM'
+	,items :[]					// item
+	,sourceItem : {	// source item
+		optVal : 'CODE_ID' 	// opt id key
+		,optTxt : 'CODE_NM' // opt value key
 		,useHtmlData : false // html element 를 직접사용할경우.
-		,searchAttrName : '_name'
-		,searchAttrKey : ''
-		,emptyMessage:''
-		,items: []
+		,searchAttrName : '_name'	// search item name attribute
+		,searchAttrKey : '' // search item key attribute
+		,emptyMessage:''	// message
+		,items: []			// item
 		,click : false	// 클릭시 이벤트
 		,render: function (item){	// 아이템 추가될 템플릿.
 			return '<span>'+item.text+'</span>'
 		}
 	}
 	,targetItem : {
-		optVal : 'CODE_ID'
-		,optTxt : 'CODE_NM'
+		optVal : 'CODE_ID' // opt id key
+		,optTxt : 'CODE_NM' // opt value key
 		,useHtmlData : false // html element 를 직접사용할경우.
-		,items: []
-		,emptyMessage:''
-		,click : false
+		,items: []			// item
+		,emptyMessage:'' 	// message
+		,click : false	// 클릭시 이벤트
 		,dblclick : false
 		,render: function (item){	// 아이템 추가될 템플릿.
 			return '<span>'+item.text+'</span>'
@@ -77,13 +77,13 @@ var pluginName = "pubMultiselect"
 		,delEmpty : false
 		,duplicate :false
 	}
-	,beforeMove : false
-	,beforeItemMove : false
-	,afterSourceMove : false
-	,compleateSourceMove : false
-	,beforeTargetMove : false
-	,afterTargetMove : false
-	,compleateTargetMove : false
+	,beforeMove : false		// 이동전 이벤트
+	,beforeItemMove : false	 // 이동전 이벤트
+	,afterSourceMove : false	// source 이동후 이벤트
+	,compleateSourceMove : false	// source 이동 완료 이벤트
+	,beforeTargetMove : false	// target 이동전  이벤트
+	,afterTargetMove : false	// target 이동후  이벤트
+	,compleateTargetMove : false	// target 이동 완료  이벤트
 };
 
 function objectMerge() {

@@ -26,11 +26,11 @@ var _initialized = false
 	,widthFixed : false  // 넓이 고정 여부.
 	,useDefaultFormatter: true // 기본 포멧터 사용여부
 	,editable :false	// 편집 모드 활성화
-	,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법.
+	,selectionMode : 'multiple-cell'	//cell 선택 모드 row, cell, multiple-row, multiple-cell
 	,showTooltip : false			// tooltip flag
-	,theme : 'light'
-	,height: 'auto'
-	,width: 'auto'
+	,theme : 'light'			// 테마 값
+	,height: 'auto'				// 높이 값
+	,width: 'auto'				// 넓이값
 	,itemMaxCount : -1	// add시 item max로 유지할 카운트
 	,colOptions : {	// 컬럼 옵션
 		minWidth : 50  // 컬럼 최소 넓이
@@ -43,21 +43,21 @@ var _initialized = false
 		,addStyle : false	// 추가할 style method
 		,dblClick : false	// row dblclick event
 		,dblClickCheck : false	// double click row checkbox checked true 여부.
-		,pasteBefore :false
-		,pasteAfter :false
+		,pasteBefore :false		// 붙여 넣기 전 호출 메소드
+		,pasteAfter :false		// 붙여 넣기 후 호출 메소드
 	}
 	,formatter :{
-		money :{prefix :'$', suffix :'원' , fixed : 0}	// money 설정 prefix 앞에 붙일 문구 , suffix : 마지막에 뭍일것 , fixed : 소수점
-		,number : {prefix :'', suffix :'' , fixed : 0}
+		money :{prefix :'$', suffix :'원' , fixed : 0}	// money 설정 prefix : 앞에 붙일 문구 , suffix : 마지막에 붙일 문구 , fixed : 소수점
+		,number : {prefix :'', suffix :'' , fixed : 0}	// number 값 설정
 	}
 	,autoResize : {	//리사이즈 설정
 		enabled:true	// 리사이즈시 그리드 리사이즈 여부.
-		,responsive : true
-		,threshold :150
+		,responsive : true	// 반응형 여부
+		,threshold :150		// resize 반응 시간 
 	}
 	,headerOptions : {
 		view : true	// header 보기 여부
-		,height: 25
+		,height: 25	// header 높이
 		,sort : true	// 초기에 정렬할 값
 		,redraw : true	// 초기에 옵션 들어오면 새로 그릴지 여부.
 		,resize:{	// resize 설정
@@ -67,12 +67,12 @@ var _initialized = false
 		}
 		,isColSelectAll : true	// 전체 선택 여부.
 		,scrollEnabled : true	// 마우스 휠로 가로 스크롤 이동할지 여부.
-		,oneCharWidth: 7
-		,viewAllLabel : true
+		,oneCharWidth: 7		// char 의 넓이값
+		,viewAllLabel : true	
 		,contextMenu : false // header contextmenu event
 		,helpBtn:{			//	header help btn 설정
 			enabled : false	// header help btn 활성 여부.
-			,title : ''
+			,title : ''		// tooltip
 			,click :  function (clickInfo){}	// click event
 			,dblclick : function (clickInfo){} // double click event
 		}
@@ -95,7 +95,7 @@ var _initialized = false
 			,fixColumnPosition : -1	// fixed col position
 		}
 		,util : {
-			searchFilter : function (item, key, schRegExp){
+			searchFilter : function (item, key, schRegExp){ // 검색 필터
 				var itemVal = (item[key]||'')+'';
 
 				if(schRegExp.test(itemVal)){
@@ -107,28 +107,28 @@ var _initialized = false
 	}
 	,asideOptions :{	// aside 옵션
 		lineNumber : {	// 번호
-			enabled :false
-			,key : 'lineNumber'
-			,charWidth : 9
-			,name : ''
-			,width : 40
+			enabled :false	// 활성화 여부
+			,key : 'lineNumber'	// key
+			,charWidth : 9		// char width
+			,name : ''			//  컬럼명
+			,width : 40			// 넓이
 			,styleCss : ''	//css
-			,isSelectRow:true
+			,isSelectRow:true	// 선택 여부
 		}
 		,rowSelector :{	// 체크 박스
-			enabled :false
-			,key : 'checkbox'
-			,name : 'V'
-			,width : 25
+			enabled :false		// 활성화 여부
+			,key : 'checkbox'	// key
+			,name : 'V'			// name
+			,width : 25			// 넓이값
 			,click : function (rowInfo){ // click event , return false 일경우 체크 안함.
 
 			}
 		}
 		,modifyInfo :{	// 수정 여부
-			enabled :false
-			,key : 'modify'
-			,name : 'modify'
-			,width : 10
+			enabled :false	// 활성화 여부
+			,key : 'modify'	// key
+			,name : 'modify'	// name
+			,width : 10		// 넓이값
 		}
 	}
 	,bodyOptions : {	// body option
@@ -159,35 +159,33 @@ var _initialized = false
 		}
 	}
 	/*
-	tColItem  object info
-	{
-	  "key": "b"	// key
-	  ,"label": "비"	// label
-	  ,"width": 100		// width
-	  ,"sort": true		// sort flag
-	  ,"align": "center"	// align
-	  ,"type": "money"		// value type
-	  ,"render": "html"		// render mode (html or text default text)
-	  ,formatter : function (obj){	// 보여질 값을 처리.
-			return obj.item.STATE;
-	  }
-	  ,defaultValue : ''	// add item default value
-	  ,colClick :function (idx,item){ console.log(idx, item)}		// cell click event
-	  ,styleClass : function (idx, item){return 'pub-bg-private';}	// cell add class
-	  ,tooltip : {
-		 show : true	// 툴팁 보일지 여부.
-		 ,formatter : function (obj){	// 툴팁 내용
-			return obj.val;
-		 }
-	  }
-	  ,editor : {
-		type : "text", "text, select, textarea, number, custom"
-		editorBtn : false,		// 버튼 보일지 여부.
-		editorBtnOver : false, // 오버시 버튼 보이기
-		items : [],
-		validator : function (){}
-	  }
-
+	, tColItem  : {
+		"key": ""	// key
+		,"label": ""	// label
+		,"width": 100		// width
+		,"sort": true		// sort flag
+		,"align": ""	// align
+		,"type": ""		// value type
+		,"render": ""		// render mode (html or text default text)
+		,formatter : function (obj){	// 보여질 값을 처리.
+				return obj.item.STATE;
+		}
+		,defaultValue : ''	// add item default value
+		,colClick :function (idx,item){ console.log(idx, item)}		// cell click event
+		,styleClass : function (idx, item){return 'pub-bg-private';}	// cell add class
+		,tooltip : {
+			show : true	// 툴팁 보일지 여부.
+			,formatter : function (obj){	// 툴팁 내용
+				return obj.val;
+			}
+		}
+		,editor : {
+			type : "text", 			//"text, select, textarea, number, custom"
+			editorBtn : false,		// 버튼 보일지 여부.
+			editorBtnOver : false, // 오버시 버튼 보이기
+			items : [],
+			validator : function (){}
+		}
 	}
 	*/
 	,tColItem : [] //head item
@@ -196,10 +194,10 @@ var _initialized = false
 	,tbodyGroup : [] // body group
 	,tfootItem : []  // foot item
 	,navigation :{
-		usePaging : false
+		usePaging : false	// 페이지 사용여부
 		,status : false
-		,height : 35
-		,callback : function (no){}
+		,height : 35		// 높이 값
+		,callback : function (no){}	// 페이지 콜백
 	}
 	,page : false	// paging info
 	,message : {
@@ -1344,7 +1342,6 @@ Plugin.prototype ={
 	,initStyle : function (){
 
 		var _this = this
-			,opt = _this.options
 			,tci = _this.config.tColItem
 			,thiItem;
 
@@ -3052,7 +3049,7 @@ Plugin.prototype ={
 			_this.config.headerContext = $.pubContextMenu('#'+_this.prefix+'_headerContainer .pubGrid-header-th',headerOpt.contextMenu);
 		}
 		if(_this.options.setting.enabled ===true){
-			_$setting.init(_this);
+			_$setting.init(_this, true);
 		}
 
 		// drag event start
@@ -3111,10 +3108,8 @@ Plugin.prototype ={
 	 */
 	,toggleSettingArea : function (){
 		this.options.setting.enabled = !this.options.setting.enabled;
-		_$setting.init(this, !this.options.setting.enabled);
+		_$setting.init(this, this.options.setting.enabled);
 	}
-	
-	
 	/**
 	 * @method _initBodyEvent
 	 * @description 바디 이벤트 초기화.
@@ -5331,7 +5326,7 @@ var _$setting = {
 	 * @method init
 	 * @description grid setting info
 	 */
-	,init : function (gridCtx, btnDisableFlag){
+	,init : function (gridCtx, btnEnabledFlag){
 		var _this = this; 
 		var settingOpt = gridCtx.options.setting;
 		
@@ -5352,13 +5347,10 @@ var _$setting = {
 		
 		var settingBtn = gridCtx.element.container.find('.pubGrid-setting-btn'); 
 		
-		if(btnDisableFlag == 'enable'){
+		if(btnEnabledFlag ===true){
+			settingBtn.show();
 		}else{
-			if(btnDisableFlag ===true){
-				settingBtn.hide();
-			}else{
-				settingBtn.show();
-			}
+			settingBtn.hide();
 		}
 	
 		if(gridCtx.config.initSettingFlag ===true){

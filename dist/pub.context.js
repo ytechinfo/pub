@@ -14,7 +14,6 @@ var pluginName = "pubContextMenu"
 	,initialized = false
 	,_datastore = {}
 	,pubContextElement= false
-	,isContextView = false
 	,_$win = $(window)
 	,defaults = {
 		fadeSpeed: 100				// 숨김 속도
@@ -22,7 +21,7 @@ var pluginName = "pubContextMenu"
 			// Modify $obj, Do not return
 		}
 		,theme : 'light'			// 테마  light , dark
-		,preventDoubleContext: true		//
+		,isStopPropagation: true	// 이벤트 전파 차단 여부
 		,selectCls : 'item_select'	// item select class
 		,callback:function (key){	// item click callback
 			alert(key)
@@ -97,9 +96,10 @@ Plugin.prototype ={
 		var _opt = this.options;
 		var id=_this.contextId;
 
-		if(_opt.preventDoubleContext){
+		if(_opt.isStopPropagation){
 			$('#'+id+'_wrap').on('contextmenu.pubcontext'+_this.contextId, '.pub-context-top', function (e) {
 				e.preventDefault();
+				e.stopPropagation();
 			});
 		}
 
@@ -244,7 +244,6 @@ Plugin.prototype ={
      */
 	,closeContextMenu : function (){
 		$('#pub-context-area .pub-context-top').hide();
-		isContextView= false;
 	}
 	/**
      * @method contextEvent
@@ -367,7 +366,6 @@ Plugin.prototype ={
 
 			_this.closeContextMenu();
 
-			isContextView = true;
 			//  이전 선택한 클래스 삭제 .
 			if(_this.selectElement){
 				_this.selectElement.removeClass(opt.selectCls);
