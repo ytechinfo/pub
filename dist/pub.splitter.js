@@ -95,7 +95,7 @@ Plugin.prototype ={
 			if($(e.target).closest('.pub-toggle-btn').length > 0){
 				return ;
 			}
-			var splitterConf = _this.config.splitterConf[ele.data('pubsplitter')];
+			var splitterConf = _this.config.splitterConf[_$util.getPubsplitterId(ele)];
 
 			_this._dragSpliiter(e, ele, splitterConf);
 			
@@ -103,13 +103,14 @@ Plugin.prototype ={
 		});
 
 		if(_this.options.useButton){
+			element.off('click.toggle.btn');
 			element.on('click.toggle.btn', '.pub-toggle-btn', function (e){
 				var ele = $(this);
 				var mode = ele.data('mode');
 									
 				var splitterEle = ele.closest('.pub-splitter');
 
-				var splitterConf = _this.config.splitterConf[splitterEle.data('pubsplitter')];
+				var splitterConf = _this.config.splitterConf[_$util.getPubsplitterId(splitterEle)];
 
 				_this.setLimitSize(splitterEle, splitterConf, mode);
 							
@@ -136,6 +137,8 @@ Plugin.prototype ={
 		var beforeParentEle; 
 		this.selectorElement.each(function (i){
 			var sEle = $(this); 
+
+			
 
 			var orientationInfo = sEle.data('orientation') || _this.options.orientation;
 			orientationInfo = orientationInfo == 'horizontal' ? orientationInfo :'vertical';
@@ -301,7 +304,7 @@ Plugin.prototype ={
 
 		ele = $(ele);
 
-		var splitterConf = this.config.splitterConf[ele.data('pubsplitter')]; 
+		var splitterConf = this.config.splitterConf[_$util.getPubsplitterId(splitterEle)]; 
 
 		var sizeInfo =_$util.getSizeInfo(this, ele, splitterConf);
 		
@@ -458,7 +461,7 @@ Plugin.prototype ={
 		this.selectorElement.each(function (){
 			var sEle = $(this);
 			sEle.removeClass('pub-splitter vertical horizontal pub-border');
-			sEle.removeAttr('style')
+			sEle.removeAttr('style').removeAttr('data-pubsplitter');
 			sEle.parent().removeClass('pub-splitter-wrapper vertical horizontal');
 			sEle.empty();
 		})
@@ -494,6 +497,9 @@ var _$util = {
 			prevElement.css('width', prevSize+'px');
 			nextElement.css('width', nextSize+'px');	
 		}
+	}
+	,getPubsplitterId : function (ele){
+		return ele.attr('data-pubsplitter');
 	}
 	/**
 	 * @method getSize
@@ -580,7 +586,6 @@ $[ pluginName ] = function (selector,options) {
 		
 		return _cacheObject; 
 	}else if(typeof options==='object'){
-		
 		_cacheObject.destroy();
 		_cacheObject = new Plugin(selector, options);
 		_datastore[selector] = _cacheObject;

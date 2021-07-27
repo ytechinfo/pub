@@ -2114,20 +2114,18 @@ http://www.opensource.org/licenses/mit-license.php
 */
 .pub-splitter-wrapper {
   overflow: hidden;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
 .pub-splitter-wrapper > * {
-  position: relative;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
-  overflow: hidden;
 }
 
 .pub-splitter-wrapper.vertical > * {
   float: left;
   vertical-align: top;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
 }
 
 .pub-splitter-wrapper.vertical:after {
@@ -2148,6 +2146,12 @@ http://www.opensource.org/licenses/mit-license.php
   display: block;
   position: relative;
   z-index: 100;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  overflow: initial;
+}
+
+.pub-splitter * {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   overflow: initial;

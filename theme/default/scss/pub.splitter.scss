@@ -10,18 +10,17 @@ http://www.opensource.org/licenses/mit-license.php
 
 .pub-splitter-wrapper {
     overflow: hidden;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 
-    &>* {
-        position: relative;
+    >*{
+        -moz-box-sizing: border-box;
         box-sizing: border-box;
-        overflow: hidden;
     }
 
     &.vertical>* {
         float: left;
         vertical-align: top;
-        -moz-box-sizing: border-box;
-        box-sizing: border-box;
     }
 
     &.vertical:after {
@@ -50,6 +49,12 @@ http://www.opensource.org/licenses/mit-license.php
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     overflow: initial;
+
+    * {
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        overflow: initial;
+    }
 
     &.vertical {
         height: 100%;
