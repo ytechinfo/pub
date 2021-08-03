@@ -2965,13 +2965,14 @@ Plugin.prototype ={
 
 				//delta > 0--up
 				if(_this.config.scroll.hUse){
+					var currLeftVal = _this.config.scroll.left; 
 					_this.moveHorizontalScroll({pos :(delta > 0?'L':'R') , speed : _this.options.scroll.horizontal.speed});
 
 					if(_this.options.scroll.isStopPropagation===true){
 						e.preventDefault();
 						e.stopPropagation();
 					}else{
-						if(_this.config.scroll.left != 0 && _this.config.scroll.left != _this.config.scroll.hTrackWidth){
+						if(currLeftVal != 0 && currLeftVal != _this.config.scroll.hTrackWidth){
 							e.preventDefault();
 							e.stopPropagation();
 						}
