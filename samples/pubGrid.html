@@ -87,7 +87,7 @@ html , body {
 
 	
 </div>
-
+<textarea id="dropTextArea" style="width:100%" rows="2"></textarea>
 <table style="width:100%;height:100%;">
 	<colgroup>
 		<col width="70%">
@@ -102,6 +102,7 @@ html , body {
 		<td>
 		</td>
 	</tr>
+
 </table>
 </BODY>
 </HTML>
@@ -385,6 +386,13 @@ function gridDraw(selector, aaa, colItem){
 					console.log('clickInfo : ', clickInfo)
 				}
 			}
+			,drag:{
+				enabled : true
+				,dropSelector : '#dropTextArea'
+				,dropCallback : function (data){
+					
+				}
+			}
 		}
 		,scroll :{
 			vertical : {
@@ -419,7 +427,7 @@ function gridDraw(selector, aaa, colItem){
 			, unitPage :10
 			,position : 'center'
 		}
-		,setting : {
+		,setting1 : {
 			enabled : true
 			,click : false
 			,mode : 'full'
@@ -458,8 +466,7 @@ function gridDraw(selector, aaa, colItem){
 		,tbodyItem : aaa
 		,tfootItem :['asdf']
 		,rowOptions :{
-			height : 50
-			,dblClickCheck :true
+			dblClickCheck :true
 			,dblClick1: function (){
 				console.log('dblclick')
 			}

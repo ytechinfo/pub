@@ -19,5 +19,6 @@
      // exclude file 
     "liveSassCompile.settings.excludeList": [ 
         "**/variables.scss" 
-    ]
+    ],
+    "liveServer.settings.port": 5501
 }
