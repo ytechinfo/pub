@@ -1881,6 +1881,8 @@ Plugin.prototype ={
 			viewCount = _this.config.scroll.viewCount;
 		}
 
+		viewCount = drawMode =='init' ?  _this.config.scroll.bodyViewCount : viewCount
+
 		// remove edit area
 		if(_this.config.isCellEdit ===true){
 			_this._setEditAreaData();
@@ -1900,87 +1902,89 @@ Plugin.prototype ={
 		var colFixedIndex = this.options.colFixedIndex;
 
 		for(var i =0 ; i < viewCount; i++){
-			tbiItem = tbi[itemIdx] ||{};
+			tbiItem = tbi[itemIdx];
 
-			if(_this.config.rowOpt.isAddStyle){
-				$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont [rowinfo="'+i+'"]').setAttribute('style', (fnAddStyle.call(null,tbiItem)||''));
-			}
-
-			var overRowFlag = (itemIdx >= this.config.dataInfo.orginRowLen);
-			var addEle ,tdEle;
-
-			for(var j =0 ; j < asideItem.length ;j++){
-				var tmpItem = asideItem[j];
-				var rowCol = i+','+tmpItem.key;
-
-				addEle =$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-aside-cont').querySelector('[data-aside-position="'+rowCol+'"]>.aside-content');
-
-				if(tmpItem.key == 'lineNumber'){
-					addEle.textContent = (itemIdx+1);
-				}else if(tmpItem.key == 'checkbox'){
-					_$util.setCheckBoxCheck(addEle , tbiItem);
-				}else if(tmpItem.key == 'modify'){
-					addEle.textContent = 'V';
+			if(tbiItem){
+				if(_this.config.rowOpt.isAddStyle){
+					$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont [rowinfo="'+i+'"]').setAttribute('style', (fnAddStyle.call(null,tbiItem)||''));
 				}
-			};
 
-			if(drawMode != 'hscroll'){
-				for(var j=0; j < colFixedIndex ; j++){
-					tdEle =_this.element.leftContent.querySelector('[data-grid-position="'+(i+','+j)+'"]');
-					addEle =tdEle.querySelector('.pub-content');
+				var overRowFlag = (itemIdx >= this.config.dataInfo.orginRowLen);
+				var addEle ,tdEle;
 
-					colItem = tci[j];
-					_this._setCellStyle(tdEle, i ,colItem , tbiItem)
+				for(var j =0 ; j < asideItem.length ;j++){
+					var tmpItem = asideItem[j];
+					var rowCol = i+','+tmpItem.key;
 
-					if(overRowFlag){
-						addEle.textContent='';
-					}else{
-						var val = this.valueFormatter( i, colItem, tbiItem, addEle);
-						_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
+					addEle =$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-aside-cont').querySelector('[data-aside-position="'+rowCol+'"]>.aside-content');
 
-						if(tooltipFlag){
-							if(colItem.afTooltipFormatter){
-								val = colItem.afTooltipFormatter({item : tbiItem ,r: i ,c: j , keyItem : colItem});
+					if(tmpItem.key == 'lineNumber'){
+						addEle.textContent = (itemIdx+1);
+					}else if(tmpItem.key == 'checkbox'){
+						_$util.setCheckBoxCheck(addEle , tbiItem);
+					}else if(tmpItem.key == 'modify'){
+						addEle.textContent = 'V';
+					}
+				};
+
+				if(drawMode != 'hscroll'){
+					for(var j=0; j < colFixedIndex ; j++){
+						tdEle =_this.element.leftContent.querySelector('[data-grid-position="'+(i+','+j)+'"]');
+						addEle =tdEle.querySelector('.pub-content');
+
+						colItem = tci[j];
+						_this._setCellStyle(tdEle, i ,colItem , tbiItem)
+
+						if(overRowFlag){
+							addEle.textContent='';
+						}else{
+							var val = this.valueFormatter( i, colItem, tbiItem, addEle);
+							_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
+
+							if(tooltipFlag){
+								if(colItem.afTooltipFormatter){
+									val = colItem.afTooltipFormatter({item : tbiItem ,r: i ,c: j , keyItem : colItem});
+								}
+								tdEle.title = val;
 							}
-							tdEle.title = val;
+						}
+
+						tdEle = null;
+						addEle = null;
+					}
+				}
+
+				for(var j=startCol ;j <= endCol; j++){
+					//var addEle = _this.element.tdEle[rowCol] = $pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-tbody').querySelector('[data-grid-position="'+rowCol+'"]>.pub-content')
+
+					tdEle =_this.element.bodyContent.querySelector('[data-grid-position="'+(i+','+j)+'"]');
+
+					if(tdEle){
+						addEle =tdEle.querySelector('.pub-content');
+
+						colItem = tci[j];
+
+						_this._setCellStyle(tdEle, i ,colItem , tbiItem)
+
+						if(overRowFlag){
+							addEle.textContent='';
+						}else{
+							var val = this.valueFormatter( i, colItem, tbiItem, addEle);
+							_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
+
+							if(tooltipFlag){
+
+								if(colItem.afTooltipFormatter){
+									val = colItem.afTooltipFormatter({item : tbiItem ,r: i ,c: j , keyItem : colItem});
+								}
+								tdEle.title = val;
+
+							}
 						}
 					}
-
 					tdEle = null;
 					addEle = null;
 				}
-			}
-
-			for(var j=startCol ;j <= endCol; j++){
-				//var addEle = _this.element.tdEle[rowCol] = $pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-tbody').querySelector('[data-grid-position="'+rowCol+'"]>.pub-content')
-
-				tdEle =_this.element.bodyContent.querySelector('[data-grid-position="'+(i+','+j)+'"]');
-
-				if(tdEle){
-					addEle =tdEle.querySelector('.pub-content');
-
-					colItem = tci[j];
-
-					_this._setCellStyle(tdEle, i ,colItem , tbiItem)
-
-					if(overRowFlag){
-						addEle.textContent='';
-					}else{
-						var val = this.valueFormatter( i, colItem, tbiItem, addEle);
-						_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
-
-						if(tooltipFlag){
-
-							if(colItem.afTooltipFormatter){
-								val = colItem.afTooltipFormatter({item : tbiItem ,r: i ,c: j , keyItem : colItem});
-							}
-							tdEle.title = val;
-
-						}
-					}
-				}
-				tdEle = null;
-				addEle = null;
 			}
 						
 			itemIdx++;
@@ -4795,12 +4799,12 @@ var _$template = {
 		}
 
 		for(var i =0 ; i < _this.config.scroll.maxViewCount; i++){
-
-			if(mode != 'init' && tmpeElementBody.find('[rowinfo="'+i+'"]').length > 0){
+			var trEle = tmpeElementBody.find('[rowinfo="'+i+'"]'); 
+			if(mode != 'init' && trEle.length > 0){
 				if(i >= _this.config.scroll.viewCount){
-					tmpeElementBody.find('[rowinfo="'+i+'"]').hide();
+					trEle.hide();
 				}else{
-					tmpeElementBody.find('[rowinfo="'+i+'"]').show();
+					trEle.show();
 				}
 			}else{
 				strHtm.push('<tr class="pub-body-tr '+((i%2==0)?'tr0':'tr1')+'" rowinfo="'+i+'">');
@@ -5657,6 +5661,8 @@ var _$setting = {
 				}
 
 				_this.setFilterChangeInfo(gridCtx, settingAreaEle, gridCtx.config.settingConfig.currentClickItem);
+
+				console.log(gridCtx.config.settingConfig.changeInfos)
 				
 				var newViewCols = [];
 				var headRedraw = gridCtx.options.tColItem.length == viewColumnKey.length ? false : true;
@@ -5706,11 +5712,18 @@ var _$setting = {
 				});
 				gridCtx.config.settingConfig.viewInitFlag = true; 
 				gridCtx.config.settingConfig.filterInfo = false; 
+				gridCtx.config.settingConfig.changeInfos = {};
 				_this.viewFilterIcon(settingAreaEle, '$all', false);
 				
 				_this.setViewColumnInfo(gridCtx, settingAreaEle, {}, {filterInfos:[]});
-
 				gridCtx.options.tColItem = gridCtx.config.dataInfo.orginTColItem;
+
+				dataSearchEle.val('');
+				gridCtx.options.setting.configVal.search = {
+					field : ''
+					,val : ''
+				};
+				
 				gridCtx._setSearchData('search', false); 
 				gridCtx.setColFixedIndex(0, true);
 				return ; 
@@ -6078,6 +6091,11 @@ var _$setting = {
 		gridCtx.config.settingConfig.detailViewCol = changeInfo; 
 		settingAreaEle.find('.select-item-name').val(selectItem.label);
 		settingAreaEle.find('[name="setting-width-field"]').val(changeInfo.width);
+
+		console.log(selectItem.key);
+		if(isUndefined(selectItem.key)){
+			settingAreaEle.find('.view-col-item.on').removeClass('on');
+		}
 	}
 	,getReplaceCheckId : function (replaceStr){
 		return replaceStr.replace(/#checkboxid#/g, 'fc_'+ (++this.filterCheckboxIdx));
