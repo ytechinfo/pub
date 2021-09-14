@@ -15,7 +15,7 @@ var pluginName = "pubSplitter"
 	,defaults = {
 		mode : 'simple'			// wrapper
 		,orientation: 'vertical'	// splitter 방향  default vertical
-		,border: false				// splitter border 
+		,border: false				// splitter border
 		,initAutoSize :true			// panel width fix
 		,button : {					// button option
 			enabled : true			// enabled 활성화 여부 default true
@@ -80,7 +80,7 @@ function objectMerge() {
 
 	return reval;
 }
-	
+
 function Plugin(selector, options) {
 	this.selector = selector;
 	this.prefix = 'pubSplitter_'+(_splitterSeq++);
@@ -93,10 +93,10 @@ function Plugin(selector, options) {
 	}
 	this.element;
 	this.selectorElement = $(this.selector);
-	
+
 	this.init();
 
-	return this; 
+	return this;
 }
 
 Plugin.prototype ={
@@ -115,43 +115,43 @@ Plugin.prototype ={
 			options.percent = objectMerge({},  {vertical: false, horizontal: false}, options.percent);
 		}
 
-		this.options =options; 
+		this.options =options;
 	}
 	/**
 	 * @method initEvt
-	 * @description init splitter event 
+	 * @description init splitter event
 	 */
 	,initEvt : function (){
-		var _this = this; 
+		var _this = this;
 		var element =this.selectorElement;
 
 		var resizableFlag = this.options.resizable;
-		
+
 		element.off('touchstart.pubsplitter mousedown.pubsplitter');
 		element.on('touchstart.pubsplitter mousedown.pubsplitter',function (e){
-			var ele = $(this); 
+			var ele = $(this);
 
 			if($(e.target).closest('.pub-toggle-btn').length > 0){
 				return ;
 			}
 			var splitterConf = _this.config.splitterConf[_$util.getPubsplitterId(ele)];
 
-			if(splitterConf.resizable===false) return false; 
+			if(splitterConf.resizable===false) return false;
 
 			_this._dragSpliiter(e, ele, splitterConf);
-			
-			return false; 
+
+			return false;
 		});
 
 		if(_this.options.button.enabled===true){
 
 			var isFunction = $.isFunction(_this.options.button.click);
-			
+
 			element.off('click.toggle.btn');
 			element.on('click.toggle.btn', '.pub-toggle-btn', function (e){
 				var ele = $(this);
 				var mode = ele.data('mode');
-				
+
 				ele.closest('.pub-splitter-button').attr('mode', mode);
 
 				var splitterEle = ele.closest('.pub-splitter');
@@ -162,32 +162,32 @@ Plugin.prototype ={
 				if(isFunction){
 					_this.options.button.click.call(null, mode, ele);
 				}
-							
-				return false; 
+
+				return false;
 			});
 		}
 	}
 	,initPanelSize : function (){
-		var _this = this; 
-		
+		var _this = this;
+
 		var splitterConf = {};
 		var defaultMinSize = this.options.minSize;
 		var helperFlag = this.options.useHelper;
 		var overrayFlag= this.options.useOverray;
-			
+
 		// html element attribute
 		// orientation = vertical , horizontal
-		// prev-min-size = pixel 
-		// next-min-size = pixel 
-		// percent = true, false; 
+		// prev-min-size = pixel
+		// next-min-size = pixel
+		// percent = true, false;
 		// button-trggle= true, false
 		// resizable = true, false
-		var parentIdx =0 ; 
+		var parentIdx =0 ;
 		var beforeNextEle;
 		var parentEleInfo = {};
-		var beforeParentEle; 
+		var beforeParentEle;
 		this.selectorElement.each(function (i){
-			var sEle = $(this); 			
+			var sEle = $(this);
 
 			var orientationInfo = sEle.data('orientation') || _this.options.orientation;
 			orientationInfo = orientationInfo == 'horizontal' ? orientationInfo :'vertical';
@@ -197,7 +197,7 @@ Plugin.prototype ={
 			if(typeof resizableFlag !== 'boolean'){
 				resizableFlag = _this.options.resizable;
 			}
-			
+
 			if(orientationInfo == 'horizontal'){
 				sEle.css({
 					'height': _this.options.handleSize+'px'
@@ -210,9 +210,9 @@ Plugin.prototype ={
 					,'margin-left': '-'+_this.options.handleSize+'px'
 				});
 			}
-			
+
 			sEle.addClass('pub-splitter').addClass(orientationInfo +' ' + (_this.options.border==true?'pub-border':'pub-border-none') + ' ' + (resizableFlag ?'':'resizeable-none' ));
-			var prefixIdx= _this.prefix+(i); 
+			var prefixIdx= _this.prefix+(i);
 			sEle.attr('data-pubsplitter', prefixIdx);
 
 			if(helperFlag===true){
@@ -236,13 +236,13 @@ Plugin.prototype ={
 					+'<span class="pub-toggle-btn" data-mode="next" style="width:100%;height:16px;"><svg viewBox="0 0 6 12"><g><path d="M0 0 L0 12 L6 6 Z"></path></g></svg></span>';
 				}else{
 					strHtm 	+='<span class="pub-toggle-btn" data-mode="prev" style="width:16px;height:100%;margin-right:5px;"><svg viewBox="0 0 12 6" style="position: relative;"><path d="M6 0 L0 6 L12 6 Z"></path></svg></span>'
-					+'<span class="pub-toggle-btn" data-mode="next" style="width:16px;height:100%;"><svg viewBox="0 0 12 6" style="position: relative;"><path d="M0 0 L6 6 L12 0 Z"></path></svg></span>'					
+					+'<span class="pub-toggle-btn" data-mode="next" style="width:16px;height:100%;"><svg viewBox="0 0 12 6" style="position: relative;"><path d="M0 0 L6 6 L12 0 Z"></path></svg></span>'
 				}
 				strHtm+='</div>';
 
 				sEle.append(strHtm);
 			}
-						
+
 			var prevMinSize = sEle.data('prev-min-size')
 				,nextMinSize = sEle.data('next-min-size');
 
@@ -253,22 +253,22 @@ Plugin.prototype ={
 			nextMinSize = nextMinSize < 0 ? 0 : nextMinSize;
 
 			var prevEle = sEle.prev()
-				,nextEle = sEle.next(); 
+				,nextEle = sEle.next();
 
 			if(orientationInfo == 'vertical'){
 				prevEle.css('padding-right', _this.options.handleSize);
 			}else{
 				prevEle.css('padding-bottom', _this.options.handleSize);
-			}	
+			}
 
 			var confPercent = String(sEle.data('percent'));
 			confPercent = confPercent == 'false' ? false : (confPercent == 'true' ? true : _this.options.percent[orientationInfo]);
 
-			var currentParentEle =sEle.parent()[0]; 
+			var currentParentEle =sEle.parent()[0];
 
 			if(beforeParentEle != currentParentEle){
 				++parentIdx;
-				
+
 				$(currentParentEle).addClass('pub-splitter-wrapper ' +orientationInfo);
 
 				parentEleInfo[parentIdx]= {
@@ -287,11 +287,11 @@ Plugin.prototype ={
 					,eleSize : eleSize
 					,percent : confPercent
 				});
-				parentEleInfo[parentIdx].childTotSize += eleSize;	
+				parentEleInfo[parentIdx].childTotSize += eleSize;
 			}
 
 			var eleSize = _$util.getSize(nextEle, orientationInfo);
-			
+
 			parentEleInfo[parentIdx].children.push({
 				ele : nextEle
 				,eleSize : eleSize
@@ -308,13 +308,13 @@ Plugin.prototype ={
 			};
 
 			beforeNextEle= nextEle[0];
-			beforeParentEle = currentParentEle;			
+			beforeParentEle = currentParentEle;
 		})
 
 		_this.config.splitterConf = splitterConf;
 
 		if(this.options.initAutoSize){
-			_this._setInitPanelSize(parentEleInfo);		
+			_this._setInitPanelSize(parentEleInfo);
 		}
 	}
 	/**
@@ -328,13 +328,13 @@ Plugin.prototype ={
 			var children = parentItem.children;
 			var orientation = parentItem.orientation;
 			var parentSize = parentItem.parentSize;
-			
+
 			children.forEach(function (item){
 				var childEle = $(item.ele);
-				
+
 				if(orientation =='horizontal'){
 					var eleHPercent = percent(item.eleSize, parentItem.childTotSize);
-					
+
 					if(item.percent){
 						childEle.css('height', eleHPercent+'%' );
 					}else{
@@ -347,17 +347,17 @@ Plugin.prototype ={
 					}else{
 						childEle.css('width', percentage(eleWPercent, parentSize) +'px' );
 					}
-					
+
 				}
 			});
-		}	
+		}
 	}
 	/**
 	 * @method setSize
 	 * @param prevSize {Integer} - prev size
 	 * @param nextSize {Integer} - next size
 	 * @param splitter {Integer or Ele} - splitter index or splitter ele
-	 * @description move vertial 
+	 * @description move vertial
 	 */
 	,setSize : function (prevSize, nextSize, splitter){
 
@@ -381,21 +381,21 @@ Plugin.prototype ={
 
 		ele = $(ele);
 
-		var splitterConf = this.config.splitterConf[_$util.getPubsplitterId(splitterEle)]; 
+		var splitterConf = this.config.splitterConf[_$util.getPubsplitterId(splitterEle)];
 
 		var sizeInfo =_$util.getSizeInfo(this, ele, splitterConf);
-		
+
 		this._startResize(ele, splitterConf);
-		_$util.setPanelSize(this, sizeInfo, splitterConf, sizeInfo.prevSize + sizeInfo.nextSize, prevSize, nextSize);	
+		_$util.setPanelSize(this, sizeInfo, splitterConf, sizeInfo.prevSize + sizeInfo.nextSize, prevSize, nextSize);
 		this._stopResize(ele, splitterConf);
 	}
 	,setLimitSize : function (sEle, splitterConf, mode){
 
 		var sizeInfo =_$util.getSizeInfo(this, sEle, splitterConf);
-		
+
 		var eleTotSize = sizeInfo.prevSize + sizeInfo.nextSize;
 
-		var prevSize=0, nextSize=0; 
+		var prevSize=0, nextSize=0;
 
 		if(mode == 'prev'){
 			prevSize = sizeInfo.prevMinSize;
@@ -406,47 +406,47 @@ Plugin.prototype ={
 		}
 
 		this._startResize(sEle, splitterConf);
-		_$util.setPanelSize(this, sizeInfo, splitterConf, eleTotSize, prevSize, nextSize);	
+		_$util.setPanelSize(this, sizeInfo, splitterConf, eleTotSize, prevSize, nextSize);
 		this._stopResize(sEle, splitterConf);
 	}
 	/*
 	 * @method _dragSpliiter
-	 * @description move vertial 
+	 * @description move vertial
 	 */
 	,_dragSpliiter : function (e, ele, splitterConf){
-		var _this = this; 
-		
-		var orientation = splitterConf.orientation; 
-			
+		var _this = this;
+
+		var orientation = splitterConf.orientation;
+
 		var data = _$util.getStartPosition(e, orientation);
 
 		var sizeInfo = _$util.getSizeInfo(this, ele, splitterConf);
 
 		var prevSize = sizeInfo.prevSize
 			,nextSize = sizeInfo.nextSize;
-		
+
 		var prevMinSize = sizeInfo.prevMinSize, nextMinSize = sizeInfo.nextMinSize;
-		
+
 		this._startResize(ele, splitterConf, data);
 		this._showHelper(ele);
 		$(document).on('touchmove.pubsplitter mousemove.pubsplitter', function (e){
 			var movePosition = _$util.getMovePosition(e, data, orientation);
 			var absPos= Math.abs(movePosition);
-			
+
 			sizeInfo.isMovePrev = movePosition < 0;
-			
+
 			if(sizeInfo.isMovePrev){
 				if(prevMinSize > prevSize-absPos){
-					absPos = prevSize- prevMinSize; 
+					absPos = prevSize- prevMinSize;
 				}
 			}else{
 				if(nextMinSize> nextSize-absPos){
-					absPos = nextSize- nextMinSize; 
+					absPos = nextSize- nextMinSize;
 				}
 			}
-			
+
 			sizeInfo.absPos = absPos;
-			
+
 			if(_this.options.useHelper){
 				if(orientation =='horizontal'){
 					_this.config.helperEle.css('top', (sizeInfo.isMovePrev?'-':'')+absPos+'px');
@@ -457,14 +457,14 @@ Plugin.prototype ={
 				_this._setPanelMovePosition(splitterConf, sizeInfo);
 			}
 			data.move = absPos;
-			_this.options.move.call(null, ele, splitterConf, data); // move 
+			_this.options.move.call(null, ele, splitterConf, data); // move
 		}).on('touchend.pubsplitter mouseup.pubsplitter mouseleave.pubsplitter', function (e){
 			if(_this.options.useHelper){
 				_this._hideHelper(ele);
 				_this._setPanelMovePosition(splitterConf, sizeInfo);
 			}
 			_this._stopResize(ele, splitterConf, data);
-			
+
 			$(document).off('touchmove.pubsplitter mousemove.pubsplitter').off('touchend.pubsplitter mouseup.pubsplitter mouseleave.pubsplitter');
 		});
 	}
@@ -472,11 +472,11 @@ Plugin.prototype ={
 		if(this.options.useOverray===true){
 			splitterEle.find('.pub-splitter-overray').show();
 		}
-		
+
 		this.options.start.call(null, splitterEle, splitterConf, moveData);
 	}
 	,_stopResize : function (splitterEle, splitterConf, moveData){
-		var _this = this; 
+		var _this = this;
 		if(this.options.useOverray===true){
 			splitterEle.find('.pub-splitter-overray').hide();
 		}
@@ -489,27 +489,27 @@ Plugin.prototype ={
 			if(splitterConf.orientation == 'horizontal'){
 				parentSize = splitterEle.parent().height();
 				cssKey = 'height';
-			}else{	
+			}else{
 				parentSize = splitterEle.parent().width();
 				cssKey = 'width';
 			}
 
-			var changeSize = _this.config.changeSize; 
+			var changeSize = _this.config.changeSize;
 
 			var isPrevMinSize = changeSize.isPrevMinSize
 				,isNextMinSize = changeSize.isNextMinSize;
-			
-			var totOverSize = 0; 
-						
+
+			var totOverSize = 0;
+
 			splitterEle.parent().children().each(function (item){
 				var ele = $(this);
 				if(!ele.hasClass('pub-splitter')){
-					
+
 					if(prevEle.get(0) == ele.get(0)){
 						if(isPrevMinSize){
 							prevEle.css(cssKey, '0%');
 						}else if(!isNextMinSize){
-							console.log(changeSize.prevSize , changeSize.prevOverSize);
+
 							if(changeSize.prevSize >= changeSize.prevOverSize){
 								if(changeSize.prevSize >= changeSize.prevOverSize + totOverSize){
 									prevEle.css(cssKey, 'calc('+percent(changeSize.prevSize+totOverSize, parentSize)+'% - '+ totOverSize+'px)');
@@ -520,31 +520,31 @@ Plugin.prototype ={
 								}
 							}else{
 								totOverSize += changeSize.prevSize;
-							}							
+							}
 						}
 
 					}
 
 					var overSize = ele.outerWidth() - ele.width();
-				
+
 					if(overSize >= ele.width()){
 						totOverSize += overSize;
 						prevOverSize = overSize;
 					}else{
 						prevOverSize = -1;
 					}
-					
+
 					// 계산 로직 처리 할것.
 				}
 			})
-			
+
 			if(isNextMinSize){
 				prevEle.css(cssKey, 'calc('+percent(changeSize.prevSize+totOverSize, parentSize)+'% - '+ totOverSize+'px)');
 				nextEle.css(cssKey, '0%');
 			}else{
 				nextEle.css(cssKey, 'calc('+percent(changeSize.nextSize+totOverSize, parentSize)+'% - '+ totOverSize+'px)');
 			}
-						
+
 		}
 
 		this.options.stop.call(null, splitterEle, splitterConf, moveData);
@@ -555,11 +555,11 @@ Plugin.prototype ={
 	 */
 	,_setPanelMovePosition : function (splitterConf, sizeInfo){
 		var absPos = sizeInfo.absPos;
-		var isMovePrev = sizeInfo.isMovePrev; 
-		
+		var isMovePrev = sizeInfo.isMovePrev;
+
 		var prevSize = (sizeInfo.prevSize + (absPos * (isMovePrev?-1:1)))
 			,nextSize = (sizeInfo.nextSize + (absPos * (isMovePrev?1:-1)));
-	
+
 		_$util.setPanelSize(this, sizeInfo, splitterConf, sizeInfo.prevSize + sizeInfo.nextSize, prevSize, nextSize);
 	}
 	/**
@@ -583,7 +583,7 @@ Plugin.prototype ={
 		ele.removeClass('helper');
 	}
 	,destroy:function (){
-		
+
 		this.selectorElement.find('*').off();
 
 		this.selectorElement.each(function (){
@@ -593,7 +593,7 @@ Plugin.prototype ={
 			sEle.parent().removeClass('pub-splitter-wrapper vertical horizontal');
 			sEle.empty();
 		})
-		
+
 		$._removeData(this.selector)
 		delete _datastore[this.selector];
 	}
@@ -603,16 +603,16 @@ var _$util = {
 	setPanelSize : function (gridCtx, sizeInfo, splitterConf, parentSize, prevSize, nextSize){
 		var prevElement = sizeInfo.prevElement
 			,nextElement = sizeInfo.nextElement;
-		
+
 		var prevMinSize = sizeInfo.prevMinSize;
-		
+
 		if(prevSize <= prevMinSize){
 			prevSize = prevMinSize;
 			nextSize = parentSize - prevMinSize;
 		}
 
 		var nextMinSize =sizeInfo.nextMinSize;
-		
+
 		if(nextSize <= nextMinSize){
 			nextSize = nextMinSize;
 			prevSize = parentSize - nextMinSize;
@@ -620,13 +620,13 @@ var _$util = {
 
 		prevSize = prevSize.toFixed(1);
 		nextSize = nextSize.toFixed(1);
-	
+
 		if(splitterConf.orientation == 'horizontal'){
 			prevElement.css('height', prevSize+'px');
 			nextElement.css('height', nextSize+'px');
 		}else{
 			prevElement.css('width', prevSize+'px');
-			nextElement.css('width', nextSize+'px');	
+			nextElement.css('width', nextSize+'px');
 		}
 
 		gridCtx.config.changeSize = {
@@ -650,7 +650,7 @@ var _$util = {
 	 */
 	,getSize : function (ele, orientationInfo, sizeType){
 		if(sizeType==0){
-			return orientationInfo == 'horizontal' ? ele.height() : ele.width(); 
+			return orientationInfo == 'horizontal' ? ele.height() : ele.width();
 		}
 		return orientationInfo == 'horizontal' ? ele.outerHeight() : ele.outerWidth();
 	}
@@ -666,12 +666,12 @@ var _$util = {
 			sizeInfo={
 				 prevSize : prevElement.outerWidth()
 				, nextSize : nextElement.outerWidth()
-	
+
 				, prevOverSize : prevElement.outerWidth() - prevElement.width()
 				, nextOverSize : nextElement.outerWidth() - nextElement.width()
 
 				, parentSize : ele.parent().width()
-			}	
+			}
 		}else{
 			sizeInfo={
 				 prevSize : prevElement.outerHeight()
@@ -681,7 +681,7 @@ var _$util = {
 				, nextOverSize : nextElement.outerHeight() - nextElement.height()
 
 				, parentSize : ele.parent().height()
-			}	
+			}
 		}
 
 		if(splitterConf.percent){
@@ -691,7 +691,7 @@ var _$util = {
 			sizeInfo.prevMinSize = Math.max(splitterConf.prevMinSize, sizeInfo.prevOverSize);
 			sizeInfo.nextMinSize = Math.max(splitterConf.nextMinSize, sizeInfo.nextOverSize);
 		}
-		
+
 		sizeInfo.prevElement = prevElement;
 		sizeInfo.nextElement = nextElement;
 
@@ -717,29 +717,29 @@ var _$util = {
 }
 
 $[ pluginName ] = function (selector,options) {
-	var _cacheObject = _datastore[selector]; 
+	var _cacheObject = _datastore[selector];
 
 	if(isUndefined(_cacheObject)){
-	
+
 		_cacheObject = new Plugin(selector, options);
 		_datastore[selector] = _cacheObject;
-		
-		return _cacheObject; 
+
+		return _cacheObject;
 	}else if(typeof options==='object'){
 		_cacheObject.destroy();
 		_cacheObject = new Plugin(selector, options);
 		_datastore[selector] = _cacheObject;
-		return _cacheObject; 
+		return _cacheObject;
 	}
 
 	if(typeof options === 'string'){
-		var callObj =_cacheObject[options]; 
+		var callObj =_cacheObject[options];
 		if(isUndefined(callObj)){
 			return options+' not found';
 		}else if(typeof callObj==='function'){
 			return _cacheObject[options].apply(_cacheObject,args);
 		}else {
-			return typeof callObj==='function'; 
+			return typeof callObj==='function';
 		}
 	}
 
