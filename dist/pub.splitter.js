@@ -17,11 +17,18 @@ var pluginName = "pubSplitter"
 		,orientation: 'vertical'	// splitter 방향  default vertical
 		,border: false				// splitter border 
 		,initAutoSize :true			// panel width fix
-		,useButton : false			// click 으로 이동. 
+		,button : {					// button option
+			enabled : true			// enabled 활성화 여부 default true
+			,toggle : false			// button min , max button 토글로 하나 보일지 두개 보일지 여부.
+			,click : function (mode){	// click callback
+
+			}
+		}
 		,minSize : 0				// default pixel
 		,percent: true			// position % 여부 true , false , {vertical : false, horizontal : false}
 		,useHelper: true		// 위치 조정시 helper 사용여부.
 		,useOverray: true		// 위치 조정시 helper 사용여부.
+		,resizable : true		// 크기 조절 가능 여부.
 		,theme: 'light'			// 테마  light , dark
 		,handleSize: 6			// handle size
 		,start: function (splitterEle, splitterConf, moveData){}	// start event callback
@@ -44,6 +51,35 @@ function percentage(val,tot){
 function percent(val,tot){
 	return val/tot*100;
 }
+
+function objectMerge() {
+	var objMergeRecursive = function (dst, src) {
+
+		for (var p in src) {
+			if (!src.hasOwnProperty(p)) {continue;}
+
+			var srcItem = src[p] ;
+			if (srcItem=== undefined) {continue;}
+
+			if ( typeof srcItem!== 'object' || srcItem=== null) {
+				dst[p] = srcItem;
+			} else if (typeof dst[p]!=='object' || dst[p] === null) {
+				dst[p] = objMergeRecursive(srcItem.constructor===Array ? [] : {}, srcItem);
+			} else {
+				objMergeRecursive(dst[p], srcItem);
+			}
+		}
+		return dst;
+	}
+
+	var reval = arguments[0];
+	if (typeof reval !== 'object' || reval === null) {	return reval;}
+	for (var i = 1, il = arguments.length; i < il; i++) {
+		objMergeRecursive(reval, arguments[i]);
+	}
+
+	return reval;
+}
 	
 function Plugin(selector, options) {
 	this.selector = selector;
@@ -53,6 +89,7 @@ function Plugin(selector, options) {
 	this.config = {
 		splitterConf: {}
 		,moveInfo :{}
+		,changeSize : {prevSize : -1, nextSize : -1}
 	}
 	this.element;
 	this.selectorElement = $(this.selector);
@@ -68,14 +105,14 @@ Plugin.prototype ={
 		this.initEvt();
 	}
 	,setOptions : function (opts){
-		var options = $.extend({}, defaults, opts);
+		var options = objectMerge({}, defaults, opts);
 
 		if(options.percent===true){
 			options.percent = {vertical: true, horizontal: false};
 		}else if(opts.percent===false){
 			options.percent = {vertical: false, horizontal: false};
 		}else{
-			options.percent = $.extend({},  {vertical: false, horizontal: false}, options.percent);
+			options.percent = objectMerge({},  {vertical: false, horizontal: false}, options.percent);
 		}
 
 		this.options =options; 
@@ -86,7 +123,9 @@ Plugin.prototype ={
 	 */
 	,initEvt : function (){
 		var _this = this; 
-		var element =this.selectorElement; 
+		var element =this.selectorElement;
+
+		var resizableFlag = this.options.resizable;
 		
 		element.off('touchstart.pubsplitter mousedown.pubsplitter');
 		element.on('touchstart.pubsplitter mousedown.pubsplitter',function (e){
@@ -97,22 +136,32 @@ Plugin.prototype ={
 			}
 			var splitterConf = _this.config.splitterConf[_$util.getPubsplitterId(ele)];
 
+			if(splitterConf.resizable===false) return false; 
+
 			_this._dragSpliiter(e, ele, splitterConf);
 			
 			return false; 
 		});
 
-		if(_this.options.useButton){
+		if(_this.options.button.enabled===true){
+
+			var isFunction = $.isFunction(_this.options.button.click);
+			
 			element.off('click.toggle.btn');
 			element.on('click.toggle.btn', '.pub-toggle-btn', function (e){
 				var ele = $(this);
 				var mode = ele.data('mode');
-									
-				var splitterEle = ele.closest('.pub-splitter');
+				
+				ele.closest('.pub-splitter-button').attr('mode', mode);
 
+				var splitterEle = ele.closest('.pub-splitter');
 				var splitterConf = _this.config.splitterConf[_$util.getPubsplitterId(splitterEle)];
 
 				_this.setLimitSize(splitterEle, splitterConf, mode);
+
+				if(isFunction){
+					_this.options.button.click.call(null, mode, ele);
+				}
 							
 				return false; 
 			});
@@ -131,18 +180,24 @@ Plugin.prototype ={
 		// prev-min-size = pixel 
 		// next-min-size = pixel 
 		// percent = true, false; 
+		// button-trggle= true, false
+		// resizable = true, false
 		var parentIdx =0 ; 
 		var beforeNextEle;
 		var parentEleInfo = {};
 		var beforeParentEle; 
 		this.selectorElement.each(function (i){
-			var sEle = $(this); 
-
-			
+			var sEle = $(this); 			
 
 			var orientationInfo = sEle.data('orientation') || _this.options.orientation;
 			orientationInfo = orientationInfo == 'horizontal' ? orientationInfo :'vertical';
 
+			var resizableFlag = sEle.data('resizable');
+
+			if(typeof resizableFlag !== 'boolean'){
+				resizableFlag = _this.options.resizable;
+			}
+			
 			if(orientationInfo == 'horizontal'){
 				sEle.css({
 					'height': _this.options.handleSize+'px'
@@ -156,7 +211,7 @@ Plugin.prototype ={
 				});
 			}
 			
-			sEle.addClass('pub-splitter').addClass(orientationInfo +' ' + (_this.options.border==true?'pub-border':'pub-border-none'));
+			sEle.addClass('pub-splitter').addClass(orientationInfo +' ' + (_this.options.border==true?'pub-border':'pub-border-none') + ' ' + (resizableFlag ?'':'resizeable-none' ));
 			var prefixIdx= _this.prefix+(i); 
 			sEle.attr('data-pubsplitter', prefixIdx);
 
@@ -168,14 +223,20 @@ Plugin.prototype ={
 				sEle.append('<div class="pub-splitter-overray"/>');
 			}
 
-			if(_this.options.useButton===true){
-				var strHtm = '<div class="pub-splitter-button '+orientationInfo+'" >';
+			if(_this.options.button.enabled===true){
+				var btnToggleFlag = sEle.data('button-toggle');
+
+				if(typeof btnToggleFlag !== 'boolean'){
+					btnToggleFlag = _this.options.button.toggle;
+				}
+
+				var strHtm = '<div class="pub-splitter-button '+orientationInfo +(btnToggleFlag ? ' pub-splitter-button-toggle' :'')+'" mode="">';
 				if(orientationInfo == 'vertical'){
 					strHtm +='<span class="pub-toggle-btn" data-mode="prev" style="width:100%;height:16px;margin-bottom:5px;"><svg viewBox="0 0 6 12"><path d="M0 6 L6 12 L6 0 Z"></path></svg></span>'
 					+'<span class="pub-toggle-btn" data-mode="next" style="width:100%;height:16px;"><svg viewBox="0 0 6 12"><g><path d="M0 0 L0 12 L6 6 Z"></path></g></svg></span>';
 				}else{
-					strHtm 	+='<span class="pub-toggle-btn" data-mode="prev" style="width:16px;height:100%;margin-right:5px;"><svg viewBox="0 0 12 6" style="position: relative;"><g><path d="M6 0 L0 6 L12 6 Z"></path></g></svg></span>'
-					+'<span class="pub-toggle-btn" data-mode="next" style="width:16px;height:100%;"><svg viewBox="0 0 12 6" style="position: relative;"><g><path d="M0 0 L6 6 L12 0 Z"></path></g></svg></span>'					
+					strHtm 	+='<span class="pub-toggle-btn" data-mode="prev" style="width:16px;height:100%;margin-right:5px;"><svg viewBox="0 0 12 6" style="position: relative;"><path d="M6 0 L0 6 L12 6 Z"></path></svg></span>'
+					+'<span class="pub-toggle-btn" data-mode="next" style="width:16px;height:100%;"><svg viewBox="0 0 12 6" style="position: relative;"><path d="M0 0 L6 6 L12 0 Z"></path></svg></span>'					
 				}
 				strHtm+='</div>';
 
@@ -220,24 +281,30 @@ Plugin.prototype ={
 			}
 
 			if(beforeNextEle != prevEle[0]){
+				var eleSize = _$util.getSize(prevEle, orientationInfo);
 				parentEleInfo[parentIdx].children.push({
 					ele : prevEle
+					,eleSize : eleSize
 					,percent : confPercent
 				});
-				parentEleInfo[parentIdx].childTotSize += _$util.getSize(prevEle, orientationInfo);	
+				parentEleInfo[parentIdx].childTotSize += eleSize;	
 			}
 
+			var eleSize = _$util.getSize(nextEle, orientationInfo);
+			
 			parentEleInfo[parentIdx].children.push({
 				ele : nextEle
+				,eleSize : eleSize
 				,percent : confPercent
 			});
-			parentEleInfo[parentIdx].childTotSize += _$util.getSize(nextEle, orientationInfo);
+			parentEleInfo[parentIdx].childTotSize += eleSize;
 
 			splitterConf[prefixIdx] = {
 				prevMinSize: prevMinSize
 				,nextMinSize: nextMinSize
 				,percent: confPercent
 				,orientation: orientationInfo
+				,resizable : resizableFlag
 			};
 
 			beforeNextEle= nextEle[0];
@@ -266,11 +333,21 @@ Plugin.prototype ={
 				var childEle = $(item.ele);
 				
 				if(orientation =='horizontal'){
-					var eleH = percentage(percent(childEle.outerHeight(), parentItem.childTotSize), parentSize);
-					childEle.css('height', (item.percent ? percent(eleH, parentSize)+'%' : eleH +'px') );
+					var eleHPercent = percent(item.eleSize, parentItem.childTotSize);
+					
+					if(item.percent){
+						childEle.css('height', eleHPercent+'%' );
+					}else{
+						childEle.css('height', percentage(eleHPercent, parentSize) +'px' );
+					}
 				}else{
-					var eleW = percentage(percent(childEle.outerWidth(), parentItem.childTotSize), parentSize);
-					childEle.css('width', (item.percent ? percent(eleW, parentSize)+'%' : eleW +'px') );
+					var eleWPercent = percent(item.eleSize, parentItem.childTotSize);
+					if(item.percent){
+						childEle.css('width', eleWPercent+'%' );
+					}else{
+						childEle.css('width', percentage(eleWPercent, parentSize) +'px' );
+					}
+					
 				}
 			});
 		}	
@@ -316,7 +393,7 @@ Plugin.prototype ={
 
 		var sizeInfo =_$util.getSizeInfo(this, sEle, splitterConf);
 		
-		var eleTotSize = sizeInfo.prevSize + sizeInfo.nextSize;  
+		var eleTotSize = sizeInfo.prevSize + sizeInfo.nextSize;
 
 		var prevSize=0, nextSize=0; 
 
@@ -399,6 +476,7 @@ Plugin.prototype ={
 		this.options.start.call(null, splitterEle, splitterConf, moveData);
 	}
 	,_stopResize : function (splitterEle, splitterConf, moveData){
+		var _this = this; 
 		if(this.options.useOverray===true){
 			splitterEle.find('.pub-splitter-overray').hide();
 		}
@@ -406,17 +484,67 @@ Plugin.prototype ={
 			var prevEle = splitterEle.prev()
 				,nextEle = splitterEle.next();
 
+			var parentSize = 0;
+			var cssKey = '';
 			if(splitterConf.orientation == 'horizontal'){
-				var parentH = splitterEle.parent().height();
-				
-				prevEle.css('height', percent(prevEle.outerHeight(), parentH)+'%');					
-				nextEle.css('height', percent(nextEle.outerHeight(), parentH)+'%')
+				parentSize = splitterEle.parent().height();
+				cssKey = 'height';
 			}else{	
-				var parentW = splitterEle.parent().width();
-							
-				prevEle.css('width', percent(prevEle.outerWidth(), parentW)+'%');					
-				nextEle.css('width', percent(nextEle.outerWidth(), parentW)+'%')
+				parentSize = splitterEle.parent().width();
+				cssKey = 'width';
 			}
+
+			var changeSize = _this.config.changeSize; 
+
+			var isPrevMinSize = changeSize.isPrevMinSize
+				,isNextMinSize = changeSize.isNextMinSize;
+			
+			var totOverSize = 0; 
+						
+			splitterEle.parent().children().each(function (item){
+				var ele = $(this);
+				if(!ele.hasClass('pub-splitter')){
+					
+					if(prevEle.get(0) == ele.get(0)){
+						if(isPrevMinSize){
+							prevEle.css(cssKey, '0%');
+						}else if(!isNextMinSize){
+							console.log(changeSize.prevSize , changeSize.prevOverSize);
+							if(changeSize.prevSize >= changeSize.prevOverSize){
+								if(changeSize.prevSize >= changeSize.prevOverSize + totOverSize){
+									prevEle.css(cssKey, 'calc('+percent(changeSize.prevSize+totOverSize, parentSize)+'% - '+ totOverSize+'px)');
+									totOverSize = 0;
+								}else{
+									prevEle.css(cssKey, percent(changeSize.prevSize, parentSize)+'%');
+									totOverSize += changeSize.prevOverSize-(changeSize.prevSize - changeSize.prevOverSize)
+								}
+							}else{
+								totOverSize += changeSize.prevSize;
+							}							
+						}
+
+					}
+
+					var overSize = ele.outerWidth() - ele.width();
+				
+					if(overSize >= ele.width()){
+						totOverSize += overSize;
+						prevOverSize = overSize;
+					}else{
+						prevOverSize = -1;
+					}
+					
+					// 계산 로직 처리 할것.
+				}
+			})
+			
+			if(isNextMinSize){
+				prevEle.css(cssKey, 'calc('+percent(changeSize.prevSize+totOverSize, parentSize)+'% - '+ totOverSize+'px)');
+				nextEle.css(cssKey, '0%');
+			}else{
+				nextEle.css(cssKey, 'calc('+percent(changeSize.nextSize+totOverSize, parentSize)+'% - '+ totOverSize+'px)');
+			}
+						
 		}
 
 		this.options.stop.call(null, splitterEle, splitterConf, moveData);
@@ -489,7 +617,10 @@ var _$util = {
 			nextSize = nextMinSize;
 			prevSize = parentSize - nextMinSize;
 		}
-		
+
+		prevSize = prevSize.toFixed(1);
+		nextSize = nextSize.toFixed(1);
+	
 		if(splitterConf.orientation == 'horizontal'){
 			prevElement.css('height', prevSize+'px');
 			nextElement.css('height', nextSize+'px');
@@ -497,6 +628,15 @@ var _$util = {
 			prevElement.css('width', prevSize+'px');
 			nextElement.css('width', nextSize+'px');	
 		}
+
+		gridCtx.config.changeSize = {
+			prevSize : parseFloat(prevSize)
+			, nextSize : parseFloat(nextSize)
+			, prevOverSize : sizeInfo.prevOverSize
+			, nextOverSize : sizeInfo.nextOverSize
+			, isPrevMinSize : (prevSize == sizeInfo.prevOverSize)
+			, isNextMinSize : (nextSize == sizeInfo.nextOverSize)
+		};
 	}
 	,getPubsplitterId : function (ele){
 		return ele.attr('data-pubsplitter');

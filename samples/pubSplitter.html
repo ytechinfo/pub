@@ -91,7 +91,7 @@ table td ,table th {
 			<td>
 				<div style="height: 100px;border:1px solid #000;">
 					<div class="h-row">bbbbbbbb</div>
-					<div class="main-spliter" data-prev-min-size="30" data-next-min-size="0" data-orientation="horizontal" data-percent="true"></div>
+					<div class="main-spliter" data-prev-min-size="30" data-next-min-size="0" data-orientation="horizontal" data-percent="true" data-button-toggle="false" data-resizable="true"></div>
 					<div class="h-row">ccccccccc</div>
 				</div>
 			</td>
@@ -102,16 +102,16 @@ table td ,table th {
 			</th>
 			<td>
 				<div id="test1" class=" child-float-left" style="height: 80px;">
-					<div class="main-container" style="width:80%;">
+					<div class="main-container" style="width:60%;">
 						A
 					</div>
 					<div class="main-spliter" data-percent="true" data-prev-min-size="0" data-next-min-size="0"></div>
-					<div  class="side-container" style="width:10%;">
-						B
+					<div style="height:100%;width:20%;">
+						<div>B</div>
 					</div>
-					<div class="main-spliter" data-percent="true" data-prev-min-size="0" data-next-min-size="10"></div>
-					<div  class="side-container" style="width:10%;">
-						C
+					<div class="main-spliter" data-percent="true" data-prev-min-size="0" data-next-min-size="0"></div>
+					<div style="height:100%;width:20%;">
+						<div>c</div>
 					</div>
 				</div>
 			</td>
@@ -181,7 +181,13 @@ $(function (){
 		,handleSize : 10
 		,initAutoSize : true
 		,border : true
-		,useButton : true		// 한번에 이동 버튼 사용유무
+		,resizable :false
+		,button : {
+			toggle : false
+			,click: function (mode , ele){
+				console.log(mode , ele)
+			}
+		}
 		,minSize: 50				// default pixel
 		,percent: {vertical : false, horizontal : true} //size percent 사용여부
 		,useHelper : true		// 위치 조정시 helper 사용여부.

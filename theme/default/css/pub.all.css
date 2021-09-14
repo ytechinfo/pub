@@ -2112,6 +2112,16 @@ Copyright 2021 ytkim
 Licensed under MIT 
 http://www.opensource.org/licenses/mit-license.php
 */
+* {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+*:before, *:after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
 .pub-splitter-wrapper {
   overflow: hidden;
   -webkit-box-sizing: border-box;
@@ -2124,16 +2134,24 @@ http://www.opensource.org/licenses/mit-license.php
 }
 
 .pub-splitter-wrapper.vertical > * {
+  min-height: 1px;
+  position: relative;
   float: left;
-  vertical-align: top;
+  overflow: hidden;
 }
 
-.pub-splitter-wrapper.vertical:after {
-  content: '.';
-  height: 0px;
-  width: 0px;
+.pub-splitter-wrapper.vertical:before, .pub-splitter-wrapper.vertical:after {
   clear: both;
-  visibility: hidden;
+  content: '';
+}
+
+.pub-splitter-wrapper.horizontal > * {
+  position: relative;
+  overflow: hidden;
+}
+
+.pub-splitter-wrapper > .pub-splitter {
+  overflow: visible;
 }
 
 .pub-splitter {
@@ -2187,6 +2205,14 @@ http://www.opensource.org/licenses/mit-license.php
   background-color: #dddddd;
 }
 
+.pub-splitter.resizeable-none {
+  cursor: auto;
+}
+
+.pub-splitter.resizeable-none:hover {
+  background-color: transparent;
+}
+
 .pub-splitter.helper {
   background-color: #ffffff;
 }
@@ -2224,6 +2250,15 @@ http://www.opensource.org/licenses/mit-license.php
   vertical-align: middle;
   text-align: center;
   font-size: 0em;
+  overflow: hidden;
+}
+
+.pub-splitter > .pub-splitter-button.pub-splitter-button-toggle[mode="prev"] > [data-mode="prev"] {
+  display: none;
+}
+
+.pub-splitter > .pub-splitter-button.pub-splitter-button-toggle[mode="next"] > [data-mode="next"], .pub-splitter > .pub-splitter-button.pub-splitter-button-toggle[mode=""] > [data-mode="next"] {
+  display: none;
 }
 
 .pub-splitter > .pub-splitter-button > span {
@@ -2254,9 +2289,7 @@ http://www.opensource.org/licenses/mit-license.php
 
 .pub-splitter > .pub-splitter-button.horizontal > span {
   height: 100%;
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
+  display: inline-block;
   position: relative;
 }
 
