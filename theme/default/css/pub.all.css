@@ -2138,6 +2138,8 @@ http://www.opensource.org/licenses/mit-license.php
   position: relative;
   float: left;
   overflow: hidden;
+  padding: 0px;
+  margin: 0px;
 }
 
 .pub-splitter-wrapper.vertical:before, .pub-splitter-wrapper.vertical:after {
