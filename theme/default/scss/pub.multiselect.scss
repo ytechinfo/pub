@@ -1,0 +1,268 @@
+/* * 
+pub-multiselect.scss: 0.0.1 
+======================================================================== 
+Copyright 2021 ytkim 
+Licensed under MIT 
+http://www.opensource.org/licenses/mit-license.php
+*/
+
+@import "_var_pub.multiselect";
+
+.pub-multiselect {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+    >*{
+        @include box-sizing($box_sizing_border)
+    }
+
+    .pub-multiselect-btn{
+        cursor: pointer;
+        border-radius: 3px;
+        padding: 1px 3px;
+        border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+        background: colorInfo($g_default_theme_name , "background_color");
+        line-height: 20px;
+        
+        &:hover{
+			background: colorInfo($g_default_theme_name , "background_thick_color");
+        }
+
+        &[data-mode="up"]::before{
+            content: "\25B2";
+            font-size: 12pt;
+        }
+
+        &[data-mode="down"]::before{
+            content: "\25BC";
+            font-size: 12pt;
+        }
+
+        &[data-mode="item-add"]{
+            float: right;
+            line-height: 18px;
+            margin: 2px 5px 0px;
+            &::before{
+                content: "\271A";
+                font-size: 10pt;
+            }
+        }
+
+        &[data-mode="item-del"]{
+            float: right;
+            line-height: 18px;
+            margin: 2px 5px 0px;
+            
+            &::before{
+                content: "\2716";
+                font-size: 10pt;
+            }
+        }
+    }
+
+    .horizontal{
+        .pub-multiselect-btn{
+            &[data-mode="add"]::after{
+                content: "\25B6";
+                font-size: 12pt;
+                line-height: 20px;
+            }
+
+            &[data-mode="del"]::after{
+                content: "\25C0";
+                font-size: 12pt;
+                line-height: 20px;
+            }
+
+            &[data-mode="item-del"]{
+                float: left;   
+            }
+        }
+    }
+
+    .vertical{
+        .pub-multiselect-btn{
+            &[data-mode="add"]::before{
+                content: "\25BC";
+                font-size: 12pt;
+            }
+
+            &[data-mode="del"]::before{
+                content: "\25B2";
+                font-size: 12pt;
+            }
+        }       
+    }
+    
+     
+    .pub-multiselect-body{
+        
+        >table{
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            border-spacing: 0;
+            border-collapse: collapse;
+            min-height: 100px;
+        
+            td{
+                vertical-align: top;
+            }
+        }
+
+        .pub-multiselect-move-btn{
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .pub-multiselect-label {
+            padding: 5px 0px 3px;
+            margin-bottom:  5px;
+            text-align: center;
+            border-bottom: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+        }
+
+        .pub-multiselect-area{
+            border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+            border-radius: 3px;
+            height: calc(100% - 36px);
+            padding: 0px;
+            overflow: auto;
+
+            &.header-hide{
+                height: 100%;
+            }
+
+            .pub-multiselect-items{
+                padding: 0px;
+                margin: 0px;
+                width: 100%;
+                cursor: default;
+                
+                >.pub-select-item{
+                    padding: 1px 5px;
+                    margin-bottom: 1px;
+                    height: 25px;
+                    line-height: 25px;
+
+                    >:first-child{
+                        width: 100%;
+                        display: inline-block;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+
+                        
+                    }
+                    >.pub-multiselect-btn{
+                        width:  60px;
+                    }
+                }
+            }
+        }
+
+        &.show-row-item-btn{
+            .pub-select-item >:first-child{
+                width: calc(100% - 70px) !important;
+            }
+        }
+        .pub-multiselect-paging{
+            text-align: center;
+            .pub-multiselect-page-num {
+                cursor: pointer;
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                margin: 0px 10px 0px 0px;
+                -webkit-border-radius: 20px;
+                -moz-border-radius: 20px;
+                border-radius: 20px;
+                background: colorInfo($g_default_theme_name , "background_color");
+                border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+    
+                &.selected {
+                    @include opacity_val(1.0);
+                    background: colorInfo($g_default_theme_name , "background_thick_color");
+                }
+    
+                >.page-no-text {
+                    display: none;
+                }
+            }
+        }
+
+        .text-selected{
+            > *{
+                color: colorInfo($g_default_theme_name , "font_active");;
+            }
+        }
+      
+        .selected {
+            background: colorInfo($g_default_theme_name , "column_active_background");
+        }
+         
+        .empty-message {
+            text-align: center;
+            padding-top: 10px;
+            font-size: 10pt;
+        }
+    }
+
+    .pubMultiselect-footer{
+        text-align: right;
+        padding-top: 5px;
+        height: 30px;
+        line-height: 18px;
+        vertical-align: middle;
+        padding-right:5px;
+    }
+}
+ 
+
+@each $pThemeName in $g_theme_list_info {
+
+    #{fn_themeName($pThemeName)} .pub-multiselect {
+        .pub-multiselect-btn{
+            border: 1px solid colorInfo($pThemeName , "border_thin_color");
+            background: colorInfo($pThemeName , "background_color");
+            
+            &:hover{
+                background: colorInfo($pThemeName , "background_thick_color");
+            }
+        }
+        
+        .pub-multiselect-body{
+           
+            .pub-multiselect-label {
+                border-bottom: 1px solid colorInfo($pThemeName , "border_thin_color");
+            }
+    
+            .pub-multiselect-area{
+                border: 1px solid colorInfo($pThemeName , "border_thin_color");
+            }
+
+            .pub-multiselect-paging{
+            
+                .pub-multiselect-page-num {
+                    background: colorInfo($pThemeName , "background_color");
+                    border: 1px solid colorInfo($pThemeName , "border_thin_color");
+        
+                    &.selected {
+                        background: colorInfo($pThemeName , "background_thick_color");
+                    }
+                }
+            }
+
+            .text-selected{
+                > *{
+                    color: colorInfo($pThemeName , "font_active");;
+                }
+            }
+                        
+            .selected {
+                background: colorInfo($pThemeName , "column_active_background");
+			    color: colorInfo($pThemeName , "column_active_color");
+            }
+        }
+    }
+}

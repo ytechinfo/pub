@@ -1,5 +1,5 @@
 /**
- * pubAutocomplete : v1.0.1
+ * pubAutocomplete : v1.0.2
  * ========================================================================
  * Copyright 2016~2021 ytkim
  * Licensed under MIT
@@ -13,7 +13,7 @@
 		,initialized = false
 		,_datastore = {}
 		,pubElement= false
-        ,defaults = {
+        ,_defaults = {
 			_currMode : 'default'
 			,viewAreaSelector : false	// 결과가 보여질 element
 			,useFilter : true	// 필터 사용여부.
@@ -56,7 +56,7 @@
 		this.selectorElement = $(this.selector);
 		this.autocompleteEle = false;
 		this.autocompleteEleId = pluginName+'-'+new Date().getTime();
-        this.options = $.extend({}, defaults, options);
+        this.options = $.extend({}, _defaults, options);
 		this.size = {eleH: 0,itemH : 0, itemAllH : 0};
 		this.currentSearchVal='';
 		this.config={
@@ -406,7 +406,7 @@
 		 * @description 기본 옵션 업데이트.
 		 */
 		,updatedefaults:function (opts){
-			defaults = $.extend({}, defaults, opts);
+			_defaults = $.extend({}, _defaults, opts);
 		}
 		/**
 		 * @method gridItems
@@ -444,8 +444,6 @@
 				,emptyFlag = true;
 
 			var strHtm = [];
-
-
 
 			if(len > 0){
 				var renderFn = _this._getOptionValue('renderItem')
@@ -578,6 +576,10 @@
 		}
 
 		return _cacheObject;
-    };
+	};
+	
+	$[ pluginName ].setDefaults = function (defaultValue){
+		_defaults = objectMerge(_defaults, defaultValue);
+	}
 
 })(jQuery, window, document);

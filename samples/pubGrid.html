@@ -68,12 +68,10 @@ html , body {
 	</select>
 	theme
 	<select id="themeInfo">
-		<option value="light selected" >light</option>
+		<option value="light" selected>light</option>
 		<option value="dark" >dark</option>
 	</select>
 	
-	
-
 	<button type="button" onclick="fn_init()">regrid</button>
 
 	<button type="button" class="set-data">setData</button>
@@ -84,13 +82,11 @@ html , body {
 	<button class="pdfdown" type="button">pdf download</button>
 
 	
-
-	
 </div>
 <textarea id="dropTextArea" style="width:100%" rows="2"></textarea>
 <table style="width:100%;height:100%;">
 	<colgroup>
-		<col width="70%">
+		<col width="98%">
 		<col width="50%">
 	</colgroup>
 	<tr>
@@ -100,6 +96,9 @@ html , body {
 			</div>
 		</td>
 		<td>
+			<div class="asdfasdfWrapper">
+				<div id="asdfasdf1" style="height:calc(100vh - 200px)"></div>
+			</div>
 		</td>
 	</tr>
 
@@ -122,6 +121,9 @@ $(document).ready(function (){
 		toggleFlag  = !toggleFlag;
 		$('#itemCount').val(toggleFlag ? 100 :5);
 		var	item=getItem (itemType );
+
+		console.log('111111 : set-data');
+		
 		$.pubGrid('#asdfasdf').setData(item.aaa,'reDraw');
 
 	});
@@ -198,8 +200,9 @@ $(document).ready(function (){
 
 	
 });
-
+var itemIdx =0; 
 function getItem (type){
+	itemIdx++;
 	var aaa = [];
 	var colItem = [];
 	var	itemCount = parseInt($('#itemCount').val(),10);
@@ -249,7 +252,7 @@ function getItem (type){
 			var tmpItem = {};
 
 			for(var j =0 ; j< cellCount ;j++){
-				var colName = 'col'+j ; 
+				var colName = 'col'+itemIdx+'_'+j ; 
 				if(j ==0){
 					tmpItem[colName] =  i+j;
 				}else{
@@ -328,9 +331,7 @@ function fn_init(){
 	if(parseInt($('#itemCount').val(),10) == 1){
 		aaa = [];
 	}
-	var gridObj = $.pubGrid('#asdfasdf')
-	
-	
+		
 	gridDraw('#asdfasdf',aaa, colItem);
 
 	//gridDraw('#asdfasdf1',aaa, colItem);
@@ -355,7 +356,10 @@ function gridDraw(selector, aaa, colItem){
 			}
 		}
 		,colOptions : {
-			maxWidth : -1
+			maxWidth : 1024
+		}
+		,valueFilter : function (colInfo, objValue){
+			return objValue[colInfo.key];
 		}
 		,headerOptions:{
 			view : true
@@ -369,6 +373,10 @@ function gridDraw(selector, aaa, colItem){
 				enabled : true
 				,update :  function (item){
 					//console.log(item);
+				}
+				,getContent : function(colInfo, valuObj){					
+					console.log(colInfo, valuObj)
+					return valuObj[colInfo.key];
 				}
 			}
 			,contextMenu :{
@@ -431,27 +439,36 @@ function gridDraw(selector, aaa, colItem){
 			enabled : true
 			,click : false
 			,mode : 'full'
+			,btnClose : true
 			,callback : function (data){
 				//console.log(data)
 			}
 			,configVal1 : {search : {field:'col1', val : '111'}}
 		}
 		,tColItem : colItem
-		
 		,theadGroup1 :[ 
 			[
-			{key :'a',label:'ac2<br/>asdf',colspan:4 , style:''}
-			,{key :'c',label:'rc2',rowspan: 3 }
+			{label:'ac1<br/>asdf',rowspan: 3,  style:''}
+			,{label:'ac2<br/>asdf',rowspan: 2, style:''}
+			,{label:'rasdfc2',colspan:5 }
 			]
 			,[
-				{label:'aaaa',colspan:2 , style:''}
+				{label :'col1_0'}
+				,{label :'col1_1'}
+				,{label :'col1_2'}
+				,{label :'col1_3'}
+				,{label :'col1_4'}
+			]
+		]
+
+		,theadGroup : [
+			[
+			{label:'ac2<br/>asdf',colspan:8 , style:''}
+			]
+			,[
+				{label:'ccc',rowspan: 2 }
+				,{label:'ddd',colspan:2 , style:''}
 				,{label:'bbbb',colspan:2 , style:''}
-			]
-			,[
-				{key :'a'}
-				,{key :'b'}
-				,{key :'c'}
-				,{key :'d'}
 			]
 		]
 		,bodyOptions : {

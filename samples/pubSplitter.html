@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="../theme/default/css/pub.splitter.min.css" rel="stylesheet" type="text/css" />
+<link href="../theme/default/css/pub.splitter.min.css" rel="stylesheet" type="text/css" />.
+<link href="../theme/default/css/pub.resizer.css" rel="stylesheet">
 
 <script src="../plugins/jquery-3.3.1.min.js"></script>
 <script src="../dist/pub.splitter.js"></script>
+
+<script src="../dist/pub.resizer.js"></script>
 
 
 <title>splitter 보기</title>
@@ -47,6 +50,10 @@ html,body{
 	height: 300px;
 }
 
+.border{
+	border: 1px solid #000;
+}
+
 .child-float-left{
 	border: 1px solid #000;
 	position: relative;
@@ -75,103 +82,154 @@ table td ,table th {
     line-height: 1;
 	font-size: 0em;
 }
+
+.main-tbl{
+	width:100%;
+}
+.main-tbl-tr>td{
+	vertical-align: top;
+}
 </style>
 </head>
 
 <body>
-	<table style="width:100%;border: 1px solid #000;">
-		<colgroup>
-			<col style="width:100px">
-			<col style="width:*">
-		</colgroup>
-		<tr>
-			<th>
-				세로
-			</th>
-			<td>
-				<div style="height: 100px;border:1px solid #000;">
-					<div class="h-row">bbbbbbbb</div>
-					<div class="main-spliter" data-prev-min-size="30" data-next-min-size="0" data-orientation="horizontal" data-percent="true" data-button-toggle="false" data-resizable="true"></div>
-					<div class="h-row">ccccccccc</div>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<th>
-				가로 퍼센트
-			</th>
-			<td>
-				<div id="test1" class=" child-float-left" style="height: 80px;">
-					<div class="main-container" style="width:60%;">
-						A
-					</div>
-					<div class="main-spliter" data-percent="true" data-prev-min-size="0" data-next-min-size="0"></div>
-					<div style="height:100%;width:20%;">
-						<div>B</div>
-					</div>
-					<div class="main-spliter" data-percent="true" data-prev-min-size="0" data-next-min-size="0"></div>
-					<div style="height:100%;width:20%;">
-						<div>c</div>
-					</div>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<th>
-				가로 pixel
-			</th>
-			<td>
-				<div id="test1" class=" child-float-left" style="height: 80px;">
-					<div id="mainContainer" class="wh100" style="width:100px">
-						mainContainer
-					</div>
-					<div class="main-spliter" data-prev-min-size="10" data-next-min-size="15" data-percent="false"></div>
-					<div id="sideContainer" class="wh100" style="width:150px">
-						sideContainer
-					</div>
-					<div class="main-spliter" data-prev-min-size="7" data-next-min-size="5" data-percent="false"></div>
-					<div id="sideContainer" class="wh100" style="width:100px" >
-						sideContainer2222
-					</div>
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<th>
-				혼합
-			</th>
-			<td>
-				<div class="child-float-left" style="height: 200px;margin-top: 20px;">
-					<div style="width:400px;height:100%;float: left;">
-						<div id="mainContainer" class="wh100" style="width:100px">
-							mainContainer
+<table class="main-tbl">
+	<colgroup>
+		<col style="width:50%;">
+		<col style="width:50%;">
+	</colgroup>
+	<tr>
+		<th>가로</th>
+		<th>세로</th>
+	</tr>
+	<Tr class="main-tbl-tr">
+		<td>
+			<table style="width:100%;border: 1px solid #000;">
+				<colgroup>
+					<col style="width:100px">
+					<col style="width:*">
+				</colgroup>
+				<tr>
+					<th>
+						세로
+					</th>
+					<td>
+						<div style="height: 100px;border:1px solid #000;">
+							<div class="h-row">bbbbbbbb</div>
+							<div class="main-spliter" data-prev-min-size="30" data-next-min-size="0" data-orientation="horizontal" data-percent="true" data-button-toggle="false" data-resizable="true"></div>
+							<div class="h-row">ccccccccc</div>
 						</div>
-						<div class="main-spliter" data-prev-min-size="10" data-next-min-size="15"></div>
-						<div id="sideContainer" class="wh100" style="width:150px">
-							sideContainer
+					</td>
+				</tr>
+				<tr>
+					<th>
+						가로 퍼센트
+					</th>
+					<td>
+						<div id="test1" class=" child-float-left" style="height: 80px;">
+							<div class="main-container" style="width:60%;">
+								A
+							</div>
+							<div class="main-spliter" data-percent="true" data-prev-min-size="0" data-next-min-size="0"></div>
+							<div style="height:100%;width:20%;">
+								<div>B</div>
+							</div>
+							<div class="main-spliter" data-percent="true" data-prev-min-size="0" data-next-min-size="0"></div>
+							<div style="height:100%;width:20%;">
+								<div>c</div>
+							</div>
 						</div>
-						<div class="main-spliter" data-prev-min-size="7" data-next-min-size="5" data-percent="false"></div>
-						<div id="sideContainer" class="wh100" style="width:100px" >
-							sideContainer2222
+					</td>
+				</tr>
+				<tr>
+					<th>
+						가로 pixel
+					</th>
+					<td>
+						<div id="test1" class=" child-float-left" style="height: 80px;">
+							<div id="mainContainer" class="wh100" style="width:100px">
+								mainContainer
+							</div>
+							<div class="main-spliter" data-prev-min-size="10" data-next-min-size="15" data-percent="false"></div>
+							<div id="sideContainer" class="wh100" style="width:150px">
+								sideContainer
+							</div>
+							<div class="main-spliter" data-prev-min-size="7" data-next-min-size="5" data-percent="false"></div>
+							<div id="sideContainer" class="wh100" style="width:100px" >
+								sideContainer2222
+							</div>
 						</div>
-					</div>
-					<div style="height: 100%;width:200px;">
-						<div style="height:70px">top</div>
-						<div class="main-spliter" data-orientation="horizontal" data-prev-min-size="0" data-next-min-size="0" data-percent="true"></div>
-						<div style="height:50px">bottom</div>
-					</div>
-				</div>
-			</td>
-		</tr>
-	</table>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						혼합
+					</th>
+					<td>
+						<div class="child-float-left" style="height: 200px;margin-top: 20px;">
+							<div style="width:50%;height:100%;float: left;">
+								<div id="mainContainer" class="wh100" style="width:100px">
+									mainContainer
+								</div>
+								<div class="main-spliter" data-prev-min-size="10" data-next-min-size="15"></div>
+								<div id="sideContainer" class="wh100" style="width:150px">
+									sideContainer
+								</div>
+								<div class="main-spliter" data-prev-min-size="7" data-next-min-size="5" data-percent="false"></div>
+								<div id="sideContainer" class="wh100" style="width:100px" >
+									sideContainer2222
+								</div>
+							</div>
 
+							<div style="float: left;height: 100%;width:50%;">
+								<div style="height:70px">top</div>
+								<div class="main-spliter" data-orientation="horizontal" data-prev-min-size="0" data-next-min-size="0" data-percent="true"></div>
+								<div style="height:50px">bottom</div>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
 
-
-
-
+		</td>
+		<td>
+			<table style="width:100%;border: 1px solid #000;">
+				<colgroup>
+					<col style="width:100px">
+					<col style="width:*">
+				</colgroup>
+				<tr>
+					<th>
+						세로
+					</th>
+					<td>
+						<div style="height: 100px;border:1px solid #000;">
+							<div class="h-row">bbbbbbbb</div>
+							<div class="main-spliter" data-prev-min-size="30" data-next-min-size="0" data-orientation="horizontal" data-percent="true"  data-resizable="true"></div>
+							<div class="h-row">ccccccccc</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						높이
+					</th>
+					<td>
+						<div class="resize-container border" style="height: 150px;width:200px;float: left;">
+							<div style="height:70px">top</div>
+							<div class="main-spliter" data-orientation="horizontal" data-prev-min-size="0" data-next-min-size="0" data-percent="true"></div>
+							<div >bottom</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</Tr>
+</table>
 
 </body>
 </html>
+
 <script>
 
 $(function (){
@@ -181,15 +239,17 @@ $(function (){
 		,handleSize : 10
 		,initAutoSize : true
 		,border : true
-		,resizable :false
+		,resizable : true
 		,button : {
-			toggle : false
+			enabled:true
+			,toggle:true
 			,click: function (mode , ele){
 				console.log(mode , ele)
 			}
 		}
-		,minSize: 50				// default pixel
-		,percent: {vertical : false, horizontal : true} //size percent 사용여부
+		,minSize: {
+			size : 5
+		}				// default pixel
 		,useHelper : true		// 위치 조정시 helper 사용여부.
 		,start:function (){
 			//console.log(arguments)
@@ -201,6 +261,14 @@ $(function (){
 			//console.log('stop',arguments)
 		}
 	});
+
+
+	$.pubResizer('.resize-container',{
+		stop :function (){
+			$.pubSplitter('.main-spliter').resizeDraw();
+		}
+		
+	})
 });
 
 </script>

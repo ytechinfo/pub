@@ -1,0 +1,240 @@
+/* * 
+pub-multiselect.scss: 0.0.1 
+======================================================================== 
+Copyright 2021 ytkim 
+Licensed under MIT 
+http://www.opensource.org/licenses/mit-license.php
+*/
+.pub-multiselect {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.pub-multiselect > * {
+  -webkit-box-sizing: border-box !important;
+  box-sizing: border-box !important;
+}
+
+.pub-multiselect .pub-multiselect-btn {
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 1px 3px;
+  border: 1px solid #d5d5d8;
+  background: #ffffff;
+  line-height: 20px;
+}
+
+.pub-multiselect .pub-multiselect-btn:hover {
+  background: #dddddd;
+}
+
+.pub-multiselect .pub-multiselect-btn[data-mode="up"]::before {
+  content: "\25B2";
+  font-size: 12pt;
+}
+
+.pub-multiselect .pub-multiselect-btn[data-mode="down"]::before {
+  content: "\25BC";
+  font-size: 12pt;
+}
+
+.pub-multiselect .pub-multiselect-btn[data-mode="item-add"] {
+  float: right;
+  line-height: 18px;
+  margin: 2px 5px 0px;
+}
+
+.pub-multiselect .pub-multiselect-btn[data-mode="item-add"]::before {
+  content: "\271A";
+  font-size: 10pt;
+}
+
+.pub-multiselect .pub-multiselect-btn[data-mode="item-del"] {
+  float: right;
+  line-height: 18px;
+  margin: 2px 5px 0px;
+}
+
+.pub-multiselect .pub-multiselect-btn[data-mode="item-del"]::before {
+  content: "\2716";
+  font-size: 10pt;
+}
+
+.pub-multiselect .horizontal .pub-multiselect-btn[data-mode="add"]::after {
+  content: "\25B6";
+  font-size: 12pt;
+  line-height: 20px;
+}
+
+.pub-multiselect .horizontal .pub-multiselect-btn[data-mode="del"]::after {
+  content: "\25C0";
+  font-size: 12pt;
+  line-height: 20px;
+}
+
+.pub-multiselect .horizontal .pub-multiselect-btn[data-mode="item-del"] {
+  float: left;
+}
+
+.pub-multiselect .vertical .pub-multiselect-btn[data-mode="add"]::before {
+  content: "\25BC";
+  font-size: 12pt;
+}
+
+.pub-multiselect .vertical .pub-multiselect-btn[data-mode="del"]::before {
+  content: "\25B2";
+  font-size: 12pt;
+}
+
+.pub-multiselect .pub-multiselect-body > table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border-collapse: collapse;
+  min-height: 100px;
+}
+
+.pub-multiselect .pub-multiselect-body > table td {
+  vertical-align: top;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-move-btn {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label {
+  padding: 5px 0px 3px;
+  margin-bottom: 5px;
+  text-align: center;
+  border-bottom: 1px solid #d5d5d8;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-area {
+  border: 1px solid #d5d5d8;
+  border-radius: 3px;
+  height: calc(100% - 36px);
+  padding: 0px;
+  overflow: auto;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-area.header-hide {
+  height: 100%;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-area .pub-multiselect-items {
+  padding: 0px;
+  margin: 0px;
+  width: 100%;
+  cursor: default;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-area .pub-multiselect-items > .pub-select-item {
+  padding: 1px 5px;
+  margin-bottom: 1px;
+  height: 25px;
+  line-height: 25px;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-area .pub-multiselect-items > .pub-select-item > :first-child {
+  width: 100%;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-area .pub-multiselect-items > .pub-select-item > .pub-multiselect-btn {
+  width: 60px;
+}
+
+.pub-multiselect .pub-multiselect-body.show-row-item-btn .pub-select-item > :first-child {
+  width: calc(100% - 70px) !important;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-paging {
+  text-align: center;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-paging .pub-multiselect-page-num {
+  cursor: pointer;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 0px 10px 0px 0px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #d5d5d8;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-paging .pub-multiselect-page-num.selected {
+  opacity: 1;
+  -moz-opacity: 1;
+  -khtml-opacity: 1;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+  filter: alpha(opacity=100);
+  background: #dddddd;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-paging .pub-multiselect-page-num > .page-no-text {
+  display: none;
+}
+
+.pub-multiselect .pub-multiselect-body .text-selected > * {
+  color: #5970f5;
+}
+
+.pub-multiselect .pub-multiselect-body .selected {
+  background: rgba(85, 241, 241, 0.295);
+}
+
+.pub-multiselect .pub-multiselect-body .empty-message {
+  text-align: center;
+  padding-top: 10px;
+  font-size: 10pt;
+}
+
+.pub-multiselect .pubMultiselect-footer {
+  text-align: right;
+  padding-top: 5px;
+  height: 30px;
+  line-height: 18px;
+  vertical-align: middle;
+  padding-right: 5px;
+}
+
+[pub-theme="dark"] .pub-multiselect .pub-multiselect-btn {
+  border: 1px solid #6d6d75;
+  background: #262729;
+}
+
+[pub-theme="dark"] .pub-multiselect .pub-multiselect-btn:hover {
+  background: #000000;
+}
+
+[pub-theme="dark"] .pub-multiselect .pub-multiselect-body .pub-multiselect-label {
+  border-bottom: 1px solid #6d6d75;
+}
+
+[pub-theme="dark"] .pub-multiselect .pub-multiselect-body .pub-multiselect-area {
+  border: 1px solid #6d6d75;
+}
+
+[pub-theme="dark"] .pub-multiselect .pub-multiselect-body .pub-multiselect-paging .pub-multiselect-page-num {
+  background: #262729;
+  border: 1px solid #6d6d75;
+}
+
+[pub-theme="dark"] .pub-multiselect .pub-multiselect-body .pub-multiselect-paging .pub-multiselect-page-num.selected {
+  background: #000000;
+}
+
+[pub-theme="dark"] .pub-multiselect .pub-multiselect-body .text-selected > * {
+  color: #5970f5;
+}
+
+[pub-theme="dark"] .pub-multiselect .pub-multiselect-body .selected {
+  background: #214163;
+  color: #fbf8f8;
+}

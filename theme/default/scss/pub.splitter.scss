@@ -8,46 +8,43 @@ http://www.opensource.org/licenses/mit-license.php
 
 @import "_var_pub.global.scss";
 
-* {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-*:before, *:after {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-
 .pub-splitter-wrapper {
-    overflow: hidden;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 
     >*{
         -moz-box-sizing: border-box;
         box-sizing: border-box;
-    }
-
-    &.vertical>* {
-        min-height: 1px;
-        position: relative;
-        float: left;
         overflow: hidden;
-        padding: 0px;
-        margin: 0px;
     }
 
-    &.vertical:before , &.vertical:after{
-        clear: both;
-        content: '';
+    > *:before, > *:after {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+    
+    &.vertical{
+        display: flex;
+        flex-wrap: nowrap;
+
+        &.fixed{
+            float: left;
+
+            &:before , &:after{
+                clear: both;
+                content: '';
+            }
+        }
+        
+        >* {
+            min-height: 1px;
+            position: relative;    
+        }
     }
  
     &.horizontal>* {
         position: relative;
-        overflow: hidden;
     }
 
     >.pub-splitter{
@@ -56,7 +53,7 @@ http://www.opensource.org/licenses/mit-license.php
 }
 
 .pub-splitter {
-    background-color: colorInfo($g_default_theme_name, "background_color");
+    background-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -150,8 +147,12 @@ http://www.opensource.org/licenses/mit-license.php
         vertical-align: middle;
         text-align: center;
         font-size: 0em;
-        overflow: hidden;
+        z-index: 10;
 
+        .pub-toggle-btn{
+            cursor: pointer;
+        }
+       
         &.pub-splitter-button-toggle{
             &[mode="prev"]{
                 >[data-mode="prev"]{
@@ -214,7 +215,7 @@ http://www.opensource.org/licenses/mit-license.php
 @each $pThemeName in $g_theme_list_info {
 
     #{fn_themeName($pThemeName)} .pub-splitter {
-        background-color: colorInfo($pThemeName, "background_color");
+        background-color: transparent;
 
         &.vertical {
             &.pub-border {

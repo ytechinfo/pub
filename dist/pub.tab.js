@@ -12,7 +12,7 @@
 "use strict";
 var pluginName = "pubTab"
 ,_datastore = {}
-,defaults = {
+,_defaults = {
 	width:'auto'			//tab width
 	,itemMaxWidth : -1		// tab max width
 	,activeFirstItem : true	//로드시 첫번째 item 활성화 여부
@@ -94,7 +94,7 @@ function Plugin(element, options) {
 	}
 
 	options.width= isNaN(options.width) ?  this.tabElement.width() : options.width;
-	this.options = objectMerge({}, defaults, options);
+	this.options = objectMerge({}, _defaults, options);
 	
 	this.init();
 
@@ -782,6 +782,12 @@ Plugin.prototype ={
 
 		return reval;
 	}
+	/**
+	* tab view history
+	*/
+	,getHistory : function (){
+		return this.config.tabHistory;
+	}
 	,refresh : function (){
 		var _this = this;
 		var eleW = _this.tabElement.width();
@@ -1002,5 +1008,9 @@ $[ pluginName ] = function (selector,options) {
 
 	return _cacheObject;
 };
+
+$[ pluginName ].setDefaults = function (defaultValue){
+	_defaults = objectMerge(_defaults, defaultValue);
+}
 
 })(jQuery, window, document);

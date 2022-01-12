@@ -1,0 +1,154 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub Multi select -예제</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../theme/default/pub.example.css" rel="stylesheet">
+<link href="../theme/default/css/pub.multiselect.css" rel="stylesheet">
+
+<script src="../plugins/jquery-1.10.2.min.js"></script>
+<script src="../plugins/jquery-ui-1.12.1.min.js"></script>
+<script src="../dist/pub.multiselect2.js"></script>
+
+</HEAD>
+<BODY>
+
+<div id="asdfasdf"></div>
+
+	
+
+</BODY>
+</HTML>
+
+
+<script>
+var selectObj;
+var tmpSourceItem = [] , paramSourceItem=[]; 
+$(document).ready(function (){
+	var paramTargetItem = [];
+	
+	for(var i = 0 ;i <10; i++){
+		paramSourceItem.push({viewid :'0000'+i ,uname:'aaaa'+i});
+	}
+
+	for(var i = 0 ;i <10; i++){
+		tmpSourceItem.push({viewid :'1000'+i ,uname:'nawefawefawefefefefefefeffawfeamenawefawefawefefefefefefeffawfeame'+i});
+	}
+	paramTargetItem.push({viewid :'00000' ,uname:'nawefawefawefefefefefefeffawfeamenawefawefawefefefefefefeffawfeame',pageNo:0});
+	for(var i = 0 ;i <0; i++){
+		var pageNum = 0; 
+		if(i > 5){
+			pageNum =4;
+		}
+		paramTargetItem.push({viewid :'0000'+i ,uname:'name'+i,pageNo:pageNum});
+	}
+
+	selectObj= $.pubMultiselect('#asdfasdf', {
+		mode : 'double'	// single, double
+		,orientation : 'y' // x , y
+		,header : {
+			enableSourceLabel : false 	// source header label 보일지 여부
+			,enableTargetLabel : true 	// target header label 보일지 여부
+		}
+		,body : {
+			enableMoveBtn : false	// 이동 버튼 보이기 여부
+			,moveBtnSize : 50	// item move button 영역 width 값
+			,enableItemEvtBtn : true // 추가,삭제 버튼 보이기
+		}
+		,footer : {
+			enable : false
+		}
+		,i18 : {
+			sourceLabel : 'Source'
+			,targetLabel : 'Target'
+			,upLabel : 'Up'
+			,downLabel : 'Down'
+			,add : '추가'
+			,allAdd : 'All add'
+			,remove : '삭제'
+			,allRemove : 'All Remove'
+		}
+		,width : 'auto'
+		,height : 230
+		,useMultiSelect : true
+		,useDragMove : true	// drag해서 이동할지 여부.
+		,useDragSort : true // target drag 해서 정렬할지 여부.
+		,pageInfo :{
+			max : 1
+		}
+		,maxSize :10
+		,duplicateCheck : true
+		,source : {
+			idKey : 'viewid'
+			,nameKey : 'uname'
+			,items : paramSourceItem
+		}
+		,target : {
+			idKey : 'viewid'
+			,nameKey : 'uname'
+			,items : []
+			,emptyMessage :' '
+			,click: function (e, sEle){
+				//console.log(e,sEle);
+			}
+			,dblclick : function (e, sEle){
+				console.log(e,sEle);
+			}
+			,render: function (sItem){
+				//console.log('render', sItem);
+				return '<span>'+sItem.text+'</span>';
+			}
+		}
+		,compleateTargetMove : function (addItem){
+			alert(addItem);
+		}
+		,compleateSourceMove : function (delItem){
+			console.log(delItem);
+			return ; 
+		}
+	});
+
+	selectObj.setTargetItem(paramTargetItem);
+
+	var paramTargetItem2 = [];
+	for(var i = 0 ;i <10; i++){
+		paramTargetItem2.push({CODE_ID :'0000'+i ,CODE_NM:'name'+i});
+	}
+	
+	return ; 
+
+	selectObj2= $.pubMultiselect('#source2', {
+		targetSelector : '#target2'
+		,addItemClass:'text_selected'
+		,useMultiSelect : true
+		,duplicateCheck : true
+		,source : {
+			optVal : 'CODE_ID1'
+			,optTxt : 'CODE_NM1'
+			,items : paramTargetItem2
+		}
+		,target : {
+			optVal : 'CODE_ID'
+			,optTxt : 'CODE_NM'
+			,items : []
+			,click: function (e, sEle){
+				//console.log(e,sEle);
+			}
+			,dblclick : function (e, sEle){
+				console.log(e,sEle);
+			}
+			,render: function (sItem){
+				//console.log('render', sItem);
+				return '<span  style="color:'+sItem.item.STYLE+'">'+sItem.text+'</span>';
+			}
+		}
+		,compleateTargetMove : function (addItem){
+			alert(addItem);
+		}
+		,compleateSourceMove : function (delItem){
+			console.log(delItem);
+		}
+	});
+})
+</script>
+

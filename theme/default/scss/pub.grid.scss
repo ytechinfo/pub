@@ -210,13 +210,12 @@
 				right:-2px;
 				top: 0px;
 				width: 4px;
-				height:inherit;
+				height:100%;
 				cursor: col-resize;
 				z-index: 2;
 			}
 	
 			.pub-header-resizer:hover{
-				background:colorInfo($g_default_theme_name , "move_header_background");
 				width:12px;
 				right: -6px;
 			}
@@ -254,13 +253,13 @@
 			height:25px;
 			vertical-align: middle;
 			border-right: 1px solid colorInfo($g_default_theme_name , "border_thick_color");
-			border-bottom:1px solid colorInfo($g_default_theme_name , "border_thick_color");
+			border-top:1px solid colorInfo($g_default_theme_name , "border_thick_color");
 		}
 
-		tr:last-child
+		tr:first-child
 		{
 			th {
-				border-bottom: none;
+				border-top: none;
 			}
 		}
 	}
@@ -838,6 +837,23 @@
 			min-width: 200px;
 		}
 
+		.pubGrid-resize-handler{
+			position: absolute;
+			bottom: 0px;
+			right: 0px;
+			cursor: nw-resize;
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+			width: 0px;
+			height: 0px;
+			border-top: 10px solid transparent;
+			border-right: 10px solid colorInfo($g_default_theme_name , "border_thick_color");
+		}
+
 		.pubGrid-btn{
 			margin-right: 3px;
 		}
@@ -857,6 +873,14 @@
 			line-height: 30px;
 			padding: 0px 5px;
 			border-bottom: 1px solid colorInfo($g_default_theme_name , "border_thick_color");
+
+			.header-close-btn{
+				float: right;
+				margin-top: 3px;
+				&::after{
+					content: '\03A7';
+				}
+			}
 		}
 
 		.pubGrid-setting-footer{
@@ -1243,7 +1267,7 @@
 		.pubGrid-header-container {
 			th {
 				border-right: 1px solid colorInfo($pThemeName , "border_thick_color");
-				border-bottom:1px solid colorInfo($pThemeName , "border_thick_color");
+				border-top:1px solid colorInfo($pThemeName , "border_thick_color");
 			}
 
 			.pub-header-tr{
@@ -1275,14 +1299,6 @@
 			border-bottom:1px solid colorInfo($pThemeName , "border_thick_color");
 		}
 		
-		.pubGrid-header-cont, .pubGrid-header-left-cont{
-			.label-wrapper{
-				>.pub-header-resizer:hover{
-					background:colorInfo($pThemeName , "move_header_background");
-				}
-			}
-		}
-
 		.pubGrid-body-container-warpper{
 			
 			tr.pub-body-tr{
@@ -1445,6 +1461,10 @@
 					color: colorInfo($pThemeName , "a_hover_border_thick_color");
 					background-color: colorInfo($pThemeName , "a_hover_background_color");
 				}
+			}
+
+			.pubGrid-resize-handler{
+				border-right: 10px solid colorInfo($pThemeName , "border_thick_color");
 			}
 			
 			.pubGrid-setting-header{

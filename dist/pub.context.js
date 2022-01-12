@@ -15,7 +15,7 @@ var pluginName = "pubContextMenu"
 	,_datastore = {}
 	,pubContextElement= false
 	,_$win = $(window)
-	,defaults = {
+	,_defaults = {
 		fadeSpeed: 100				// 숨김 속도
 		,filter: function ($obj) {		// 필터
 			// Modify $obj, Do not return
@@ -53,7 +53,7 @@ function getHashCode (str){
 function Plugin(selector, options , uuid) {
 	this.selector = selector;
 	this.contextId = 'dropdown-pubcontext-'+getHashCode(selector);
-	this.options = $.extend({}, defaults, options);
+	this.options = $.extend({}, _defaults, options);
 	this.contextData = {};
 	this.selectElement;
 	this.targetInfo;
@@ -179,7 +179,7 @@ Plugin.prototype ={
 		});
 	}
 	,updatedefaults:function (opts){
-		defaults = $.extend({}, defaults, opts);
+		_defaults = $.extend({}, _defaults, opts);
 	}
 	,buildMenu : function (data, id, subMenu, depth){
 		var _this = this;
@@ -455,5 +455,9 @@ $[ pluginName ] = function (selector,options) {
 
 	return _cacheObject;
 };
+
+$[ pluginName ].setDefaults = function (defaultValue){
+	_defaults = objectMerge(_defaults, defaultValue);
+}
 
 })(jQuery);

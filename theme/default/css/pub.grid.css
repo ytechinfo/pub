@@ -204,13 +204,12 @@
   right: -2px;
   top: 0px;
   width: 4px;
-  height: inherit;
+  height: 100%;
   cursor: col-resize;
   z-index: 2;
 }
 
 .pubGrid-wrapper .pubGrid-header-container .pub-header-tr .pub-header-resizer:hover {
-  background: #82c5c0;
   width: 12px;
   right: -6px;
 }
@@ -255,11 +254,11 @@
   height: 25px;
   vertical-align: middle;
   border-right: 1px solid #bcbcbd;
-  border-bottom: 1px solid #bcbcbd;
+  border-top: 1px solid #bcbcbd;
 }
 
-.pubGrid-wrapper .pubGrid-header-container tr:last-child th {
-  border-bottom: none;
+.pubGrid-wrapper .pubGrid-header-container tr:first-child th {
+  border-top: none;
 }
 
 .pubGrid-wrapper .pubGrid-header-aside, .pubGrid-wrapper .pubGrid-header-left, .pubGrid-wrapper .pubGrid-header {
@@ -889,6 +888,22 @@
   min-width: 200px;
 }
 
+.pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-resize-handler {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  cursor: nw-resize;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  width: 0px;
+  height: 0px;
+  border-top: 10px solid transparent;
+  border-right: 10px solid #bcbcbd;
+}
+
 .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-btn {
   margin-right: 3px;
 }
@@ -910,6 +925,15 @@
   line-height: 30px;
   padding: 0px 5px;
   border-bottom: 1px solid #bcbcbd;
+}
+
+.pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-header .header-close-btn {
+  float: right;
+  margin-top: 3px;
+}
+
+.pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-header .header-close-btn::after {
+  content: '\03A7';
 }
 
 .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-footer {
@@ -1284,7 +1308,7 @@
 
 [pub-theme="dark"] .pubGrid-wrapper .pubGrid-header-container th {
   border-right: 1px solid #5f5f68;
-  border-bottom: 1px solid #5f5f68;
+  border-top: 1px solid #5f5f68;
 }
 
 [pub-theme="dark"] .pubGrid-wrapper .pubGrid-header-container .pub-header-tr .pub-header-help .pub-header-help-btn {
@@ -1308,10 +1332,6 @@
 
 [pub-theme="dark"] .pubGrid-wrapper .pubGrid-header-aside-cont, [pub-theme="dark"] .pubGrid-wrapper .pubGrid-header-cont, [pub-theme="dark"] .pubGrid-wrapper .pubGrid-header-left-cont {
   border-bottom: 1px solid #5f5f68;
-}
-
-[pub-theme="dark"] .pubGrid-wrapper .pubGrid-header-cont .label-wrapper > .pub-header-resizer:hover, [pub-theme="dark"] .pubGrid-wrapper .pubGrid-header-left-cont .label-wrapper > .pub-header-resizer:hover {
-  background: #6b7776;
 }
 
 [pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container-warpper tr.pub-body-tr:nth-child(even) {
@@ -1454,6 +1474,10 @@
 [pub-theme="dark"] .pubGrid-preferences-wrapper .pubGrid-setting-panel a:hover {
   color: #5970f5;
   background-color: #262729;
+}
+
+[pub-theme="dark"] .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-resize-handler {
+  border-right: 10px solid #5f5f68;
 }
 
 [pub-theme="dark"] .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-header {

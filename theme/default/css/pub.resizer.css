@@ -1,0 +1,22 @@
+/*
+ * pub.resizer.css: 0.0.1
+ * ========================================================================
+ * Copyright 2021-2021 ytkim
+ * Licensed under MIT
+ * http://www.opensource.org/licenses/mit-license.php
+*/
+.pubResizer-container {
+  position: relative;
+}
+
+.pubResizer-container .pubResizer-handler {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  cursor: nw-resize;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
