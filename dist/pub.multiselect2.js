@@ -765,7 +765,7 @@ Plugin.prototype ={
 					dupChkFlag = false;
 				}
 
-				if(!addChkFlag) return true;
+				if(!addChkFlag) continue;
 
 				if($.isFunction(opts.beforeItemMove)){
 					if(opts.beforeItemMove(tmpObj) === false){
