@@ -205,15 +205,14 @@ var _initialized = false
 	,navigation :{
 		usePaging : false	// 페이지 사용여부
 		,status : false
+		,statusFormatter : '{{currStart}} - {{currEnd}} of {{total}}'
 		,height : 35		// 높이 값
+		,position : 'center'	// 위치 값
 		,callback : function (no){}	// 페이지 콜백
 	}
 	,page : false	// paging info
 	,message : {
 		empty : 'no data'
-		,pageStatus : function (status){
-			return status.currStart +' - ' + status.currEnd+' of '+ status.total;
-		}
 	}
 	,i18n :{
 		'setting.label' : '설정'
@@ -261,7 +260,7 @@ function createArray(m,n,initial){
 	return reval; 
 }
 
-function replaceLogic(logicCode, param){
+function replaceMesasgeFormat(logicCode, param){
 	return logicCode.replace(/{{(.+?)}}/gi, function (word){
 		var key = word.replace(/[\{\}]/g,'');
 		return  param[key];
@@ -465,6 +464,7 @@ Plugin.prototype ={
 			, dataInfo : {colLen : 0, allColLen : 0, rowLen : 0, lastRowIdx : 0, orginTColItem:[], orginTColIdxKeyMap : {}}
 			, rowOpt :{}
 			, sort : {current :''}
+			, pagingInfo : false
 			, selection :{
 				startCell :{}
 			}
@@ -1291,8 +1291,11 @@ Plugin.prototype ={
 		}
 
 		if(_this.options.navigation.usePaging === true) {
-			_this.setPage(mode=='init' ? opt.page : (pdata.page ||{}));
+			_this.setPaging(mode=='init' ? opt.paging : (pdata.paging ||{}));
 		}
+
+		_this._setStatusMessage();
+
 		if(_this.config.searchOn===true){
 			_this.gridElement.find('.pubGrid-setting-btn').addClass('search-on');
 		}else{
@@ -1320,16 +1323,19 @@ Plugin.prototype ={
 			tci[i].maxWidth = -1;
 		}
 	}
-	,setPage : function (pageInfo){
+	,setPaging : function (pagingInfo){
 		var _this =this;
+
+		pagingInfo = pagingInfo||{};
 
 		if(_this.options.navigation.usePaging !== true) {
 			throw 'usePaging not enabled';
 		}
 
-		var pagingInfo = _this.getPageInfo(pageInfo.totalCount , pageInfo.currPage, pageInfo.countPerPage, pageInfo.unitPage);
+		var pagingInfo = _this.getPagingInfo(pagingInfo.totalCount, pagingInfo.currPage, pagingInfo.countPerPage, pagingInfo.unitPage);
 
-		_this.config.pageNo = pageInfo.currPage;
+		_this.config.pageNo = pagingInfo.currPage;
+		_this.config.pagingInfo = pagingInfo;
 
 		var currP = pagingInfo.currPage;
 		if (currP == "0") currP = 1;
@@ -1372,7 +1378,7 @@ Plugin.prototype ={
 		strHTML.push('</ul>');
 
 		var pageNaviEle = $('#'+_this.prefix+'_page');
-		pageNaviEle.addClass('page-'+(pageInfo.position || 'center'));
+		pageNaviEle.addClass('page-'+_this.options.navigation.position);
 		pageNaviEle.empty().html(strHTML.join(''));
 
 		return this;
@@ -2049,10 +2055,6 @@ Plugin.prototype ={
 			}else{
 				_this.element.container.find('[rowinfo="'+i+'"]').show();
 			}
-		}
-		
-		if(this.options.navigation.usePaging === true || this.options.navigation.status === true){
-			_this._statusMessage(viewCount);
 		}
 	}
 	/**
@@ -2801,17 +2803,38 @@ Plugin.prototype ={
 
 		return containerLeft;
 	}
-	,_statusMessage : function (viewCnt){
-		var startVal = this.config.scroll.viewIdx +1
-			,endVal = startVal+ this.config.scroll.insideViewCount;
+	,_setStatusMessage : function (){
 
-		endVal = endVal >= this.config.dataInfo.orginRowLen? this.config.dataInfo.orginRowLen: endVal;
+		if(this.options.navigation.status !== true){
+			return ; 
+		}
 
-		this.element.status.empty().html(this.options.message.pageStatus({
-			currStart :startVal
-			,currEnd : endVal
-			,total : this.config.dataInfo.orginRowLen
-		}))
+		var totCnt = 0; 
+		var startVal = 0;
+		var endVal = 0;
+		if(this.options.navigation.usePaging === true) {
+			if(this.config.pagingInfo !== false){
+				var pagingInfo =this.config.pagingInfo; 
+				totCnt = pagingInfo.totalCount;
+				var first =pagingInfo.currPage-1; 
+				startVal = first * pagingInfo.countPerPage +1 ;
+				endVal = (first+1) * pagingInfo.countPerPage;
+			}
+		}else{
+			totCnt = this.config.dataInfo.orginRowLen;
+			startVal = this.config.scroll.viewIdx +1;
+			endVal = startVal+ this.config.scroll.insideViewCount;
+		}
+
+		if(totCnt > 0){
+			this.element.status.empty().html(replaceMesasgeFormat(this.options.navigation.statusFormatter||'', {
+				currStart :startVal
+				,currEnd : endVal >= totCnt? totCnt: endVal
+				,total : totCnt
+			}))
+		}else{
+			this.element.status.empty().html('');
+		}
 	}
 	/**
 	 * @method isVisible
@@ -4622,26 +4645,18 @@ Plugin.prototype ={
 	,getHeaderItems : function (){
 		return this.config.tColItem;
 	}
-	/**
-	 * @method pageNav
-	 * @param  options {Object} 옵션
-	 * @description 페이징 하기.
-	 */
-	,pageNav : function(pageInfo) {
-
-	}
 	,getPageNo : function (){
 		return this.config.pageNo;
 	}
 	/**
-	 * @method getPageInfo
+	 * @method getPagingInfo
 	 * @param  totalCount {int} 총카운트
 	 * @param  currPage {int} 현재 페이지
 	 * @param  countPerPage {int} 한페이지에 나올 row수
 	 * @param  unitPage {int} 한페이지에 나올 페이번호 갯수
 	 * @description 페이징 하기.
 	 */
-	,getPageInfo : function (totalCount, currPage, countPerPage, unitPage) {
+	,getPagingInfo : function (totalCount, currPage, countPerPage, unitPage) {
 		var unitCount = 100;
 		countPerPage = countPerPage || 10;
 		unitPage = unitPage || 10;
@@ -4719,7 +4734,7 @@ Plugin.prototype ={
 			,'prePage' : prePage ,'prePage_is' : prePage_is
 			,'nextPage' : nextPage,'nextPage_is' : nextPage_is
 			,'currStartPage' : currStartPage ,'currEndPage' : currEndPage
-			,'totalCount' : totalCount ,'totalPage' : totalPage
+			,'countPerPage' : countPerPage, 'totalCount' : totalCount ,'totalPage' : totalPage
 		};
 	}
 	/**
@@ -5000,7 +5015,7 @@ var _$util = {
 		for(var i=0; i<tcolItems.length; i++){
 			var tcolItem = tcolItems[i];
 			logicStr.push(i != 0 ? defaultLogicalOp.getCode('or') : '');
-			logicStr.push(replaceLogic(searchLogic , {key : tcolItem.key}));
+			logicStr.push(replaceMesasgeFormat(searchLogic , {key : tcolItem.key}));
 		}
 		
 		return this.genSearchLogic(logicStr.join(''));
@@ -6182,7 +6197,7 @@ var _$setting = {
 						chkLogicStr.push(( filterItem.logicOp ? defaultLogicalOp.getCode('and') : defaultLogicalOp.getCode('or')));
 					}
 					
-					chkLogicStr.push(replaceLogic(opItem.code , {
+					chkLogicStr.push(replaceMesasgeFormat(opItem.code , {
 						key : item.key
 						,idx : allChkVal.length -1
 					}));

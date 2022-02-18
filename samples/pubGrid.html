@@ -420,20 +420,20 @@ function gridDraw(selector, aaa, colItem){
 			
 		}
 		,navigation : {
-			usePaging : false
+			usePaging : true
 			,status : true
-			,height :20
+			,height :32
+			,position : 'center'
 			,callback : function (no){
 				console.log(no);
 				//gridObj.setData(aaa);
 			}
 		}
-		,page : {
-			totalCount :1000
-			, currPage : 15
-			, countPerPage :10
+		,paging : {
+			totalCount : 12
+			, currPage : 1
+			, countPerPage : 10
 			, unitPage :10
-			,position : 'center'
 		}
 		,setting : {
 			enabled : true
