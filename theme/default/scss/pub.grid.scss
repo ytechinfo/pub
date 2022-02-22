@@ -316,9 +316,26 @@
 			border-right : 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 			border-bottom : 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 			position: relative;
-
+			
 			&:hover{
 				background-color: gridColorInfo($g_default_theme_name,"td_background_hover");
+
+				.pub-render-element{
+					&.button, &.select{
+						background-color: gridColorInfo($g_default_theme_name,"td_inside_button_hover");
+					}
+				}
+			}
+
+			.pub-render-element{
+				&.button, &.select{
+					cursor: pointer;
+					border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+					padding: 1px 8px;
+					line-height: 22px;
+					border-radius: 3px;
+					background-color: gridColorInfo($g_default_theme_name,"td_background_hover");
+				}
 			}
 		}
 
@@ -1326,9 +1343,22 @@
 			td{
 				border-right : 1px solid colorInfo($pThemeName , "border_thin_color");
 				border-bottom : 1px solid colorInfo($pThemeName , "border_thin_color");
-
+		
 				&:hover{
-					background-color: gridColorInfo($pThemeName,"td_background_hover");;
+					background-color: gridColorInfo($pThemeName,"td_background_hover");
+	
+					.pub-render-element{
+						&.button, &.select{
+							background-color: gridColorInfo($pThemeName,"td_inside_button_hover");
+						}
+					}
+				}
+		
+				.pub-render-element{
+					&.button, &.select{
+						border: 1px solid colorInfo($pThemeName , "border_thin_color");
+						background-color: gridColorInfo($pThemeName,"td_background_hover");
+					}
 				}
 			}
 		

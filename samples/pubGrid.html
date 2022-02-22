@@ -108,7 +108,7 @@ html , body {
 <script>
 
 	
-var itemType = 2; 
+var itemType = 1; 
 $(document).ready(function (){
 	//$.pubGrid('#asdfasdf').resizeDraw({});
 	fn_init();
@@ -177,9 +177,6 @@ $(document).ready(function (){
 
     	var doc = new jsPDF();          
 		
-			
-		
-
 		doc.autoTable(columns, allDataInfo.data, {});
 		doc.save('table.pdf');
 
@@ -226,24 +223,40 @@ function getItem (type){
 		}
 		colItem = [
 			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
-			,{key :'b', label:'비', width:100,visible : true, colClick :function (idx,item){ console.log(idx, item)},styleClass : function (idx, item){
-				
-				if(item.idx%2==0){
+			,{key :'b', label:'비', width:100,visible : true, colClick :function (idx,item){ console.log(idx, item)},styleClass : function (rowInfo){
+				if(rowInfo.idx %2 == 0){
 					return 'pub-bg-primary';
 				}else{
 					return 'pub-bg-success';
 				}
-				
 			}}
-			,{key :'c', label:'씨',width:100, align:'center', type : 'money', render:'html'}
-			,{key :'d', label:'디',width:100 ,type : 'number'}
-			,{key :'e', label:'이',width:100 , visible : false}
-			,{key :'f', label:'f',width:100 , visible : false}
-			,{key :'g', label:'g',width:100 , visible : false}
-			,{key :'h', label:'h',width:100 , visible : false}
-			,{key :'i', label:'i',width:100 , visible : false}
-			,{key :'k', label:'k',width:100 , visible : false}
-			,{key :'j', label:'j',width:100 , visible : false}
+			,{key :'c', label:'씨',width:100, align:'center', type : 'money', renderer:{
+				type : 'link'
+				,url : 'http://localhost?aaa={{a}}'
+			}}
+			,{key :'d', label:'디',width:100 ,type : 'number', renderer:{
+				type : 'select'
+				,list : [
+					'USA'
+					,'KOREA'
+					,'CHINA'
+				]
+			}}
+			,{key :'e', label:'이',width:100, renderer:{
+				type : 'checkbox'
+			} }
+			,{key :'f', label:'f',width:100, align:'center', renderer:{
+				type : 'button'
+				,label : 'button click'
+				,click : function (info){
+					console.log(info);
+				}
+			}}
+			,{key :'g', label:'g',width:100, align:'center', visible:false,renderer:{
+				type : 'image1'
+				,src : './image/{{g}}'
+			}}
+			
 			//,{key :'d', label:'디', hidden:true}
 		]
 	}else{
@@ -461,7 +474,7 @@ function gridDraw(selector, aaa, colItem){
 			]
 		]
 
-		,theadGroup : [
+		,theadGroup1 : [
 			[
 			{label:'ac2<br/>asdf',colspan:8 , style:''}
 			]
@@ -479,11 +492,13 @@ function gridDraw(selector, aaa, colItem){
 			,keyNavHandler : function(moveInfo){
 				console.log(moveInfo);
 			}
+			
 		}
 		,tbodyItem : aaa
 		,tfootItem :['asdf']
 		,rowOptions :{
 			dblClickCheck :true
+			, height : 33
 			,dblClick1: function (){
 				console.log('dblclick')
 			}

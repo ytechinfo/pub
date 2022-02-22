@@ -175,7 +175,15 @@ var _initialized = false
 		,"sort": true		// sort flag
 		,"align": ""	// align
 		,"type": ""		// value type
-		,"render": ""		// render mode (html or text default text)
+		,"renderer ": { // render mode (html or text default text)
+			type : "text" // button, image, checkbox, radio, select, link, html 
+			,item : {
+				key : ""
+			}
+			,click : function (){}
+			,template : function (){}
+			,validator : function (){}
+		}		
 		,formatter : function (obj){	// 보여질 값을 처리.
 				return obj.item.STATE;
 		}
@@ -188,13 +196,7 @@ var _initialized = false
 				return obj.val;
 			}
 		}
-		,editor : {
-			type : "text", 			//"text, select, textarea, number, custom"
-			editorBtn : false,		// 버튼 보일지 여부.
-			editorBtnOver : false, // 오버시 버튼 보이기
-			items : [],
-			validator : function (){}
-		}
+		
 	}
 	*/
 	,tColItem : [] //head item
@@ -635,6 +637,7 @@ Plugin.prototype ={
 
 		if(!isNaN(rowOptHeight)){
 			cssStr.push('#'+_this.prefix+'_pubGrid .pub-body-td, #'+_this.prefix+'_pubGrid .pub-body-aside-td{height:'+rowOptHeight+'px;}');
+			cssStr.push('#'+_this.prefix+'_pubGrid .pub-body-td>.pub-content, #'+_this.prefix+'_pubGrid .pub-body-aside-td > .aside-content{height:'+rowOptHeight+'px; line-height:'+rowOptHeight+'px;}');
 		}
 
 		var headerHeight = _this.options.headerOptions.height;
@@ -819,6 +822,8 @@ Plugin.prototype ={
 			tciItem.maxWidth = -1;	// max width
 
 			if(tciItem.visible===false) continue;
+
+			tciItem.renderer = tciItem.renderer || {type : 'text'};
 
 			if(!isUndefined(tciItem.tooltip) && isFunction(tciItem.tooltip.formatter)){
 				tciItem.afTooltipFormatter = tciItem.tooltip.formatter;
@@ -1635,42 +1640,26 @@ Plugin.prototype ={
 		return false;
 	}
 	/**
-	 * @method valueFormatter
+	 * @method getRenderValue
 	 * @param  thiItem {Object} header col info
 	 * @param  item {Object} row 값
 	 * @description foot 데이터 셋팅
 	 */
-	,valueFormatter : function (thiItem, rowItem, mode, addEle){
+	,getRenderValue : function (thiItem, rowItem, mode, addEle){
 
-		var type = thiItem.type || 'string';
+		var rendererType = thiItem.renderer.type; 
+
+		if(mode == 'data' && rendererType != 'text'){
+			return rowItem[thiItem.key];
+		}
 		
-		var itemVal;
-		if(this.config.isValueFilter && mode =='view'){
-			itemVal = this.options.valueFilter(thiItem, rowItem);
-		}else{
-			itemVal = rowItem[thiItem.key];
-		}
-
-		var tmpFormatter={};
-		if(type == 'money' || type == 'number'){
-			tmpFormatter = this.options.formatter[type];
-		}
-
-		if(isFunction(thiItem.formatter)){
-			itemVal = thiItem.formatter.call(null,{colInfo:thiItem, item: rowItem, formatInfo : tmpFormatter});
-		}else{
-			if(this.options.useDefaultFormatter===true){
-				if(type == 'money'){
-					itemVal = formatter[type](itemVal, tmpFormatter.fixed, tmpFormatter.prefix, tmpFormatter.suffix);
-				}else if(type == 'number'){
-					itemVal = formatter[type](itemVal, tmpFormatter.fixed, tmpFormatter.prefix, tmpFormatter.suffix);
-				}
-			}
-		}
+		var itemVal = (_$renderer[ rendererType ] || _$renderer.text)(this, thiItem, thiItem.renderer, rowItem, mode);
 
 		if(addEle){
-			if(thiItem.render=='html'){
-				addEle.innerHTML = itemVal||'';
+			itemVal = itemVal||'';
+			if(rendererType !='text'){
+				addEle.innerHTML = itemVal;
+				itemVal = '';
 			}else{
 				addEle.textContent = itemVal;
 			}
@@ -1685,7 +1674,7 @@ Plugin.prototype ={
 	 * @param  rowItem {Object} item
 	 * @description tbody 추가 , 삭제 .
 	 */
-	,_setCellStyle : function (cellEle, _idx,thiItem,rowItem){
+	,_setCellStyle : function (cellEle, _idx, thiItem, rowItem){
 		// style 처리
 		var addClass;
 		if(isFunction(thiItem.styleClass)){
@@ -1994,12 +1983,12 @@ Plugin.prototype ={
 						addEle =tdEle.querySelector('.pub-content');
 
 						colItem = tci[j];
-						_this._setCellStyle(tdEle, i ,colItem , tbiItem)
+						_this._setCellStyle(tdEle, i, colItem, tbiItem)
 
 						if(overRowFlag){
 							addEle.textContent='';
 						}else{
-							var val = this.valueFormatter(colItem, tbiItem, 'view', addEle);
+							var val = this.getRenderValue(colItem, tbiItem, 'view', addEle);
 							_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
 
 							if(tooltipFlag){
@@ -2030,7 +2019,7 @@ Plugin.prototype ={
 						if(overRowFlag){
 							addEle.textContent='';
 						}else{
-							var val = this.valueFormatter(colItem, tbiItem, 'view', addEle);
+							var val = this.getRenderValue(colItem, tbiItem, 'view', addEle);
 							_$util.setSelectCell(_this, startCellInfo, itemIdx, j, addEle);
 
 							if(tooltipFlag){
@@ -3274,27 +3263,24 @@ Plugin.prototype ={
 
 			_this.element.body.on('dblclick.pubgrid.td','.pub-body-td',function (e){
 				var selRow = $(this)
-					,tdInfo=selRow.data('grid-position')
-					,rowColArr  = tdInfo.split(',');
+					
+				var cellInfo = _$util.getCellInfo(_this, selRow);
 
-				var rowIdx = _this.config.scroll.viewIdx+intValue(rowColArr[0])
-					,colIdx = intValue(rowColArr[1]);
-
-				var rowItem = _this.options.tbodyItem[rowIdx]
-					,colItem = _this.config.tColItem[colIdx];
+				var rowItem = cellInfo.rowItem;
+				var colInfo = cellInfo.colInfo;
 
 				if(editable ===true){
-					if(colItem.editor===false) return ;
+					if(colInfo.editor===false) return ;
 
 					_this.config.isCellEdit = true;
 
 					_this.config.editRowInfo = {
-						idx : rowIdx
-						,colItem : colItem
+						idx : cellInfo.rowIdx
+						,colItem : colInfo
 						,rowItem : rowItem
 					};
 
-					_$template.getEditForm(selRow, colItem, rowItem);
+					_$renderer.editCell(selRow, colInfo, rowItem);
 					return ;
 				}
 
@@ -3368,6 +3354,19 @@ Plugin.prototype ={
 		var rowClickFn = _this.options.rowOptions.click;
 		var rowClickFlag = isFunction(rowClickFn);
 
+		_this.element.body.on('mousedown.pubgrid.renderele','.pub-render-element',function (e){
+			//e.preventDefault();
+			var renderEle = $(this);
+
+			e.stopPropagation();
+			
+			var cellInfo = _$util.getCellInfo(_this, renderEle.closest('[data-grid-position]'));
+
+			if(isFunction(cellInfo.colInfo.renderer.click)){
+				cellInfo.colInfo.renderer.click.call(null, cellInfo);
+			}
+		});
+
 		// body  selection 처리.
 		_this.element.body.on('mousedown.pubgrid.col','.pub-body-td',function (e){
 
@@ -3414,11 +3413,11 @@ Plugin.prototype ={
 				});
 			}
 
-			var sEle = $(this)
-				,gridTdPos = sEle.attr('data-grid-position')
-				,selCol = gridTdPos.split(',')
-				,selRow = intValue(selCol[0])
-				,colIdx = intValue(selCol[1]);
+			var sEle = $(this);
+
+			var cellInfo = _$util.getCellInfo(_this, sEle);
+			var selRow = cellInfo.rowIdx;
+			var colIdx = cellInfo.colIdx;
 
 			var selIdx = _this.config.scroll.viewIdx+intValue(selRow);
 
@@ -3507,16 +3506,13 @@ Plugin.prototype ={
 				return ;
 			}
 
-			var sEle = $(this)
-				,selCol = sEle.attr('data-grid-position').split(',')
-				,selRow = intValue(selCol[0])
-				,colIdx = intValue(selCol[1]);
+			var cellInfo = _$util.getCellInfo(_this, $(this));
 
-			var selectRangeInfo = _$util.getSelectionModeColInfo( selectionMode, colIdx, _this.config.dataInfo);
+			var selectRangeInfo = _$util.getSelectionModeColInfo( selectionMode, cellInfo.colIdx, _this.config.dataInfo);
 
 			_$util.setSelectionRangeInfo(_this, {
 				rangeInfo : {
-					endIdx : _this.config.scroll.viewIdx+intValue(selRow)
+					endIdx : cellInfo.rowIdx
 					,endCol : selectRangeInfo.endCol
 				}
 			},false , true);
@@ -3729,7 +3725,7 @@ Plugin.prototype ={
 			var addEle =tdEle.querySelector('.pub-content');
 
 			this._setCellStyle(tdEle, rowIdx ,colItem, rowItem);
-			this.valueFormatter(colItem, rowItem, 'view', addEle);
+			this.getRenderValue(colItem, rowItem, 'view', addEle);
 
 			this.config.isCellEdit = false;
 			this.config.editRowInfo = {};
@@ -3936,11 +3932,8 @@ Plugin.prototype ={
 			_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').each(function (){
 
 				var sEle = $(this);
-
-				var gridTdPos = sEle.attr('data-grid-position')
-					,selCol = gridTdPos.split(',');
-
-				if(_this.isSelectPosition(currViewIdx+intValue(selCol[0]) , intValue(selCol[1]))){
+				var posInfo = _$util.getGridPosition(sEle);
+				if(_this.isSelectPosition(currViewIdx+posInfo.r , posInfo.c)){
 
 				}else{
 					sEle.removeClass('col-active');
@@ -4088,11 +4081,7 @@ Plugin.prototype ={
 					var tmpVal = '';
 
 					if(isFormatValue){
-						if(colItem.render=='html'){
-							tmpVal = item[tmpKey];
-						}else{
-							tmpVal = _this.valueFormatter(colItem, item, 'data');
-						}
+						tmpVal = _this.getRenderValue(colItem, item, 'data');
 					}else{
 						tmpVal = item[tmpKey];
 					}
@@ -4174,12 +4163,8 @@ Plugin.prototype ={
 				if((allSelectFlag && !_this.isAllSelectUnSelectPosition(i, j)) || _this.isSelectPosition(i, j)) {
 					addRowFlag = true;
 
-					if(colItem.render=='html'){
-						tmpVal = item[tmpKey];
-					}else{
-						tmpVal = _this.valueFormatter(colItem, item, 'data');
-					}
-
+					tmpVal = _this.getRenderValue(colItem, item, 'data');
+					
 					if(dataType=='json'){
 						keyInfo[j] = colItem;
 						rowItem[tmpKey] = tmpVal;
@@ -4464,7 +4449,7 @@ Plugin.prototype ={
 
 				for(var i =0, len = cfg.dataInfo.orginRowLen ;i <len;i++){
 					
-					tmpVal = _this.valueFormatter(selColItem, tbodyItem[i], 'view');
+					tmpVal = _this.getRenderValue(selColItem, tbodyItem[i], 'view');
 
 					if(tmpVal == null || isUndefined(tmpVal)) continue; 
 											
@@ -4940,45 +4925,6 @@ var _$template = {
 			return true;
 		}
 	}
-	/**
-	 * @method getEditForm
-	 * @description get edit form
-	 */
-	 ,getEditForm : function (selEl, colItem, rowItem){
-
-		var reForm =[];
-
-		var editor = colItem.editor||{};
-
-		reForm.push( '<div class="pubGrid-edit-area pubGrid-edit-type-'+editor.type+'">');
-		if(editor.type =='select'){
-			reForm.push( '<select class="pubGrid-edit-field">');
-			var items = editor.items||[];
-			var itemKey = objectMerge({code : 'CODE', label : 'LABEL'}, editor.itemKey) ;
-			var codeKey = itemKey.code;
-			var labelKey = itemKey.label;
-
-			for(var i =0, len = items.length;i < len; i++){
-				var item = items[i];
-				reForm.push( '<option value="'+item[codeKey]+'">'+item[labelKey]+'</option>');
-			}
-			reForm.push( '</select>');
-		}else if(editor.type =='textarea'){
-			reForm.push( '<textarea class="pubGrid-edit-field"></textarea>');
-		}else if(editor.type =='number'){
-			reForm.push( '<input type="number" class="pubGrid-edit-field">');
-		}else{
-			reForm.push( '<input type="text" class="pubGrid-edit-field">');
-		}
-		reForm.push( '</div>');
-
-		selEl.append(reForm.join(''));
-
-		var editEl = selEl.find('.pubGrid-edit-field');
-
-		editEl.val(rowItem[colItem.key]);
-		editEl.focus();
-	}
 }
 
 var _$util = {
@@ -5003,6 +4949,25 @@ var _$util = {
 		}
 
 		return reArr;
+	}
+	,getCellInfo : function (ctx, cellEle){
+		var posInfo = this.getGridPosition(cellEle);
+
+		return {
+			rowIdx : posInfo.r
+			,colIdx : posInfo.c
+			,rowItem : ctx.options.tbodyItem[posInfo.r]
+			,colInfo : ctx.config.tColItem[posInfo.c] 
+		}
+	}
+	// grid position 
+	,getGridPosition : function (cellEle){
+		var posInfo = cellEle.data('grid-position').split(',');
+			
+		return {
+			r : intValue(posInfo[0])
+			,c : intValue(posInfo[1])
+		}
 	}
 	// new add
 	,genAllColumnSearch : function (gridCtx){
@@ -5488,6 +5453,152 @@ var gridOperators = {
 		,defaultCondition['<=']
 	]
 };
+
+
+var _$renderer = {
+	button : function (ctx, thiItem, renderer, rowItem, mode){
+		return replaceMesasgeFormat('<button class="pub-render-element button" type="button">{{label}}</button>', {
+			label: renderer.label
+		})
+	}
+	, image : function (ctx, thiItem, renderer, rowItem, mode){
+
+		var imgSrc;
+		if(isFunction(renderer.url)){
+			imgSrc = renderer.src(rowItem);
+		}else{
+			imgSrc = replaceMesasgeFormat(renderer.src, rowItem);
+		}
+
+		return replaceMesasgeFormat('<img class="pub-render-element img" src="{{src}}">', {
+			src: imgSrc
+		})
+	}
+	, checkbox : function (ctx, thiItem, renderer, rowItem, mode){
+		var strHtm = [];
+	
+		return replaceMesasgeFormat('<input type="checkbox" class="pub-render-element check">{{label}}', {
+			label : rowItem[thiItem.key]
+		})
+	}
+	, select : function (ctx, thiItem, renderer, rowItem, mode){
+		var strHtm = [];
+
+		var labelField = renderer.labelField
+			,valueField = renderer.valueField;
+						
+		var list = renderer.list ||[]; 
+		strHtm.push('<select  class="pub-render-element select">')
+
+		for(var i =0 ;i <list.length; i++){
+			var item = list[i];
+			if(labelField){
+				strHtm.push(replaceMesasgeFormat('<option value="{{value}}">{{label}}</option>', {
+					label : item[labelField]
+					,value : item[valueField]
+				}))
+			}else{
+				strHtm.push(replaceMesasgeFormat('<option value="{{label}}">{{label}}</option>', {
+					label : item
+				}))
+			}
+		}
+		
+		strHtm.push('</select>')
+		return strHtm.join('');
+	}
+	, link : function (ctx, thiItem, renderer, rowItem, mode){
+
+		var _url;
+		if(isFunction(renderer.url)){
+			_url = renderer.url(rowItem);
+		}else{
+			_url = replaceMesasgeFormat(renderer.url, rowItem);
+		}
+
+		return replaceMesasgeFormat('<a href="javascript:;" class="pub-render-element link">{{value}}</a>',{
+			value : rowItem[thiItem.key]
+			, url : _url
+		})
+	}
+	, html : function (ctx, thiItem, renderer, rowItem, mode){
+		return thiItem.template(thiItem, rowItem);
+	}
+	, text : function (ctx, thiItem, renderer, rowItem, mode){
+		var type = thiItem.type || 'string';
+
+		var itemVal;
+
+		if(ctx.config.isValueFilter && mode =='view'){
+			itemVal = ctx.options.valueFilter(thiItem, rowItem);
+		}else{
+			itemVal = rowItem[thiItem.key];
+		}
+
+		var tmpFormatter={};
+		if(type == 'money' || type == 'number'){
+			tmpFormatter = ctx.options.formatter[type];
+		}
+
+		if(isFunction(thiItem.formatter)){
+			itemVal = thiItem.formatter.call(null,{colInfo:thiItem, item: rowItem, formatInfo : tmpFormatter});
+		}else{
+			if(ctx.options.useDefaultFormatter===true){
+				if(type == 'money'){
+					itemVal = formatter[type](itemVal, tmpFormatter.fixed, tmpFormatter.prefix, tmpFormatter.suffix);
+				}else if(type == 'number'){
+					itemVal = formatter[type](itemVal, tmpFormatter.fixed, tmpFormatter.prefix, tmpFormatter.suffix);
+				}
+			}
+		}
+
+		return itemVal; 
+	}
+	/**
+	 * @method editCell
+	 * @description edit form
+	 */
+	,editCell : function (selEl, colItem, rowItem){
+
+		var renderInfo = colItem.renderer||{};
+		var renderType = renderInfo.type; 
+
+		if(renderType =='button' || renderType =='checkbox'){
+			return ; 
+		}
+
+		var reForm =[];
+
+		reForm.push( '<div class="pubGrid-edit-area pubGrid-edit-type-'+renderType+'">');
+		if(renderType =='select'){
+			reForm.push( '<select class="pubGrid-edit-field">');
+			var items = renderInfo.items||[];
+			var itemKey = objectMerge({code : 'CODE', label : 'LABEL'}, renderInfo.itemKey) ;
+			var codeKey = itemKey.code;
+			var labelKey = itemKey.label;
+
+			for(var i =0, len = items.length;i < len; i++){
+				var item = items[i];
+				reForm.push( '<option value="'+item[codeKey]+'">'+item[labelKey]+'</option>');
+			}
+			reForm.push( '</select>');
+		}else if(renderType =='textarea'){
+			reForm.push( '<textarea class="pubGrid-edit-field"></textarea>');
+		}else if(renderType =='number'){
+			reForm.push( '<input type="number" class="pubGrid-edit-field">');
+		}else{
+			reForm.push( '<input type="text" class="pubGrid-edit-field">');
+		}
+		reForm.push( '</div>');
+
+		selEl.append(reForm.join(''));
+
+		var editEl = selEl.find('.pubGrid-edit-field');
+
+		editEl.val(rowItem[colItem.key]);
+		editEl.focus();
+	}
+}
 
 
 var _$setting = {

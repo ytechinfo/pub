@@ -317,6 +317,19 @@
   background-color: #e8ecef;
 }
 
+.pubGrid-wrapper .pubGrid-body-container td:hover .pub-render-element.button, .pubGrid-wrapper .pubGrid-body-container td:hover .pub-render-element.select {
+  background-color: #d3d5d6;
+}
+
+.pubGrid-wrapper .pubGrid-body-container td .pub-render-element.button, .pubGrid-wrapper .pubGrid-body-container td .pub-render-element.select {
+  cursor: pointer;
+  border: 1px solid #d5d5d8;
+  padding: 1px 8px;
+  line-height: 22px;
+  border-radius: 3px;
+  background-color: #e8ecef;
+}
+
 .pubGrid-wrapper .pubGrid-body-container .pub-bg-primary {
   background-color: #286090;
 }
@@ -1357,6 +1370,15 @@
 }
 
 [pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container td:hover {
+  background-color: #4e5050;
+}
+
+[pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container td:hover .pub-render-element.button, [pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container td:hover .pub-render-element.select {
+  background-color: #232424;
+}
+
+[pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container td .pub-render-element.button, [pub-theme="dark"] .pubGrid-wrapper .pubGrid-body-container td .pub-render-element.select {
+  border: 1px solid #6d6d75;
   background-color: #4e5050;
 }
 
