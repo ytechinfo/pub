@@ -2863,41 +2863,28 @@ Plugin.prototype ={
 
 		if(_this.options.autoResize ===false || _this.options.autoResize.enabled === false) return false;
 
-		var _evt = $.event,
-			_special,
-			resizeTimeout,
-			eventName =  _this.prefix+"pubgridResize";
+		var eventName =  'resize.' + _this.prefix;
+		var threshold = _this.options.autoResize.threshold;
 
-		_special = _evt.special[eventName] = {
-			setup: function() {
-				$( this ).on( "resize.pubGrid", _special.handler );
-			},
-			teardown: function() {
-				$( this ).off( "resize.pubGrid", _special.handler );
-			},
-			handler: function( event, execAsap ) {
-				// Save the context
-				var context = this,
-					args = arguments,
-					dispatch = function() {
-						// set correct event type
-						event.type = eventName;
-						_evt.dispatch.apply( context, args );
-					};
-
-				if ( resizeTimeout ) {
-					clearTimeout( resizeTimeout );
-				}
-
-				execAsap ?
-					dispatch() :
-					resizeTimeout = setTimeout( dispatch, _special.threshold );
-			},
-			threshold: _this.options.autoResize.threshold
-		};
+		var beforeResizeTime = -1;
+		
 		$(window).off(eventName);
 		$(window).on(eventName, function( event ) {
-			_this.resizeDraw();
+			
+			if(threshold < 1){
+				_this.resizeDraw();
+				return ; 
+			}
+
+			if(beforeResizeTime !=-1 && (beforeResizeTime + threshold > new Date().getTime())){
+				return ; 
+			}
+
+			setTimeout(function (){
+				_this.resizeDraw();
+			}, threshold);
+
+			beforeResizeTime = new Date().getTime();
 		});
 	}
 	/**
