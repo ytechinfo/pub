@@ -1,7 +1,7 @@
 /**
- * pub.ep.js v1.0.2
+ * pub.ep.js v1.0.3
  * ========================================================================
- * Copyright 2016-2021 ytkim
+ * Copyright 2016-2022 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
  * url : https://github.com/ytechinfo/pub
@@ -290,16 +290,15 @@ _$base.req ={
 	}
 };
 
+
 jQuery.fn.centerLoading = function(options) {
+	
 	this.config = {
 		closeAutoYn: 'N' ,
 		timeOut:1000,
 		action: 'slide',
 		height: 0,
 		width: 0,
-		position:'absolute',
-		opacity : '0.3',
-		zIndex : 10,
 		padding:'0',
 		margin :'0',
 		top :'0',
@@ -308,45 +307,80 @@ jQuery.fn.centerLoading = function(options) {
 		bgColor : globalOption.loadingBgColor,
 		loadingImg : globalOption.loadingImg,
 		cursor:	'wait',
-		content :'',
 		contentClear : false,
-		contentStyle : 'color:#444'
+		enableLoadSelectorBtn :false,
+		callback : false
 	}
 
-	var id,w,h,opacity;
+	var id,w,h;
 
-	var config = $.extend({},this.config, options);
+	var config = $.extend({}, this.config, options);
 	id = this.attr('id');
 
+	w = config.width==0?this.width():config.width;
 	h = config.height==0?this.height():config.height;
-	opacity = config.opacity;
 
 	if($(this).parent().attr('prevspan') =='Y')	config.contentClear = false;
 
-	var strHtm = [];
-	strHtm.push('<div class="pub-center-loading" style="z-index:'+config.zIndex+';position:'+config.position+';width:100%;height:'+h+'px;cursor:'+config.cursor+';">');
-	strHtm.push('<div class="pub-center-loading-bg" style="background:'+config.bgColor+';opacity:'+opacity+';filter: alpha(opacity='+(parseFloat('0.4')*100)+');-moz-opacity:'+opacity+';-khtml-opacity: '+opacity+';'+(!config.contentClear?"position:absolute;":"")+'width:100%; height:'+h+'px;"></div>');
-	strHtm.push('<table style="position:absolute;z-index:3;width:100%;height:100%;"><tr><td style="vertical-align:middle;text-align:center;">')
-	strHtm.push('<div><div><img src="'+config.loadingImg+'"></div><div class="center-loading-content" style="'+config.contentStyle+';"></div></div></td></tr></table>')
-	strHtm.push('</div>');
+	var loadStr = '<div class="centerLoading" style="cursor:'+config.cursor+';top:0px;left:0px;z-index:100;position:absolute;width:100%; height:100%;">';
 
-	if(!config.contentClear){
-		this.prepend(strHtm.join(''));
-	}else{
-		this.html(strHtm.join(''));
-	}
-
+	loadStr +='<div style="position:absolute;background: '+config.bgColor+';opacity: 0.5; width:100%; height:100%;z-index:1;"></div>';
 	if(config.content){
-		$(this.find('.center-loading-content')).html(config.content);
+		if(config.centerYn=='Y'){
+			loadStr +='<div style="z-index:10; text-align:center; margin: 0; position: absolute; top: 40%;left: 50%; transform: translate(-50%, -50%);">'+ config.content+'</div>';
+		}else{
+			loadStr += config.content;
+		}
+	}else{
+		loadStr +=' <div style="z-index:10; text-align: center; position: absolute; top: 40%;left: 50%; transform: translate(-50%, -50%);"><img src="'+config.loadingImg+'"/> ';
+		
+		if(config.enableLoadSelectorBtn===true){
+			loadStr +='<div style="height: 35px;line-height: 35px;"><a href="javascript:;" class="center-loading-btn _loadSelectorCancelBtn">Cancel</a></div>';
+		}
+		
+		loadStr +='</div>';
+	}
+	loadStr +='</div>';
+	
+	if(!config.contentClear){
+		this.prepend(loadStr);
+	}else{
+		this.empty().html(loadStr);
+	}
+	
+	if(config.enableLoadSelectorBtn===true){
+		var centerLoadingEle = $(this); 
+		this.find('._loadSelectorCancelBtn').on('click', function (e){
+			if(_$base.isFunction(config.callback)){
+				config.callback();
+			}else{
+				centerLoadingEle.find('.centerLoading').remove();
+			}
+		})
 	}
 
+	var cssPosition = this.css('position');
+
+	if (cssPosition != 'fixed' && cssPosition != 'relative' &&  cssPosition != 'absolute') {
+		this.css('position','relative');
+		var heightVal = this.css('height') ||'';
+		heightVal = heightVal.replace('px','');
+		var addCssKey = 'relative';
+		this.attr('var-css-key',addCssKey);
+	}
 	config.action == 'slide'?jQuery(this).slideDown('slow') : config.action == 'fade'?jQuery(this).fadeIn('slow'):jQuery(this).show();
 
 	return this;
 };
 
 jQuery.fn.centerLoadingClose= function(options) {
-	this.find('.pub-center-loading').remove();
+
+	this.find('.centerLoading').remove();
+	var posVal = (this.attr('var-css-key')||'');
+	if(posVal.indexOf('relative') > -1){
+		this.css('position','');
+		this.removeAttr('var-css-key');
+	}
 };
 
 _$base.log=function (){
