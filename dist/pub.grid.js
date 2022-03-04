@@ -208,7 +208,7 @@ var _initialized = false
 		usePaging : false	// 페이지 사용여부
 		,status : false
 		,statusFormatter : '{{currStart}} - {{currEnd}} of {{total}}'
-		,height : 35		// 높이 값
+		,height : 32		// 높이 값
 		,position : 'center'	// 위치 값
 		,callback : function (no){}	// 페이지 콜백
 	}
@@ -637,7 +637,7 @@ Plugin.prototype ={
 
 		if(!isNaN(rowOptHeight)){
 			cssStr.push('#'+_this.prefix+'_pubGrid .pub-body-td, #'+_this.prefix+'_pubGrid .pub-body-aside-td{height:'+rowOptHeight+'px;}');
-			cssStr.push('#'+_this.prefix+'_pubGrid .pub-body-td>.pub-content, #'+_this.prefix+'_pubGrid .pub-body-aside-td > .aside-content{height:'+rowOptHeight+'px; line-height:'+rowOptHeight+'px;}');
+			cssStr.push('#'+_this.prefix+'_pubGrid .pub-body-td>.pub-content, #'+_this.prefix+'_pubGrid .pub-body-aside-td > .aside-content{height:'+(rowOptHeight-1)+'px; line-height:'+(rowOptHeight-1)+'px;}');
 		}
 
 		var headerHeight = _this.options.headerOptions.height;
@@ -2151,7 +2151,7 @@ Plugin.prototype ={
 
 		_this._setGridContainerWidth(opt.width, type);
 
-		var  bodyH = mainHeight - cfg.header.height - cfg.footer.height
+		var  bodyH = mainHeight - cfg.header.height - cfg.footer.height -2  // -2 body border 2px
 			, itemTotHeight = (cfg.dataInfo.rowLen-1) * cfg.rowHeight
 			, vScrollFlag = (itemTotHeight > bodyH)
 			, bodyW = (cfg.container.width-(vScrollFlag?this.options.scroll.vertical.width:0))
@@ -3255,6 +3255,7 @@ Plugin.prototype ={
 
 				var rowItem = cellInfo.rowItem;
 				var colInfo = cellInfo.colInfo;
+				var rowIdx = cellInfo.rowIdx;
 
 				if(editable ===true){
 					if(colInfo.editor===false) return ;
@@ -3262,7 +3263,7 @@ Plugin.prototype ={
 					_this.config.isCellEdit = true;
 
 					_this.config.editRowInfo = {
-						idx : cellInfo.rowIdx
+						idx : rowIdx
 						,colItem : colInfo
 						,rowItem : rowItem
 					};
@@ -3279,7 +3280,7 @@ Plugin.prototype ={
 					_$util.setCheckBoxCheck(addEle , rowItem);
 				}
 
-				fnDblClick.call(selRow ,{item : rowItem ,r: rowIdx ,c:colIdx , keyItem : colItem} );
+				fnDblClick.call(selRow ,{item : rowItem, r : rowIdx, c : cellInfo.colIdx, keyItem : colInfo} );
 			});
 		}
 

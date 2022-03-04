@@ -2,7 +2,11 @@
 <HTML>
 <HEAD>
 <TITLE>pub GRID-fixed-예제</TITLE>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+
 <link href="../theme/default/pub.example.css" rel="stylesheet">
 <link href="../theme/default/css/pub.grid.css" rel="stylesheet">
 <link href="../theme/default/css/pub.context.css" rel="stylesheet">
@@ -47,9 +51,9 @@ html , body {
 	<select id="itemCount">
 		<option value="1" >0</option>
 		<option value="5" >5</option>
-		<option value="10" >10</option>
-		<option value="20" >20</option>
-		<option value="100" selected>100</option>
+		<option value="10">10</option>
+		<option value="20" selected>20</option>
+		<option value="100" >100</option>
 		<option value="500">500</option>
 		<option value="1000">1000</option>
 		<option value="10000">10000</option>
@@ -358,9 +362,9 @@ function gridDraw(selector, aaa, colItem){
 		,widthFixed : false
 		,showTooltip : true			// tooltip flag
 		,theme : $('#themeInfo').val()
-		,height:'auto'
+		,height: 360
 		,asideOptions :{
-			lineNumber : {enabled : true,width : 30}
+			lineNumber : {enabled : true}
 			,rowSelector :{
 				enabled : true
 				,key : 'checkbox'
@@ -377,7 +381,7 @@ function gridDraw(selector, aaa, colItem){
 		,headerOptions:{
 			view : true
 			,sort : true
-			,height :33
+			//,height :30
 			,displayLineNumber : true	 // 라인 넘버 보기.
 			,displayRowSelector : false	 // row selecotr checkbox 보기
 			,displayModifyInfo : false	 // 수정여부 보기
@@ -432,7 +436,7 @@ function gridDraw(selector, aaa, colItem){
 			//,empty: function (){ return '데이타 없음'}
 			
 		}
-		,navigation : {
+		,navigation: {
 			usePaging : true
 			,status : true
 			,height :32
@@ -498,7 +502,7 @@ function gridDraw(selector, aaa, colItem){
 		,tfootItem :['asdf']
 		,rowOptions :{
 			dblClickCheck :true
-			, height : 33
+			, height : 30
 			,dblClick1: function (){
 				console.log('dblclick')
 			}
