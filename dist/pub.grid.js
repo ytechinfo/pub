@@ -446,7 +446,6 @@ Plugin.prototype ={
 		_this.selector = selector;
 
 		_this.prefix = 'pub'+getHashCode(_this.selector);
-
 		
 		_this.gridElement = $(selector);
 
@@ -486,11 +485,14 @@ Plugin.prototype ={
 				,filterInfo : false // filter info {checkFn, check condition}
 			}
 		};
+
+		
 		_this.eleCache = {};
 		_this._initScrollData();
 		_$util.setSelectionRangeInfo(_this, {}, true);
 
 		_this.setOptions(options, true);
+
 
 		_this.drag ={};
 		_this.addStyleTag();
@@ -545,7 +547,8 @@ Plugin.prototype ={
 		options.setting.configVal = objectMerge({},_defaults.setting.configVal ,options.setting.configVal);
 
 		_this.options =objectMerge({}, _defaults, options)
-		_this.options.tbodyItem = options.tbodyItem ? options.tbodyItem : _this.options.tbodyItem;
+		
+		_this.options.tbodyItem = $.isArray(options.tbodyItem) ? options.tbodyItem : (_this.options.tbodyItem ||[]);
 
 		_this.config.isValueFilter = isFunction(_this.options.valueFilter);
 

@@ -58,47 +58,62 @@ var pluginName = "pubMultiselect"
 	,selectStyleClass : 'selected'	// select item class
 	,items :[]					// item
 	,source : {	// source item
-		idKey : 'CODE_ID' 	// opt id key
+		label : 'Source'	// label
+		,labelAlign : 'center'
+		,idKey : 'CODE_ID' 	// opt id key
 		,nameKey : 'CODE_NM' // opt value key
 		,searchAttrName : '_name'	// search item name attribute
 		,searchAttrKey : '' // search item key attribute
 		,emptyMessage:''	// message
 		,items: []			// item
 		,click : false	// 클릭시 이벤트
+		,search :{
+			enable : false
+			,enableKeyPress : false 	// keypress event 활성화 여부
+			,callback : function (searchWord, evtType){ // enter ,search button click callback 
+				//console.log(searchWord)		
+			}
+		}
 		,render: function (item){	// 아이템 추가될 템플릿.
 			return '<span>'+item.text+'</span>'
 		}
+		,beforeMove : false	// 이동전  이벤트
+		,afterMove : false	//  이동후  이벤트
+		,completeMove : false	// 이동 완료  이벤트
 	}
 	,target : {
-		idKey : 'CODE_ID' // opt id key
+		label : 'Target'	// label
+		,labelAlign : 'center'
+		,idKey : 'CODE_ID' // opt id key
 		,nameKey : 'CODE_NM' // opt value key
 		,items: []			// item
 		,emptyMessage:'' 	// message
 		,click : false	// 클릭시 이벤트
 		,dblclick : false
+		,search :{
+			enable : false
+			,enableKeyPress : false 	// keypress event 활성화 여부
+			,callback : function (searchWord, evtType){ // enter ,search button click callback 
+				//console.log(searchWord)		
+			}
+		}
 		,render: function (item){	// 아이템 추가될 템플릿.
 			return '<span>'+item.text+'</span>'
 		}
+		,beforeMove : false	// 이동전  이벤트
+		,afterMove : false	//  이동후  이벤트
+		,completeMove : false	// 이동 완료  이벤트
 	}
 	,message : { // 방향키 있을때 메시지
 		addEmpty : false
 		,delEmpty : false
 		,duplicate :false
 	}
-	,beforeMove : false		// 이동전 이벤트
-	,beforeItemMove : false	 // 이동전 이벤트
-	,afterSourceMove : false	// source 이동후 이벤트
-	,compleateSourceMove : false	// source 이동 완료 이벤트
-	,beforeTargetMove : false	// target 이동전  이벤트
-	,afterTargetMove : false	// target 이동후  이벤트
-	,compleateTargetMove : false	// target 이동 완료  이벤트
 	,footer : {
 		enable : false
 	}
 	,i18 : {
 		helpMessage : '* 목록을 마우스로 드래그앤 드롭하거나 더블클릭 하세요.'
-		,sourceLabel : 'Source'
-		,targetLabel : 'Target'
 		,upLabel : 'Up'
 		,downLabel : 'Down'
 		,add : 'Add'
@@ -213,6 +228,41 @@ Plugin.prototype ={
 				return false; 
 			}else{
 				_this.move(mode);
+			}
+		});
+
+		// 검색
+		this.element.container.on('click.search', '.search-button', function (e){
+			var sEle = $(this);
+			var labelWrapperEle = sEle.closest('[data-mode]'); 
+			var mode = labelWrapperEle.attr('data-mode');
+
+			if(mode=='source'){
+				_this.options.source.search.callback.call(sEle, labelWrapperEle.find('.input-text').val(), e);
+			}else{
+				_this.options.target.search.callback.call(sEle, labelWrapperEle.find('.input-text').val(), e);
+			}
+		});
+
+		this.element.container.on('keyup.search', '.input-text', function (e){
+			var sEle = $(this);
+			var labelWrapperEle = sEle.closest('[data-mode]'); 
+			var mode = labelWrapperEle.attr('data-mode');
+
+			var inputText = sEle.val(); 
+
+			if(mode=='source'){
+				if(_this.options.source.search.enableKeyPress === true){
+					_this.options.source.search.callback.call(sEle, inputText, e);
+				}else if(e.keyCode === 13){
+					_this.options.source.search.callback.call(sEle, inputText, e);
+				}
+			}else{
+				if(_this.options.target.search.enableKeyPress === true){
+					_this.options.target.search.callback.call(sEle, inputText, e);
+				}else if(e.keyCode === 13){
+					_this.options.target.search.callback.call(sEle, inputText, e);
+				}
 			}
 		});
 		
@@ -736,12 +786,6 @@ Plugin.prototype ={
 		var returnFlag = opt.returnFlag;
 		var selectVal = opt.items || _this.getSelectElement(_this.element.source);
 
-		if($.isFunction(opts.beforeMove)){
-			if(opts.beforeMove('source') === false){
-				return ;
-			};
-		}
-
 		if(selectVal.length > 0){
 			var tmpVal = '',tmpObj;
 			var	strHtm = [];
@@ -767,9 +811,9 @@ Plugin.prototype ={
 
 				if(!addChkFlag) continue;
 
-				if($.isFunction(opts.beforeItemMove)){
-					if(opts.beforeItemMove(tmpObj) === false){
-						return false;
+				if($.isFunction(opts.source.beforeMove)){
+					if(opts.source.beforeMove(tmpObj) === false){
+						continue;
 					};
 				}
 
@@ -801,8 +845,8 @@ Plugin.prototype ={
 
 				addElements.push(tmpObj);
 
-				if($.isFunction(opts.afterSourceMove)){
-					opts.afterSourceMove(tmpObj);
+				if($.isFunction(opts.source.afterMove)){
+					opts.source.afterMove(tmpObj);
 				}
 			}
 
@@ -820,8 +864,8 @@ Plugin.prototype ={
 				return false;
 			}
 
-			if($.isFunction(opts.compleateSourceMove)){
-				if(opts.compleateSourceMove(addItemKey)===false) return false;
+			if($.isFunction(opts.source.completeMove)){
+				if(opts.source.completeMove(addItemKey)===false) return false;
 			}
 
 			_this.element.target.find('.empty-message').remove();
@@ -862,6 +906,7 @@ Plugin.prototype ={
 	 */
 	,targetMove : function (opt){
 		var _this = this;
+		 var opts = _this.options;
 
 		opt = opt||{};
 
@@ -869,15 +914,11 @@ Plugin.prototype ={
 
 		var selectVal = _this.getSelectElement(_this.element.target);
 
-		if($.isFunction(_this.options.beforeMove)){
-			if(_this.options.beforeMove('target') === false){
-				return ;
-			};
-		}
-
 		if(selectVal.length >0){
 			var removeItem;
 			var deleteItemKey = [];
+
+			var removeItems = [];
 
 			for(var i =0; i <selectVal.length; i++){
 				var item = selectVal[i];
@@ -885,8 +926,10 @@ Plugin.prototype ={
 				var tmpKey = $(item).attr('data-val');
 				removeItem = _this.config.itemKey.sourceIdx[tmpKey];
 
-				if($.isFunction(_this.options.beforeTargetMove)){
-					if(_this.options.beforeTargetMove($(item))===false) return false;
+				if($.isFunction(opts.target.beforeMove)){
+					if(opts.target.beforeMove($(item))===false) {
+						continue;
+					};
 				}
 
 				var removeFlag = false;
@@ -901,30 +944,37 @@ Plugin.prototype ={
 				}
 				if(removeItem){
 					if(removeFlag !== true){
-						_this.element.source.find(_this.options.itemSelector+'[data-val="'+tmpKey+'"]').removeClass(_this.options.addItemCheckStyle);
+						_this.element.source.find(opts.itemSelector+'[data-val="'+tmpKey+'"]').removeClass(opts.addItemCheckStyle);
 					}
 				}
-				$(item).remove();
-
+				
+				removeItems.push($(item))
 				deleteItemKey.push(tmpKey);
 
-				delete _this.addItemList[_this.config.currPage][tmpKey];
-
-				if($.isFunction(_this.options.afterTargetMove)){
-					_this.options.afterTargetMove(removeItem);
+				if($.isFunction(opts.target.afterMove)){
+					opts.target.afterMove(removeItem);
 				}
 			}
 
-			if(Object.keys(_this.addItemList[_this.config.currPage]).length < 1){
-				_this.element.target.empty().html(_this.getEmptyMessage(_this.options.target.emptyMessage));
+			var returnRemoveFlag = true; 
+			if($.isFunction(opts.target.completeMove)){
+				returnRemoveFlag = opts.target.completeMove(deleteItemKey);
+			}
+			
+			if(returnRemoveFlag !== false){
+				for(var i =0; i <removeItems.length; i++){
+					removeItems[i].remove();
+					delete this.addItemList[this.config.currPage][tmpKey];
+				}
+
+				if(Object.keys(_this.addItemList[_this.config.currPage]).length < 1){
+					_this.element.target.empty().html(_this.getEmptyMessage(opts.target.emptyMessage));
+				}
 			}
 
-			if($.isFunction(_this.options.compleateTargetMove)){
-				_this.options.compleateTargetMove(deleteItemKey);
-			}
 		}else{
-			if(_this.options.message.delEmpty !== false){
-				alert(_this.options.message.delEmpty);
+			if(opts.message.delEmpty !== false){
+				alert(opts.message.delEmpty);
 			}
 			return ;
 		}
@@ -939,6 +989,25 @@ Plugin.prototype ={
 		}
 
 		this.element.container.empty('').html(strHtm.join(''));
+
+		var sourceContainerEl = this.element.container.find('[data-mode="source"]');
+
+		var labelH = 0;
+		if(sourceContainerEl.find('.pub-multiselect-label').length > 0){
+			labelH = sourceContainerEl.find('.pub-multiselect-label').outerHeight();
+			labelH = labelH < 36 ? 36 : 0;
+		}
+		sourceContainerEl.find('.pub-multiselect-area').css('height' , 'calc(100% - '+labelH+'px)');
+
+		var targetContainerEl = this.element.container.find('[data-mode="target"]');
+
+		labelH = 0; 
+		if(targetContainerEl.find('.pub-multiselect-label').length > 0){
+			labelH = targetContainerEl.find('.pub-multiselect-label').outerHeight();
+			labelH = labelH < 36 ? 36 : 0;
+		}
+		targetContainerEl.find('.pub-multiselect-area').css('height' , 'calc(100% - '+labelH+'px)');
+
 		
 		this.element.source = this.element.container.find('[data-type="source"]');
 		this.element.target = this.element.container.find('[data-type="target"]');
@@ -964,12 +1033,10 @@ Plugin.prototype ={
 		strHtm.push('	<div class="pub-multiselect-body vertical '+(opts.body.enableItemEvtBtn ?'show-row-item-btn' : '' )+'">'); // body start
 
 		if(opts.mode !='single'){
-			
-			
-			strHtm.push('  <div style="height:'+(bodyHeight/2 - labelHalfHeight)+'px;">');
+			strHtm.push('  <div style="height:'+(bodyHeight/2 - labelHalfHeight)+'px;" data-mode="source">');
 			
 			if(opts.header.enableSourceLabel===true){
-				strHtm.push('	<div class="pub-multiselect-label">'+this.options.i18.sourceLabel+'</div>');
+				strHtm.push(this.getLabelHtml('source'));
 			}
 
 			strHtm.push('	<div class="pub-multiselect-area '+(opts.header.enableSourceLabel?'':'header-hide')+'"><ul class="pub-multiselect-items" data-type="source"></ul></div>');
@@ -983,10 +1050,10 @@ Plugin.prototype ={
 			}	
 		}
 		
-		strHtm.push(' <div style="height:'+(bodyHeight/2+labelHalfHeight)+'px;">');
+		strHtm.push(' <div style="height:'+(bodyHeight/2+labelHalfHeight)+'px;" data-mode="target">');
 
 		if(opts.header.enableTargetLabel===true){
-			strHtm.push('  <div class="pub-multiselect-label">'+this.options.i18.targetLabel+'</div>');
+			strHtm.push(this.getLabelHtml('target'));
 		}
 		
 		strHtm.push('  <div class="pub-multiselect-area '+(opts.header.enableTargetLabel?'':'header-hide')+'"><ul class="pub-multiselect-items" data-type="target"></ul></div>');
@@ -1037,15 +1104,14 @@ Plugin.prototype ={
 		if(opts.mode =='single'){
 			strHtm.push('<col style="width:100%">');
 		}else{
+			var moveBtnSize = 10;
 			if(enableMoveBtn){
-				var moveBtnSize = isNaN(opts.body.moveBtnSize) ? _defaults.body.moveBtnSize :opts.body.moveBtnSize;
-				strHtm.push('<col style="width:calc(50% - '+(moveBtnSize/2)+'px)">');
-				strHtm.push('<col style="width:'+moveBtnSize+'px">');
-				strHtm.push('<col style="width:calc(50% - '+(moveBtnSize/2)+'px)">');	
-			}else{
-				strHtm.push('<col style="width:50%">');
-				strHtm.push('<col style="width:50%">');
+				moveBtnSize = isNaN(opts.body.moveBtnSize) ? _defaults.body.moveBtnSize :opts.body.moveBtnSize;
 			}
+
+			strHtm.push('<col style="width:calc(50% - '+(moveBtnSize/2)+'px)">');
+			strHtm.push('<col style="width:'+moveBtnSize+'px">');
+			strHtm.push('<col style="width:calc(50% - '+(moveBtnSize/2)+'px)">');	
 		}
 
 		strHtm.push('		</colgroup>');					
@@ -1053,32 +1119,34 @@ Plugin.prototype ={
 		strHtm.push('				<tr>');
 		if(opts.mode !='single'){
 			strHtm.push('					<td>');
-			strHtm.push('					  <div style="height:'+bodyHeight+'px;">');
+			strHtm.push('					  <div style="height:'+bodyHeight+'px;" data-mode="source">');
 			
 			if(opts.header.enableSourceLabel===true){
-				strHtm.push('						<div class="pub-multiselect-label">'+this.options.i18.sourceLabel+'</div>');
+				strHtm.push(this.getLabelHtml('source'));
 			}
 
-			strHtm.push('						<div class="pub-multiselect-area '+(opts.header.enableSourceLabel?'':'header-hide')+'"><ul class="pub-multiselect-items" data-type="source"></ul></div>');
+			strHtm.push('						<div class="pub-multiselect-area"><ul class="pub-multiselect-items" data-type="source"></ul></div>');
 			strHtm.push('					  </div>');
 			strHtm.push('					</td>');
 
+			strHtm.push('					<td class="pub-multiselect-move-btn">');
+
 			if(enableMoveBtn){
-				strHtm.push('					<td class="pub-multiselect-move-btn">');
 				strHtm.push('						<button type="button" style="margin-bottom:5px;" class="pub-multiselect-btn" data-mode="add" title="'+this.options.i18.add+'"></button><br/>');
 				strHtm.push('						<button type="button" class="pub-multiselect-btn" data-mode="del" title="'+this.options.i18.remove+'"></button>');
-				strHtm.push('					</td>');
 			}
+			
+			strHtm.push('					</td>');
 		}
 		
 		strHtm.push('					<td>');
-		strHtm.push('					  <div style="height:'+bodyHeight+'px;">');
+		strHtm.push('					  <div style="height:'+bodyHeight+'px;" data-mode="target">');
 
 		if(opts.header.enableTargetLabel===true){
-			strHtm.push('						<div class="pub-multiselect-label">'+this.options.i18.targetLabel+'</div>');
+			strHtm.push(this.getLabelHtml('target'));
 		}
 		
-		strHtm.push('						<div class="pub-multiselect-area '+(opts.header.enableTargetLabel?'':'header-hide')+'"><ul class="pub-multiselect-items" data-type="target"></ul></div>');
+		strHtm.push('						<div class="pub-multiselect-area"><ul class="pub-multiselect-items" data-type="target"></ul></div>');
 		strHtm.push('					  </div>');
 
 		// 페이지 정보
@@ -1116,6 +1184,32 @@ Plugin.prototype ={
 	 */
 	,getEmptyMessage : function (msg){
 		return '<li class="empty-message">'+(msg||this.options.pageInfo.emptyMessage)+'</li>';
+	}
+
+	,getLabelHtml : function (mode){
+		
+		var labelOpt = this.options.source;
+		if(mode =='target'){
+			labelOpt = this.options.target;
+		}
+
+		var strHtm =[];
+		strHtm.push('<div class="pub-multiselect-label al-'+labelOpt.labelAlign+'">');
+
+		if(labelOpt.search && labelOpt.search.enable === true){
+			if(labelOpt.label != ''){
+				strHtm.push('<span class="label-text">'+labelOpt.label+'</span>');
+			}
+
+			strHtm.push('<input type="text" class="input-text">');
+			strHtm.push('<span class="search-button"><button type="button">Search</button></span>');
+		}else{
+			strHtm.push('<span class="label-text" style="width:100%;display:block;">'+labelOpt.label+'</span>');
+		}
+
+		strHtm.push('</div>');
+
+		return strHtm.join('');
 	}
 	/**
 	 * @method getItemHtml

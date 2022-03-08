@@ -105,22 +105,79 @@ http://www.opensource.org/licenses/mit-license.php
 }
 
 .pub-multiselect .pub-multiselect-body .pub-multiselect-label {
-  padding: 5px 0px 3px;
+  padding: 0px 0px 3px;
   margin-bottom: 5px;
   text-align: center;
   border-bottom: 1px solid #d5d5d8;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  line-height: 25px;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label.al-center {
+  text-align: center;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label.al-right {
+  text-align: right;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label.al-left {
+  text-align: left;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label > .label-text {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-right: 10px;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label > .search-button {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-left: -1px;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label > .search-button > button {
+  display: inline-block;
+  padding: 0px 10px;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  border-radius: 4px;
+  border: 1px solid #d5d5d8;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label > .search-button > button:hover {
+  background: #dddddd;
+}
+
+.pub-multiselect .pub-multiselect-body .pub-multiselect-label > .input-text {
+  width: 100%;
+  -webkit-box-flex: 1;
+      -ms-flex: 1 1 auto;
+          flex: 1 1 auto;
+  border: 1px solid #d5d5d8;
+  border-radius: 4px;
+  padding: 5px 10px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  line-height: normal;
 }
 
 .pub-multiselect .pub-multiselect-body .pub-multiselect-area {
   border: 1px solid #d5d5d8;
   border-radius: 3px;
-  height: calc(100% - 36px);
+  height: 100%;
   padding: 0px;
   overflow: auto;
-}
-
-.pub-multiselect .pub-multiselect-body .pub-multiselect-area.header-hide {
-  height: 100%;
 }
 
 .pub-multiselect .pub-multiselect-body .pub-multiselect-area .pub-multiselect-items {
