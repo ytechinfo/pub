@@ -1340,7 +1340,12 @@ Plugin.prototype ={
 			throw 'usePaging not enabled';
 		}
 
-		var pagingInfo = _this.getPagingInfo(pagingInfo.totalCount, pagingInfo.currPage, pagingInfo.countPerPage, pagingInfo.unitPage);
+		var pagingInfo = _this.getPagingInfo( pagingInfo.totalCount||0, pagingInfo.currPage, pagingInfo.countPerPage, pagingInfo.unitPage);
+
+		if(pagingInfo.totalCount < 1) {
+			$('#'+_this.prefix+'_page').empty();
+			return ; 
+		}
 
 		_this.config.pageNo = pagingInfo.currPage;
 		_this.config.pagingInfo = pagingInfo;
@@ -1348,23 +1353,25 @@ Plugin.prototype ={
 		var currP = pagingInfo.currPage;
 		if (currP == "0") currP = 1;
 		var preP_is = pagingInfo.prePage_is;
-		var nextP_is = pagingInfo.nextPage_is;
 		var currS = pagingInfo.currStartPage;
 		var currE = pagingInfo.currEndPage;
 		if (currE == "0") currE = 1;
 		var nextO = 1 * currP + 1;
 		var preO = currP - 1;
 		var strHTML = [];
+
 		strHTML.push('<ul>');
-		if (new Boolean(preP_is) == true) {
-			strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
+
+		if (currP <= 1) {
+			strHTML.push(' <li class="disabled page-icon"><a href="javascript:">&laquo;</a></li>');
 		} else {
-			if (currP <= 1) {
-				strHTML.push(' <li class="disabled page-icon"><a href="javascript:">&laquo;</a></li>');
-			} else {
-				strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
-			}
+			strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+preO+'">&laquo;</a></li>');
 		}
+		
+		if(preP_is && (currE - pagingInfo.unitPage >= 0)){
+			strHTML.push(' <li class="page-num" pageno="1"><a href="javascript:" >1...</a></li>');
+		}
+		
 		var no = 0;
 		for (no = currS * 1; no <= currE * 1; no++) {
 			if (no == currP) {
@@ -1373,16 +1380,17 @@ Plugin.prototype ={
 				strHTML.push(' <li class="page-num" pageno="'+no+'"><a href="javascript:" >'+ no + '</a></li>');
 			}
 		}
-
-		if (new Boolean(nextP_is) == true) {
-			strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
-		} else {
-			if (currP == currE) {
-				strHTML.push(' <li class="disabled"><a href="javascript:">&raquo;</a></li>');
-			} else {
-				strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
-			}
+	
+		if(currS + pagingInfo.unitPage < pagingInfo.totalPage){
+			strHTML.push(' <li class="page-num" pageno="'+pagingInfo.totalPage+'"><a href="javascript:" >...'+pagingInfo.totalPage+'</a></li>');
 		}
+			
+		if (currP == currE) {
+			strHTML.push(' <li class="disabled"><a href="javascript:">&raquo;</a></li>');
+		} else {
+			strHTML.push(' <li><a href="javascript:" class="page-num page-icon" pageno="'+nextO+'">&raquo;</a></li>');
+		}
+				
 		strHTML.push('</ul>');
 
 		var pageNaviEle = $('#'+_this.prefix+'_page');
@@ -4633,7 +4641,6 @@ Plugin.prototype ={
 	 * @description 페이징 하기.
 	 */
 	,getPagingInfo : function (totalCount, currPage, countPerPage, unitPage) {
-		var unitCount = 100;
 		countPerPage = countPerPage || 10;
 		unitPage = unitPage || 10;
 
@@ -4671,8 +4678,13 @@ Plugin.prototype ={
 			currEndPage = totalPage;
 			currStartPage = 1;
 		} else {
-			var halfUnitPage = Math.floor(unitPage /2); 
-			if(currPage < halfUnitPage){
+			var halfUnitPage = unitPage;
+
+			if(currPage == unitPage || (currPage > unitPage && (totalPage - (currPage-1) >= unitPage)) ){
+				halfUnitPage = Math.floor(unitPage /2); 
+			}
+
+			if(currPage <= halfUnitPage){
 				currEndPage = unitPage;
 				currStartPage = 1; 
 			}else if(currPage+halfUnitPage < totalPage){

@@ -12,7 +12,7 @@ http://www.opensource.org/licenses/mit-license.php
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 
-    >*{
+    *{
         @include box-sizing($box_sizing_border)
     }
 
@@ -121,7 +121,7 @@ http://www.opensource.org/licenses/mit-license.php
             text-align: center;
             border-bottom: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
             display: flex;
-            line-height: 25px;
+            line-height: 27px;
 
             &.al-center {
                 text-align: center;
@@ -192,8 +192,8 @@ http://www.opensource.org/licenses/mit-license.php
                 >.pub-select-item{
                     padding: 1px 5px;
                     margin-bottom: 1px;
-                    height: 25px;
-                    line-height: 25px;
+                    height: 28px;
+                    line-height: 26px;
 
                     >:first-child{
                         width: 100%;
@@ -216,29 +216,67 @@ http://www.opensource.org/licenses/mit-license.php
                 width: calc(100% - 70px) !important;
             }
         }
+        
         .pub-multiselect-paging{
             text-align: center;
-            .pub-multiselect-page-num {
-                cursor: pointer;
+            >ul {
                 display: inline-block;
-                width: 12px;
-                height: 12px;
-                margin: 0px 10px 0px 0px;
-                -webkit-border-radius: 20px;
-                -moz-border-radius: 20px;
-                border-radius: 20px;
-                background: colorInfo($g_default_theme_name , "background_color");
-                border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
-    
-                &.selected {
-                    @include opacity_val(1.0);
-                    background: colorInfo($g_default_theme_name , "background_thick_color");
+                vertical-align: middle;
+                padding-left: 0;
+                margin: 3px;
+                border-radius: 4px;
+                text-align: center;
+                
+                > li {
+                    display: inline;
+        
+                    a,span{
+                        position: relative;
+                        float: left;
+                        padding: 3px 7px;
+                        margin: 0px 3px;
+                        margin-left: -1px;
+                        color: gridColorInfo($g_default_theme_name,"navigation_font_color");
+                        text-decoration: none;	
+                    }
+        
+                    &:first-child > a, &:first-child > span {
+                        margin-left: 0;
+                        border-top-left-radius: 4px;
+                        border-bottom-left-radius: 4px;
+                    
+                    }
+        
+                    &:last-child > a, &:last-child > span {
+                        border-top-right-radius: 4px;
+                        border-bottom-right-radius: 4px;
+                    }
+        
+                    > a:hover, > span:hover, > a:focus, > span:focus {
+                        z-index: 2;
+                        color: #23527c;
+                        background-color: #d1e4f5;
+                        border-color: colorInfo($g_default_theme_name , "border_thin_color");
+                    }
                 }
-    
-                >.page-no-text {
-                    display: none;
+        
+                .active > a, > .active > span, > .active > a:hover, > .active > span:hover, > .active > a:focus,> .active > span:focus {
+                    z-index: 3;
+                    color: #fff;
+                    cursor: default;
+                    background-color: #337ab7;
+                    border-color: #337ab7;
+                    border-radius: 3px;
                 }
+        
+                > .disabled > span, > .disabled > span:hover, > .disabled > span:focus, > .disabled > a, > .disabled > a:hover, > .disabled > a:focus {
+                    color: #777;
+                    cursor: not-allowed;
+                    border-color: colorInfo($g_default_theme_name , "border_thin_color");
+                }
+                    
             }
+            
         }
 
         .text-selected{
@@ -246,9 +284,10 @@ http://www.opensource.org/licenses/mit-license.php
                 color: colorInfo($g_default_theme_name , "font_active");;
             }
         }
-      
+
         .selected {
             background: colorInfo($g_default_theme_name , "column_active_background");
+            color: colorInfo($g_default_theme_name , "font_active");;
         }
          
         .empty-message {
@@ -311,7 +350,7 @@ http://www.opensource.org/licenses/mit-license.php
                         
             .selected {
                 background: colorInfo($pThemeName , "column_active_background");
-			    color: colorInfo($pThemeName , "column_active_color");
+			    color: colorInfo($pThemeName , "font_active");;
             }
         }
     }

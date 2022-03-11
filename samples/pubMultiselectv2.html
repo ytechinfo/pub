@@ -14,7 +14,6 @@
 <BODY>
 
 <div id="asdfasdf"></div>
-
 	
 
 </BODY>
@@ -25,19 +24,21 @@
 var selectObj;
 var tmpSourceItem = [] , paramSourceItem=[]; 
 $(document).ready(function (){
+
+	for(var i = 0 ;i <10; i++){
+		tmpSourceItem.push({viewid :'1000'+i ,uname:'nawefawefawefefefefefefeffawfeamenawefawefawefefefefefefeffawfeame'+i});
+	}
+
 	var paramTargetItem = [];
 	
 	for(var i = 0 ;i <10; i++){
 		paramSourceItem.push({viewid :'0000'+i ,uname:'aaaa'+i});
 	}
-
-	for(var i = 0 ;i <10; i++){
-		tmpSourceItem.push({viewid :'1000'+i ,uname:'nawefawefawefefefefefefeffawfeamenawefawefawefefefefefefeffawfeame'+i});
-	}
+	
 	paramTargetItem.push({viewid :'00000' ,uname:'nawefawefawefefefefefefeffawfeamenawefawefawefefefefefefeffawfeame',pageNo:0});
-	for(var i = 0 ;i <0; i++){
+	for(var i = 0 ;i <5; i++){
 		var pageNum = 0; 
-		if(i > 5){
+		if(i > 3){
 			pageNum =4;
 		}
 		paramTargetItem.push({viewid :'0000'+i ,uname:'name'+i,pageNo:pageNum});
@@ -73,15 +74,13 @@ $(document).ready(function (){
 		,useMultiSelect : true
 		,useDragMove : true	// drag해서 이동할지 여부.
 		,useDragSort : true // target drag 해서 정렬할지 여부.
-		,pageInfo :{
-			max :10
-		}
+		
 		,maxSize :10
 		,duplicateCheck : true
+		,valueKey : 'viewid'
+		,labelKey : 'uname'
 		,source : {
-			idKey : 'viewid'
-			,nameKey : 'uname'
-			,items : paramSourceItem
+			items : paramSourceItem
 			,search :{
 				enable : true
 				,callback : function (searchWord, evt){
@@ -90,24 +89,34 @@ $(document).ready(function (){
 			}
 			,completeMove : function (addItem){
 				alert(addItem);
-
 				return true; 
+			}
+			,paging :{
+				unitPage : 10
+				,totalCount: 210
+				,currPage : 9
+				,callback : function (clickInfo){
+					console.log(clickInfo)
+				}
 			}
 			
 		}
 		,target : {
 			label : 'Target'
-			,idKey : 'viewid'
-			,nameKey : 'uname'
 			,items : []
-			,emptyMessage :' '
-			,render: function (sItem){
-				//console.log('render', sItem);
-				return '<span>'+sItem.text+'</span>';
-			}
+			,emptyMessage :'asdfasdf '
 			,completeMove: function (delItem){
 				console.log(delItem);
-				return false; 
+			}
+			,paging :{
+				unitPage : 10
+				,totalCount: 100
+				,currPage : 1
+				// 페이징 없이 카운트만 보일수 있게 처리.
+				
+				,callback : function (clickInfo){
+					console.log(clickInfo)
+				}
 			}
 		}
 	
@@ -115,11 +124,6 @@ $(document).ready(function (){
 
 	selectObj.setTargetItem(paramTargetItem);
 
-	var paramTargetItem2 = [];
-	for(var i = 0 ;i <10; i++){
-		paramTargetItem2.push({CODE_ID :'0000'+i ,CODE_NM:'name'+i});
-	}
-	
 	
 })
 </script>
