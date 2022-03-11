@@ -250,8 +250,8 @@ Plugin.prototype ={
 		// 검색
 		this.element.container.on('click.search', '.search-button', function (e){
 			var sEle = $(this);
-			var labelWrapperEle = sEle.closest('[data-mode]'); 
-			var mode = labelWrapperEle.attr('data-mode');
+			var labelWrapperEle = sEle.closest('[data-item-type]'); 
+			var mode = labelWrapperEle.attr('data-item-type');
 
 			if(mode=='source'){
 				_this.options.source.search.callback.call(sEle, labelWrapperEle.find('.input-text').val(), e);
@@ -264,8 +264,8 @@ Plugin.prototype ={
 		this.element.container.on('click.pagigng.num', '.pub-multiselect-paging .page-num', function (e){
 			var sEle = $(this);
 			var pageno = sEle.attr('pageno');
-			var modeArea = sEle.closest('[data-mode]'); 
-			var mode = modeArea.attr('data-mode');
+			var modeArea = sEle.closest('[data-item-type]'); 
+			var mode = modeArea.attr('data-item-type');
 
 			var param = {no : pageno, searchword : modeArea.find('.input-text').val()||'' ,evt :e};
 
@@ -285,8 +285,8 @@ Plugin.prototype ={
 		// search box keyup event
 		this.element.container.on('keyup.search', '.input-text', function (e){
 			var sEle = $(this);
-			var labelWrapperEle = sEle.closest('[data-mode]'); 
-			var mode = labelWrapperEle.attr('data-mode');
+			var labelWrapperEle = sEle.closest('[data-item-type]'); 
+			var mode = labelWrapperEle.attr('data-item-type');
 
 			var inputText = sEle.val(); 
 
@@ -365,7 +365,7 @@ Plugin.prototype ={
 				var itemValue = tmpItem[valKey];
 				var itemCheckFlag = false;
 				for(var j = 1 ;j <=pageMaxVal; j++){
-					if(_this.config.itemList[j] && _this.config.itemList[j][itemValue] !=='undefined') {
+					if(_this.config.itemList[j] && typeof _this.config.itemList[j][itemValue] !=='undefined') {
 						itemCheckFlag = true;
 						break; 
 					}
@@ -986,7 +986,7 @@ Plugin.prototype ={
 
 		this.element.container.empty('').html(strHtm.join(''));
 
-		var sourceContainerEl = this.element.container.find('[data-mode="source"]');
+		var sourceContainerEl = this.element.container.find('[data-item-type="source"]');
 
 		var labelH = 0;
 		if(sourceContainerEl.find('.pub-multiselect-label').length > 0){
@@ -995,7 +995,7 @@ Plugin.prototype ={
 		}
 		sourceContainerEl.find('.pub-multiselect-area').css('height' , 'calc(100% - '+labelH+'px)');
 
-		var targetContainerEl = this.element.container.find('[data-mode="target"]');
+		var targetContainerEl = this.element.container.find('[data-item-type="target"]');
 
 		labelH = 0; 
 		if(targetContainerEl.find('.pub-multiselect-label').length > 0){
@@ -1027,7 +1027,7 @@ Plugin.prototype ={
 		strHtm.push('	<div class="pub-multiselect-body vertical '+(opts.body.enableItemEvtBtn ?'show-row-item-btn' : '' )+'">'); // body start
 
 		if(opts.mode !='single'){
-			strHtm.push('  <div style="height:'+(bodyHeight/2 - labelHalfHeight)+'px;" data-mode="source">');
+			strHtm.push('  <div style="height:'+(bodyHeight/2 - labelHalfHeight)+'px;" data-item-type="source">');
 			
 			if(opts.header.enableSourceLabel===true){
 				strHtm.push(this.getLabelHtml('source'));
@@ -1048,7 +1048,7 @@ Plugin.prototype ={
 			}	
 		}
 		
-		strHtm.push(' <div style="height:'+(bodyHeight/2+labelHalfHeight)+'px;" data-mode="target">');
+		strHtm.push(' <div style="height:'+(bodyHeight/2+labelHalfHeight)+'px;" data-item-type="target">');
 
 		if(opts.header.enableTargetLabel===true){
 			strHtm.push(this.getLabelHtml('target'));
@@ -1111,7 +1111,7 @@ Plugin.prototype ={
 		strHtm.push('				<tr>');
 		if(opts.mode !='single'){
 			strHtm.push('					<td');
-			strHtm.push('					 <div data-mode="source">');
+			strHtm.push('					 <div data-item-type="source">');
 			strHtm.push('					   <div style="height:'+bodyHeight+'px;">');
 			
 			if(opts.header.enableSourceLabel===true){
@@ -1139,7 +1139,7 @@ Plugin.prototype ={
 		}
 		
 		strHtm.push('					<td');
-		strHtm.push('					 <div data-mode="target">');
+		strHtm.push('					 <div data-item-type="target">');
 		strHtm.push('					  <div style="height:'+bodyHeight+'px;">');
 
 		if(opts.header.enableTargetLabel===true){
@@ -1232,6 +1232,7 @@ Plugin.prototype ={
 		if(type=='source'){
 			
 			var styleClass = '';
+
 			if(selectFlag === true || _this.config.itemList[_this.config.currPage][seletVal]){
 				styleClass += ' '+_this.config.addCheckStyle;
 			}
