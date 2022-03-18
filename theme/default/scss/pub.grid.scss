@@ -16,6 +16,30 @@
 	user-select: none;		
 }
 
+.pubGrid-body-hidden-area{
+	>.pubGrid-layer{
+		position: absolute;
+		display: none;
+	}
+
+	.pubGrid-edit-area{
+		border : 1px solid colorInfo($g_default_theme_name , "border_thick_color");
+		background: colorInfo($g_default_theme_name , "background_color");
+
+		.pubGrid-edit-field{
+			&.select{
+				list-style-type: none;
+				padding: 0px;
+				margin: 0px;
+
+				>.selected{
+					background-color: #337ab7;
+				}
+			}
+		}
+	}
+}
+
 .pubGrid-wrapper{
 	* {
 		border-spacing:0;
@@ -116,14 +140,14 @@
 		position: relative;
 		vertical-align: top;
 		height: 100%;
-		border-bottom: 0px none transparent;
+		border-bottom: none;
 	
 		[rowinfo="0"]>td {
-			border-top:0px solid transparent;
+			border-top: none;
 		}
 
 		th:first-child, td:first-child{
-			border-left: 0px solid transparent;
+			border-left: none;
 		}
 	}
 
@@ -321,20 +345,62 @@
 				background-color: gridColorInfo($g_default_theme_name,"td_background_hover");
 
 				.pub-render-element{
-					&.button, &.select{
+					&.button{
 						background-color: gridColorInfo($g_default_theme_name,"td_inside_button_hover");
 					}
 				}
 			}
 
 			.pub-render-element{
+				display: block;
 				&.button, &.select{
-					cursor: pointer;
+					
 					border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 					padding: 1px 8px;
-					line-height: 22px;
-					border-radius: 3px;
+					height: 24px;
+					line-height: 20px;
 					background-color: gridColorInfo($g_default_theme_name,"td_background_hover");
+				}
+
+				&.button{
+					display: inline-block;
+					border-radius: 3px;
+					margin-top : 1px;
+				}
+
+				&.link{
+					display: inline-block;
+					text-decoration: underline;
+					cursor: pointer;
+					color: colorInfo($g_default_theme_name , "a_hover_font_color");
+
+					&:hover {
+						color: colorInfo($g_default_theme_name , "a_hover_thick_color");
+						font-weight: 500;
+					}
+				}
+
+				&.check{
+					display: inline-block;
+				}
+
+
+				&.select{
+					width: 100%;
+					padding-right: 0px;
+
+					.pub-content {
+						width: calc(100% - 22px);
+						display: inline-block;
+					}
+
+					.pub-icon{
+						width: 22px;
+						text-align: center;
+						border-left: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+						display: inline-block;
+						background-color: transparent;
+					}
 				}
 			}
 		}
@@ -1341,6 +1407,8 @@
 		
 		.pubGrid-body-container{
 			td{
+				border-top: none;
+    			border-left: none;
 				border-right : 1px solid colorInfo($pThemeName , "border_thin_color");
 				border-bottom : 1px solid colorInfo($pThemeName , "border_thin_color");
 		

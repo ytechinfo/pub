@@ -215,7 +215,7 @@ function getItem (type){
 				a:'aaasdfasdfasdfasdfasdfasdfa'+i
 				,b:'ddd_'+i+'asdf'
 				,c: (i*10000)
-				,d:'ddd_'+i
+				,d: i==0 ? 'KOREA' : 'ddd_'+i
 				,e:'eee_'+i
 				,f:'ffff'+i
 				,g:'ggggg'+i
@@ -362,7 +362,7 @@ function gridDraw(selector, aaa, colItem){
 		,widthFixed : false
 		,showTooltip : true			// tooltip flag
 		,theme : $('#themeInfo').val()
-		,height: 360
+		//,height: 360
 		,asideOptions :{
 			lineNumber : {enabled : true}
 			,rowSelector :{
