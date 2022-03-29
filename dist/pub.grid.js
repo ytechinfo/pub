@@ -250,6 +250,10 @@ function arrayCopy(orginArray){
 	return $.isArray(orginArray) ? orginArray.slice():null;
 }
 
+function eventKeyCode (e){
+	return window.event ? e.keyCode : e.which; 
+}
+
 function createArray(m,n,initial){
 	var reval = [];
 	for(var j=0; j < m; j++){
@@ -477,6 +481,7 @@ Plugin.prototype ={
 			, searchOn : false
 			, isResize : false
 			, focus : false
+			, isBodyDragging: false
 			, mouseEnter :false
 			, currentClickInfo :{}
 			, allCheck :false
@@ -491,7 +496,6 @@ Plugin.prototype ={
 			}
 		};
 
-		
 		_this.eleCache = {};
 		_this._initScrollData();
 		_$util.setSelectionRangeInfo(_this, {}, true);
@@ -549,6 +553,12 @@ Plugin.prototype ={
 		var _this = this;
 
 		options.setting = options.setting ||{};
+
+		if(options.setting.mode != 'full'){
+			options.setting.mode = 'simple';	
+			options.setting.btnClose = false;	
+		}
+		
 		options.setting.configVal = objectMerge({},_defaults.setting.configVal ,options.setting.configVal);
 
 		_this.options =objectMerge({}, _defaults, options)
@@ -1576,10 +1586,10 @@ Plugin.prototype ={
 				colGroupHtm.push('<col id="'+_this.prefix+'colbody'+items[j].key+'" style="width:'+items[j].width+'px;" />');
 			}
 
-			var bodyHtm = '';
-			bodyHtm += '<colgroup>'+colGroupHtm.join('')+'</colgroup>';
-			bodyHtm += '<tbody class="pubGrid-body-tbody">'+strHtm.join('')+'</tbody>';
-			tmpeElementBody.empty().html(bodyHtm);
+			var bodyHtmTemplate = '';
+			bodyHtmTemplate += '<colgroup>'+colGroupHtm.join('')+'</colgroup>';
+			bodyHtmTemplate += '<tbody class="pubGrid-body-tbody">'+strHtm.join('')+'</tbody>';
+			tmpeElementBody.empty().html(bodyHtmTemplate);
 		}else{
 			strHtm = strHtm.join('');
 			if(strHtm != ''){
@@ -1952,7 +1962,7 @@ Plugin.prototype ={
 
 		// remove edit area
 		if(_this.config.isCellEdit ===true){
-			_this._setEditAreaData();
+			_$renderer.editAreaClose(_this);
 		}
 
 		// row color change
@@ -1981,9 +1991,9 @@ Plugin.prototype ={
 
 				for(var j =0 ; j < asideItem.length ;j++){
 					var tmpItem = asideItem[j];
-					var rowCol = i+','+tmpItem.key;
+					var cellPosition = i+','+tmpItem.key;
 
-					addEle =$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-aside-cont').querySelector('[data-aside-position="'+rowCol+'"]>.aside-content');
+					addEle =$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-aside-cont').querySelector('[data-aside-position="'+cellPosition+'"]>.aside-content');
 
 					if(tmpItem.key == 'lineNumber'){
 						addEle.textContent = (itemIdx+1);
@@ -1996,7 +2006,7 @@ Plugin.prototype ={
 
 				if(drawMode != 'hscroll'){
 					for(var j=0; j < colFixedIndex ; j++){
-						tdEle =_this.element.leftContent.querySelector('[data-grid-position="'+(i+','+j)+'"]');
+						tdEle =_this.element.leftContent.querySelector('[data-cell-position="'+(i+','+j)+'"]');
 						addEle =tdEle.querySelector('.pub-content');
 
 						colItem = tci[j];
@@ -2022,9 +2032,9 @@ Plugin.prototype ={
 				}
 
 				for(var j=startCol ;j <= endCol; j++){
-					//var addEle = _this.element.tdEle[rowCol] = $pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-tbody').querySelector('[data-grid-position="'+rowCol+'"]>.pub-content')
+					//var addEle = _this.element.tdEle[cellPosition] = $pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-tbody').querySelector('[data-cell-position="'+cellPosition+'"]>.pub-content')
 
-					tdEle =_this.element.bodyContent.querySelector('[data-grid-position="'+(i+','+j)+'"]');
+					tdEle =_this.element.bodyContent.querySelector('[data-cell-position="'+(i+','+j)+'"]');
 
 					if(tdEle){
 						addEle =tdEle.querySelector('.pub-content');
@@ -3216,19 +3226,16 @@ Plugin.prototype ={
 		if(asideOpt.lineNumber.isSelectRow === true){
 			// column selection
 			_this.element.body.find('.pubGrid-body-aside').on('click.pubGridLine.selection','.pub-lineNumber',function (e){
-				var selEle = $(this)
-					,row_idx = selEle.closest('tr').attr('rowinfo');
-
 				var initFlag=true;
 				if(e.ctrlKey){
 					initFlag  = false;
 				}
-				var rowIdx = _this.config.scroll.viewIdx+intValue(row_idx);
+				var rowItemIdx = _this.config.scroll.viewIdx+intValue($(this).closest('tr').attr('rowinfo'));
 
-				_this.addRowSelections(rowIdx, initFlag);
+				_this.addRowSelections(rowItemIdx, initFlag);
 			});
 		}
-
+		
 		if(asideOpt.rowSelector.enabled === true){
 
 			var fnRowChkClick = asideOpt.rowSelector.click;
@@ -3332,6 +3339,10 @@ Plugin.prototype ={
 				return true;
 			}
 
+			if(isInputField(e.target.tagName)){
+				return true; 
+			}
+
 			var position  = _this.element.body.offset();
 
 			var _l  = position.left
@@ -3342,6 +3353,7 @@ Plugin.prototype ={
 			if(multipleFlag){
 				// mouse darg scroll
 				$(document).on('touchmove.pubgrid.body.drag mousemove.pubgrid.body.drag', function (e1){
+					_this.config.isBodyDragging = true; 
 
 					var evtInfo1 = evtPos(e1);
 
@@ -3360,11 +3372,12 @@ Plugin.prototype ={
 						_this.config.mouseDragDirectionY = 'U';
 					}else if(movePageY > _b){
 						_this.config.mouseDragDirectionY = 'D';
-					}				
+					}
 
 					if(!bodyDragTimer) dragScrollMove(_this);
 
 				}).on('touchend.pubgrid.body.drag mouseup.pubgrid.body.drag mouseleave.pubgrid.body.drag', function (e1){
+					_this.config.isBodyDragging = false; 
 					$(document).off('touchmove.pubgrid.body.drag mousemove.pubgrid.body.drag').off('touchend.pubgrid.body.drag mouseup.pubgrid.body.drag mouseleave.pubgrid.body.drag');
 					clearInterval(bodyDragTimer);
 					bodyDragTimer = false;
@@ -3374,62 +3387,64 @@ Plugin.prototype ={
 			var sEle = $(this);
 			
 			var cellInfo = _$util.getCellInfo(_this, sEle);
+
+			var currViewIdx = _this.config.scroll.viewIdx;
 			
 			_this.setCellClick(e, cellInfo, multipleFlag, selectionMode);
 
-			var colIdx = cellInfo.c;
+			var newViewIdx = _this.config.scroll.viewIdx;
 
+			if(currViewIdx != newViewIdx){
+				cellInfo.r = cellInfo.r-1;
+			}
+
+			var colIdx = cellInfo.c;
 			var rowItemIdx = cellInfo.rowItemIdx;
 
 			var positionInfo = {
-				position : sEle.attr('data-grid-position')
-				,rowIdx : rowItemIdx
+				position : sEle.attr('data-cell-position')
+				,rowItemIdx : rowItemIdx
 			};
 
-			if (clickCnt > 0 && (currentCellPosition.position == positionInfo.position && currentCellPosition.rowIdx == positionInfo.rowIdx) ) { // double click 처리.
-				conserveClick(positionInfo) 
+			if(editable === true){
+				if(cellInfo.colInfo.renderer.type =='dropdown'){
+					resetClick();
+					_$renderer.editCell(_this, cellInfo, e);
+					return false;
+				}
+			
+				if(clickCnt == 0){
+					_$renderer.editAreaClose(_this); // 이전 에디트창 닫기
+				}
+			}
+
+			if (clickCnt > 0 && (currentCellPosition.position == positionInfo.position && currentCellPosition.rowItemIdx == positionInfo.rowItemIdx) ) { // double click 처리.
+				conserveClick(positionInfo);
 				resetClick();
 				
 				if(dobleClickEventFlag){
 					if(editable ===true){
-						_this.config.isCellEdit = true;
-	
-						_this.config.editRowInfo = {
-							idx : cellInfo.rowItemIdx
-							,r : cellInfo.r
-							,c : cellInfo.c
-							,colItem : cellInfo.colInfo
-							,rowItem : cellInfo.rowItem
-						};
-
-						var editEleOffset = sEle.offset();
-	
-						_$renderer.editCell(_this, sEle, cellInfo, {
-							left : editEleOffset.left
-							,top : editEleOffset.top +  _this.config.rowHeight
-							
-						});
-
-						return false;
+						_$renderer.editCell(_this, cellInfo, e);
+						return false; 
 					}
-	
+
+					var clickRowItem = cellInfo.rowItem; 
 					if(dblCheckFlag){
-						_this.options.tbodyItem[rowIdx] = _this.getRowCheckValue(rowItem,rowItem['_pubcheckbox']===true?false:true);
+						_this.options.tbodyItem[rowItemIdx] = _this.getRowCheckValue(clickRowItem, clickRowItem['_pubcheckbox']===true?false:true);
 	
-						var addEle =$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-aside-cont').querySelector('[data-aside-position="'+rowColArr[0]+',checkbox"]>.aside-content');
+						var addEle =$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-aside-cont').querySelector('[data-aside-position="'+cellInfo.r+',checkbox"]>.aside-content');
 	
-						_$util.setCheckBoxCheck(addEle , rowItem);
+						_$util.setCheckBoxCheck(addEle, clickRowItem);
 					}
 	
-					fnDblClick.call(selRow ,{item : rowItem, r : rowIdx, c : cellInfo.c, keyItem : colInfo});
+					fnDblClick.call(sEle, {item : clickRowItem, r : rowItemIdx, c : colIdx, keyItem : cellInfo.colInfo});
 				}
 			}else{
 				++clickCnt;
 				conserveClick(positionInfo);
 			}
 
-
-			if(!multipleFlag && $(e.target).closest('.pub-render-element').length > 0){ // render item click 처리.
+			if(!editable && $(e.target).closest('.pub-render-element').length > 0){ // render item click 처리.
 				if(isFunction(cellInfo.colInfo.renderer.click)){
 					cellInfo.colInfo.renderer.click.call(null, cellInfo);
 					return false; 
@@ -3437,7 +3452,7 @@ Plugin.prototype ={
 			}
 
 			if(isFunction(cellInfo.colInfo.colClick)){
-				cellInfo.colInfo.colClick.call(this,colIdx,{
+				cellInfo.colInfo.colClick.call(this, colIdx, {
 					r: rowItemIdx
 					,c: colIdx
 					,item: cellInfo.rowItem
@@ -3450,14 +3465,14 @@ Plugin.prototype ={
 					return true;
 				}
 				var clickInfo = _this.getCurrentClickInfo();
-				rowClickFn.call(null , {r : clickInfo.r, item : clickInfo.item });
+				rowClickFn.call(null , {rowItemIdx : clickInfo.rowItemIdx, item : clickInfo.item });
 			}
 
 			return true;
 
 		}).on('mouseover.pubgrid.col','.pub-body-td',function (e) {
 
-			if (!_this.config.selection.isMouseDown) return;
+			if (!_this.config.isBodyDragging) return;
 
 			if(!(selectionMode =='multiple-row' || selectionMode =='multiple-cell')){
 				return ;
@@ -3475,23 +3490,14 @@ Plugin.prototype ={
 			},false , true);
 
 		})
-
-		// edit focusout event
-		_this.element.body.on('focusout.pubgrid.edit','.pubGrid-edit-area',function (e){
-			stopPreventCancel(e)
-
-			if(_this.config.isCellEdit===false) return ;
-
-			_this._setEditAreaData($(this).find('.pubGrid-edit-field').val());
-		});
 	
 		_this.element.pubGrid.on('mouseup.'+_this.prefix,function (e) {
 			//_this.element.body.removeClass('pubGrid-noselect');
 			_$util.setSelectionRangeInfo(_this, {isMouseDown : false});
 		}).on('mousedown.'+_this.prefix,function (e){ // focus in
-			_this.config.focus = true;
+			_this._setGridFocusIn(e);
 		}).on('blur.'+_this.prefix,function (e){ //blur focus out
-			_this.config.focus = false;
+			_this._setGridFocusOut(e);
 		})
 
 		// focus out
@@ -3500,10 +3506,8 @@ Plugin.prototype ={
 			if(!_this.config.focus){
 				return true;
 			}
-
-			if(e.which !==2 && $(e.target).closest('#'+_this.prefix+'_pubGrid').length < 1){
-				_this.config.focus = false;
-			}
+			
+			_this._setGridFocusOut(e);
 		});
 
 		if(_this.options.editable===true){
@@ -3561,19 +3565,19 @@ Plugin.prototype ={
 							break;
 						}
 
-						var selItem = tbodyItems[addRowIdx];
+						var rowItem = tbodyItems[addRowIdx];
 
 						var addContArr = addCont.split(/\t/);
 						var jLen=addContArr.length;
 
-						_$util.setCUD(selItem);
+						_$util.setChangeValue(_this, 'new', rowItem);
 
 						for(var j =0; j <jLen; j++){
 							var addColIdx = startCol+j;
 
 							if(addColIdx < tColLen){
 								maxCol = Math.max(maxCol,addColIdx);
-								selItem[tColItems[addColIdx].key] = addContArr[j];
+								rowItem[tColItems[addColIdx].key] = addContArr[j];
 							}
 						}
 					}
@@ -3607,8 +3611,8 @@ Plugin.prototype ={
 			// 설정 영역 keydown 처리
 			if($(e.target).closest('.pubGrid-setting-area').length > 0) return true;
 
-			var evtKey = window.event ? e.keyCode : e.which;
-
+			var evtKey = eventKeyCode(e);
+			
 			if (e.metaKey || e.ctrlKey) { // copy
 
 				if (evtKey == 67) { // ctrl+ c
@@ -3653,6 +3657,17 @@ Plugin.prototype ={
 				}
 			}
 
+			if(_this.options.editable===true){
+				var clickInfo = _this.getCurrentClickInfo();
+
+				var cellInfo = _$util.getCellInfo(_this, _$util.getCellElement(_this, clickInfo.r, clickInfo.c));
+
+				if((65 <= evtKey && evtKey <= 90) || (48 <= evtKey && evtKey <= 57)){
+					_$renderer.editCell(_this, cellInfo, e);
+					return false;
+				}
+			}
+
 			if( (32 < evtKey && evtKey < 41) || evtKey == 13 || evtKey == 9){
 				stopPreventCancel(e)
 
@@ -3660,12 +3675,27 @@ Plugin.prototype ={
 			}
 		});
 	}
+	// grid focus out
+	,_setGridFocusOut : function (e){
+		if(e.which !==2 && $(e.target).closest('#'+this.prefix+'_pubGrid').length < 1  && $(e.target).closest('[data-pubgrid-layer="'+this.prefix+'"]').length < 1){
+			this.config.focus = false;
+			_$renderer.editAreaClose(this);
+		}
+	}
+	// grid focus in
+	,_setGridFocusIn : function (e){
+		this.config.focus = true;
+
+		if(!isInputField(e.target.tagName)){
+			_$renderer.editAreaClose(this);
+		}
+	}
 	// cell click
 	,setCellClick : function (e, cellInfo, multipleFlag, selectionMode){
 		var _this =this; 
 
-		_this.config.focus = true;
-
+		_this._setGridFocusIn(e)
+		
 		var rowItemIdx = cellInfo.rowItemIdx
 			,colIdx = cellInfo.c;
 		
@@ -3681,13 +3711,6 @@ Plugin.prototype ={
 		
 		var selectRangeInfo = _$util.getSelectionModeColInfo(selectionMode, colIdx, this.config.dataInfo, this.config.selection.isMouseDown);
 		
-		_this.config.currentClickInfo ={
-			column : cellInfo.colInfo
-			,item : selItem
-			,r : cellInfo.rowItemIdx
-			,c : colIdx
-		};
-
 		if(multipleFlag && e.shiftKey) {	// shift key
 			var rangeInfo = {endIdx: rowItemIdx, endCol: selectRangeInfo.endCol};
 
@@ -3719,45 +3742,22 @@ Plugin.prototype ={
 				,startCell : {startIdx : rowItemIdx, startCol : colIdx}
 			}, true, true);
 		}
-		
+		var _r = cellInfo.r 
 		// hidden row up
 		if(cellInfo.r+1 > _this.config.scroll.insideViewCount){
 			_this.moveVerticalScroll({pos: 'D'});
+			_r = cellInfo.r -1; 
 		}
+
+		_this.config.currentClickInfo ={
+			column : cellInfo.colInfo
+			,item : selItem
+			,rowItemIdx : rowItemIdx
+			,c : colIdx
+			,r : _r
+		};
 
 		window.getSelection().removeAllRanges();
-	}
-	/**
-	 * @method _setEditAreaData
-	 * @description remove edit area element
-	 */
-	,_setEditAreaData :function (newVal){
-		if(this.config.isCellEdit===true){
-
-			var editRowInfo = this.config.editRowInfo
-				,rowIdx = editRowInfo.idx
-				,rowItem = editRowInfo.rowItem
-				,colItem = editRowInfo.colItem;
-
-			if(newVal != rowItem[colItem.key]){
-
-				colItem.maxWidth = Math.max(getCharLength(newVal||'', this.options.headerOptions.oneCharWidth),colItem.maxWidth);
-
-				rowItem[colItem.key] = newVal;
-				_$util.setCUD(rowItem);
-			}
-
-			var tdEle = this.element.body.find('.pub-body-td[data-grid-position="'+editRowInfo.r+','+editRowInfo.c+'"]').get(0);
-
-			var addEle =tdEle.querySelector('.pub-content');
-
-			this._setCellStyle(tdEle, rowIdx ,colItem, rowItem);
-			this.getRenderValue(colItem, rowItem, 'view', addEle);
-
-			this.config.isCellEdit = false;
-			this.config.editRowInfo = {};
-			tdEle.querySelector('.pubGrid-edit-area').remove();
-		}
 	}
 	/**
 	 * @method gridKeyCtrl
@@ -3928,19 +3928,19 @@ Plugin.prototype ={
 		if(_this.config.selection.range.mode == 'remove'){
 			for(var i = sRow ; i <= eRow ; i++){
 				for(var j=sCol ;j <= eCol; j++){
-					var rowCol = i+','+j;
+					var cellPosition = i+','+j;
 					var currIdx = currViewIdx+i;
 
 					var addEle;
 
 					if(_this._isFixedPostion(j)){
-						addEle =_this.element.leftContent.querySelector('[data-grid-position="'+rowCol+'"]');
+						addEle =_this.element.leftContent.querySelector('[data-cell-position="'+cellPosition+'"]');
 					}else{
-						addEle =_this.element.bodyContent.querySelector('[data-grid-position="'+rowCol+'"]');
+						addEle =_this.element.bodyContent.querySelector('[data-cell-position="'+cellPosition+'"]');
 					}
 					if(addEle==null) continue;
 
-					_this.config.selection.unSelectPosition[rowCol]='';
+					_this.config.selection.unSelectPosition[cellPosition]='';
 
 					addEle.removeAttribute('data-select-idx');
 					addEle.classList.remove('col-active');
@@ -3959,7 +3959,7 @@ Plugin.prototype ={
 			_this.element.body.find('.pub-body-td[data-select-idx="'+tmpCurr+'"].col-active').each(function (){
 
 				var sEle = $(this);
-				var posInfo = _$util.getGridPosition(sEle);
+				var posInfo = _$util.getCellPosition(sEle);
 				if(_this.isSelectPosition(currViewIdx+posInfo.r , posInfo.c)){
 
 				}else{
@@ -3978,11 +3978,11 @@ Plugin.prototype ={
 		for(var i = sRow ; i <= eRow ; i++){
 
 			for(var j=sCol ;j <= eCol; j++){
-				var rowCol = i+','+j;
+				var cellPosition = i+','+j;
 				var currIdx = currViewIdx+i;
 
 				if(isRowSelect || isColSelect){
-					 delete _this.config.selection.unSelectPosition[rowCol];
+					 delete _this.config.selection.unSelectPosition[cellPosition];
 				}
 
 				if(!_this.isSelectPosition(currIdx ,j, true)){
@@ -3992,9 +3992,9 @@ Plugin.prototype ={
 				var addEle;
 
 				if(_this._isFixedPostion(j)){
-					addEle =_this.element.leftContent.querySelector('[data-grid-position="'+rowCol+'"]');
+					addEle =_this.element.leftContent.querySelector('[data-cell-position="'+cellPosition+'"]');
 				}else{
-					addEle =_this.element.bodyContent.querySelector('[data-grid-position="'+rowCol+'"]');
+					addEle =_this.element.bodyContent.querySelector('[data-cell-position="'+cellPosition+'"]');
 				}
 				if(addEle==null) continue;
 
@@ -4935,18 +4935,18 @@ var _$template = {
 					thiItem = tci[j];
 					clickFlag = thiItem.colClick;
 
-					strHtm.push('<td scope="col" class="pub-body-td" data-grid-position="'+i+','+j+'"><div class="pub-content pub-content-ellipsis ' +thiItem['_alignClass']+' '+ (clickFlag?'pub-body-td-click':'') +'"></div></td>');
+					strHtm.push('<td scope="col" class="pub-body-td" data-cell-position="'+i+','+j+'"><div class="pub-content pub-content-ellipsis ' +thiItem['_alignClass']+' '+ (clickFlag?'pub-body-td-click':'') +'"></div></td>');
 				}
 				strHtm.push('</tr>');
 			}
 		}
 
 		if(mode=='init'){
-			var bodyHtm = '';
-			bodyHtm +=_this._getColGroup(_this.prefix+'colbody', type);
-			bodyHtm += '<tbody class="pubGrid-body-tbody">'+strHtm.join('')+'</tbody>';
+			var bodyHtmTemplate = '';
+			bodyHtmTemplate +=_this._getColGroup(_this.prefix+'colbody', type);
+			bodyHtmTemplate += '<tbody class="pubGrid-body-tbody">'+strHtm.join('')+'</tbody>';
 
-			tmpeElementBody.empty().html(bodyHtm);
+			tmpeElementBody.empty().html(bodyHtmTemplate);
 
 		}else{
 			strHtm = strHtm.join('');
@@ -4982,7 +4982,7 @@ var _$util = {
 		return reArr;
 	}
 	,getCellInfo : function (ctx, cellEle){
-		var posInfo = this.getGridPosition(cellEle);
+		var posInfo = this.getCellPosition(cellEle);
 		var rowItemIdx = ctx.config.scroll.viewIdx+posInfo.r;
 		return {
 			r : posInfo.r
@@ -4993,13 +4993,17 @@ var _$util = {
 		}
 	}
 	// grid position 
-	,getGridPosition : function (cellEle){
-		var posInfo = cellEle.data('grid-position').split(',');
+	,getCellPosition : function (cellEle){
+		var posInfo = cellEle.data('cell-position').split(',');
 			
 		return {
 			r : intValue(posInfo[0])
 			,c : intValue(posInfo[1])
 		}
+	}
+	// grid position 
+	,getCellElement : function (ctx, r, c){
+		return ctx.element.body.find('.pub-body-td[data-cell-position="'+r+','+c+'"]');
 	}
 	// new add
 	,genAllColumnSearch : function (gridCtx){
@@ -5128,12 +5132,29 @@ var _$util = {
 		return {startCol : _startCol, endCol : _endCol};
 	}
 	/**
-	 * @method setCUD
+	 * @method setChangeValue
 	 * @description CUD모드 변경. (c = create , u = update , d =delete)
 	 */
-	,setCUD : function (selItem){
-		selItem['_pubCUD'] = selItem['_pubCUD']=='_C'?'C':(selItem['_pubCUD']=='C'?'CU':'U');
-		return selItem;
+	,setChangeValue : function (ctx, mode, rowItem, colInfo, newValue){
+		if(mode == 'new'){
+			rowItem['_pubCUD'] = 'C';
+		}else if(mode == 'modify'){
+			rowItem['_pubCUD'] = rowItem['_pubCUD']=='_C'?'C':(rowItem['_pubCUD']=='C'?'CU':'U');
+			colInfo.maxWidth = Math.max(getCharLength(newValue||'', ctx.options.headerOptions.oneCharWidth), colInfo.maxWidth);
+			rowItem[colInfo.key] = newValue;
+
+			var editRowInfo = ctx.config.editRowInfo;
+			var tdEle = ctx.element.body.find('.pub-body-td[data-cell-position="'+editRowInfo.r+','+editRowInfo.c+'"]').get(0);
+
+			// 공통으로 처리. 
+			ctx._setCellStyle(tdEle, editRowInfo.rowItemIdx ,colInfo, rowItem);
+			ctx.getRenderValue(colInfo, rowItem, 'view', tdEle.querySelector('.pub-content'));
+			
+		}else if(mode == 'remove'){
+			rowItem['_pubCUD'] = 'D';
+		}
+
+		return rowItem;
 	}
 	/**
 	*
@@ -5515,13 +5536,13 @@ var _$renderer = {
 			label : rowItem[thiItem.key]
 		})
 	}
-	, select : function (gridCtx, thiItem, rowItem, mode){
+	, dropdown : function (gridCtx, thiItem, rowItem, mode){
 
 		var renderer = thiItem.renderer;
 
 		var strHtm = [];
 
-		strHtm.push('<span class="pub-render-element select">');
+		strHtm.push('<span class="pub-render-element dropdown">');
 		strHtm.push(replaceMesasgeFormat('<span class="pub-content ">{{text}}</span>',{text : rowItem[thiItem.key]}));
 		strHtm.push('<span class="pub-icon"><svg width="12px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="0,0 100,0 50,90" fill="#737171"></polygon></g></svg></span>');
 		strHtm.push('</span>');
@@ -5529,19 +5550,7 @@ var _$renderer = {
 		return strHtm.join('');
 	}
 	, link : function (gridCtx, thiItem, rowItem, mode){
-
-		var renderer = thiItem.renderer;
-		var _url;
-		if(isFunction(renderer.url)){
-			_url = renderer.url(rowItem);
-		}else{
-			_url = replaceMesasgeFormat(renderer.url, rowItem);
-		}
-
-		return replaceMesasgeFormat('<span class="pub-render-element link">{{value}}</span>',{
-			value : rowItem[thiItem.key]
-			, url : _url
-		})
+		return replaceMesasgeFormat('<span class="pub-render-element link">{{value}}</span>',{value : rowItem[thiItem.key]});
 	}
 	, html : function (gridCtx, thiItem, rowItem, mode){
 		return thiItem.template(thiItem, rowItem);
@@ -5580,7 +5589,36 @@ var _$renderer = {
 	 * @method editCell
 	 * @description edit form
 	 */
-	,editCell : function (gridCtx, selEl, cellInfo, position){
+	,editCell : function (gridCtx, cellInfo, e){
+
+		if(gridCtx.config.isCellEdit){
+			_$renderer.editAreaClose(gridCtx, false); // 이전 에디트창 닫기
+
+			if((cellInfo.r == gridCtx.config.editRowInfo.r && cellInfo.c == gridCtx.config.editRowInfo.c)){
+				gridCtx.config.isCellEdit = false;
+				gridCtx.config.editRowInfo = {};
+				return ;
+			}
+		}
+
+		gridCtx.config.isCellEdit = true;
+
+		gridCtx.config.editRowInfo = {
+			rowItemIdx : cellInfo.rowItemIdx
+			,r : cellInfo.r
+			,c : cellInfo.c
+			,colInfo : cellInfo.colInfo
+			,rowItem : cellInfo.rowItem
+		};
+
+		var selEl = gridCtx.element.body.find('.pub-body-td[data-cell-position="'+cellInfo.r+','+cellInfo.c+'"]');
+
+		var editEleOffset = selEl.offset();
+		
+		var position = {
+			left : editEleOffset.left
+			,top : editEleOffset.top
+		}
 
 		var colInfo = cellInfo.colInfo
 		var rowItem = cellInfo.rowItem;
@@ -5592,13 +5630,13 @@ var _$renderer = {
 		var editAreaEle = $('#'+gridCtx.prefix+'_pubGridEditArea')
 				
 		if(editAreaEle.length < 1){
-			pubGridLayoutElement.append('<div id="'+gridCtx.prefix+'_pubGridEditArea" data-pubgrid-layer="'+gridCtx.prefix+'" class="pubGrid-noselect pubGrid-layer"></div>');
+			pubGridLayoutElement.append('<div id="'+gridCtx.prefix+'_pubGridEditArea" data-pubgrid-layer="'+gridCtx.prefix+'" class="pubGrid-edit-layer pubGrid-noselect pubGrid-layer"></div>');
 			editAreaEle = $('#'+gridCtx.prefix+'_pubGridEditArea');
 		}
 
-		reForm.push( '<div class="pubGrid-edit-area pubGrid-edit-type-'+renderType+'">');
-		if(renderType =='select'){
-			reForm.push( '<ul class="pubGrid-edit-field select">');
+		reForm.push( '<div class="pubGrid-edit" data-edit-type="'+renderType+'">');
+		if(renderType =='dropdown'){
+			reForm.push( '<ul class="pubGrid-edit-field dropdown">');
 			var items = renderInfo.list||[];
 
 			var labelField = renderInfo.labelField
@@ -5612,7 +5650,7 @@ var _$renderer = {
 					label : labelField ? item[labelField] : item
 					,value : valueField ? item[valueField] : item
 				}
-	
+
 				param.selected = (param.value == rowItem[colInfo.key] ? 'selected' : '');
 
 				reForm.push(replaceMesasgeFormat('<li class="pubGrid-select-item {{selected}}" data-val="{{value}}" >{{label}}</li>',param))				
@@ -5620,17 +5658,40 @@ var _$renderer = {
 			reForm.push( '</ul>');
 
 			editAreaEle.empty().html(reForm.join(''));
-			editAreaEle.show();
+			editAreaEle.addClass('open');
 
-			editAreaEle.find('.pubGrid-select-item').on('click', function (){
-				console.log(position);
-				rowItem[colInfo.key] = $(this).attr('data-val');
+			editAreaEle.find('.pubGrid-select-item').on('click', function (){// item select
+				var clickElement = $(this);
+
+				clickElement.closest('.pubGrid-edit-field').find('.pubGrid-select-item.selected').removeClass('selected');
+
+				clickElement.addClass('selected');
+				_$renderer.editAreaClose(gridCtx);
 			});
-			
 
+			editAreaEle.css('height','auto');
+
+			var positionTop = position.top
+				, editAreaHeight =editAreaEle.height()
+				, screenBottom = (_$win.scrollTop() + _$win.height());
+			if(positionTop + (editAreaHeight+10) > screenBottom){
+				positionTop = positionTop - (editAreaHeight+2); // border 2 
+				if(positionTop < 0){
+					editAreaHeight = editAreaHeight - Math.abs(positionTop);
+					positionTop = 0;	
+				}
+
+				editAreaHeight = editAreaHeight+ 'px';
+			}else{
+				editAreaHeight = 'auto';
+				positionTop = positionTop + gridCtx.config.rowHeight;
+			}
+			
 			editAreaEle.css({
-				top : position.top+'px'
+				top : positionTop+'px'
 				,left: position.left +'px'
+				,width :selEl.outerWidth() +'px'
+				,height: editAreaHeight
 			})
 
 			return ; 
@@ -5645,11 +5706,46 @@ var _$renderer = {
 		reForm.push( '</div>');
 
 		selEl.append(reForm.join(''));
-
 		var editEl = selEl.find('.pubGrid-edit-field');
-
-		editEl.val(rowItem[colInfo.key]);
 		editEl.focus();
+		editEl.val(rowItem[colInfo.key]);
+		
+	}
+	// edit 창 닫기
+	,editAreaClose: function (gridCtx, editInfoInitFlag){
+
+		if(gridCtx.config.isCellEdit === true){
+			var editRowInfo = gridCtx.config.editRowInfo;
+			var renderer = editRowInfo.colInfo.renderer;
+
+			var newValue = editRowInfo.rowItem[editRowInfo.colInfo.key];
+			if( renderer && renderer.type == 'dropdown'){
+				var selectElements = $('#'+gridCtx.prefix+'_pubGridEditArea .pubGrid-select-item.selected');
+
+				if(selectElements.length > 0){
+					newValue = selectElements.attr('data-val');
+				}
+				
+				$('#'+gridCtx.prefix+'_pubGridEditArea').removeClass('open');
+			}else{
+				var beforeEditEle = gridCtx.element.body.find('.pub-body-td[data-cell-position="'+gridCtx.config.editRowInfo.r+','+gridCtx.config.editRowInfo.c+'"] .pubGrid-edit-field');
+
+				if(beforeEditEle.length > 0){
+					newValue = beforeEditEle.val();
+					beforeEditEle.remove();
+				}
+			}
+
+			if(newValue != editRowInfo.rowItem[editRowInfo.colInfo.key]){
+				_$util.setChangeValue(gridCtx, 'modify', editRowInfo.rowItem, editRowInfo.colInfo, newValue);
+			}
+
+			if(editInfoInitFlag !== false){
+				gridCtx.config.isCellEdit = false;
+				gridCtx.config.editRowInfo = {};
+			}
+			
+		}		
 	}
 }
 
@@ -5717,6 +5813,7 @@ var _$setting = {
 		}
 		
 		settingBtn.on('mousedown.pubgrid.setting', function (e){
+			_$renderer.editAreaClose(gridCtx);
 			if(isCustomSetting){
 				settingOpt.click.call(null,{evt :e , item :{}});
 				return ; 
@@ -5893,8 +5990,13 @@ var _$setting = {
 		});
 
 		dataSearchEle.on('keydown.data.search',  function (e){
-			if (e.keyCode == 13) {
+			var keycode = eventKeyCode(e);
+
+			if (keycode == 13) {
 				dataSearchBtn.trigger('click.data.search');
+				return false; 
+			}else if(keycode == 27){
+				settingAreaEle.removeClass('open');
 				return false; 
 			}
 		});

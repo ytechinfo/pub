@@ -56,7 +56,7 @@
 .pub-context-menu li > a:hover, .pub-context-menu .pub-context-submenu:hover > a {
   text-decoration: none;
   color: #000000;
-  background-color: #ffffff;
+  background-color: #75b1ff;
   border: 1px solid #a4e3cf;
   outline: none;
 }

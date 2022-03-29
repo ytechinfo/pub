@@ -50,9 +50,9 @@ html , body {
 	row
 	<select id="itemCount">
 		<option value="1" >0</option>
-		<option value="5" >5</option>
+		<option value="5" selected>5</option>
 		<option value="10">10</option>
-		<option value="20" selected>20</option>
+		<option value="20" >20</option>
 		<option value="100" >100</option>
 		<option value="500">500</option>
 		<option value="1000">1000</option>
@@ -236,14 +236,32 @@ function getItem (type){
 			}}
 			,{key :'c', label:'씨',width:100, align:'center', type : 'money', renderer:{
 				type : 'link'
-				,url : 'http://localhost?aaa={{a}}'
+				//,url : 'http://localhost?aaa={{a}}'
+				,click1 : function (item){
+					console.log('link ',item)
+				}
 			}}
-			,{key :'d', label:'디',width:100 ,type : 'number', renderer:{
-				type : 'select'
+			,{key :'d', label:'디',width:100 ,type : 'text', renderer:{
+				type : 'dropdown'
+				,labelField : 'name'
+				,valueField : 'cd'
 				,list : [
-					'USA'
-					,'KOREA'
-					,'CHINA'
+					{name : 'USA', 'cd':'USA'}
+					,{name : 'KOREA', 'cd':'KOREA'}
+					,{name : 'CHINA', 'cd':'CHINA'}
+					,{name : 'KOREA1', 'cd':'KOREA1'}
+				
+				/*	,'KOREA2'
+					,'KOREA3'
+					,'KOREA4'
+					,'KOREA5'
+					,'KOREA6'
+					,'KOREA7'
+					,'KOREA8'
+					,'KOREA9'
+					,'KOREA10'
+					,'KOREA11'
+			*/
 				]
 			}}
 			,{key :'e', label:'이',width:100, renderer:{

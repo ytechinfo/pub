@@ -22,6 +22,11 @@ $theme_size: (
 $theme_colors: (
   'light': (
     'font_color': #000000 			// font color
+    ,'font_color_primary' : #c2c2c2
+    ,'font_color_danger' : #bdabab
+    ,'font_color_warning' : #000000
+    ,'font_color_info' : #000000
+    ,'font_color_success' : #fffafa
     ,'font_active': #5970f5
     ,'font_warning_color': #ff3400 			// font color
     ,'font_disable_color': #999999
@@ -29,22 +34,25 @@ $theme_colors: (
     ,'font_size': 12px			// font size
     ,'border_thin_color' : #d5d5d8
     ,'border_thick_color' : #bcbcbd
+
     ,'background-primary' :#286090
     ,'background-danger' : #d9534f
     ,'background-warning' :#f0ad4e
     ,'background-info' :#5bc0de
     ,'background-success' :#5cb85c
+    
     ,'background_color' : #ffffff
     ,'background_thick_color' : #dddddd
     ,'background_gradident_first' :#ffffff
     ,'background_gradident_last' :#f1f1f1
     ,'text_shadow_color' : rgba(255, 255, 255, 0.5)
     ,'box_shadow_color' : rgba(233, 227, 227, 0.2)
+    ,'layer_box_shadow_color' : rgba(0, 0, 0, 0.3)
     // a tag color
     ,'a_hover_font_color' : #000000
     ,'a_hover_border_color' : #a4e3cf
     ,'a_hover_border_thick_color' : #5970f5
-    ,'a_hover_background_color' : #ffffff
+    ,'a_hover_background_color' : #75b1ff
     ,'a_hover_color' : #a4e3cf
     ,'a_hover_thick_color' : #5970f5
 
@@ -72,6 +80,11 @@ $theme_colors: (
   )
   ,'dark' :(
     'font_color': #c5c3c3 			// font color
+    ,'font_color_primary' : #c5c3c3
+    ,'font_color_danger' : #c5c3c3
+    ,'font_color_warning' : #c5c3c3
+    ,'font_color_info' : #c5c3c3
+    ,'font_color_success' : #c5c3c3
     ,'font_active': #5970f5
     ,'font_warning_color': #ff3400 			// font color
     ,'font_disable_color': #999999
@@ -90,6 +103,8 @@ $theme_colors: (
     ,'background_gradident_last' : #4a4949
     ,'text_shadow_color' : rgba(255, 255, 255, 0.5)
     ,'box_shadow_color' : rgba(0, 0, 0, 0.2)
+    ,'layer_box_shadow_color' : rgba(255, 255, 255, 0.3)
+
     // a tag color
     ,'a_hover_font_color' : #ffffff
     ,'a_hover_border_color' : #a4e3cf
@@ -131,6 +146,33 @@ $box_sizing_content: content-box;
   box-sizing: $boxtype !important;
 }
 
+@mixin backgroundColor($themeName: 'light', $type: 'info' ) {
+    $backgroundColor : colorInfo($themeName , 'background-info');
+    $fontColor : colorInfo($themeName , 'font_color_info');
+
+    $map: map-get($theme_colors, $themeName);
+
+    @if $map != null{
+      $typeColor : colorInfo($themeName , 'background-'+$type);
+          
+      @if $typeColor != null{
+        $backgroundColor : colorInfo($themeName , 'background-'+$type);
+        $fontColor : colorInfo($themeName , 'font_color_'+$type);
+      } @else{
+        @error 'theme colorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+      }
+
+    } @else{
+      @error 'theme colorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    }
+   
+    
+    color: $fontColor;
+    background-color: $backgroundColor;
+
+}
+
+
 @mixin background_gradident($themeName: 'light'){
   
     $firstColor : colorInfo($themeName , 'background_gradident_first');
@@ -163,6 +205,19 @@ $box_sizing_content: content-box;
   -webkit-box-shadow: 0 5px 10px $color;
 	-moz-box-shadow: 0 5px 10px $color;
   box-shadow: 0 5px 10px $color;
+}
+
+@mixin layer_box_shadow($themeName: 'light'){
+  $color : colorInfo($themeName , 'layer_box_shadow_color');
+  box-shadow: 3px 3px 3px $color ;
+  -webkit-box-shadow: 3px 3px 3px $color ;
+  -moz-box-shadow: 3px 3px 3px $color ;
+}
+
+
+@mixin hoverStyle($themeName: 'light'){
+  color : colorInfo($themeName , 'a_hover_font_color');
+  background-color : colorInfo($themeName , 'a_hover_background_color');
 }
 
 // function 
