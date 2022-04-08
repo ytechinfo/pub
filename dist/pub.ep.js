@@ -786,29 +786,44 @@ _$base.download= function (opt){
 	var inputStr = [];
 	var tmpParam = opt.param;
 
-	var tmpLocationHrefForm = $('#pub_hidden_download_form');
-	if(tmpLocationHrefForm.length < 1){
-		var inputStr = [];
-		inputStr.push('<form action="" method="post" id="pub_hidden_download_form" name="hidden_download_form" target="pub_hidden_download_target" style="width:0;height:0px;display:none;">');
-		inputStr.push('</form>');
-		inputStr.push('<iframe name="pub_hidden_download_target" style="width:0;height:0px;display:none;"></iframe>');
-		$('body').append(inputStr.join(''));
-	}
-
-	var tmpVal;
-	var inputField ='<input type="hidden" name="_key" value="_val"/>';
-	for(var key in tmpParam){
-		tmpVal = tmpParam[key];
-		inputStr.push(inputField.replace('_key', key).replace('_val',((typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal))));
-	}
-
 	var downloadForm = $('#pub_hidden_download_form');
-	downloadForm.empty().html(inputStr.join(''));
+	if(downloadForm.length < 1){
+		var inputStr = [];
+		inputStr.push('<form action="" method="post" id="pub_hidden_download_form" name="hidden_download_form" style="width:0;height:0px;display:none;">');
+		inputStr.push('</form>');
+		inputStr.push('<iframe id="pub_hidden_download_frame" name="pub_hidden_download_frame_name" style="width:0;height:0px;display:none;"></iframe>');
+
+		$('body').append(inputStr.join(''));
+		downloadForm = $('#pub_hidden_download_form');
+	}
+	
+	for(var key in tmpParam){
+		var tmpVal = tmpParam[key];
+		var inputField = $('<input type="hidden"/>');
+		inputField.attr({
+			'name' : key
+			,'value' : (typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal)
+		});
+
+		downloadForm.append(inputField);
+	}
+	var targetUUID ='pubDownload_'+ _$base.util.generateUUID().replace(/-/g,''); 
+	
 	downloadForm.attr('action',opt.url);
 	downloadForm.attr('method',opt.method=='get'?'get':'post');
 
-	document.hidden_download_form.submit();
-
+	if(opt.target == 'popup'){
+		if(!_$base.isUndefined(opt.targetOption)){
+			window.open("", targetUUID, opt.targetOption) ;
+		}else{
+			downloadForm.attr('target','_blank');
+		}
+	}else{
+		//$('#pub_hidden_download_frame').prop('name',targetUUID);	
+		downloadForm.attr('target','pub_hidden_download_frame_name');
+	}
+	
+	downloadForm.trigger('submit');
 	downloadForm.empty();
 }
 
