@@ -789,9 +789,9 @@ _$base.download= function (opt){
 	var tmpLocationHrefForm = $('#pub_hidden_download_form');
 	if(tmpLocationHrefForm.length < 1){
 		var inputStr = [];
-		inputStr.push('<form action="" method="post" id="pub_hidden_download_form" name="hidden_download_form" target="pub_hidden_download_target" style="width:0;height:0px;display:hidden;">');
+		inputStr.push('<form action="" method="post" id="pub_hidden_download_form" name="hidden_download_form" target="pub_hidden_download_target" style="width:0;height:0px;display:none;">');
 		inputStr.push('</form>');
-		inputStr.push('<iframe name="pub_hidden_download_target" style="width:0;height:0px;display:hidden;"></iframe>');
+		inputStr.push('<iframe name="pub_hidden_download_target" style="width:0;height:0px;display:none;"></iframe>');
 		$('body').append(inputStr.join(''));
 	}
 
