@@ -87,8 +87,8 @@ $(document).ready(function (){
 					console.log(searchWord, evt)		
 				}
 			}
-			,completeMove : function (addItem){
-				alert(addItem);
+			,completeMove : function (addItems){
+				alert(JSON.stringify(addItems));
 				return true; 
 			}
 			,paging :{
@@ -99,7 +99,6 @@ $(document).ready(function (){
 					console.log(clickInfo)
 				}
 			}
-			
 		}
 		,target : {
 			label : 'Target'

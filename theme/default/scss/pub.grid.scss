@@ -117,13 +117,18 @@
 		vertical-align: top;
 		height: 100%;
 		border-bottom: none;
+
+		table{
+			min-width: auto !important;
+			border-collapse: separate !important;
+		}
 	
 		[rowinfo="0"]>td {
 			border-top: none;
 		}
 
 		th:first-child, td:first-child{
-			border-left: none;
+			border-left: none !important;
 		}
 	}
 
@@ -248,9 +253,9 @@
 	
 		th {
 			position: relative;
-			margin: 0;
-			padding: 0;
-			height:25px;
+			margin: 0 !important;
+			padding: 0 !important;
+			height:25px !important;
 			vertical-align: middle;
 			border-right: 1px solid colorInfo($g_default_theme_name , "border_thick_color");
 			border-top:1px solid colorInfo($g_default_theme_name , "border_thick_color");
@@ -259,7 +264,7 @@
 		tr:first-child
 		{
 			th {
-				border-top: none;
+				border-top: none !important;
 			}
 		}
 	}
@@ -311,8 +316,11 @@
 		display:table-row;
 	
 		td{
-			padding: 0px 5px 0px 5px;
-			margin: 0;
+			padding: 0px 5px 0px 5px !important;
+			margin: 0 !important;
+			border-top: none !important;
+			border-left: none !important;
+
 			border-right : 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 			border-bottom : 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 			position: relative;
@@ -1425,8 +1433,6 @@
 			
 			.pubGrid-body-container{
 				td{
-					border-top: none;
-					border-left: none;
 					border-right : 1px solid colorInfo($pThemeName , "border_thin_color");
 					border-bottom : 1px solid colorInfo($pThemeName , "border_thin_color");
 			

@@ -182,11 +182,13 @@ http://www.opensource.org/licenses/mit-license.php
             height: 100%;
             padding: 0px;
             overflow: auto;
+            user-select: none;
 
             .pub-multiselect-items{
                 padding: 0px;
                 margin: 0px;
                 width: 100%;
+                height: 100%;
                 cursor: default;
                 
                 >.pub-select-item{
@@ -287,7 +289,6 @@ http://www.opensource.org/licenses/mit-license.php
 
         .selected {
             background: colorInfo($g_default_theme_name , "column_active_background");
-            color: colorInfo($g_default_theme_name , "font_active");;
         }
          
         .empty-message {
@@ -350,7 +351,6 @@ http://www.opensource.org/licenses/mit-license.php
                         
             .selected {
                 background: colorInfo($pThemeName , "column_active_background");
-			    color: colorInfo($pThemeName , "font_active");;
             }
         }
     }
