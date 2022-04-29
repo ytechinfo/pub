@@ -219,7 +219,7 @@ function getItem (type){
 				,e:'eee_'+i
 				,f:'ffff'+i
 				,g:'ggggg'+i
-				,h:'hhhh'+i
+				,h:i
 				,i:'iiii'+i
 				,j:'jjjj'+i
 				,idx: i
@@ -278,7 +278,9 @@ function getItem (type){
 				type : 'image1'
 				,src : './image/{{g}}'
 			}}
-			
+			,{key :'h', label:'h',width:100, align:'center', type:'number', visible:true,renderer:{
+				type : 'number'
+			}}
 			//,{key :'d', label:'디', hidden:true}
 		]
 	}else{
@@ -362,6 +364,9 @@ function fn_init(){
 
 	aaa =item.aaa;
 	colItem  = item.colItem;
+
+
+	console.log(aaa);
 	
 	if(parseInt($('#itemCount').val(),10) == 1){
 		aaa = [];
@@ -481,7 +486,7 @@ function gridDraw(selector, aaa, colItem){
 			,configVal1 : {search : {field:'col1', val : '111'}}
 		}
 		,tColItem : colItem
-		,theadGroup :[ 
+		,theadGroup1 :[ 
 			[
 			{label:'ac1<br/>asdf',rowspan: 3,  style:''}
 			,{label:'ac2<br/>asdf',rowspan: 2, style:''}
@@ -520,7 +525,7 @@ function gridDraw(selector, aaa, colItem){
 		,tfootItem :['asdf']
 		,rowOptions :{
 			dblClickCheck :true
-			, height : 30
+			, height : 50
 			,dblClick1: function (){
 				console.log('dblclick')
 			}

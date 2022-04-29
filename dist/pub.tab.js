@@ -18,22 +18,21 @@ var pluginName = "pubTab"
 	,activeFirstItem : true	//로드시 첫번째 item 활성화 여부
 	,enableClickEventChange : false // click event item 변경시에만 활성화
 	,itemPadding: 5			// item padding 값
-	,height : '22px'		// tab height
+	,tabHeight : 25		// tab height
 	,leftMargin : 30		// 왼쪽에 item 있을경우 더 이동할 space
 	,overItemViewMode : 'drop'	// over item  보여질 방법.
 	,dropItemHeight :'auto'		//drop item height
 	,dropItemWidth :'auto'		//drop item width
 	,moveZIndex : 9				// move 영역 z- index
+	,useContentContainer : true	// 컨텐츠 영역 사용여부
 	,titleIcon :{
 		left :{
-			overview : true		// mouseover icon view  여부
-			,visible :true		// 기본 보이기 여부.
+			visible :true		// 기본 보이기 여부.
 			,html : ''				// 활성시 추가할 html
 			,click: false			// 클릭 이벤트.
 		}
 		,right : {
-			overview : true		// mouseover icon view  여부
-			,visible :true
+			visible :true
 			,html : ''				// 활성시 추가할 html
 			,click: false			// 클릭 이벤트.
 		}
@@ -43,6 +42,11 @@ var pluginName = "pubTab"
 	,items:[]							// tab item
 	,click :function (item){			// tab click 옵션
 
+	}
+	,contentViewSelector : false 			// tab content view selector
+	,contentStyleClass : ''
+	,contentHtml : function (item, callback){
+		callback('<div>'+item.title+'</div>');
 	}
 	,removeItem : false	// remove callback 옵션
 	,blinkClass : 'blinkcss'
@@ -138,17 +142,15 @@ Plugin.prototype ={
 
 		var titleIcon =_opts.titleIcon;
 
-		var addHtml = '';
-
 		var iconInfo ={left :{} , right:{}};
 
 		if(titleIcon){
 			if(titleIcon.left && titleIcon.left.html != ''){
-				iconInfo.left.html =  '<span class="pubTab-icon-area '+(titleIcon.left.visible === false ? 'visible-hide' : '')+' '+(titleIcon.left.overview === false ? 'pubTab-icon-hover-hide' : '')+'"><span class="pubTab-icon" data-posistion="left">'+titleIcon.left.html+'</span></span>';
+				iconInfo.left.html =  '<span class="pubTab-icon-area '+(titleIcon.left.visible === false ? 'visible-hide' : '')+'"><span class="pubTab-icon" data-posistion="left">'+titleIcon.left.html+'</span></span>';
 			}
 
 			if(titleIcon.right && titleIcon.right.html != ''){
-				iconInfo.right.html =  '<span class="pubTab-icon-area '+(titleIcon.right.visible === false ? 'hide' : '')+' '+(titleIcon.right.overview === false ? 'pubTab-icon-hover-hide' : '')+'"><span class="pubTab-icon" data-posistion="right">'+titleIcon.right.html+'</span></span>';
+				iconInfo.right.html =  '<span class="pubTab-icon-area '+(titleIcon.right.visible === false ? 'hide' : '')+'"><span class="pubTab-icon" data-posistion="right">'+titleIcon.right.html+'</span></span>';
 			}
 		}
 
@@ -451,15 +453,25 @@ Plugin.prototype ={
 		var tabEle= this.tabElement.find('.pubTab-item[data-tab-id="'+item[this.options.itemKey.id]+'"]');
 
 		this.removeTabBlink(item);
-		
+
+		if(item._isInitialised !== true){
+			item._isInitialised = true; 
+			this._getTabContentHtml(item);
+		}
+
 		if(tabEle.hasClass('active')){
 			return ;
 		}
 
 		this.tabElement.find('.pubTab-item.active').removeClass('active');
+		this.element.contentContainerElement.find('.pubTab-content.active').removeClass('active');
 		this._setHistory(tabEle.attr('data-tab-id'));
 		tabEle.addClass('active');
+		this.element.contentContainerElement.find('[data-tab-cont-id="'+item[this.options.itemKey.id]+'"]').addClass('active');
 		this.movePosition(tabEle.index());
+	}
+	,reloadContent : function (item){
+		this._getTabContentHtml(item, true);
 	}
 	/**
 	 * @method getActive
@@ -481,8 +493,6 @@ Plugin.prototype ={
 		var _this = this;
 
 		var tabWidthItem =_this.config.tabWidth[dataIdx];
-
-		var selItem = _this.options.items[dataIdx];
 
 		var itemEndPoint = tabWidthItem.leftLast+_this.config.moveAreaWidth;
 
@@ -714,6 +724,7 @@ Plugin.prototype ={
 			this.options.items = [];
 
 			this.tabElement.find('.pubTab-item[data-tab-id]').remove();
+			this.element.contentContainerElement.find('[data-tab-cont-id]').remove();
 			this.calcItemWidth();
 
 			if($.isFunction(this.options.removeItem)){
@@ -727,10 +738,10 @@ Plugin.prototype ={
 			this.config.tabHistory =[tabId];
 
 			this.tabElement.find('.pubTab-item[data-tab-id]').not( '[data-tab-id="'+tabId+'"]' ).remove();
+			this.element.contentContainerElement.find('[data-tab-cont-id]').not( '[data-tab-cont-id="'+tabId+'"]' ).remove();
 			this.tabElement.find('.pubTab-item[data-tab-id="'+tabId+'"]').find('.pubTab-item-cont').trigger('click');
 
 			this.calcItemWidth();
-
 
 			if($.isFunction(this.options.removeItem)){
 				this.options.removeItem.call(null,'other');
@@ -759,6 +770,7 @@ Plugin.prototype ={
 		reval = reval[0];
 
 		this.tabElement.find('.pubTab-item[data-tab-id="'+reval._tabid+'"]').remove();
+		this.element.contentContainerElement.find('[data-tab-cont-id="'+reval._tabid+'"]').remove();
 		this.tabElement.find('.pubTab-drop-item[data-tab-id="'+reval._tabid+'"]').remove();
 
 		this.config.tabHistory = arrayRemove(this.config.tabHistory, reval._tabid);
@@ -861,6 +873,25 @@ Plugin.prototype ={
 
 		return '<li class="pubTab-item" draggable="'+(_opts.drag.enabled ? true:false)+'" data-tab-id="'+item._tabid+'" title="'+title+'"><div class="pubTab-item-overlay" style=""></div> <div class="pubTab-item-cont-wrapper"><div class="pubTab-item-cont '+_opts.addClass+'" >'+itemHtm+'</div></div></li>';
 	}
+	,_getTabContentHtml : function (item, reloadFlag){
+		var _this = this; 
+		var contentContainerElement = this.element.contentContainerElement; 
+		var contentEleLen = contentContainerElement.find('[data-tab-cont-id="'+item[this.options.itemKey.id]+'"]').length; 
+
+		if(reloadFlag !== true && contentEleLen > 0){
+			return ; 
+		}
+
+		this.options.contentHtml(item,function (template){
+			if(contentEleLen > 0){
+				contentContainerElement.find('[data-tab-cont-id="'+item[_this.options.itemKey.id]+'"]').empty().html(template);
+			}else{
+				contentContainerElement.append('<div class="pubTab-content '+_this.options.contentStyleClass+'" data-tab-cont-id="'+item._tabid+'">'+template+'</div>');
+			}
+
+			return contentContainerElement.find('[data-tab-cont-id="'+item._tabid+'"]');
+		});
+	}
 	//drop item template
 	,_getDropItemHtml : function (item){
 		var title = item[this.options.itemKey.title];
@@ -874,9 +905,6 @@ Plugin.prototype ={
 
 		function tabItemHtml (){
 			var tabHtm = [];
-
-			var item;
-			var itemHtm;
 			for(var i = 0 ;i < itemLen ;i++){
 				tabHtm.push(_this._getTabItemHtml(items[i]));
 			}
@@ -894,9 +922,9 @@ Plugin.prototype ={
 
 		var strHtm = [];
 		strHtm.push('<div class="pubTab-wrapper" role="presentation">');
-		strHtm.push('	<div id="'+_this.prefix+'pubTab" class="pubTab">');
+		strHtm.push('	<div id="'+_this.prefix+'pubTab" class="pubTab" style="height:'+_opts.tabHeight+'px;">');
 		strHtm.push('		<div id="'+_this.prefix+'pubTab-scroll" class="pubTab-scroll">');
-		strHtm.push('			<ul id="'+_this.prefix+'pubTab-container" class="pubTab-container" style="height:'+_opts.height+'">');
+		strHtm.push('			<ul id="'+_this.prefix+'pubTab-container" class="pubTab-container" >');
 		strHtm.push(tabItemHtml());
 		strHtm.push('			<li><div id="'+_this.prefix+'pubTab-move-space"  style="display:none;">&nbsp;</div></li>');
 		strHtm.push('			</ul>');
@@ -907,10 +935,15 @@ Plugin.prototype ={
 		if(_opts.overItemViewMode =='drop'){
 			strHtm.push('		<div id="'+_this.prefix+'DropItem" style="width:'+_opts.dropItemWidth+'" class="pubTab-drop-item-wrapper"><ul class="pubTab-drop-item-area">'+dropItemHtml()+'</ul></div>');
 		}
-
 		strHtm.push('		  </div>');
+
 		strHtm.push('		</div>');
 		strHtm.push('	</div>');
+
+		if(_opts.contentViewSelector===false && _opts.useContentContainer !== false){
+			strHtm.push('<div id="'+_this.prefix+'ContentContainer" class="pubTab-content-container" style="height:calc(100% - '+_opts.tabHeight+'px);"></div>');
+		}
+		
 		strHtm.push('</div>');
 
 		_this.tabElement.empty().html(strHtm.join(''));
@@ -918,7 +951,8 @@ Plugin.prototype ={
 		_this.element.tabContainerElement =  $('#'+_this.prefix+'pubTab-container');
 		_this.element.tabScrollElement = $('#'+_this.prefix+'pubTab-scroll');
 		_this.element.dropItemAreaElement = $('#'+_this.prefix+'DropItem');
-
+		_this.element.contentContainerElement = (_opts.contentViewSelector === false ? $('#'+_this.prefix+'ContentContainer') : $(_opts.contentViewSelector));
+		
 		_this.config.moveAreaWidth  = this.tabElement.find('.pubTab-move-area').width();
 		$('#'+_this.prefix+'pubTab-move-space').css('width',_this.config.moveAreaWidth);
 

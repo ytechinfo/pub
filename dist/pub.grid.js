@@ -417,6 +417,8 @@ var formatter= {
 
 		fixedNum = fixedNum || 0;
 
+		
+
 		if (!isFinite(num)) {
 			return num;
 		}
@@ -1683,7 +1685,6 @@ Plugin.prototype ={
 		var itemVal = (_$renderer[ rendererType ] || _$renderer.text)(this, thiItem, rowItem, mode);
 
 		if(addEle){
-			itemVal = itemVal||'';
 			if(rendererType !='text'){
 				addEle.innerHTML = itemVal;
 				itemVal = '';
@@ -3152,11 +3153,11 @@ Plugin.prototype ={
 				//console.log('111');
 								
 				//console.log('111111111');
-			}).on('dragenter.pubtab.dragitem', '.pubTab-item', function (e){
+			}).on('dragenter.pubGrid.dragitem', '.label-wrapper', function (e){
 				
 				return false; // mouse  cursor 이상 현상 제거 하기 위해서 처리함. 
 				
-			}).on('dragend.pubtab.dragitem',  function (e){
+			}).on('dragend.pubGrid.dragitem',  function (e){
 				//var dt = e.originalEvent.dataTransfer;
 				e.originalEvent.dataTransfer.clearData()
 				

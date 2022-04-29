@@ -4,6 +4,7 @@
 <TITLE>pub Tab-예제</TITLE>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="../theme/default/css/pub.tab.min.css" rel="stylesheet">
+	<link href="../theme/default/css/pub.context.min.css" rel="stylesheet">
 
 	<script src="../plugins/jquery-1.10.2.min.js"></script>
 	<script src="../dist/pub.context.js"></script>
@@ -14,25 +15,13 @@
 </style>
 </HEAD>
 <BODY>
-	<div id="pubTabId" style="width:calc(100% - 300px);" pub-theme="dark">
-	</div>
--------------------------------<br/>
 	<div>
 		<button type="button" class="add-item">add item</button>
 		<button type="button" class="del-item">del item</button>
 	</div>
-	<div id="asdfasdf" style="width:300px" >
-		<div class="pub-tab-wrapper">
-			<div class="pub-tab" data-mode="vertical">
-				<span class="pub-tab-prev">앞</span>
-				<ul class="pub-tab-container">
-					<li class="pub-tab-item ui-state-default ui-corner-top ui-state-active" contentid="tables" contenturl="tables" refresh="N"><span href="#tabs-3" class="left-menu-ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-3">Tables</span></li><li class="pub-tab-item ui-state-default ui-corner-top" contentid="views" contenturl="views"><span href="#tabs-3" class="left-menu-ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-3">Views</span></li><li class="pub-tab-item ui-state-default ui-corner-top" contentid="procedures" contenturl="procedures"><span href="#tabs-3" class="left-menu-ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-3">Procedures</span></li><li class="pub-tab-item ui-state-default ui-corner-top" contentid="functions" contenturl="functions"><span href="#tabs-3" class="left-menu-ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-3">Functions</span></li>
-					<li class="pub-tab-item ui-state-default ui-corner-top ui-state-active" contentid="tables" contenturl="tables" refresh="N"><span href="#tabs-3" class="left-menu-ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-3">Tables</span></li><li class="pub-tab-item ui-state-default ui-corner-top" contentid="views" contenturl="views"><span href="#tabs-3" class="left-menu-ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-3">Views</span></li><li class="pub-tab-item ui-state-default ui-corner-top" contentid="procedures" contenturl="procedures"><span href="#tabs-3" class="left-menu-ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-3">Procedures</span></li><li class="pub-tab-item ui-state-default ui-corner-top" contentid="functions" contenturl="functions"><span href="#tabs-3" class="left-menu-ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-3">Functions</span></li>
-				</ul>
-				<span class="pub-tab-next">뒤</span>
-			</div>
-		</div>
+	<div id="pubTabId" style="width:calc(100% - 300px); height:300px;" pub-theme="light">
 	</div>
+-------------------------------<br/>
 </BODY>
 </HTML>
 <script>
@@ -111,18 +100,16 @@ var pubTab = {
 			}
 			,titleIcon :{
 				left :{
-					overview : false		// mouseover icon view  여부
-					,visible : false
+					visible : false
 					,html : '<i class="fa fa-refresh">R</i>'
 					,click : function (item, idx){
-						pubTabObj.removeItem(idx);
+						//pubTabObj.removeItem(idx);
 
 						//console.log('pubTabObj.getSelectItem() : '+ pubTabObj.getSelectItem())
 					}
 				}
 				,right : {
-					overview : true		// mouseover icon view  여부
-					,html : '<i class="fa fa-refresh">X</i>'				// 활성시 추가할 html
+					html : '<i class="fa fa-refresh">X</i>'				// 활성시 추가할 html
 					,click : function (item, idx){
 
 						console.log('pubTabObj.getSelectItem() : '+ pubTabObj.getSelectItem())
