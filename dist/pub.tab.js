@@ -561,6 +561,8 @@ Plugin.prototype ={
 			return false;
 		}
 
+		item._isInitialised = false;
+
 		if(isNaN(idx)){
 			idx = this.options.items.length;
 			this.options.items.push(item);
