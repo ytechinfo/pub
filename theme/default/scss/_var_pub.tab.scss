@@ -8,6 +8,9 @@ $pubtab_colors: (
     ,'tab_dim_background' :#d8d8d8
     ,'tab_blink_background' :#252525
     ,'tab_blink_color' :#ffffff
+    ,'tab_drag_over_color' : #1a1818
+    ,'tab_drag_over_background' : #cecece
+
   )
   ,'dark':(
     'tab_background':#423f3f
@@ -16,6 +19,8 @@ $pubtab_colors: (
     ,'tab_dim_background' :#5a5656
     ,'tab_blink_background' :#dcdcdc
     ,'tab_blink_color' :#000000
+    ,'tab_drag_over_color' : #1b1b1b
+    ,'tab_drag_over_background' : #cecece
   )
 );
 

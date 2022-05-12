@@ -27,12 +27,12 @@ var pluginName = "pubTab"
 	,useContentContainer : true	// 컨텐츠 영역 사용여부
 	,titleIcon :{
 		left :{
-			visible :true		// 기본 보이기 여부.
+			onlyActiveView :true		// 기본 보이기 여부.
 			,html : ''				// 활성시 추가할 html
 			,click: false			// 클릭 이벤트.
 		}
 		,right : {
-			visible :true
+			onlyActiveView :false
 			,html : ''				// 활성시 추가할 html
 			,click: false			// 클릭 이벤트.
 		}
@@ -145,12 +145,13 @@ Plugin.prototype ={
 		var iconInfo ={left :{} , right:{}};
 
 		if(titleIcon){
-			if(titleIcon.left && titleIcon.left.html != ''){
-				iconInfo.left.html =  '<span class="pubTab-icon-area '+(titleIcon.left.visible === false ? 'visible-hide' : '')+'"><span class="pubTab-icon" data-posistion="left">'+titleIcon.left.html+'</span></span>';
+			var leftIcon =titleIcon.left; 
+			if(leftIcon && leftIcon.html != ''){
+				iconInfo.left.html =  '<span class="pubTab-icon-area '+(leftIcon.onlyActiveView === true ? 'visible-hide' : '')+'"><span class="pubTab-icon" data-posistion="left">'+leftIcon.html+'</span></span>';
 			}
 
 			if(titleIcon.right && titleIcon.right.html != ''){
-				iconInfo.right.html =  '<span class="pubTab-icon-area '+(titleIcon.right.visible === false ? 'hide' : '')+'"><span class="pubTab-icon" data-posistion="right">'+titleIcon.right.html+'</span></span>';
+				iconInfo.right.html =  '<span class="pubTab-icon-area '+(titleIcon.right.onlyActiveView === true ? 'visible-hide' : '')+'"><span class="pubTab-icon" data-posistion="right">'+titleIcon.right.html+'</span></span>';
 			}
 		}
 
@@ -862,18 +863,24 @@ Plugin.prototype ={
 			//titleTag = '<span class="pubTab-item-title">'+title+'</span>';
 		}
 
+		var titleIcon =_opts.titleIcon;
+
 		var itemHtm ='';
 		if(cfgIcon.left && cfgIcon.left.html){
-			itemHtm += cfgIcon.left.html;
+
+			if(!$.isFunction(titleIcon.left.visible) || ($.isFunction(titleIcon.left.visible) && titleIcon.left.visible.call(null, item) !== false)){
+				itemHtm += cfgIcon.left.html;
+			}
 		}
 
 		itemHtm += titleTag;
-
 		if(cfgIcon.right && cfgIcon.right.html){
-			itemHtm += cfgIcon.right.html;
+			if(!$.isFunction(titleIcon.right.visible) || ($.isFunction(titleIcon.right.visible) && titleIcon.right.visible.call(null, item) !== false)){
+				itemHtm += cfgIcon.right.html;
+			}
 		}
 
-		return '<li class="pubTab-item" draggable="'+(_opts.drag.enabled ? true:false)+'" data-tab-id="'+item._tabid+'" title="'+title+'"><div class="pubTab-item-overlay" style=""></div> <div class="pubTab-item-cont-wrapper"><div class="pubTab-item-cont '+_opts.addClass+'" >'+itemHtm+'</div></div></li>';
+		return '<div class="pubTab-item" draggable="'+(_opts.drag.enabled ? true:false)+'" data-tab-id="'+item._tabid+'" title="'+title+'"><div class="pubTab-item-overlay" style=""></div><div class="pubTab-item-cont-wrapper"><div class="pubTab-item-cont '+_opts.addClass+'" >'+itemHtm+'</div></div></div>';
 	}
 	,_getTabContentHtml : function (item, reloadFlag){
 		var _this = this; 
@@ -926,10 +933,10 @@ Plugin.prototype ={
 		strHtm.push('<div class="pubTab-wrapper" role="presentation">');
 		strHtm.push('	<div id="'+_this.prefix+'pubTab" class="pubTab" style="height:'+_opts.tabHeight+'px;">');
 		strHtm.push('		<div id="'+_this.prefix+'pubTab-scroll" class="pubTab-scroll">');
-		strHtm.push('			<ul id="'+_this.prefix+'pubTab-container" class="pubTab-container" >');
+		strHtm.push('			<div id="'+_this.prefix+'pubTab-container" class="pubTab-container" >');
 		strHtm.push(tabItemHtml());
-		strHtm.push('			<li><div id="'+_this.prefix+'pubTab-move-space"  style="display:none;">&nbsp;</div></li>');
-		strHtm.push('			</ul>');
+		strHtm.push('			<span><div id="'+_this.prefix+'pubTab-move-space" style="display:none;">&nbsp;</div></span>');
+		strHtm.push('			</div>');
 		strHtm.push('		</div> ');
 		strHtm.push('		<div class="pubTab-move-area" style="z-index:'+_opts.moveZIndex+';">');
 

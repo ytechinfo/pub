@@ -19,7 +19,7 @@
 		<button type="button" class="add-item">add item</button>
 		<button type="button" class="del-item">del item</button>
 	</div>
-	<div id="pubTabId" style="width:calc(100% - 300px); height:300px;" pub-theme="light">
+	<div id="pubTabId" style="width:calc(100% - 300px); height:300px;" pub-theme="dark">
 	</div>
 -------------------------------<br/>
 </BODY>
@@ -100,7 +100,10 @@ var pubTab = {
 			}
 			,titleIcon :{
 				left :{
-					visible : false
+					onlyActiveView : true
+					,visible : function (item){
+						return item.id =='test_0' ? false : true; 
+					}
 					,html : '<i class="fa fa-refresh">R</i>'
 					,click : function (item, idx){
 						//pubTabObj.removeItem(idx);
@@ -110,6 +113,9 @@ var pubTab = {
 				}
 				,right : {
 					html : '<i class="fa fa-refresh">X</i>'				// 활성시 추가할 html
+					,visible : function (item){
+						return item.id =='test_0' ? false : true; 
+					}
 					,click : function (item, idx){
 
 						console.log('pubTabObj.getSelectItem() : '+ pubTabObj.getSelectItem())

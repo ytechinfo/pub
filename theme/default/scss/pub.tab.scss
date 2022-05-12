@@ -155,56 +155,70 @@
 		left:0px;
 		padding: 0px;
 		margin: 0px;
-		display: table;
+		display: flex;
 		padding: 0px 2px 0px 2px;
 	}
 
 	.pubTab-item{
 		vertical-align: baseline;
-		padding: 0px 5px 0px 0px;
-		display: table-cell;
+		margin: 0px 5px 0px 0px;
 		position: relative;
 		@include opacity_val(0.5);
 	
 		&.drag-over{
-			background-color: tabColorInfo($g_default_theme_name , "tab_active_background");
-			@include opacity_val(0.8);
+			.pubTab-item-cont-wrapper{
+				background-color: tabColorInfo($g_default_theme_name , "tab_drag_over_background");
+				*{
+					color: tabColorInfo($g_default_theme_name , "tab_drag_over_color");
+				}
+			}
 		}
-		.pub-title-ellipsis {
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			word-wrap: normal;
-			overflow: hidden;
-		}
-
+		
 		.pubTab-item-title{
 			display:inline-block;
 			padding: 0px 5px;
 			cursor:pointer;
 			white-space: nowrap;
 			display:table-cell;
+
+			&.pub-title-ellipsis {
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				word-wrap: normal;
+				overflow: hidden;
+			}
 		}
-	
-		.pubTab-item-cont{
-			line-height: 21px;
+
+		.pubTab-item-cont-wrapper{
+			border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
 			background: tabColorInfo($g_default_theme_name,"tab_background");
-			padding :0px 3px 0px 3px;
-			
+			color: colorInfo($g_default_theme_name , "font_color");
+			border-top-left-radius: 3px;
+			border-top-right-radius: 3px;
+			overflow: hidden;
+	
 			&:hover, &:focus{
 				@include opacity_val(0.8);
 				color:colorInfo($g_default_theme_name , "a_hover_font_color");
 				background: colorInfo($g_default_theme_name,"a_hover_background_color");
 			}
 		}
-		
 	
+		.pubTab-item-cont{
+			line-height: 21px;
+			padding :0px 3px 0px 3px;
+			
+		}
+			
 		&.active{
 			@include opacity_val(1);
+
+			.pubTab-item-cont-wrapper{
+				background: tabColorInfo($g_default_theme_name,"tab_active_background");
+				color:colorInfo($g_default_theme_name , "tab_active_color");
+			}
 	
 			.pubTab-item-cont{
-				background : tabColorInfo($g_default_theme_name , "tab_active_background");
-				color: tabColorInfo($g_default_theme_name , "tab_active_color");
-
 				.pubTab-icon-area{
 					visibility: visible;
 					display:table-cell;
@@ -216,21 +230,7 @@
 			padding: 0px 0px;
 		}
 	}
-		
-	.pubTab-item-cont-wrapper{
-		border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
-		border-top-left-radius: 3px;
-		border-top-right-radius: 3px;
-		overflow: hidden
-	}
-	.pubTab-item-title{
-		display:inline-block;
-		padding: 0px 5px;
-		cursor:pointer;
-		white-space: nowrap;
-		display:table-cell;
-	}
-		
+			
 	.pubTab-hide{
 		display:none;
 	}
@@ -279,26 +279,7 @@
 					color:colorInfo($pThemeName , "a_hover_thick_color");
 				}
 			}
-
-			.pubTab-item{
-				.pubTab-item-cont{
-					background: tabColorInfo($pThemeName,"tab_background");
-					
-					&:hover, &:focus{
-						color:colorInfo($pThemeName , "a_hover_font_color");
-						background: colorInfo($pThemeName,"a_hover_background_color");
-					}
-				}
-				
-				&.active{
-					@include opacity_val(1);
-					.pubTab-item-cont{
-						background : tabColorInfo($pThemeName , "tab_active_background");
-						color: tabColorInfo($pThemeName , "tab_active_color");
-					}
-				}
-			}
-				
+		
 			.pubTab-drop-item-wrapper{
 				border: 1px solid colorInfo($pThemeName , "border_thin_color");
 			}
@@ -328,22 +309,35 @@
 		}
 
 		.pubTab-item{
-			&.active{
-				.pubTab-item-cont{
-					background : tabColorInfo($pThemeName , "tab_active_background");
-					color: tabColorInfo($pThemeName , "tab_active_color");
+
+			.pubTab-item-cont-wrapper{
+				border: 1px solid colorInfo($pThemeName , "border_thin_color");
+				background: tabColorInfo($pThemeName,"tab_background");
+				color: colorInfo($pThemeName , "font_color");
+				
+				&:hover, &:focus{
+					color:colorInfo($pThemeName , "a_hover_font_color");
+					background: colorInfo($pThemeName,"a_hover_background_color");
 				}
 			}
 
 			&.drag-over{
-				background-color: tabColorInfo($pThemeName , "tab_active_background");
-				@include opacity_val(0.8);
+				.pubTab-item-cont-wrapper{
+					background-color: tabColorInfo($pThemeName , "tab_drag_over_background");
+					*{
+						color: tabColorInfo($pThemeName , "tab_drag_over_color");
+					}
+				}
 			}
 		}
 		
-		.pubTab-item-cont-wrapper{
-			border: 1px solid colorInfo($pThemeName , "border_thin_color");
+		&.active{
+			.pubTab-item-cont-wrapper{
+				background: tabColorInfo($pThemeName,"tab_active_background");
+				color:colorInfo($pThemeName , "tab_active_color");
+			}
 		}
+		
 
 		.blinkcss {
 			*{
