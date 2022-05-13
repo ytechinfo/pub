@@ -940,12 +940,11 @@ Plugin.prototype ={
 		strHtm.push('		</div> ');
 		strHtm.push('		<div class="pubTab-move-area" style="z-index:'+_opts.moveZIndex+';">');
 
-		strHtm.push('		  <div class="pubTab-more-button">');
 		if(_opts.overItemViewMode =='drop'){
-			strHtm.push('		<div id="'+_this.prefix+'DropItem" style="width:'+_opts.dropItemWidth+'" class="pubTab-drop-item-wrapper"><ul class="pubTab-drop-item-area">'+dropItemHtml()+'</ul></div>');
+			strHtm.push(' 		<div class="pubTab-more-button"></div>');
+			strHtm.push('		<div id="'+_this.prefix+'DropItem" style="width:'+(_opts.dropItemWidth+(_opts.dropItemWidth == 'auto'?'':'px'))+'" class="pubTab-drop-item-wrapper"><ul class="pubTab-drop-item-area">'+dropItemHtml()+'</ul></div>');
 		}
-		strHtm.push('		  </div>');
-
+		
 		strHtm.push('		</div>');
 		strHtm.push('	</div>');
 
