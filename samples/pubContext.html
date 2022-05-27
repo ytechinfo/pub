@@ -54,6 +54,7 @@ $(document).ready(function (){
 		beforeSelect :function (info){
 			console.log('11111', this, info);
 			$(this).trigger('click');
+			return false; 
 		}
 		,callback: function(key,sObj) {
 			console.log(this,key,sObj);

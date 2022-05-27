@@ -1879,15 +1879,15 @@
   /* for MS계열 브라우저 */
 }
 
-.pubTab-wrapper * {
-  -webkit-box-sizing: content-box !important;
-  box-sizing: content-box !important;
-}
-
 .pubTab-wrapper .pubTab {
   position: relative;
   width: 100%;
-  margin-bottom: 2px;
+  margin-bottom: -1px;
+}
+
+.pubTab-wrapper .pubTab * {
+  -webkit-box-sizing: content-box !important;
+  box-sizing: content-box !important;
 }
 
 .pubTab-wrapper .pubTab .pubTab-icon-area {
@@ -1925,71 +1925,22 @@
   z-index: 10;
 }
 
-.pubTab-wrapper .pubTab .pubTab-drop-item-wrapper {
-  display: none;
-  position: absolute;
-  top: 100%;
-  right: 0;
-  left: auto;
-  max-height: 300px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 1000;
-  background-clip: padding-box;
-  border: 1px solid #d5d5d8;
-}
-
-.pubTab-wrapper .pubTab .pubTab-open .pubTab-drop-item-wrapper {
-  display: block;
-}
-
-.pubTab-wrapper .pubTab .pubTab-drop-item-area {
-  margin: 0px 0 0 0;
-  padding: 0px;
-  text-align: left;
-  background-color: #ffffff;
-  list-style: none;
-}
-
-.pubTab-wrapper .pubTab .pubTab-drop-item-area > li {
-  padding: 0px 5px 1px 5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  word-wrap: normal;
-  overflow: hidden;
-}
-
-.pubTab-wrapper .pubTab .pubTab-drop-item {
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.pubTab-wrapper .pubTab .pubTab-drop-item:hover {
-  background-color: #dddddd;
-}
-
 .pubTab-wrapper .pubTab-scroll {
   overflow: hidden;
   padding: 2px 0px 0px 0px;
   width: 100%;
 }
 
-.pubTab-wrapper .pubTab-move-area {
-  z-index: 5;
+.pubTab-wrapper .pubTab-more-button {
+  z-index: 1;
   position: absolute;
   right: 0px;
   bottom: 0px;
-  margin-top: 1px;
   min-width: 20px;
-  line-height: 23px;
-}
-
-.pubTab-wrapper .pubTab-move-area .pubTab-more-button {
+  height: 22px;
   padding: 0px;
   text-align: center;
-  height: 22px;
   color: #989494;
-  font-style: inherit;
   cursor: pointer;
   opacity: 0.9;
   -moz-opacity: 0.9;
@@ -1999,12 +1950,11 @@
   background: #d4d3d3;
 }
 
-.pubTab-wrapper .pubTab-move-area .pubTab-more-button:before {
+.pubTab-wrapper .pubTab-more-button:before {
   content: '\25BC';
-  line-height: 23px;
 }
 
-.pubTab-wrapper .pubTab-move-area .pubTab-more-button:hover {
+.pubTab-wrapper .pubTab-more-button:hover {
   opacity: 1;
   -moz-opacity: 1;
   -khtml-opacity: 1;
@@ -2013,8 +1963,48 @@
   background: #b8b8b8;
 }
 
-.pubTab-wrapper .pubTab-move-area .pubTab-more-button:hover:before {
+.pubTab-wrapper .pubTab-more-button:hover:before {
   color: #716e6e;
+}
+
+.pubTab-wrapper .pubTab-dropdown-wrapper {
+  display: none;
+  position: absolute;
+  top: 23px;
+  right: 0;
+  left: auto;
+  max-height: calc(100% - 25px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 1000;
+  background-clip: padding-box;
+  border: 1px solid #d5d5d8;
+}
+
+.pubTab-wrapper .pubTab-dropdown-wrapper.pubTab-open {
+  display: block;
+}
+
+.pubTab-wrapper .pubTab-dropdown-wrapper .pubTab-dropdown-area {
+  margin: 0px 0 0 0;
+  padding: 0px;
+  text-align: left;
+  background-color: #ffffff;
+  list-style: none;
+}
+
+.pubTab-wrapper .pubTab-dropdown-wrapper .pubTab-dropdown-area > li {
+  padding: 2px 5px 2px 5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-wrap: normal;
+  overflow: hidden;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pubTab-wrapper .pubTab-dropdown-wrapper .pubTab-dropdown-area > li:hover {
+  background-color: #dddddd;
 }
 
 .pubTab-wrapper .pubTab-prev, .pubTab-wrapper .pubTab-next {
@@ -2171,6 +2161,7 @@
   height: 100%;
   width: 100%;
   display: none;
+  position: relative;
 }
 
 .pubTab-wrapper .pubTab-content-container .pubTab-content.active {
@@ -2186,29 +2177,29 @@
   color: #5970f5;
 }
 
-[pub-theme="dark"] .pubTab-wrapper .pubTab .pubTab-drop-item-wrapper {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-dropdown-wrapper {
   border: 1px solid #6d6d75;
 }
 
-[pub-theme="dark"] .pubTab-wrapper .pubTab .pubTab-drop-item-area {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-dropdown-wrapper .pubTab-dropdown-area {
   background-color: #262729;
 }
 
-[pub-theme="dark"] .pubTab-wrapper .pubTab .pubTab-drop-item:hover {
+[pub-theme="dark"] .pubTab-wrapper .pubTab-dropdown-wrapper .pubTab-dropdown-area > li:hover {
   background-color: #000000;
 }
 
-[pub-theme="dark"] .pubTab-wrapper .pubTab-move-area .pubTab-more-button {
-  color: #777474;
-  background: #cec8c8;
+[pub-theme="dark"] .pubTab-wrapper .pubTab-more-button {
+  color: #989494;
+  background: #d4d3d3;
 }
 
-[pub-theme="dark"] .pubTab-wrapper .pubTab-move-area .pubTab-more-button:hover {
-  background: #dcdcdc;
+[pub-theme="dark"] .pubTab-wrapper .pubTab-more-button:hover {
+  background: #b8b8b8;
 }
 
-[pub-theme="dark"] .pubTab-wrapper .pubTab-move-area .pubTab-more-button:hover:before {
-  color: #403d3d;
+[pub-theme="dark"] .pubTab-wrapper .pubTab-more-button:hover:before {
+  color: #716e6e;
 }
 
 [pub-theme="dark"] .pubTab-wrapper .pubTab-item .pubTab-item-cont-wrapper {

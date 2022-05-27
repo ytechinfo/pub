@@ -1311,7 +1311,7 @@ Plugin.prototype ={
 				_this.moveVerticalScroll({rowIdx : rowIdx});
 			}
 		}else if(subMode =='update'){
-			this.drawGrid('vscroll');
+			_this.drawGrid('vscroll');
 		}else{
 			_this.drawGrid(mode,true);
 		}
@@ -1319,8 +1319,6 @@ Plugin.prototype ={
 		if(_this.options.navigation.usePaging === true) {
 			_this.setPaging(mode=='init' ? opt.paging : (pdata.paging ||{}));
 		}
-
-		_this._setStatusMessage();
 
 		if(_this.config.searchOn===true){
 			_this.gridElement.find('.pubGrid-setting-btn').addClass('search-on');
@@ -2072,6 +2070,8 @@ Plugin.prototype ={
 			}else{
 				_this.element.container.find('[rowinfo="'+i+'"]').show();
 			}
+
+			this._setStatusMessage();
 		}
 	}
 	/**
@@ -2112,12 +2112,17 @@ Plugin.prototype ={
 		$('#'+this.prefix+'_hscroll').css({'height' : this.options.scroll.horizontal.height});
 
 		if(this.options.tbodyItem.length < 1){
+			if(this.options.message.empty ==''){
+				this.element.body.find('.pubGrid-empty-msg').empty();	
+				return ;
+			}
 			// empty message
 			if(isFunction(this.options.message.empty)){
 				this.element.body.find('.pubGrid-empty-msg').empty().html(this.options.message.empty());
-			}else{
-				this.element.body.find('.pubGrid-empty-msg .empty-text').empty().html(this.options.message.empty);
+				return ; 
 			}
+
+			this.element.body.find('.pubGrid-empty-msg .empty-text').empty().html(this.options.message.empty);
 		}
 	}
 	/**

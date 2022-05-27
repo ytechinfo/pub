@@ -21,9 +21,9 @@ var pluginName = "pubTab"
 	,tabHeight : 25		// tab height
 	,leftMargin : 30		// 왼쪽에 item 있을경우 더 이동할 space
 	,overItemViewMode : 'drop'	// over item  보여질 방법.
-	,dropItemHeight :'auto'		//drop item height
-	,dropItemWidth :'auto'		//drop item width
-	,moveZIndex : 9				// move 영역 z- index
+	,dropdownHeight :'auto'		//drop item height
+	,dropdownWidth :'auto'		//drop item width
+	,isMultipleContainer : true	 // 하나의 컨텐츠 영역만 사용.
 	,useContentContainer : true	// 컨텐츠 영역 사용여부
 	,titleIcon :{
 		left :{
@@ -45,8 +45,8 @@ var pluginName = "pubTab"
 	}
 	,contentViewSelector : false 			// tab content view selector
 	,contentStyleClass : ''
-	,contentHtml : function (item, callback){
-		callback('<div>'+item.title+'</div>');
+	,contentRender : function (item, addContentAreaElement){
+		return ; 
 	}
 	,removeItem : false	// remove callback 옵션
 	,blinkClass : 'blinkcss'
@@ -114,8 +114,8 @@ function arrayRemove(array, value){
 }
 
 $(document).on('mousedown.pubtab', 'html', function (e) {
-	if(e.which !==2 && $(e.target).closest('.pubTab-drop-item-wrapper').length < 1){
-		$('.pubTab-move-area.pubTab-open').removeClass('pubTab-open');
+	if(e.which !==2 && $(e.target).closest('.pubTab-dropdown-wrapper').length < 1){
+		$('.pubTab-dropdown-wrapper.pubTab-open').removeClass('pubTab-open');
 	}
 });
 
@@ -238,12 +238,12 @@ Plugin.prototype ={
 				e.stopPropagation();
 
 				var sEle = $(this)
-					,tabArea=sEle.closest('.pubTab-move-area')
+					,tabArea=sEle.closest('.pubTab-more-button')
 
-				if(tabArea.hasClass('pubTab-open')){
-					tabArea.removeClass('pubTab-open');
+				if(_this.element.dropdownAreaElement.hasClass('pubTab-open')){
+					_this.element.dropdownAreaElement.removeClass('pubTab-open');
 				}else{
-					tabArea.addClass('pubTab-open');
+					_this.element.dropdownAreaElement.addClass('pubTab-open');
 				}
 			});
 
@@ -253,7 +253,7 @@ Plugin.prototype ={
 
 				var sEle = $(this);
 
-				$(_this.tabElement.find('.pubTab-move-area')).removeClass('pubTab-open');
+				_this.element.dropdownAreaElement.removeClass('pubTab-open');
 
 				var tabIdx = opts.items.length - sEle.index()-1;
 
@@ -455,9 +455,14 @@ Plugin.prototype ={
 
 		this.removeTabBlink(item);
 
-		if(item._isInitialised !== true){
-			item._isInitialised = true; 
-			this._getTabContentHtml(item);
+		if(this.options.isMultipleContainer === false){
+			this._appendTabContent(item);
+			return ; 
+		}else{
+			if(item._isInitialised !== true){
+				this._appendTabContent(item);
+				item._isInitialised = true; 
+			}
 		}
 
 		if(tabEle.hasClass('active')){
@@ -472,7 +477,7 @@ Plugin.prototype ={
 		this.movePosition(tabEle.index());
 	}
 	,reloadContent : function (item){
-		this._getTabContentHtml(item, true);
+		this._appendTabContent(item, true);
 	}
 	/**
 	 * @method getActive
@@ -575,12 +580,12 @@ Plugin.prototype ={
 		}
 
 		var itemHtm = this._getTabItemHtml(item)
-			,dropHtm = this._getDropItemHtml(item);
+			,dropHtm = this._getDropdownHtml(item);
 
 		var tabItem = this.tabElement.find('.pubTab-item');
 		if(tabItem.length < 1){
 			this.element.tabContainerElement.prepend(itemHtm);
-			this.tabElement.find('.pubTab-drop-item-area').prepend(dropHtm)
+			this.tabElement.find('.pubTab-dropdown-area').prepend(dropHtm)
 		}else{
 			if(idx < 1){
 				$(tabItem.get(0)).before(itemHtm);
@@ -811,11 +816,11 @@ Plugin.prototype ={
 
 		if(_this.config.totalWidth > eleW){
 			$('#'+_this.prefix+'pubTab-move-space').show();
-			_this.tabElement.find('.pubTab-move-area').show();
+			_this.tabElement.find('.pubTab-more-button').show();
 		}else{
 			_this.tabElement.find('.pubTab-item').removeClass('pubTab-hide');
 			$('#'+_this.prefix+'pubTab-move-space').hide();
-			_this.tabElement.find('.pubTab-move-area').hide();
+			_this.tabElement.find('.pubTab-more-button').hide();
 			_this.element.tabContainerElement.css('left', '0px');
 		}
 
@@ -824,11 +829,11 @@ Plugin.prototype ={
 	/**
 	* set drop item height
 	*/
-	,setDropHeight : function (h){
+	,setDropdownHeight : function (h){
 		if(isNaN(h)){
 			return this;
 		}
-		this.element.dropItemAreaElement.css('max-height',h+'px');
+		this.element.dropdownAreaElement.css('max-height',h+'px');
 		return this;
 	}
 	/**
@@ -882,27 +887,64 @@ Plugin.prototype ={
 
 		return '<div class="pubTab-item" draggable="'+(_opts.drag.enabled ? true:false)+'" data-tab-id="'+item._tabid+'" title="'+title+'"><div class="pubTab-item-overlay" style=""></div><div class="pubTab-item-cont-wrapper"><div class="pubTab-item-cont '+_opts.addClass+'" >'+itemHtm+'</div></div></div>';
 	}
-	,_getTabContentHtml : function (item, reloadFlag){
-		var _this = this; 
-		var contentContainerElement = this.element.contentContainerElement; 
-		var contentEleLen = contentContainerElement.find('[data-tab-cont-id="'+item[this.options.itemKey.id]+'"]').length; 
-
-		if(reloadFlag !== true && contentEleLen > 0){
-			return ; 
+	/**
+	 * @method getItemLength
+	 * @description tab item length
+	 */
+	,getTabContentSelector : function (item){
+		if(this.options.isMultipleContainer === false){
+			return '#'+this.prefix+'ContentContainer>[data-tab-cont-id="'+this.prefix+'"]';
 		}
 
-		this.options.contentHtml(item,function (template){
-			if(contentEleLen > 0){
-				contentContainerElement.find('[data-tab-cont-id="'+item[_this.options.itemKey.id]+'"]').empty().html(template);
-			}else{
-				contentContainerElement.append('<div class="pubTab-content '+_this.options.contentStyleClass+'" data-tab-cont-id="'+item._tabid+'">'+template+'</div>');
+		return '#'+this.prefix+'ContentContainer>[data-tab-cont-id="'+(typeof item ==='string'? item : item[this.options.itemKey.id])+'"]';
+		
+	}
+	/**
+	 * @method clearTabContent
+	 * @description clear tab content 
+	 */
+	,clearTabContent : function (item){
+		$(this.getTabContentSelector(item)).empty();
+	}
+	,_appendTabContent : function (item, reloadFlag){
+		var contentContainerElement = this.element.contentContainerElement; 
+
+		var tabid = '';
+		var contentLoadFlag = false; 
+		if(this.options.isMultipleContainer === false){
+			tabid = this.prefix;
+			contentLoadFlag = true; 
+		}else{
+			tabid = item[this.options.itemKey.id];
+
+			var contentEleLen = contentContainerElement.find('[data-tab-cont-id="'+tabid+'"]').length; 
+
+			if(contentEleLen < 1){
+				contentContainerElement.append(this._getTabContentHtml(item));
 			}
 
-			return contentContainerElement.find('[data-tab-cont-id="'+item._tabid+'"]');
-		});
+			if(reloadFlag === true || item._isInitialised !== true){
+				contentLoadFlag = true; 
+			}
+		}
+
+		if(contentLoadFlag){
+			this.options.contentRender(item, contentContainerElement.find('[data-tab-cont-id="'+tabid+'"]'));
+		}
+		
+	}
+	,_getTabContentHtml : function (item){
+		var style='';
+		if($.isFunction(this.options.contentStyleClass)){
+			style = this.options.contentStyleClass(item) ||'';
+		}else{
+			style = this.options.contentStyleClass;
+		}
+
+		return '<div class="pubTab-content '+style + (this.options.isMultipleContainer === false ? ' active':'')+'" data-tab-cont-id="'+item._tabid+'"></div>';
 	}
 	//drop item template
-	,_getDropItemHtml : function (item){
+	,_getDropdownHtml : function (item){
 		var title = item[this.options.itemKey.title];
 		return '<li class="pubTab-drop-item" data-tab-id="'+item._tabid+'" title="'+title+'">'+title+'</li>'
 	}
@@ -920,11 +962,11 @@ Plugin.prototype ={
 			return tabHtm.join('');
 		}
 
-		function dropItemHtml (){
+		function dropdownHtml (){
 			var dropHtml = [];
 
 			for(var i = itemLen-1 ;i >= 0  ;i--){
-				dropHtml.push(_this._getDropItemHtml(items[i]));
+				dropHtml.push(_this._getDropdownHtml(items[i]));
 			}
 			return dropHtml.join('');
 		}
@@ -938,18 +980,29 @@ Plugin.prototype ={
 		strHtm.push('			<span><div id="'+_this.prefix+'pubTab-move-space" style="display:none;">&nbsp;</div></span>');
 		strHtm.push('			</div>');
 		strHtm.push('		</div> ');
-		strHtm.push('		<div class="pubTab-move-area" style="z-index:'+_opts.moveZIndex+';">');
-
+		
 		if(_opts.overItemViewMode =='drop'){
 			strHtm.push(' 		<div class="pubTab-more-button"></div>');
-			strHtm.push('		<div id="'+_this.prefix+'DropItem" style="width:'+(_opts.dropItemWidth+(_opts.dropItemWidth == 'auto'?'':'px'))+'" class="pubTab-drop-item-wrapper"><ul class="pubTab-drop-item-area">'+dropItemHtml()+'</ul></div>');
 		}
 		
-		strHtm.push('		</div>');
 		strHtm.push('	</div>');
 
 		if(_opts.contentViewSelector===false && _opts.useContentContainer !== false){
-			strHtm.push('<div id="'+_this.prefix+'ContentContainer" class="pubTab-content-container" style="height:calc(100% - '+_opts.tabHeight+'px);"></div>');
+			strHtm.push('<div id="'+_this.prefix+'ContentContainer" class="pubTab-content-container" style="height:calc(100% - '+_opts.tabHeight+'px);">');
+			
+			if(_opts.isMultipleContainer === false){
+				strHtm.push(this._getTabContentHtml({_tabid: this.prefix}));
+			}else{
+				for(var i = 0 ;i < itemLen ;i++){
+					strHtm.push(this._getTabContentHtml(items[i]));
+				}
+			}		
+			strHtm.push('</div>');
+		}
+
+		if(_opts.overItemViewMode =='drop'){
+			var drw = _opts.dropdownWidth; 
+			strHtm.push('<div id="'+_this.prefix+'Dropdown" style="width:'+(drw+(drw == 'auto'?'':'px'))+';" class="pubTab-dropdown-wrapper"><ul class="pubTab-dropdown-area">'+dropdownHtml()+'</ul></div>');
 		}
 		
 		strHtm.push('</div>');
@@ -958,15 +1011,16 @@ Plugin.prototype ={
 
 		_this.element.tabContainerElement =  $('#'+_this.prefix+'pubTab-container');
 		_this.element.tabScrollElement = $('#'+_this.prefix+'pubTab-scroll');
-		_this.element.dropItemAreaElement = $('#'+_this.prefix+'DropItem');
+		_this.element.dropdownAreaElement = $('#'+_this.prefix+'Dropdown');
 		_this.element.contentContainerElement = (_opts.contentViewSelector === false ? $('#'+_this.prefix+'ContentContainer') : $(_opts.contentViewSelector));
 		
-		_this.config.moveAreaWidth  = this.tabElement.find('.pubTab-move-area').width();
+		_this.config.moveAreaWidth  = this.tabElement.find('.pubTab-more-button').width();
 		$('#'+_this.prefix+'pubTab-move-space').css('width',_this.config.moveAreaWidth);
+		_this.element.dropdownAreaElement.css('top', (_this.element.tabContainerElement.height())+'px');
 
 		_this.calcItemWidth();
 		_this.setWidth(_opts.width);
-		_this.setDropHeight(_opts.dropItemHeight)
+		_this.setDropdownHeight(_opts.dropdownHeight)
 	}
 	,calcItemWidth :function (){
 		var _this =this;

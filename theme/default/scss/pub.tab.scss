@@ -14,15 +14,15 @@
 	width:100%;
 	position: relative;
 	color:colorInfo($g_default_theme_name , "font_color");
-
-	*{
-		@include box-sizing($box_sizing_content);
-	}
-
+	
 	.pubTab{
 		position:relative;
 		width:100%;
-		margin-bottom: 2px;
+		margin-bottom: -1px;
+		
+		*{
+			@include box-sizing($box_sizing_content);
+		}
 		
 		.pubTab-icon-area{
 			display:table-cell;
@@ -57,52 +57,6 @@
 		.drag-on .pubTab-item-overlay{
 			z-index: 10;
 		}
-
-		
-			
-		.pubTab-drop-item-wrapper{
-			display:none;
-			position: absolute;
-			top: 100%;
-			right: 0;
-			left: auto;
-			max-height: 300px;
-			overflow-y: auto;
-			overflow-x: hidden;
-			z-index: 1000;
-			-webkit-background-clip: padding-box;
-			background-clip: padding-box;
-			border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
-		}
-		
-		.pubTab-open .pubTab-drop-item-wrapper{
-			display:block;
-		}
-			
-		.pubTab-drop-item-area{
-			margin: 0px 0 0 0;
-			padding:0px;
-			text-align: left;
-			background-color: colorInfo($g_default_theme_name , "background_color");
-			list-style: none;
-	
-			>li{
-				padding: 0px 5px 1px 5px;
-				text-overflow: ellipsis;
-				white-space: nowrap;
-				word-wrap: normal;
-				overflow: hidden;
-			}
-		}
-	
-		.pubTab-drop-item{
-			cursor:pointer;
-			white-space: nowrap;
-	
-			&:hover {
-				background-color: colorInfo($g_default_theme_name , "background_thick_color");
-			}
-		}
 	}
 	
 	.pubTab-scroll{
@@ -111,40 +65,75 @@
 		width: 100%;
 	}
 		
-	.pubTab-move-area{
-		z-index:5;
+	.pubTab-more-button {
+		z-index:1;
 		position:absolute;
 		right:0px;
 		bottom: 0px;
-		margin-top: 1px;
 		min-width:20px;
-		line-height: 23px;
-		
-		.pubTab-more-button {
-			padding: 0px;
-    		text-align: center;
-			height: 22px;
-			color: colorInfo($g_default_theme_name , "arrow_color");
-			font-style: inherit;
-			cursor: pointer;
-			@include opacity_val(0.9);
-			background: colorInfo($g_default_theme_name , "arrow_background_color");
+		height: 22px;
+		padding: 0px;
+		text-align: center;
+		color: colorInfo($g_default_theme_name , "arrow_color");
+		cursor: pointer;
+		@include opacity_val(0.9);
+		background: colorInfo($g_default_theme_name , "arrow_background_color");
 
+		&:before {
+			content:'\25BC';
+		}
+
+		&:hover{
+			@include opacity_val(1);
+			background: colorInfo($g_default_theme_name , "arrow_active_background_color");
 			&:before {
-				content:'\25BC';
-				line-height: 23px;
+				color: colorInfo($g_default_theme_name , "arrow_active_color");
 			}
+		}
+	}
 
-			&:hover{
-				@include opacity_val(1);
-				background: colorInfo($g_default_theme_name , "arrow_active_background_color");
-				&:before {
-					color: colorInfo($g_default_theme_name , "arrow_active_color");
+	.pubTab-dropdown-wrapper{
+		display: none;
+		position: absolute;
+		top: 23px;
+		right: 0;
+		left: auto;
+		max-height: calc(100% - 25px);
+		overflow-y: auto;
+		overflow-x: hidden;
+		z-index: 1000;
+		-webkit-background-clip: padding-box;
+		background-clip: padding-box;
+		border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+	
+		&.pubTab-open{
+			display:block;
+		}
+
+		.pubTab-dropdown-area{
+			margin: 0px 0 0 0;
+			padding:0px;
+			text-align: left;
+			background-color: colorInfo($g_default_theme_name , "background_color");
+			list-style: none;
+	
+			>li{
+				padding: 2px 5px 2px 5px;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				word-wrap: normal;
+				overflow: hidden;
+
+				cursor:pointer;
+				white-space: nowrap;
+		
+				&:hover {
+					background-color: colorInfo($g_default_theme_name , "background_thick_color");
 				}
 			}
-		}	
+		}
 	}
-	
+		
 	.pubTab-prev ,.pubTab-next{
 		cursor : pointer; 
 	}
@@ -259,6 +248,7 @@
 			height: 100%;
 			width: 100%;
 			display: none;
+			position: relative;
 
 			&.active{
 				display: block;
@@ -279,37 +269,35 @@
 					color:colorInfo($pThemeName , "a_hover_thick_color");
 				}
 			}
-		
-			.pubTab-drop-item-wrapper{
-				border: 1px solid colorInfo($pThemeName , "border_thin_color");
-			}
+		}
+
+		.pubTab-dropdown-wrapper{
+			border: 1px solid colorInfo($pThemeName , "border_thin_color");
 			
-			.pubTab-drop-item-area{
+			.pubTab-dropdown-area{
 				background-color: colorInfo($pThemeName , "background_color");
-			}
-		
-			.pubTab-drop-item{
-				&:hover {
-					background-color: colorInfo($pThemeName , "background_thick_color");
+				
+				>li{
+					&:hover {
+						background-color: colorInfo($pThemeName , "background_thick_color");
+					}
 				}
 			}
 		}
 		
-		.pubTab-move-area{
-			.pubTab-more-button {
-				color: colorInfo($pThemeName , "arrow_color");
-				background: colorInfo($pThemeName , "arrow_background_color");
-				&:hover{
-					background: colorInfo($pThemeName , "arrow_active_background_color");
-					&:before {
-						color: colorInfo($pThemeName , "arrow_active_color");
-					}
+		.pubTab-more-button {
+			color: colorInfo($g_default_theme_name , "arrow_color");
+			background: colorInfo($g_default_theme_name , "arrow_background_color");
+	
+			&:hover{
+				background: colorInfo($g_default_theme_name , "arrow_active_background_color");
+				&:before {
+					color: colorInfo($g_default_theme_name , "arrow_active_color");
 				}
 			}
 		}
 
 		.pubTab-item{
-
 			.pubTab-item-cont-wrapper{
 				border: 1px solid colorInfo($pThemeName , "border_thin_color");
 				background: tabColorInfo($pThemeName,"tab_background");
@@ -338,7 +326,6 @@
 			}
 		}
 		
-
 		.blinkcss {
 			*{
 				color : tabColorInfo($pThemeName,"tab_blink_color");
