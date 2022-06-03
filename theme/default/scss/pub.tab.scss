@@ -99,22 +99,40 @@
 		right: 0;
 		left: auto;
 		max-height: calc(100% - 25px);
-		overflow-y: auto;
+		overflow-y: hidden;
 		overflow-x: hidden;
 		z-index: 1000;
 		-webkit-background-clip: padding-box;
 		background-clip: padding-box;
+		box-sizing: border-box;
+		background-color: colorInfo($g_default_theme_name , "background_color");
 		border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+
+		input{
+			background-color: colorInfo($g_default_theme_name , "background_color");
+			border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+			color: colorInfo($g_default_theme_name , "color");
+		}
 	
 		&.pubTab-open{
 			display:block;
 		}
 
+		.pubTab-dropdown-search{
+			padding: 4px;
+
+			.pubTab-dropdown-search-text{
+				padding: 4px;
+				width: 100%;
+				box-sizing: border-box;
+			}
+		}
+		
 		.pubTab-dropdown-area{
 			margin: 0px 0 0 0;
 			padding:0px;
 			text-align: left;
-			background-color: colorInfo($g_default_theme_name , "background_color");
+			overflow-y: auto;
 			list-style: none;
 	
 			>li{
@@ -272,11 +290,14 @@
 		}
 
 		.pubTab-dropdown-wrapper{
-			border: 1px solid colorInfo($pThemeName , "border_thin_color");
-			
-			.pubTab-dropdown-area{
+			background-color: colorInfo($pThemeName , "background_color");
+			input{
 				background-color: colorInfo($pThemeName , "background_color");
-				
+				border: 1px solid colorInfo($pThemeName , "border_thin_color");
+				color: colorInfo($pThemeName , "font_color");
+			}
+		
+			.pubTab-dropdown-area{
 				>li{
 					&:hover {
 						background-color: colorInfo($pThemeName , "background_thick_color");

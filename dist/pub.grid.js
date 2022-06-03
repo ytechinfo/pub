@@ -5011,7 +5011,11 @@ var _$util = {
 	,getCellElement : function (ctx, r, c){
 		return ctx.element.body.find('.pub-body-td[data-cell-position="'+r+','+c+'"]');
 	}
-	// new add
+	/**
+	 * @method genAllColumnSearch
+	 * @param gridCtx {Object} - grid context
+	 * @description all column search logic
+	 */	
 	,genAllColumnSearch : function (gridCtx){
 		var tcolItems = gridCtx.options.tColItem; 
 
@@ -5027,11 +5031,14 @@ var _$util = {
 		
 		return this.genSearchLogic(logicStr.join(''));
 	}
-	// new add
+	/**
+	 * @method genSearchLogic
+	 * @param checkLogicStr {String} - check login string
+	 * @description 검색 로직 만들기
+	 */	
 	,genSearchLogic : function (checkLogicStr){
 		return 'if(#logic#){return true;} return false;'.replace('#logic#', checkLogicStr);
 	}
-	// new add
 	/**
 	 * @method getSearchRegExp
 	 * @param schVal {String} - search text.

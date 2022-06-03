@@ -19,7 +19,7 @@
 		<button type="button" class="add-item">add item</button>
 		<button type="button" class="del-item">del item</button>
 	</div>
-	<div id="pubTabId" style="width:calc(100% - 300px); height:300px;" pub-theme="dark">
+	<div id="pubTabId" style="width:calc(100% - 300px); height: 100px;" pub-theme="dark">
 	</div>
 	<div id="pubTabContent">
 
@@ -76,13 +76,17 @@ var pubTab = {
 			,width:'auto'
 			,itemMaxWidth:80
 			,tabHeight : 25
-			,dropdownWidth : 100
-			,dropdownHeight : 100
+			,dropdown:{
+				width : 150
+				,height : 150
+			}
+			,enableDropDownSearch : true 
+			//,useContentContainer : false
 			//,isMultipleContainer : false
 			,contentStyleClass : function (item){
 				return item.id;
 			}
-			//,contentViewSelector : '#pubTabContent'
+			,contentViewSelector : '#pubTabContent'
 			,contentRender : function (item, addContentAreaElement){
 				addContentAreaElement.empty().html('<div>'+item.title+'</div>');
 			}
