@@ -128,7 +128,8 @@ Plugin.prototype ={
 		var _this =this;
 
 		_$util.setConfigInfo(this);
-		_this.draw();
+		_$template.init.call(this);
+		this.calcItemWidth();
 
 		_this.initEvt();
 
@@ -537,12 +538,13 @@ Plugin.prototype ={
 	 */
 	,setItems : function (items){
 		this.options.items = items;
+		this.element.tabContainerElement.empty().html(_$template.tabItemHtml(this));
+		
+		if(this.options.overItemViewMode =='drop'){
+			this.element.dropdownAreaElement.find('.pubTab-dropdown-area').empty().html(_$template.dropdownHtml(this));
+		}
 
-		// 처리 할것. 
-
-
-
-		this.draw();
+		this.calcItemWidth();
 	}
 	/**
 	 * @method isItem
@@ -610,7 +612,6 @@ Plugin.prototype ={
 		this.calcItemWidth();
 
 		if(enabled !== false){
-			//this.draw();
 			this.movePosition(idx);
 
 			this.itemClick(item, customInfo);
@@ -889,71 +890,6 @@ Plugin.prototype ={
 	,clearTabContent : function (item){
 		$(this.getTabContentSelector(item)).empty();
 	}
-	,draw : function (){
-		var _this = this
-			,_opts = _this.options
-			,items = _opts.items
-			,itemLen = items.length;
-
-		var strHtm = [];
-		strHtm.push('<div class="pubTab-wrapper" role="presentation">');
-		strHtm.push('	<div id="'+_this.prefix+'pubTab" class="pubTab" style="height:'+_opts.tabHeight+'px;">');
-		strHtm.push('		<div id="'+_this.prefix+'pubTab-scroll" class="pubTab-scroll">');
-		strHtm.push('			<div id="'+_this.prefix+'pubTab-container" class="pubTab-container" >');
-		strHtm.push(_$template.tabItemHtml(_this));
-		strHtm.push('			<span><div id="'+_this.prefix+'pubTab-move-space" style="display:none;">&nbsp;</div></span>');
-		strHtm.push('			</div>');
-		strHtm.push('		</div> ');
-		
-		if(_opts.overItemViewMode =='drop'){
-			strHtm.push(' 		<div class="pubTab-more-button"></div>');
-		}
-		
-		strHtm.push('	</div>');
-
-		if(_opts.contentViewSelector===false && _opts.useContentContainer !== false){
-			strHtm.push('<div id="'+_this.prefix+'ContentContainer" class="pubTab-content-container" style="height:calc(100% - '+_opts.tabHeight+'px);">');
-			
-			if(_opts.isMultipleContainer === false){
-				strHtm.push(_$template.getTabContentHtml(this, {_tabid: this.prefix}));
-			}else{
-				for(var i = 0 ;i < itemLen ;i++){
-					strHtm.push(_$template.getTabContentHtml(this, items[i]));
-				}
-			}		
-			strHtm.push('</div>');
-		}
-
-		if(_opts.overItemViewMode =='drop'){
-			var drw = _opts.dropdown.width
-				,drh = _opts.dropdown.height;
-
-			var heightCss = (_opts.contentViewSelector !==false || _opts.useContentContainer===false) ?('max-height: none;height:'+(drh+(drh == 'auto'?'':'px'))):'';
-			strHtm.push('<div id="'+_this.prefix+'Dropdown" style="width:'+(drw+(drw == 'auto'?'':'px'))+';'+heightCss+';" class="pubTab-dropdown-wrapper">');
-
-			if(_opts.enableDropDownSearch){
-				strHtm.push('  <div class="pubTab-dropdown-search"><input type="search" id="'+_this.prefix+'SchText" class="pubTab-dropdown-search-text"></div>');
-			}
-			strHtm.push('  <div class="pubTab-dropdown-data"><ul class="pubTab-dropdown-area">'+_$template.dropdownHtml(_this)+'</ul></div>');
-			strHtm.push('</div>');
-		}
-		
-		strHtm.push('</div>');
-
-		_this.tabElement.empty().html(strHtm.join(''));
-
-		_this.element.tabContainerElement =  $('#'+_this.prefix+'pubTab-container');
-		_this.element.tabScrollElement = $('#'+_this.prefix+'pubTab-scroll');
-		_this.element.dropdownAreaElement = $('#'+_this.prefix+'Dropdown');
-				
-		_this.element.contentContainerElement = (_opts.contentViewSelector === false ? $('#'+_this.prefix+'ContentContainer') : $(_opts.contentViewSelector));
-		
-		_this.config.moveAreaWidth  = this.tabElement.find('.pubTab-more-button').width();
-		$('#'+_this.prefix+'pubTab-move-space').css('width',_this.config.moveAreaWidth);
-		_this.element.dropdownAreaElement.css('top', (_this.element.tabContainerElement.height())+'px');
-		
-		_this.calcItemWidth();
-	}
 	,calcItemWidth :function (){
 		var _this =this;
 		var containerW = 0;
@@ -1000,7 +936,6 @@ Plugin.prototype ={
 	}
 };
 
-
 var _$util = {
 	/**
 	 * @method getSearchRegExp
@@ -1043,8 +978,26 @@ var _$util = {
 }
 
 var _$template = {
-	
-	appendTabContent : function (tabCtx, item, reloadFlag){
+	init : function (){
+		var _this = this
+			,_opts = _this.options;
+			
+		var tabMainTemplate = _$template.getContainerHtml(this);
+		
+		_this.tabElement.empty().html(tabMainTemplate);
+
+		_this.element.tabContainerElement =  $('#'+_this.prefix+'pubTab-container');
+		_this.element.tabScrollElement = $('#'+_this.prefix+'pubTab-scroll');
+		_this.element.dropdownAreaElement = $('#'+_this.prefix+'Dropdown');
+				
+		_this.element.contentContainerElement = (_opts.contentViewSelector === false ? $('#'+_this.prefix+'ContentContainer') : $(_opts.contentViewSelector));
+		
+		_this.config.moveAreaWidth  = this.tabElement.find('.pubTab-more-button').width();
+		$('#'+_this.prefix+'pubTab-move-space').css('width',_this.config.moveAreaWidth);
+
+		_this.element.dropdownAreaElement.css('top', ($('#'+_this.prefix+'pubTab').height()-2)+'px');
+	}
+	,appendTabContent : function (tabCtx, item, reloadFlag){
 
 		if(tabCtx.options.useContentContainer ===false) return ; 
 
@@ -1145,6 +1098,58 @@ var _$template = {
 		}
 
 		return dropHtml.join('');
+	}
+	,getContainerHtml : function (tabCtx){
+		var _opts = tabCtx.options
+			,items = _opts.items
+			,itemLen = items.length;
+
+		var strHtm = [];
+		strHtm.push('<div class="pubTab-wrapper" role="presentation">');
+		strHtm.push('	<div id="'+tabCtx.prefix+'pubTab" class="pubTab" style="height:'+_opts.tabHeight+'px;">');
+		strHtm.push('		<div id="'+tabCtx.prefix+'pubTab-scroll" class="pubTab-scroll">');
+		strHtm.push('			<div id="'+tabCtx.prefix+'pubTab-container" class="pubTab-container" >');
+		strHtm.push(_$template.tabItemHtml(tabCtx));
+		strHtm.push('			<span><div id="'+tabCtx.prefix+'pubTab-move-space" style="display:none;">&nbsp;</div></span>');
+		strHtm.push('			</div>');
+		strHtm.push('		</div> ');
+		
+		if(_opts.overItemViewMode =='drop'){
+			strHtm.push(' 		<div class="pubTab-more-button"></div>');
+		}
+		
+		strHtm.push('	</div>');
+
+		if(_opts.contentViewSelector===false && _opts.useContentContainer !== false){
+			strHtm.push('<div id="'+tabCtx.prefix+'ContentContainer" class="pubTab-content-container" style="height:calc(100% - '+_opts.tabHeight+'px);">');
+			
+			if(_opts.isMultipleContainer === false){
+				strHtm.push(_$template.getTabContentHtml(tabCtx, {_tabid: tabCtx.prefix}));
+			}else{
+				for(var i = 0 ;i < itemLen ;i++){
+					strHtm.push(_$template.getTabContentHtml(tabCtx, items[i]));
+				}
+			}		
+			strHtm.push('</div>');
+		}
+
+		if(_opts.overItemViewMode =='drop'){
+			var drw = _opts.dropdown.width
+				,drh = _opts.dropdown.height;
+
+			var heightCss = (_opts.contentViewSelector !==false || _opts.useContentContainer===false) ?('max-height: none;height:'+(drh+(drh == 'auto'?'':'px'))):'';
+			strHtm.push('<div id="'+tabCtx.prefix+'Dropdown" style="width:'+(drw+(drw == 'auto'?'':'px'))+';'+heightCss+';" class="pubTab-dropdown-wrapper">');
+
+			if(_opts.enableDropDownSearch){
+				strHtm.push('  <div class="pubTab-dropdown-search"><input type="search" id="'+tabCtx.prefix+'SchText" class="pubTab-dropdown-search-text"></div>');
+			}
+			strHtm.push('  <div class="pubTab-dropdown-data"><ul class="pubTab-dropdown-area">'+_$template.dropdownHtml(tabCtx)+'</ul></div>');
+			strHtm.push('</div>');
+		}
+		
+		strHtm.push('</div>');
+
+		return strHtm.join('');
 	}
 }
 

@@ -75,12 +75,14 @@
 		padding: 0px;
 		text-align: center;
 		color: colorInfo($g_default_theme_name , "arrow_color");
+		font-family: arial, sans-serif !important;
 		cursor: pointer;
 		@include opacity_val(0.9);
 		background: colorInfo($g_default_theme_name , "arrow_background_color");
 
 		&:before {
 			content:'\25BC';
+			vertical-align: -25%;
 		}
 
 		&:hover{

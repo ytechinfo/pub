@@ -404,9 +404,11 @@ _$base.log=function (){
 *
 */
 _$base.logWrite = function (url, type, options){
-	var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {replaceParam:{userid:''}} : pubEPortalConfig);
+	
+	if(globalOption.log.enabled===true && options.logWriteFlag !==false && (globalOption.log.logWriteKey =='all' || $.inArray(options.gubun, globalOption.log.logWriteKey) > -1 ) ){
 
-	if(options.logWriteFlag !==false && (globalOption.log.logWriteKey =='all' || $.inArray(options.gubun, globalOption.log.logWriteKey) > -1 ) ){
+		var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {replaceParam:{userid:''}} : pubEPortalConfig);
+		
 		options.gubun = options.gubun ||'';
 		options.gubunkey = options.gubunkey ||'';
 
@@ -483,7 +485,7 @@ _$base.page ={
 			url=_$base.util.replaceUrl(url,tmpInfo.replaceParam);
 		}
 
-		if(globalOption.log.enabled ===true && options.logwrite !== false){
+		if(options.logwrite !== false){
 			_$base.logWrite(url, type, options);
 		}
 

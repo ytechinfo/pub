@@ -1,0 +1,51 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub test-예제</TITLE>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script>
+var testObj ={
+    test: 'asdfasdf'
+    ,a: function(){
+        console.log('a')
+    }
+    ,b:function (){
+        console.log('b');
+    }
+    ,callMethod : function(name){
+        console.log(this.test);
+        this[name].bbb.call(this);
+    }
+
+}
+
+var _$utils = {
+	copy : function( target, source ) {
+		for( var key in source ) {
+			target[ key ] = source[ key ];
+		}
+		return target;
+	}
+}
+
+_$utils.copy(testObj, {
+    aaa: {
+        ddd: ';asdfasdf'
+        ,bbb : function (){
+            console.log('aaa', this.test, this.ddd);
+        }
+    }
+})
+
+</script>
+
+<style>
+
+</style>
+ </HEAD>
+
+ <BODY>
+
+</div>
+ </BODY>
+</HTML>
