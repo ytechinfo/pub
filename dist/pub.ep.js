@@ -153,6 +153,21 @@ _$base.isFunction =function(obj){
 }
 
 /**
+ * @method PubEP.isEmpty
+ * @description function check
+ */
+_$base.isEmpty =function(v){
+	if (v === null) return true;
+    if (typeof v === 'undefined') return true;
+    if (typeof v === 'string' && v === '') return true;
+    if (Array.isArray(v) && v.length < 1) return true;
+    if (typeof v === 'object' && v.constructor.name === 'Object' && Object.keys(v).length < 1 && Object.getOwnPropertyNames(v) < 1) return true;
+    if (typeof v === 'object' && v.constructor.name === 'String' && Object.keys(v).length < 1) return true ;
+
+	return false
+}
+
+/**
  * @method PubEP.cookie
  * @param name
  * @param val

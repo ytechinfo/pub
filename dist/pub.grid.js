@@ -433,6 +433,11 @@ var formatter= {
 	}
 }
 
+// 상수 값. 
+var CONSTANTS = {
+	custCheckSuffix:'__checkflag'
+}
+
 function Plugin(element, options) {
 	if(pubGridLayoutElement ===false){
 		$('body').append('<div class="pubGrid-body-hidden-area"></div>');
@@ -3219,11 +3224,19 @@ Plugin.prototype ={
 				++clickCnt;
 				conserveClick(positionInfo);
 			}
+			
+			if(!editable){
+				var renderEle = $(e.target).closest('.pub-render-element'); 
 
-			if(!editable && $(e.target).closest('.pub-render-element').length > 0){ // render item click 처리.
-				if(isFunction(cellInfo.colInfo.renderer.click)){
-					cellInfo.colInfo.renderer.click.call(null, cellInfo);
-					return false; 
+				if(renderEle.length > 0){ // render item click 처리.
+					if(isFunction(cellInfo.colInfo.renderer.click)){
+						cellInfo.colInfo.renderer.click.call(null,{
+							r: rowItemIdx
+							,c: colIdx
+							,item: cellInfo.rowItem
+						});
+						return false; 
+					}
 				}
 			}
 
@@ -3265,7 +3278,18 @@ Plugin.prototype ={
 				}
 			},false, true);
 
-		})
+		});
+
+		// custom checkbox, radio
+		_this.element.body.on('click.pubgrid.render','.pub-render-element',function (e){
+			var renderEle = $(this);
+
+			var cellInfo = _$util.getCellInfo(_this, renderEle.closest('.pub-body-td'));
+			if(renderEle.hasClass('check')){
+				cellInfo.rowItem[cellInfo.colInfo.key+CONSTANTS.custCheckSuffix] = !(cellInfo.rowItem[cellInfo.colInfo.key+CONSTANTS.custCheckSuffix] === true) ;
+			}
+		});
+
 	
 		_this.element.pubGrid.on('mouseup.'+_this.prefix,function (e) {
 			//_this.element.body.removeClass('pubGrid-noselect');
@@ -5537,9 +5561,22 @@ var _$renderer = {
 	}
 	, checkbox : function (gridCtx, thiItem, rowItem, mode){
 		var renderer = thiItem.renderer;
+
+		var checkFlag = rowItem[thiItem.key+CONSTANTS.custCheckSuffix] === true;
 		
-		return replaceMesasgeFormat('<input type="checkbox" class="pub-render-element check">{{label}}', {
-			label : rowItem[thiItem.key]
+		return replaceMesasgeFormat('<input type="checkbox" class="pub-render-element check" {{checked}}>{{label}}', {
+			label :(rowItem[thiItem.key] ||'')
+			,checked : (checkFlag?'checked':'')
+		})
+	}
+	, radio : function (gridCtx, thiItem, rowItem, mode){
+		var renderer = thiItem.renderer;
+
+		var checkFlag = rowItem[thiItem.key+CONSTANTS.custCheckSuffix] === true;
+		
+		return replaceMesasgeFormat('<input type="radio" class="pub-render-element radio" {{checked}}>{{label}}', {
+			label :(rowItem[thiItem.key] ||'')
+			,checked : (checkFlag?'checked':'')
 		})
 	}
 	, dropdown : function (gridCtx, thiItem, rowItem, mode){
