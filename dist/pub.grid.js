@@ -221,6 +221,8 @@ var _initialized = false
 		,'search.button' : '검색'
 		,'setting.speed.label' : '스크롤속도'
 		,'setting.column.fixed.label' : '고정컬럼'
+		,'setting.column.fixed.notused' : '사용안함'
+		
 	}
 	,icon : {
 		'sortup' : '<svg width="8px" height="8px" viewBox="0 0 110 110" style="enable-background:new 0 0 100 100;"><g><polygon points="50,0 0,100 100,100" fill="#737171"></polygon></g></svg>'
@@ -6368,7 +6370,14 @@ var _$setting = {
 				sEle.addClass('on');
 			}
 		})
-	
+
+		// filter 입력후 enter key 이벤트 처리. 
+		settingAreaEle.find('.filter-area').on('keydown.filter.text','[name="filter-text"]', function (e){
+			if(e.keyCode =='13') {
+				settingAreaEle.find('.pubGrid-btn[data-mode="apply"]').trigger('click.setting.btn');
+			};
+		})
+			
 		// column up down btn
 		settingAreaEle.find('.arrow-btn [data-arrow]').on('click', function (e){
 			var sEle =$(this); 
@@ -6693,7 +6702,7 @@ var _$setting = {
 			
 			if(settingOpt.enableColumnFix ===true){
 				strHtm.push(' <div class="pubGrid-colfixed-area"><span>'+gridCtx.options.i18n['setting.column.fixed.label']+'</span>');
-				strHtm.push('  <select name="pubgrid_col_fixed"><option value="0">사용안함</option>'+optHtmStr+'</select>');
+				strHtm.push('  <select name="pubgrid_col_fixed"><option value="0">'+gridCtx.options.i18n['setting.column.fixed.notused']+'</option>'+optHtmStr+'</select>');
 				strHtm.push(' </div>');
 			}
 						
