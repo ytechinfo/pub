@@ -216,6 +216,7 @@ http://www.opensource.org/licenses/mit-license.php
 }
 
 .pub-multiselect .pub-multiselect-body .pub-multiselect-paging {
+  padding: 5px 0px;
   text-align: center;
 }
 
