@@ -367,15 +367,16 @@
 }
 
 .pubGrid-wrapper .pubGrid-body-container td .pub-render-element.dropdown .pub-content {
-  width: calc(100% - 22px);
+  width: calc(100% - 18px);
   display: inline-block;
+  overflow: hidden;
 }
 
 .pubGrid-wrapper .pubGrid-body-container td .pub-render-element.dropdown .pub-icon {
-  width: 22px;
+  width: 18px;
   text-align: center;
   border-left: 1px solid #d5d5d8;
-  display: inline-block;
+  float: right;
   background-color: transparent;
 }
 

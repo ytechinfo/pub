@@ -366,21 +366,21 @@
 					display: inline-block;
 				}
 
-
 				&.dropdown{
 					width: 100%;
 					padding-right: 0px;
 
 					.pub-content {
-						width: calc(100% - 22px);
+						width: calc(100% - 18px);
 						display: inline-block;
+						overflow: hidden;
 					}
 
 					.pub-icon{
-						width: 22px;
+						width: 18px;
 						text-align: center;
 						border-left: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
-						display: inline-block;
+						float: right;
 						background-color: transparent;
 					}
 				}
