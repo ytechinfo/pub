@@ -156,6 +156,7 @@ http://www.opensource.org/licenses/mit-license.php
                     border-bottom-left-radius: 0px;
                     background: colorInfo($g_default_theme_name , "background_color");
                     cursor: pointer;
+                    line-height: normal;
 
                     &:hover{
                         background: colorInfo($g_default_theme_name , "background_thick_color");

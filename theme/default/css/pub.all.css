@@ -2807,6 +2807,7 @@ http://www.opensource.org/licenses/mit-license.php
   border-bottom-left-radius: 0px;
   background: #ffffff;
   cursor: pointer;
+  line-height: normal;
 }
 
 .pub-multiselect .pub-multiselect-body .pub-multiselect-label > .search-button > button:hover {
