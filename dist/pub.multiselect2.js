@@ -806,7 +806,7 @@ Plugin.prototype ={
 	 * @description 선택된 html element 얻기.
 	 */
 	,getSelectionElement : function (evtElement){
-		return 	evtElement ? evtElement.find('.pub-select-item.'+ this.options.selectStyleClass) : this.element.target.find('.pub-select-item.'+ this.options.selectStyleClass);
+		return 	evtElement ? evtElement.find('.pub-select-item.'+ this.options.selectStyleClass+':not(.hide)') : this.element.target.find('.pub-select-item.'+ this.options.selectStyleClass+':not(.hide)');
 	}
 	/**
 	 * @method getTargetElement
@@ -1419,11 +1419,11 @@ var _$search = {
 				var itemEle = $(this); 
 				var itemTitle = itemEle.attr('title');
 				if(schText==''){
-					itemEle.show();
+					itemEle.removeClass('hide')
 				}else if(schRegExp.test(itemTitle)){
-					itemEle.show();
+					itemEle.removeClass('hide')
 				}else{
-					itemEle.hide();
+					itemEle.addClass('hide')
 				}
 			})
 		}

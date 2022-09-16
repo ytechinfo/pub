@@ -200,6 +200,10 @@ http://www.opensource.org/licenses/mit-license.php
   line-height: 26px;
 }
 
+.pub-multiselect .pub-multiselect-body .pub-multiselect-area .pub-multiselect-items > .pub-select-item.hide {
+  display: none;
+}
+
 .pub-multiselect .pub-multiselect-body .pub-multiselect-area .pub-multiselect-items > .pub-select-item > :first-child {
   width: 100%;
   display: inline-block;
