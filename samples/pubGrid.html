@@ -96,6 +96,7 @@ html , body {
 	<tr>
 		<td>
 			<div class="asdfasdfWrapper">
+				<pre id="textTest" style="display:inline-block;white-space: pre;position: relative;padding:0px;margin:0px;">SORT_ORDER</pre>
 				<div id="asdfasdf" style="height:calc(100vh - 200px)"></div>
 			</div>
 		</td>
@@ -365,13 +366,11 @@ function fn_init(){
 	aaa =item.aaa;
 	colItem  = item.colItem;
 
-
-	console.log(aaa);
 	
 	if(parseInt($('#itemCount').val(),10) == 1){
 		aaa = [];
 	}
-		
+
 	gridDraw('#asdfasdf',aaa, colItem);
 
 	//gridDraw('#asdfasdf1',aaa, colItem);
@@ -460,10 +459,11 @@ function gridDraw(selector, aaa, colItem){
 			
 		}
 		,navigation: {
-			usePaging : false
+			enablePaging : false
 			,status : true
 			,height :32
 			,position : 'center'
+			,enableSelectionInfo : true
 			,callback : function (no){
 				console.log(no);
 				//gridObj.setData(aaa);
@@ -479,6 +479,8 @@ function gridDraw(selector, aaa, colItem){
 			enabled : true
 			,click : false
 			,mode : 'full'
+			,width:800
+			,height:250
 			,btnClose : true
 			,callback : function (data){
 				//console.log(data)
@@ -501,7 +503,7 @@ function gridDraw(selector, aaa, colItem){
 			]
 		]
 
-		,theadGroup : [
+		,theadGroup2: [
 			[
 				{label:'ccc',rowspan: 2 }
 				,{label:'ddd',rowspan: 2 }
@@ -523,7 +525,7 @@ function gridDraw(selector, aaa, colItem){
 		,tfootItem :['asdf']
 		,rowOptions :{
 			dblClickCheck :true
-			, height : 50
+			//, height : 50
 			,dblClick1: function (){
 				console.log('dblclick')
 			}

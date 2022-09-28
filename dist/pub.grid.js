@@ -1,5 +1,5 @@
 /**
- * pubGrid v1.0.3
+ * pubGrid v1.0.4
  * ========================================================================
  * Copyright 2016-2022 ytkim
  * Licensed under MIT
@@ -14,6 +14,8 @@
 af :  add function
 ap  : add parameter
 */
+var VERSION = '1.0.4';
+
 var _initialized = false
 ,_$win = $(window)
 ,_$doc = $(document)
@@ -33,6 +35,14 @@ var _initialized = false
 	,width: 'auto'				// 넓이값
 	,itemMaxCount : -1	// add시 item max로 유지할 카운트
 	,valueFilter : false		// value filter function (colItem, objectValue)
+	,sortOptions : {
+		nullsLast : false // null value 를 항상 끝으로 유지 할지 여부
+		/*
+		,customSorting : function (a, b, key, sortType){	// custom sorting function
+
+		}
+		*/
+	}
 	,rowOptions:{	// 로우 옵션.
 		height: 22	// cell 높이
 		,click : false //row(tr) click event
@@ -91,6 +101,8 @@ var _initialized = false
 		,click : false				// 직접 처리 할경우. function 으로 처리.
 		,btnClose : false			// button 으로만 닫기 여부
 		,useRememberValue : false	// 검색어 local storage에 저장 여부
+		,width:520
+		,height:200
 		,callback : function (item){
 
 		}
@@ -205,12 +217,14 @@ var _initialized = false
 	,tbodyGroup : [] // body group
 	,tfootItem : []  // foot item
 	,navigation :{
-		usePaging : false	// 페이지 사용여부
+		enablePaging : false	// 페이지 사용여부
 		,status : false
-		,statusFormatter : '{{currStart}} - {{currEnd}} of {{total}}'
+		,statusFormat : '{{currStart}} - {{currEnd}} of {{total}}'
 		,height : 32		// 높이 값
 		,position : 'center'	// 위치 값
 		,callback : function (no){}	// 페이지 콜백
+		,enableSelectionInfo : false
+		,selectionInfoFormat : 'Count : {{count}} Avg : {{avg}} Sum : {{sum}}'
 	}
 	,page : false	// paging info
 	,message : {
@@ -240,9 +254,19 @@ function hasProperty(obj , key){
 function isUndefined(obj){
 	return typeof obj==='undefined';
 }
+
+function isBlank(obj){
+	return obj === '';
+}
+
 function isFunction(obj){
 	return typeof obj==='function';
 }
+
+function isNumber(n) {
+	return !isNaN(parseFloat(n)) && isFinite(n);
+  }
+
 
 function intValue(val){
 	return parseInt(val , 10);
@@ -401,14 +425,23 @@ _$doc.on('mouseup.pubgrid', function (){
 })
 
 function getMeasureTextWidth(gridCtx, str, type){
+	var measureEl = gridCtx.element.measureEl;
 	
-	var w = gridCtx.element.measureEl.text(str).width()+(type=='header' ? 22 : 14);
-	gridCtx.element.measureEl.text('');
+	var w = 0;
+	if(type=='header'){
+		measureEl.css('font-weight','bold');
+		w = measureEl.text(str).width()+ 22;
+		measureEl.css('font-weight','');
+	}else{
+		w = measureEl.text(str).width()+ 14;
+	}
+	
+	measureEl.text('');
 	return w;
 }
 
 var formatter= {
-	'money' : function (num , fixedNum , prefix , suffix){
+	'money' : function (num, fixedNum, prefix, suffix){
 		return (prefix||'')+ formatter.number(num, fixedNum) +(suffix||'');
 	}
 	,'number': function (num, fixedNum){
@@ -1284,8 +1317,11 @@ Plugin.prototype ={
 			_this.drawGrid(mode,true);
 		}
 
-		if(_this.options.navigation.usePaging === true) {
-			_this.setPaging(mode=='init' ? opt.paging : (pdata.paging ||{}));
+		if(_this.options.navigation.enablePaging === true) {
+			if(mode !='sort'){
+				_this.setPaging(mode=='init' ? opt.paging : (pdata.paging ||{}));
+				_this._setStatusMessage();
+			}
 		}
 
 		if(_this.config.searchOn===true){
@@ -1320,8 +1356,8 @@ Plugin.prototype ={
 
 		_paging = _paging||{};
 
-		if(_this.options.navigation.usePaging !== true) {
-			throw 'usePaging not enabled';
+		if(_this.options.navigation.enablePaging !== true) {
+			throw 'enablePaging not enabled';
 		}
 
 		var pagingInfo = _this.getPagingInfo(_paging.totalCount||0, _paging.currPage, _paging.countPerPage, _paging.unitPage);
@@ -1539,17 +1575,18 @@ Plugin.prototype ={
 		var rendererType = thiItem.renderer.type; 
 
 		if(mode == 'data' && rendererType != 'text'){
+			
 			return rowItem[thiItem.key];
 		}
 		
 		var itemVal = (_$renderer[ rendererType ] || _$renderer.text)(this, thiItem, rowItem, mode);
-
+	
 		if(addEle){
 			if(rendererType !='text'){
 				addEle.innerHTML = itemVal;
 				itemVal = '';
 			}else{
-				addEle.textContent = itemVal;
+				addEle.textContent = itemVal+'';
 			}
 		}
 		return itemVal;
@@ -1564,13 +1601,15 @@ Plugin.prototype ={
 	 */
 	,_setCellStyle : function (cellEle, _idx, thiItem, rowItem){
 		// style 처리
-		var addClass;
+		var addClass ='';
+
 		if(isFunction(thiItem.styleClass)){
 			addClass = thiItem.styleClass.call(null,{idx : _idx, colInfo:thiItem, item: rowItem})
 		}else{
 			addClass=(thiItem.cellClass||'');
 		}
-		cellEle.setAttribute('class','pub-body-td '+addClass );
+
+		if(addClass != '') cellEle.setAttribute('class','pub-body-td '+addClass );
 	}
 	,_isFixedPostion : function (idx, position){
 		position = position || 'l';
@@ -1632,6 +1671,7 @@ Plugin.prototype ={
 				_this.element.footer = $('#'+_this.prefix +'_footerContainer');
 
 				_this.element.navi = $('#'+_this.prefix+'_navigation');
+				_this.element.navSelectionInfo = $('#'+_this.prefix+'_navSelectionInfo');
 				_this.element.status = $('#'+_this.prefix+'_status');
 				_this.element.vScrollBar = $('#'+_this.prefix+'_vscroll .pubGrid-vscroll-bar');
 				_this.element.hScrollBar = $('#'+_this.prefix+'_hscroll .pubGrid-hscroll-bar');
@@ -1861,7 +1901,7 @@ Plugin.prototype ={
 
 		this.config.navi.height = 0;
 
-		if(this.options.navigation.usePaging === true || this.options.navigation.status === true){
+		if(this.options.navigation.enablePaging === true || this.options.navigation.status === true){
 			this.element.navi.show();
 			this.config.navi.height = this.element.navi.outerHeight();
 		}
@@ -2605,7 +2645,7 @@ Plugin.prototype ={
 		var totCnt = 0; 
 		var startVal = 0;
 		var endVal = 0;
-		if(this.options.navigation.usePaging === true) {
+		if(this.options.navigation.enablePaging === true) {
 			if(this.config.pagingInfo !== false){
 				var pagingInfo =this.config.pagingInfo; 
 				totCnt = pagingInfo.totalCount;
@@ -2620,7 +2660,7 @@ Plugin.prototype ={
 		}
 
 		if(totCnt > 0){
-			this.element.status.empty().html(replaceMesasgeFormat(this.options.navigation.statusFormatter||'', {
+			this.element.status.empty().html(replaceMesasgeFormat(this.options.navigation.statusFormat||'', {
 				currStart :startVal
 				,currEnd : endVal >= totCnt? totCnt: endVal
 				,total : totCnt
@@ -3945,6 +3985,10 @@ Plugin.prototype ={
 	,selectionData : function (dataType) {
 		var _this = this;
 
+		var tbodyItem = _this.options.tbodyItem;
+
+		if(tbodyItem.length < 1) return ; 
+
 		dataType = dataType||'text';
 
 		var sCol,eCol,sIdx,eIdx;
@@ -3970,11 +4014,11 @@ Plugin.prototype ={
 		var returnVal = [];
 		var addRowFlag;
 
-		var tbodyItem = _this.options.tbodyItem;
 		var tColItem = _this.config.tColItem;
 
 		var keyInfo ={};
 		var tmpVal = '';
+		var summaryInfo = {count :0, numbers:[]};
 		for(var i = sIdx ; i <= eIdx ; i++){
 			var item = tbodyItem[i];
 
@@ -3996,6 +4040,12 @@ Plugin.prototype ={
 					if(dataType=='json'){
 						keyInfo[j] = colItem;
 						rowItem[tmpKey] = tmpVal;
+						summaryInfo.count += isBlank(tmpVal) ? 0 : 1;
+						if(isNumber(tmpVal)){
+							tmpVal = Number(tmpVal);
+							summaryInfo.numbers.push(tmpVal);
+						}
+						
 					}else{
 						rowText.push(tmpVal);
 					}
@@ -4013,16 +4063,22 @@ Plugin.prototype ={
 				}
 			}
 		}
+
 		if(dataType=='json'){
 			var reKeyInfo =[];
 
 			for(var key in keyInfo){
 				reKeyInfo.push(keyInfo[key]);
 			}
-
+			var sum = summaryInfo.numbers.reduce((a, b) => a + b, 0);
 			return {
 				header : reKeyInfo
 				,data : returnVal
+				,summaryInfo : {
+					count : summaryInfo.count
+					,sum : sum
+					,avg : sum == 0 ? 0 : (sum/summaryInfo.numbers.length).toFixed(1)
+				}
 			}
 		}else{
 			return returnVal.join('\n');
@@ -4177,7 +4233,7 @@ Plugin.prototype ={
 
 		for(var i =0, len = sortInfoArr.length;i < len; i++){
 			var sortInfo = sortInfoArr[i];
-			this.setData(this._getSortList(sortInfo.key, sortInfo.sortType, sortInfo.val) ,'sort');
+			this.setData(this._getSortList(sortInfo.key, sortInfo.sortType) ,'sort');
 		}
 	}
 	/**
@@ -4187,10 +4243,9 @@ Plugin.prototype ={
 	 * @param  val {String,Integer} 정렬값
 	 * @description data sorting 처리.
 	 */
-	,_getSortList :function (key, sortType, val){
+	,_getSortList :function (key, sortType){
 		var _this = this
-			,tbi = _this.options.tbodyItem
-			,val  = val ||'';
+			,tbi = _this.options.tbodyItem;
 
 		var _key = key;
 
@@ -4205,23 +4260,31 @@ Plugin.prototype ={
 		}
 
 		_this.config.sort.current = _key;
-
-		var reversed = (sortType=='asc') ? 1 : -1;
-
-		if(sortType=='asc' || sortType=='desc'){  // 오름차순
+		
+		if(sortType=='asc' || sortType=='desc'){  
+			var direction = (sortType=='asc') ? 1 : -1;
+			 
+			var nullsLast = this.options.sortOptions.nullsLast;
 
 			tbi.sort(function (a,b){
 				var v1 = a[_key]
 					,v2 = b[_key];
 
-				if(v1 == v2) return 0;
-
-				if(val != ''){
-					return (v1==val ? reversed * -1 : (v2==val ? reversed : 0));
-				}else{
-					return (v1 < v2 ? reversed * -1 : (v1 > v2 ? reversed : 0));
+				if(v1 === null ||  isUndefined(v1)){
+					return nullsLast ? 1 : direction * -1; 
 				}
+
+				if(v2 === null ||  isUndefined(v2)){
+					return nullsLast ? -1 : direction * 1; 
+				}
+				
+				if(v1 > v2 ) return direction*1;
+				if(v1 < v2 ) return direction*-1;		
+				
+				return 0;				
 			});
+
+			//tbi.forEach(item=>console.log(item));
 		}else{
 			_this.config.sort.current = '';
 			tbi = _this.config.sort.orginData;
@@ -4256,9 +4319,6 @@ Plugin.prototype ={
 		cfg.initHeaderResizer = true; 
 
 		var maxColWidth = _this.options.headerOptions.resize.maxWidth;
-
-		var valueFilterFn = _this.options.valueFilter;
-		var filterFnFlag = isFunction(valueFilterFn);
 
 		_this.element.header.on('dblclick.pubgrid.headerResizer', '.pub-header-resizer',function (e){
 
@@ -4855,9 +4915,12 @@ var _$template = {
 			+' </div>'
 			+' <div style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"><textarea id="'+prefix+'_pubGridPasteArea"></textarea>' // copy 하기위한 textarea 꼭 위치해야함.
 			+' <textarea id="'+prefix+'_pubGridCopyArea"></textarea>' // copy 하기위한 textarea 꼭 위치해야함.
-			+' <pre id="'+prefix+'Measurer" style="display:inline-block;white-space: pre;position: relative;padding:0px;margin:0px;"></pre></div>'
+			+' <pre id="'+prefix+'Measurer" style="font-family: inherit;display:inline-block;white-space: pre;position: relative;padding:0px;margin:0px;"></pre></div>'
 			+' <div id="'+prefix+'_navigation" class="pubGrid-navigation" style="height:'+(_this.options.navigation.height) +'px">'
-			+'	 <div class="pubGrid-paging"><div class="pubGrid-paging-box"><div id="'+prefix+'_page"></div></div></div><div class="pubgGrid-message-info"><div id="'+prefix+'_status"></div></div>'
+			+'	 <div class="pubGrid-paging"><div class="pubGrid-paging-box"><div id="'+prefix+'_page"></div></div></div><div class="pubgGrid-message-info">'
+			+'		<div id="'+prefix+'_navSelectionInfo"></div>'
+			+'		<div id="'+prefix+'_status" style="padding-left: 20px;"></div>'
+			+'	</div>'
 			+' </div>'
 			+' </div>';
 
@@ -5336,6 +5399,17 @@ var _$util = {
 
 		if(tdSelectFlag){
 			ctx._setCellSelect(initFlag);
+		}
+
+		if(ctx.options.navigation.enableSelectionInfo){
+
+			var dataInfo = ctx.selectionData('json');
+
+			if(!isUndefined(dataInfo) && dataInfo.summaryInfo.count > 1){
+				ctx.element.navSelectionInfo.empty().html(replaceMesasgeFormat(ctx.options.navigation.selectionInfoFormat||'', dataInfo.summaryInfo))
+			}else{
+				ctx.element.navSelectionInfo.empty();
+			}
 		}
 	}
 	/**
@@ -5835,7 +5909,7 @@ var _$setting = {
 			if(settingOpt.mode =='full-center'){
 				template +='	<div class="full-setting-overlay"></div>';
 			}
-			template+='	<div class="pubGrid-setting-panel '+settingOpt.mode+'">'
+			template+='	<div class="pubGrid-setting-panel '+settingOpt.mode+'" style="width:'+settingOpt.width+'px;height:'+settingOpt.height+'px;">'
 			template+='	</div>';
 			template+=+'</div>';
 
@@ -6778,7 +6852,7 @@ var _$setting = {
 }
 
 
-$.pubGrid = function (selector,options, args) {
+$.pubGrid = function pubGrid(selector,options, args) {
 	var _cacheObject = _datastore[selector];
 
 	if(isUndefined(options)){
@@ -6826,5 +6900,7 @@ $.pubGrid = function (selector,options, args) {
 $.pubGrid.setDefaults = function (defaultValue){
 	_defaults = objectMerge(_defaults, defaultValue);
 }
+
+$.pubGrid.version = VERSION;
 
 }(jQuery, window, document));
