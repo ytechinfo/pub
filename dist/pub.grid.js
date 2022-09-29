@@ -529,9 +529,8 @@ Plugin.prototype ={
 			, initHeaderResizer :false
 			, settingConfig :{
 				viewInitFlag :true
-				,changeInfos: {}	// change info
-				,filterTemplate: {}	// filter html template
-				,currentClickItem: {}	// current click item
+				,filterTemplate : ''
+				,filterOperatorTemplate: {}	// filter html template
 				,filterInfo : false // filter info {checkFn, check condition}
 			}
 		};
@@ -4913,7 +4912,7 @@ var _$template = {
 			+' 		<div id="'+prefix+'_resizeHelper" class="pubGrid-resize-helper"></div>'
 			+' 	</div>'
 			+' </div>'
-			+' <div style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"><textarea id="'+prefix+'_pubGridPasteArea"></textarea>' // copy 하기위한 textarea 꼭 위치해야함.
+			+' <div style="top:-9999px;left:-9999px;position:fixed;z-index:999999;"><textarea id="'+prefix+'_pubGridPasteArea"></textarea>' // paste 하기위한 textarea 꼭 위치해야함.
 			+' <textarea id="'+prefix+'_pubGridCopyArea"></textarea>' // copy 하기위한 textarea 꼭 위치해야함.
 			+' <pre id="'+prefix+'Measurer" style="font-family: inherit;display:inline-block;white-space: pre;position: relative;padding:0px;margin:0px;"></pre></div>'
 			+' <div id="'+prefix+'_navigation" class="pubGrid-navigation" style="height:'+(_this.options.navigation.height) +'px">'
@@ -5935,9 +5934,6 @@ var _$setting = {
 		gridCtx.config.settingConfig.currentTColItems = arrayCopy(gridCtx.config.tColItem);
 					
 		if(gridCtx.config.settingConfig.viewInitFlag===true){
-			_this.setViewColTemplate(gridCtx);
-			gridCtx.config.settingConfig.changeInfos = {};
-			gridCtx.config.settingConfig.currentClickItem = {};
 			gridCtx.config.settingConfig.viewInitFlag = false; 
 		}
 		
@@ -5961,11 +5957,6 @@ var _$setting = {
 				settingAreaEle.addClass('open');
 
 				gridCtx.config.settingConfig.currentTColItems = arrayCopy(gridCtx.config.tColItem); // cancel 시 적용 하기 위해서 복사
-
-				// current click item setting
-				if(hasProperty(gridCtx.config.settingConfig.currentClickItem,'key')){
-					settingAreaEle.find('.tcol-view-list [data-key="'+gridCtx.config.settingConfig.currentClickItem.key+'"] .view-col-item').trigger('click.viewitem');
-				}
 				
 				if(settingOpt.mode != 'full-center'){
 					var evtPosVal = evtPos(e);					
@@ -6131,7 +6122,7 @@ var _$setting = {
 		});
 	
 		// all column click
-		settingAreaEle.on('click.add.colItem', '.add-col-item', function (e){
+		settingAreaEle.on('click.add.colItem', '.view-col-check', function (e){
 			var sEle = $(this);
 	
 			var chkIdx= sEle.attr('data-chk-idx');
@@ -6140,24 +6131,14 @@ var _$setting = {
 	
 			if(chkIdx == 'all'){
 				if(isChecked){
-					_this.setViewColTemplate(gridCtx, []);
-					settingAreaEle.find('.add-col-item').removeClass('on');
+					settingAreaEle.find('.view-col-check').removeClass('on');
 				}else{
-					_this.setViewColTemplate(gridCtx, gridCtx.config.dataInfo.orginTColItem);
-					settingAreaEle.find('.add-col-item').addClass('on');
+					settingAreaEle.find('.view-col-check').addClass('on');
 				}
 			}else{
-				var clickItem = gridCtx.config.dataInfo.orginTColItem[parseInt(chkIdx,10)]; 
-	
-				var chkEle = settingAreaEle.find('.tcol-view-list [data-key="'+clickItem.key+'"]');
-	
 				if(sEle.hasClass('on')){
-					chkEle.remove();
 					sEle.removeClass('on');
 				}else{
-					if(chkEle.length < 1){
-						_this.addViewColTemplate(gridCtx, clickItem);
-					}
 					sEle.addClass('on');
 				}
 			}
@@ -6168,9 +6149,7 @@ var _$setting = {
 			var parentEle = $(this).closest('[data-key]');
 			var dataKey =parentEle.attr('data-key'); 
 
-			delete gridCtx.config.settingConfig.changeInfos[dataKey];
-
-			settingAreaEle.find('.add-col-item[data-key="'+dataKey+'"]').removeClass('on');
+			settingAreaEle.find('.view-col-check[data-key="'+dataKey+'"]').removeClass('on');
 			parentEle.remove();
 		});
 		
@@ -6182,14 +6161,19 @@ var _$setting = {
 			if(mode=='apply' || mode=='a&c'){	// apply , a&c = apply and close
 				var viewColumnKey = [];
 				var fixedColIdx= -1;
-				settingAreaEle.find('.tcol-view-list>li').each(function (idx){
+				settingAreaEle.find('.tcol-all-list>li').each(function (idx){
 					var ele = $(this);
-					viewColumnKey.push(ele.attr('data-key'));
+					
+					if(ele.find('.view-col-check.on').length > 0){
+						viewColumnKey.push(ele.attr('data-key'));	
 
-					if(ele.find('.column-fix-icon.on').length > 0){
-						fixedColIdx = idx;
+						if(ele.find('.column-fix-icon.on').length > 0){
+							fixedColIdx = idx;
+						}
 					}
 				});
+
+				console.log(viewColumnKey);
 
 				if(viewColumnKey.length  < 1){
 					settingAreaEle.find('.setting-message').show();
@@ -6198,8 +6182,6 @@ var _$setting = {
 					settingAreaEle.find('.setting-message').hide();
 				}
 
-				_this.setFilterChangeInfo(gridCtx, settingAreaEle, gridCtx.config.settingConfig.currentClickItem);
-
 				var newViewCols = [];
 				var headRedraw = gridCtx.options.tColItem.length == viewColumnKey.length ? false : true;
 				var changeWidthInfo={};
@@ -6207,24 +6189,13 @@ var _$setting = {
 					if(!headRedraw && itemKey != gridCtx.options.tColItem[idx].key){
 						headRedraw = true; 
 					}
-					var item =orginTColIdxKeyMap[itemKey]; 
-					var changeInfo = gridCtx.config.settingConfig.changeInfos[itemKey];
 					
-					if(!isUndefined(changeInfo)){
-						changeInfo.width = isNaN(changeInfo.width)? item.width : Number(changeInfo.width);
-						if(changeInfo.width != item.width){
-							changeWidthInfo[idx] = changeInfo.width;
-						}
-						item.filterInfos=[];
-						item = objectMerge(item, changeInfo);
-					}
-
-					newViewCols.push(item);
+					newViewCols.push(orginTColIdxKeyMap[itemKey]);
 				});
 
 				gridCtx.options.tColItem =newViewCols;
 
-				_this.getFilterCheckLogic(gridCtx, newViewCols);
+				_this.getFilterCheckLogic(gridCtx, newViewCols, settingAreaEle);
 
 				fixedColIdx = fixedColIdx+1;
 
@@ -6243,19 +6214,11 @@ var _$setting = {
 				if(mode =='apply')	return ; 
 								
 			}else if(mode=='default'){
-				gridCtx.config.dataInfo.orginTColItem.forEach(function (item){
-					item.filterInfos = [];
-				});
 				gridCtx.config.settingConfig.viewInitFlag = true; 
 				gridCtx.config.settingConfig.filterInfo = false; 
-				gridCtx.config.settingConfig.changeInfos = {};
-				_this.viewFilterIcon(settingAreaEle, '$all', false);
 				
-			
-				_this.setViewColumnInfo(gridCtx, settingAreaEle, {}, {filterInfos:[]});
 				gridCtx.options.tColItem = gridCtx.config.dataInfo.orginTColItem;
-				_this.setViewColTemplate(gridCtx, gridCtx.config.dataInfo.orginTColItem);
-
+				
 				dataSearchEle.val('');
 				gridCtx.options.setting.configVal.search = {
 					field : ''
@@ -6266,120 +6229,39 @@ var _$setting = {
 				gridCtx.setColFixedIndex(0, true);
 				return ; 
 			}else{	 // cancel
-				var changeInfos = gridCtx.config.settingConfig.changeInfos;
-				for(var key in changeInfos){
-					var item = changeInfos[key];
-
-					if(item.filterInfos.length > 0 && !hasProperty(orginTColIdxKeyMap[key],'filterInfos')){
-						_this.viewFilterIcon(settingAreaEle, key, false);
-					}
-				}
-				
-				gridCtx.config.settingConfig.changeInfos = {};
-				gridCtx.config.settingConfig.currentClickItem = {};
 				gridCtx.config.tColItem = gridCtx.config.settingConfig.currentTColItems;
-				_this.setViewColTemplate(gridCtx);
-				_this.setViewColumnInfo(gridCtx, settingAreaEle, {}, {filterInfos:[]});
 			}
 	
 			settingAreaEle.removeClass('open');
 		})
-
-		// view item click
-		var shiftStartIdx = -1;
-		settingAreaEle.on('click.viewitem','.view-col-item', function (e){
-			var sEle = $(this);
-			var dataKeyEle = sEle.closest('[data-key]');
-			var dataKey = sEle.closest('[data-key]').attr('data-key');
-			var selectItem = orginTColIdxKeyMap[dataKey];
-
-			var beforeClickItem = gridCtx.config.settingConfig.currentClickItem;
-			
-			shiftStartIdx = e.shiftKey ? shiftStartIdx : -1;
-			
-			if(e.ctrlKey){
-				if(sEle.hasClass('on')){
-					sEle.removeClass('on');
-				}else{
-					sEle.addClass('on');
-				}
-			}else if(e.shiftKey){
-				var beforeIdx = settingAreaEle.find('.tcol-view-list [data-key="'+beforeClickItem.key+'"]').index();
-
-				if(beforeIdx != -1){
-					shiftStartIdx = shiftStartIdx ==-1 ? beforeIdx : shiftStartIdx;
-					var currentIdx = dataKeyEle.index();
-					var allViewEle = dataKeyEle.closest('.tcol-view-list').children();
-
-					var maxIdx = Math.max(currentIdx, beforeIdx, shiftStartIdx)
-						,minIdx = Math.min(currentIdx, beforeIdx, shiftStartIdx);
-					
-					var downFlag = shiftStartIdx < currentIdx;
-
-					for(var i = minIdx; i <= maxIdx; i++){
-						var item = $(allViewEle[i]); 
-						if(item.is(':visible')){
-
-							if((downFlag && shiftStartIdx <= i && i <= currentIdx)  // down
-								|| (!downFlag && currentIdx <= i && i <= shiftStartIdx) // up
-							){
-								item.find('.view-col-item').addClass('on')
-							}else{
-								item.find('.view-col-item').removeClass('on')	
-							}	
-						}
-					}
-				}else{
-					shiftStartIdx = -1;
-					sEle.addClass('on');
-				}
-			}else{
-				settingAreaEle.find('.view-col-item.on').removeClass('on');
-				sEle.addClass('on');
-			}
-				
-			if(beforeClickItem.key){
-				_this.setFilterChangeInfo(gridCtx, settingAreaEle, beforeClickItem);
-			}
-
-			var changeInfo = _this.getViewItemChangeInfo(gridCtx, dataKey, selectItem);
-			gridCtx.config.settingConfig.changeInfos[dataKey] = changeInfo;
-
-			_this.setViewColumnInfo(gridCtx, settingAreaEle, selectItem, changeInfo);
-		})
-		
+	
 		// add filter item
 		settingAreaEle.on('click.addop.item', '.add-op-btn', function (e){
-			var detailViewCol = gridCtx.config.settingConfig.currentClickItem; 
+			settingAreaEle.find('.filter-item-list').append(_this.getReplaceCheckId(gridCtx.config.settingConfig.filterTemplate));
+		});
+		// 기본값 추가
+		settingAreaEle.find('.filter-item-list').append(_this.getReplaceCheckId(gridCtx.config.settingConfig.filterTemplate));
 
-			if(hasProperty(detailViewCol,'key')){
-				var viewType = _this.getOpType(gridCtx, detailViewCol.type);
-							
-				settingAreaEle.find('.filter-item-list').append(_this.getReplaceCheckId(gridCtx.config.settingConfig.filterTemplate[viewType]));
-				settingAreaEle.find('.filter-area').scrollTop(function (){
-					return this.scrollHeight;
-				});
-			}
-		})
-
-		// remove filter item 
-		settingAreaEle.on('click.filter.remove','.filter-check-status ',function (e){
+		// add filter item
+		settingAreaEle.on('change.filerkey', '[name="filter-key"]', function (e){
 			var sEle = $(this);
-			var filterItemEle = sEle.closest('li');
-			var dataKey = filterItemEle.attr('data-key');
 
-			var selectItem = orginTColIdxKeyMap[dataKey];
-			var changeInfo = _this.getViewItemChangeInfo(gridCtx, dataKey, selectItem);
-			changeInfo.filterInfos = [];  // filter 정보 초기화
-			gridCtx.config.settingConfig.changeInfos[dataKey] = changeInfo;
+			var item = gridCtx.config.dataInfo.orginTColIdxKeyMap[sEle.val()];
+			var opType = _this.getOpType(gridCtx, item.type);
+			var liEl = sEle.closest('li');
+			var filterOPEl = liEl.find('[name="filter-op"]');
+			var currOpType = filterOPEl.attr('data-type');
 
-			if(gridCtx.config.settingConfig.currentClickItem.key == dataKey){
-				_this.setViewColumnInfo(gridCtx, settingAreaEle, selectItem, changeInfo);
+			if(opType == currOpType){
+				return ; 
 			}
-			
-			sEle.removeClass('on');
-		})
 
+			liEl.find('[name="filter-value"]').attr('data-type', opType);
+
+			filterOPEl.attr('data-type', opType);
+			filterOPEl.empty().html(gridCtx.config.settingConfig.filterOperatorTemplate[opType]);
+		});
+		
 		// remove filter row item 
 		settingAreaEle.on('click.filterrow.remove','.filter-row-remove',function (e){
 			var sEle = $(this);
@@ -6415,7 +6297,7 @@ var _$setting = {
 			var schRegExp = _$util.getSearchRegExp($(this).val());
 			
 			gridCtx.config.dataInfo.orginTColItem.forEach(function (item){
-				var liEle =settingAreaEle.find('.add-col-item[data-key="'+item.key+'"]').closest('li'); 
+				var liEle =settingAreaEle.find('.view-col-check[data-key="'+item.key+'"]').closest('li'); 
 
 				if(schRegExp.test(item.label)){
 					liEle.show();
@@ -6424,27 +6306,9 @@ var _$setting = {
 				}
 			});
 		})
-
-		// 선택 컬럼 검색
-		settingAreaEle.find('[name="viewTcolSearch"]').on('input.viewcol.field', function (e){
-			var schRegExp = _$util.getSearchRegExp($(this).val());
-			
-			settingAreaEle.find('.tcol-view-list [data-key]').each(function (item, idx){
-				var sEle = $(this);
-				var dataKey = sEle.attr('data-key');
-
-				var item = gridCtx.config.dataInfo.orginTColIdxKeyMap[dataKey];
-
-				if(schRegExp.test(item.label)){
-					sEle.show();
-				}else{
-					sEle.hide();
-				}
-			})
-		})
-
-		var tColViewListEle = settingAreaEle.find('.view-item-panel .item-list'); 
-		// 선택 컬럼 검색
+		
+		var tColViewListEle = settingAreaEle.find('.all-item-panel .item-list'); 
+		// fixed 컬럼 셋팅
 		tColViewListEle.on('click.viewcol.fixicon', '.column-fix-icon', function (e){
 			var sEle = $(this);
 			if(sEle.hasClass('on')){
@@ -6456,7 +6320,7 @@ var _$setting = {
 		})
 
 		// filter 입력후 enter key 이벤트 처리. 
-		settingAreaEle.find('.filter-area').on('keydown.filter.text','[name="filter-text"]', function (e){
+		settingAreaEle.find('.filter-area').on('keydown.filter.value','[name="filter-value"]', function (e){
 			if(e.keyCode =='13') {
 				settingAreaEle.find('.pubGrid-btn[data-mode="apply"]').trigger('click.setting.btn');
 			};
@@ -6467,63 +6331,14 @@ var _$setting = {
 			var sEle =$(this); 
 			
 			var upFlag = sEle.attr('data-arrow')=='up';
-			var selectEles = settingAreaEle.find('.view-col-item.on'); 
-
-			if(selectEles.length < 1) return ; 
+			
+			var liEle =sEle.closest('li');
 
 			if(upFlag){
-				selectEles.each(function (item, idx){
-					var itemEle = $(this).closest('li');
-					var prevEle = itemEle.prevAll(':visible').first();
-					var prevIdx= prevEle.index()
-						,curridx = itemEle.index();
-
-					if(prevIdx == -1 && curridx != 0){
-						itemEle.closest('.tcol-view-list').prepend(itemEle);
-					}else{
-						if(prevEle.length > 0){
-							var prevOnFlag = prevEle.find('.view-col-item.on').length > 0;
-
-							if(prevOnFlag){
-								if(prevIdx+1 != curridx){
-									prevEle.after(itemEle);
-								}
-							}else{
-								prevEle.before(itemEle);
-							}
-						}
-					}
-				})
-
-				var firstEle= $(selectEles[0]);
-
-				if(firstEle.position().top < 0){
-					tColViewListEle.scrollTop(tColViewListEle.scrollTop() + firstEle.position().top)
-				}
+				liEle.prev().before(liEle);
 			}else{
-				var firstEle=false;
-				for(var i =selectEles.length-1; i>=0; i--){
-					var itemEle = $(selectEles[i]).closest('li');
-
-					if(firstEle===false){
-						firstEle = itemEle; 
-					}
-
-					var nextEle = itemEle.nextAll(':visible').first();
-
-					if(nextEle.length > 0){
-						if(nextEle.find('.view-col-item.on').length < 1){
-							nextEle.after(itemEle);
-						}
-					}
-				}
-
-				var scrollTopVal = (firstEle.outerHeight() + firstEle.position().top + tColViewListEle.scrollTop()) - tColViewListEle.height(); 
-
-				if(scrollTopVal > 0){
-					tColViewListEle.scrollTop(scrollTopVal);
-				}
-			}			
+				liEle.next().after(liEle);
+			}
 		})
 	}
 	,initResizeEvent: function (gridCtx, settingOpt, settingAreaEle){
@@ -6554,59 +6369,46 @@ var _$setting = {
 			});
 		});
 	}
-	,getViewItemChangeInfo : function(gridCtx, dataKey, selectItem) {
-		
-		var changeInfo = gridCtx.config.settingConfig.changeInfos[dataKey]; 
-		if(isUndefined(changeInfo)){
-			changeInfo ={
-				filterInfos : selectItem.filterInfos ||[]
-				, width : selectItem.width
-			}
-		}else{
-			changeInfo.width = selectItem.width;
-		}
-
-		return changeInfo; 
-	}
 	// filter check logic
-	,getFilterCheckLogic : function (gridCtx, tColItemArr){
+	,getFilterCheckLogic : function (gridCtx, tColItemArr, settingAreaEle){
 		var allChkVal = [];
 		var _this = this; 		
 
 		var filterChkFlag = false; 
 		var chkLogicStr = [];
-		
-		tColItemArr.forEach(function (item, tColIdx){
-			var filterInfos = item.filterInfos;
+
+		var filterItem = {};
+		settingAreaEle.find('.filter-item-list').find('li').each(function (){
+			var sEle = $(this);
+			var filterKey = sEle.find('[name="filter-key"]').val(); 
+
+			var item = gridCtx.config.dataInfo.orginTColIdxKeyMap[filterKey]; 
+			var filterText = sEle.find('[name="filter-value"]').val(); 
 			
-			if($.isArray(filterInfos) && filterInfos.length > 0){
-				var viewType = _this.getOpType(gridCtx, item.type);
-				var opArr = gridCtx.config.settingConfig.operators[viewType];
-
-				if(filterChkFlag) chkLogicStr.push(defaultLogicalOp.getCode('and'));
-
-				chkLogicStr.push('(');
-				filterInfos.forEach(function (filterItem, idx){
-					var opItem = opArr[filterItem.op];
-
-					allChkVal.push({
-						chkVal : filterItem.text
-						,chkRegExp : opItem.isRegExp?_$util.getSearchRegExp(filterItem.text, 'all') : false
-					});
-
-					if(idx > 0){
-						chkLogicStr.push(( filterItem.logicOp ? defaultLogicalOp.getCode('and') : defaultLogicalOp.getCode('or')));
-					}
-					
-					chkLogicStr.push(replaceMesasgeFormat(opItem.code , {
-						key : item.key
-						,idx : allChkVal.length -1
-					}));
-				});
-				chkLogicStr.push(')');
-
-				filterChkFlag = true; 
+			var viewType = _this.getOpType(gridCtx, item.type);
+			var opArr = gridCtx.config.settingConfig.operators[viewType];
+			
+			filterItem = {
+				op : sEle.find('[name="filter-op"]').val()
+				,text : filterText
+				,logicOp : sEle.find('[name="filter-op-logical"]').is(':checked')
 			}
+
+			if(filterChkFlag) chkLogicStr.push(( filterItem.logicOp ? defaultLogicalOp.getCode('and') : defaultLogicalOp.getCode('or')));
+
+			var opItem = opArr[filterItem.op];
+
+			allChkVal.push({
+				chkVal : filterItem.text
+				,chkRegExp : opItem.isRegExp?_$util.getSearchRegExp(filterItem.text, 'all') : false
+			});
+						
+			chkLogicStr.push(replaceMesasgeFormat(opItem.code , {
+				key : item.key
+				,idx : allChkVal.length -1
+			}));
+
+			filterChkFlag = true; 
 		})
 
 		if(filterChkFlag){
@@ -6620,151 +6422,45 @@ var _$setting = {
 			gridCtx.config.settingConfig.filterInfo = false; 
 		}
 	}
-	,viewFilterIcon : function (settingAreaEle, key, visible){
-		var filterIconSelector = (key=='$all'?'':'[data-key="'+key+'"]') +' .filter-check-status';
-		
-		if(visible===true){
-			settingAreaEle.find(filterIconSelector).addClass('on');
-		}else{
-			settingAreaEle.find(filterIconSelector).removeClass('on');
-		}
-	}
 	// get operator type
 	,getOpType : function (gridCtx, type){
 		type = (type||'').toLowerCase();
 		return hasProperty(gridCtx.config.settingConfig.operators, type) ? type : 'string';
 	}
-	// defail info 
-	,setViewColumnInfo : function (gridCtx, settingAreaEle, selectItem, changeInfo){
-		var _this =this; 
-
-		if(changeInfo.filterInfos){
-			var viewType = hasProperty(gridCtx.config.settingConfig.operators, selectItem.type) ?selectItem.type : 'string';
-			var filterRowHtml = gridCtx.config.settingConfig.filterTemplate[viewType]; 
-
-			var filterItemListEle = settingAreaEle.find('.filter-item-list'); 
-			filterItemListEle.empty();
-			if(changeInfo.filterInfos.length > 0){
-				
-				changeInfo.filterInfos.forEach(function (item, idx){
-					var filterRowEle =$(_this.getReplaceCheckId(filterRowHtml)); 
-					
-					filterRowEle.find('[name="filter-op-logical"]').attr('checked',item.logicOp);
-					filterRowEle.find('[name="filter-op"]').val(item.op);
-					filterRowEle.find('[name="filter-text"]').val(item.text);
-					
-					filterItemListEle.append(filterRowEle);
-				})	
-			}else{
-				filterItemListEle.append(_this.getReplaceCheckId(filterRowHtml));
-			}
-		}
-		
-		gridCtx.config.settingConfig.currentClickItem = selectItem;
-		gridCtx.config.settingConfig.detailViewCol = changeInfo; 
-		settingAreaEle.find('.select-item-name').val(selectItem.label);
-		settingAreaEle.find('[name="setting-width-field"]').val(changeInfo.width);
-
-		if(isUndefined(selectItem.key)){
-			settingAreaEle.find('.view-col-item.on').removeClass('on');
-		}
-	}
 	,getReplaceCheckId : function (replaceStr){
 		return replaceStr.replace(/#checkboxid#/g, 'fc_'+ (++this.filterCheckboxIdx));
-	}
-	// filter change Info
-	,setFilterChangeInfo : function (gridCtx, settingAreaEle, changeInfo){
-		if(hasProperty(changeInfo,'key')){
-			
-			var beforeChangeInfo = gridCtx.config.settingConfig.changeInfos[changeInfo.key]; 
-
-			if(!isUndefined(beforeChangeInfo)){
-				var widthVal = parseInt(settingAreaEle.find('[name="setting-width-field"]').val(),10);
-
-				if(!isNaN(widthVal) && widthVal > 0){
-					beforeChangeInfo.width = widthVal;
-				}
-
-				beforeChangeInfo.filterInfos = [];
-				
-				settingAreaEle.find('.filter-item-list').find('li').each(function (){
-					var sEle = $(this);
-					var filterText = sEle.find('[name="filter-text"]').val(); 
-					if(_$util.trim(filterText)){
-						
-						beforeChangeInfo.filterInfos.push({
-							op : sEle.find('[name="filter-op"]').val()
-							,text : filterText
-							,logicOp : sEle.find('[name="filter-op-logical"]').is(':checked')
-						});
-					}
-				})
-
-				if(beforeChangeInfo.filterInfos.length > 0){
-					this.viewFilterIcon(settingAreaEle, changeInfo.key, true);
-				}else{
-					this.viewFilterIcon(settingAreaEle, changeInfo.key, false);
-				}
-			}
-		}
-	}
-	// set view column template
-	,setViewColTemplate : function (gridCtx, tColItems){
-		var _this = this; 
-		if(isUndefined(tColItems)){
-			tColItems= gridCtx.config.tColItem;
-		}
-
-		var settingAreaEle = $('#'+gridCtx.prefix+'_pubGridSettingArea');
-		var strHtm = [];
-		tColItems.forEach(function (item){
-			settingAreaEle.find('.add-col-item[data-key="'+item.key+'"]').addClass('on');
-			strHtm.push(_this.viewColTemplateHtml(item));
-		})
-
-		settingAreaEle.find('.tcol-view-list').empty().html(strHtm.join(''));
-	}
-	,addViewColTemplate : function (gridCtx, addItems){
-		var _this = this; 
-		var tColItems = []
-		if($.isArray(addItems)){
-			tColItems = addItems; 
-		}else{
-			tColItems.push(addItems);
-		}
-
-		var strHtm = [];
-		tColItems.forEach(function (item){
-			strHtm.push(_this.viewColTemplateHtml(item));
-		})
-		
-		$('#'+gridCtx.prefix+'_pubGridSettingArea .tcol-view-list').append(strHtm.join(''));
-	}
-	,viewColTemplateHtml : function (item){
-		return '<li data-key="'+item.key+'"><span class="remove-btn"></span>'
-			+'<span class="view-col-item">'+item.label+'</span>'
-			+'<span class="filter-check-status"></span><span class="column-fix-icon" title="Column fixed"></span></li>';
 	}
 	,initFilterItemTemplateHtml: function (gridCtx){
 
 		var operators = gridCtx.config.settingConfig.operators;
-
+	
 		for(var key in operators){
-			var  condHtm =[];
-			condHtm.push('<li>');
-			condHtm.push('<span class="filter-op-logical"><input type="checkbox" name="filter-op-logical" id="#checkboxid#"><label for="#checkboxid#"></label></span>');
-			condHtm.push('<select name="filter-op" class="filter-op">');
+			var optHtm = [];
 			operators[key].forEach(function(item, idx){
-				condHtm.push('<option value="'+idx+'">'+item.nm+'</option>');	
+				optHtm.push('<option value="'+idx+'">'+item.nm+'</option>');	
 			});
-			
-			condHtm.push('</select>');
-			condHtm.push('<input type="text" name="filter-text" class="filter-text" autocomplete="off" data-type="'+key+'">');
-			condHtm.push('<button type="button" class="filter-row-remove">-</button>');
-			condHtm.push('</li>');	
 
-			gridCtx.config.settingConfig.filterTemplate[key] = condHtm.join('');
+			gridCtx.config.settingConfig.filterOperatorTemplate[key] = optHtm.join('');
 		}
+
+		var templateHtm = [];
+		templateHtm.push('<li>');
+		templateHtm.push('<span class="filter-op-logical"><input type="checkbox" name="filter-op-logical" id="#checkboxid#"><label for="#checkboxid#"></label></span>');
+
+		templateHtm.push('<select name="filter-key" class="filter-key">');
+		gridCtx.config.dataInfo.orginTColItem.forEach(function (item, idx){
+			templateHtm.push('<option idx="'+idx+'"value="'+item.key+'">'+item.label+'</option>');
+		})
+		templateHtm.push('</select>');
+		templateHtm.push('<select name="filter-op" class="filter-op" data-type="string">');
+		templateHtm.push(gridCtx.config.settingConfig.filterOperatorTemplate.string);
+		templateHtm.push('</select>');
+
+		templateHtm.push('<input type="text" name="filter-value" class="filter-value" autocomplete="off" data-type="string">');
+		templateHtm.push('<button type="button" class="filter-row-remove">-</button>');
+		templateHtm.push('</li>');
+
+		gridCtx.config.settingConfig.filterTemplate = templateHtm.join('');
 	}
 	,templateHtml : function (gridCtx, settingOpt){
 		var strHtm = [];
@@ -6802,31 +6498,26 @@ var _$setting = {
 			strHtm.push('	<div class="pubGrid-setting-body">');
 			strHtm.push('		<div class="tcol all-item-panel">');
 			strHtm.push('			<div class="label">All Column</div>');
-			strHtm.push('			<span class="add-col-item" data-chk-idx="all"></span>');
+			strHtm.push('			<span class="view-col-check" data-chk-idx="all"></span>');
 			strHtm.push('			<input class="input-sch" type="text" name="allTcolSearch" />');
 			strHtm.push('			<div class="item-list">');
 			strHtm.push('				<ul class="tcol-all-list"> ');
 
 			var allColItems = gridCtx.config.dataInfo.orginTColItem;
 			allColItems.forEach(function (item, idx){
-				strHtm.push('<li><span class="add-col-item" data-chk-idx="'+idx+'" data-key="'+item.key+'">'+item.label+'</span></li>');
+				strHtm.push('<li data-key="'+item.key+'">');
+				strHtm.push(' <span class="view-col-check" data-chk-idx="'+idx+'" data-key="'+item.key+'"></span>');
+				strHtm.push(' <span class="view-col-label">'+item.label+'</span>');
+				strHtm.push(' <span class="arrow-btn"><a href="javascript:;" data-arrow="up"></a><a href="javascript:;" data-arrow="down"></a></span>');
+				strHtm.push(' <input type="number" class="view-col-width" value="'+item.width+'">');
+				strHtm.push(' <span class="column-fix-icon" title="Column fixed"></span>');
+				strHtm.push('</li>');
 			})
 			
 			strHtm.push('				</ul>');
 			strHtm.push('			</div>');
 			strHtm.push('		</div>');
-			strHtm.push('		<div class="tcol view-item-panel">');
-			strHtm.push('			<div class="label">Select Column</div>');
-			strHtm.push('			<input class="input-sch" type="text" name="viewTcolSearch"> ');
-			strHtm.push('			<span class="arrow-btn"><a href="javascript:;" data-arrow="up"></a><a href="javascript:;" data-arrow="down"></a></span>');
-			strHtm.push('			<div class="item-list">');
-			strHtm.push('				<ul class="tcol-view-list"> ');	
-			strHtm.push('				</ul>');
-			strHtm.push('			</div>');
-			strHtm.push('		</div>');
 			strHtm.push('		<div class="tcol setting-panel">');
-			strHtm.push('			<div>name : <input type="text" class="select-item-name" readonly disabled> width : <input type="number" max="99999" min="0" maxlength="5" name="setting-width-field" class="setting-width-field"/>px</div>');
-			strHtm.push('			<div>filter :</div>');
 			strHtm.push('			<div  class="filter-area">');
 			strHtm.push('			  <ul class="filter-item-list"></ul>');
 			strHtm.push('			  <button type="button" class="add-op-btn">+</button>');

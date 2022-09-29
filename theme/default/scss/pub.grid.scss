@@ -1076,17 +1076,11 @@
 						line-height: 20px;
 						vertical-align: middle;
 					}
-	
-					li>.add-col-item{
-						width: 100%;
+
+					li>.view-col-check{
+						width: 15px;
 					}
-					
-					.add-col-item{
-						display: inline-block;
-						white-space: nowrap;
-						overflow: hidden;
-						text-overflow: ellipsis;
-	
+					.view-col-check{
 						&:before{
 							width:11px;
 							height:11px;
@@ -1096,6 +1090,7 @@
 							display: inline-block;
 							vertical-align: middle;
 							margin-right: 3px;
+							margin-top: -5px;
 							background-color: colorInfo($g_default_theme_name , "background_color");
 							content: ' ';
 						}
@@ -1104,7 +1099,9 @@
 							background-color: #666666;
 						}
 					}
-	
+
+					
+					
 					.input-sch{
 						width: calc(100% - 25px);
 						margin-bottom: 3px;
@@ -1115,15 +1112,12 @@
 					}
 	
 					&.all-item-panel{
-						width: 27%;
+						width: 40%;
 					}
-					
-					&.view-item-panel{
-						width: 27%;
-					}
+									
 					
 					&.setting-panel{
-						width: 46%;
+						width: 60%;
 						min-width: 150px;
 						.select-item-name{
 							width:  calc(100% - 155px);
@@ -1152,8 +1146,6 @@
 				}
 	
 				.arrow-btn{
-					float: right;
-	
 					a{
 						font-weight: bold;
 					}
@@ -1183,57 +1175,29 @@
 						list-style: none;
 					
 						> li{
-							padding: 1px 5px;
-						}
-					
-						.remove-btn{
-							width: 13px;
-							display: inline-block;
-							cursor: pointer;
-							margin-right: 5px;
-	
-							&:before{
-								content: '\229d';
-								display: table-cell;
+							padding: 1px 2px;
+							line-height: 20px;
+
+							> *{
 								vertical-align: middle;
 							}
 						}
-						
-						.view-col-item{
-							cursor: pointer;
+					
+						.view-col-label{
 							display: inline-block;
 							white-space: nowrap;
 							overflow: hidden;
 							text-overflow: ellipsis;
-							width: calc(100% - 55px);
+							width: calc(100% - 118px);
 							&:hover, &.on{
 								background-color:colorInfo($g_default_theme_name , "background_thick_color");
 							}
 						}
 	
-						.filter-check-status{
-							width: 13px;
-							visibility: hidden;
-							display: inline-block;
-							margin-left: 5px;
-	
-							&.on{
-								visibility: visible;
-								cursor: pointer;
-							}
-	
-							&:before{
-								content: '\221A';
-								font-size: 9pt;
-								display: table-cell;
-								vertical-align: middle;
-							}
-	
-							&:hover{
-								&:before{
-									content: '\2613';
-								}
-							}
+						.view-col-width{
+							width: 45px;
+							padding: 2px;
+							margin: 0px;
 						}
 	
 						.column-fix-icon{
@@ -1241,7 +1205,7 @@
 							height: 12px;
 							border-radius: 50%;
 							display: inline-block;
-							margin-left: 5px;
+							margin-right: 2px;
 							background-color: colorInfo($g_default_theme_name , "background_thick_color");
 							cursor: pointer;
 	
@@ -1257,7 +1221,7 @@
 			.filter-area{
 				text-align: center;
 				width:100%;
-				height: calc(100% - 65px);
+				height: calc(100% - 27px);
 				border: 1px solid #ddd;
 				overflow-x: hidden;
 				overflow-y: auto;
@@ -1282,8 +1246,8 @@
 								display: none;
 							}
 	
-							.filter-text{
-								width:calc(70% - 22px);
+							.filter-value{
+								width:calc(48% - 22px);
 							}
 						}
 	
@@ -1319,16 +1283,24 @@
 							}
 						}
 					}
+
+					.filter-key{
+						width:27%;
+						margin-right: 3px;
+						padding: 3px 0px;
+					}
 					
 					.filter-op{
-						width:30%;
+						width:23%;
 						margin-right: 3px;
-						padding-top: 2px;
+						padding: 3px 0px;
 					}
-					.filter-text{
-						width:calc(70% - 52px);
+
+					.filter-value{
+						width:calc(48% - 52px);
 						margin-right: 3px;
 					}
+
 					.filter-remove{
 						width:24px;
 					}
@@ -1638,7 +1610,7 @@
 						border-right : 1px solid colorInfo($pThemeName , "border_thick_color");
 						
 						
-						.add-col-item{
+						.view-col-check{
 					
 							&:before{
 								border : 1px solid colorInfo($pThemeName , "border_thick_color");
@@ -1656,7 +1628,7 @@
 
 						ul{
 							
-							.view-col-item{
+							.view-col-label{
 								&:hover, &.on{
 									background-color:colorInfo($pThemeName , "background_thick_color");
 								}
