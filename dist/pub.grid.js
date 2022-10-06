@@ -1,5 +1,5 @@
 /**
- * pubGrid v1.0.4
+ * pubGrid v1.0.5
  * ========================================================================
  * Copyright 2016-2022 ytkim
  * Licensed under MIT
@@ -95,14 +95,14 @@ var _initialized = false
 		}
 	}
 	,setting : {					// 그리드 설정
-		mode :'simple'				// simple (search , fixed) , full(column config , filter) , full-center(screen center)
+		mode :'simple'				// simple (search , fixed) , full(column config , filter)
 		,enabled : false			// 활성여부
 		,enableColumnFix : false	// 고정 컬럼 활성여부
 		,click : false				// 직접 처리 할경우. function 으로 처리.
 		,btnClose : false			// button 으로만 닫기 여부
 		,useRememberValue : false	// 검색어 local storage에 저장 여부
-		,width:520
-		,height:200
+		,width:'auto'
+		,height:'auto'
 		,callback : function (item){
 
 		}
@@ -122,6 +122,9 @@ var _initialized = false
 					return true;
 				}
 				return false;
+			}
+			,isTypeNumber : function (hederInfo){ // column type(string or number) check
+				return hederInfo.type=='number' ? true : false;
 			}
 		}
 	}
@@ -272,8 +275,12 @@ function intValue(val){
 	return parseInt(val , 10);
 }
 
+function isArray(val){
+	return $.isArray(val);
+}
+
 function arrayCopy(orginArray){
-	return $.isArray(orginArray) ? orginArray.slice():null;
+	return isArray(orginArray) ? orginArray.slice():null;
 }
 
 function eventKeyCode (e){
@@ -490,17 +497,15 @@ Plugin.prototype ={
 	 * @description 그리드 초기화.
 	 */
 	_initialize :function(selector,options){
-		// scroll size
-		var _this = this;
-		_this.selector = selector;
+		this.selector = selector;
 
-		_this.prefix = 'pub'+getHashCode(_this.selector);
+		this.prefix = 'pub'+getHashCode(this.selector);
 		
-		_this.gridElement = $(selector);
+		this.gridElement = $(selector);
 
-		_this.element = {};
+		this.element = {};
 
-		_this.config = {
+		this.config = {
 			gridWidth :{aside : 0,left : 0, main:0, total:0, mainOverWidth:0 ,mainInsideWidth:0}
 			, container :{height : 0,width : 0, bodyHeight:0}
 			, header :{height : 0, width : 0}
@@ -513,7 +518,7 @@ Plugin.prototype ={
 			, orginData: []
 			, dataInfo : {colLen : 0, allColLen : 0, rowLen : 0, lastRowIdx : 0, orginTColItem:[], orginTColIdxKeyMap : {}}
 			, rowOpt :{}
-			, sort : {current :''}
+			, sort : {orginData :[], sortMap: new Map()}
 			, pagingInfo : false
 			, selection :{
 				startCell :{}
@@ -535,23 +540,23 @@ Plugin.prototype ={
 			}
 		};
 
-		_this.eleCache = {};
-		_this._initScrollData();
-		_$util.setSelectionRangeInfo(_this, {}, true);
+		this.eleCache = {};
+		this._initScrollData();
+		_$util.setSelectionRangeInfo(this, {}, true);
 
-		_this.setOptions(options, true);
+		this.setOptions(options, true);
 
 
-		_this.drag ={};
-		_this.addStyleTag();
+		this.drag ={};
+		this.addStyleTag();
 
-		_this._setSearchData('init');
+		this._setSearchData('init');
 
-		_this._setThead();
-		_this.setData(_this.options.tbodyItem , 'init');
+		this._setThead();
+		this.setData(this.options.tbodyItem , 'init');
 
-		_this.config.gridXScrollFlag = false;
-		_this._windowResize();
+		this.config.gridXScrollFlag = false;
+		this._windowResize();
 
 		return this;
 	}
@@ -602,15 +607,18 @@ Plugin.prototype ={
 
 		_this.options =objectMerge({}, _defaults, options)
 		
-		_this.options.tbodyItem = $.isArray(options.tbodyItem) ? options.tbodyItem : (_this.options.tbodyItem ||[]);
+		_this.options.tbodyItem = isArray(options.tbodyItem) ? options.tbodyItem : (_this.options.tbodyItem ||[]);
 
 		_this.config.isValueFilter = isFunction(_this.options.valueFilter);
 
 		_this.config.dataInfo.orginTColItem = arrayCopy(_this.options.tColItem);
 
+		_this.config.settingConfig.operators = objectMerge(gridOperators, _this.options.operators);
+
 		_this.config.dataInfo.orginTColItem.forEach(function (item, idx){
+			item['$$opType'] = _$util.getOpType(_this, item);
 			_this.config.dataInfo.orginTColIdxKeyMap[item.key] = item; 
-		})
+		});
 		
 		_this.config.rowHeight = _this.options.rowOptions.height;
 
@@ -985,7 +993,7 @@ Plugin.prototype ={
 	 * @description 데이터 add
 	 */
 	,addRow : function (pData, opt){
-		if(!$.isArray(pData)){
+		if(!isArray(pData)){
 			pData = [pData];
 		}
 		this.setData(pData, 'addData', opt||{});
@@ -1002,7 +1010,7 @@ Plugin.prototype ={
 		if(idxs =='checked'){
 			removeIdxs = this.getCheckItems('index');
 		}else{
-			if($.isArray(idxs)){
+			if(isArray(idxs)){
 				removeIdxs = idxs;
 			}else{
 				if(idxs =='first'){
@@ -1074,7 +1082,7 @@ Plugin.prototype ={
 	 */
 	,addRowSelections : function (idxs, beforeSelectionClearFlag){
 
-		if(!$.isArray(idxs)){
+		if(!isArray(idxs)){
 			idxs = [idxs];
 		}
 
@@ -1105,7 +1113,7 @@ Plugin.prototype ={
 	 */
 	,clearRowSelections : function (idxs){
 
-		if(!$.isArray(idxs)){
+		if(!isArray(idxs)){
 			idxs = [idxs];
 		}
 
@@ -1132,7 +1140,7 @@ Plugin.prototype ={
 		var settingOpt = this.options.setting;
 
 		if(mode != 'search'){
-			this.config.orginData = this.options.tbodyItem;
+			this.config.orginData = arrayCopy(this.options.tbodyItem);			
 		}
 
 		if(settingOpt.enabled ===true){
@@ -1179,14 +1187,6 @@ Plugin.prototype ={
 			}
 
 			if(mode =='search' && drawFlag !==false){ 
-				var currSortKey = this.config.sort.current;
-
-				// 검색 시 정렬 필드 체크 해서 검색 결과 정렬하기
-				if(currSortKey !=''){ 
-					this.options.tbodyItem = schArr;
-					schArr = this._getSortList(currSortKey,this.config.sort[currSortKey].sortType);
-				}
-
 				this.setData(schArr,'search');
 			}else{
 				this.options.tbodyItem = schArr;
@@ -1213,7 +1213,7 @@ Plugin.prototype ={
 
 		gridMode = gridMode||'reDraw';
 
-		if(!$.isArray(pdata)){
+		if(!isArray(pdata)){
 			data = pdata.items;
 		}
 
@@ -1252,11 +1252,9 @@ Plugin.prototype ={
 
 		if(gridMode =='init'){
 			// sort 값이 있으면 초기 데이터 정렬
-			if(typeof opt.headerOptions.sort ==='object'){
-				var _key = opt.headerOptions.sort.key
-					,_sortType = opt.headerOptions.sort.type=='desc'?'desc':'asc';
-
-				_this.options.tbodyItem = _this._getSortList(_key, _sortType);
+			if(isArray(opt.headerOptions.sort)){
+				_$sorting.setSortInfo(this, opt.headerOptions.sort);
+				_this.options.tbodyItem = _$sorting.getSortData(this, true);
 			}
 		}
 
@@ -2804,7 +2802,7 @@ Plugin.prototype ={
 				tbodyItem[i]['_pubcheckbox']= checkFlag;
 			}
 		}else{
-			if(!$.isArray(idxArr)){
+			if(!isArray(idxArr)){
 				idxArr = [idxArr];
 			}
 
@@ -2915,40 +2913,32 @@ Plugin.prototype ={
 			}
 		}
 
-
-		var beforeClickObj;
 		// sort
 		_this.element.header.on(dataSortEvent,'.pub-header-cont.sort-header',function (e){
 			var selEle = $(this)
 				,col_idx = selEle.attr('col_idx')
-				,sortType = selEle.attr('sort_type');
 
-			if(beforeClickObj){
-				beforeClickObj.closest('.label-wrapper').removeClass('sortasc sortdesc');
-				beforeClickObj.removeAttr('sort_type');
+			var sortKey = _this.config.tColItem[col_idx].key;
+
+			if(!e.shiftKey){
+				if(_this.config.sort.sortMap.size > 1 || !_this.config.sort.sortMap.has(sortKey)){
+					_this.config.sort.sortMap.clear();
+				}
 			}
 
-			sortType = sortType =='asc' ? 'desc' : (sortType =='desc'?'':'asc');
+			var firstSortFlag = _this.config.sort.sortMap.size < 1;
 
-			// col select background col setting
-			if($('#'+_this.prefix+'colbody'+col_idx).attr('data-sort-flag') != 'Y'){
-				$(_this.element.body.find('col[data-sort-flag]')).css('background-color','inherit').removeAttr('data-sort-flag');
-				$('#'+_this.prefix+'colbody'+col_idx).attr('data-sort-flag','Y');
-				$('#'+_this.prefix+'colbody'+col_idx).css('background-color','#b9dfdc !important');
+			if(_this.config.sort.sortMap.has(sortKey)){
+				if(_this.config.sort.sortMap.get(sortKey).sortType ==1){
+					_this.config.sort.sortMap.get(sortKey).sortType = -1;
+				}else{
+					_this.config.sort.sortMap.delete(sortKey);
+				}
+			}else{
+				_this.config.sort.sortMap.set(sortKey, {key : sortKey, sortType : 1});
 			}
 
-			selEle.attr('sort_type', sortType);
-
-			var labelWrapperEle = selEle.closest('.label-wrapper');
-			labelWrapperEle.removeClass('sortasc sortdesc');
-
-			if(sortType !='' ){
-				labelWrapperEle.addClass('sort'+sortType);
-			}
-
-			beforeClickObj = selEle;
-
-			_this.setSorting({key : _this.config.tColItem[col_idx].key, sortType : sortType});
+			_this.setData( _$sorting.getSortData(_this, firstSortFlag) ,'sort');
 		});
 
 		if(headerOpt.contextMenu !== false){
@@ -2970,22 +2960,15 @@ Plugin.prototype ={
 				dt.setData('text/plain',_this.config.tColItem[col_idx].label);
 							
 			}).on('drag.pubGrid.dragitem', '.label-wrapper', function (e){
-				//e.preventDefault();
-				//console.log('111');
-								
-				//console.log('111111111');
+					
 			}).on('dragenter.pubGrid.dragitem', '.label-wrapper', function (e){
-				
 				return false; // mouse  cursor 이상 현상 제거 하기 위해서 처리함. 
-				
 			}).on('dragend.pubGrid.dragitem',  function (e){
 				//var dt = e.originalEvent.dataTransfer;
 				e.originalEvent.dataTransfer.clearData()
 				
 			}).on('drop.pubGrid.dragitem', '.label-wrapper', function (e){
-				//var dt = e.originalEvent.dataTransfer;
-				// column move 
-				// console.log('drop',dt)
+				
 			}).on('dragover.pubGrid.dragitem', function (e){
 				e.preventDefault();
 			})
@@ -4172,7 +4155,7 @@ Plugin.prototype ={
 		var selectItem = [];
 		var addRowFlag;
 
-		if(!$.isArray(itemKeys)){
+		if(!isArray(itemKeys)){
 			itemKeys = [itemKeys];
 		}
 		var keyLen = itemKeys.length;
@@ -4221,76 +4204,20 @@ Plugin.prototype ={
 	}
 	/**
 	 * @method setSorting
-	 * @param  sortInfo {Object} [{key, val, sortType}]column key , value ,sortType ="a" or "d"
+	 * @param  sortInfoArr {Array} [{key : "STATUS", sortType : 1}]  sortType 1, -1
 	 * @description data sorting
 	 */
 	,setSorting : function (sortInfoArr){
 
-		if(!$.isArray(sortInfoArr)){
-			sortInfoArr = [sortInfoArr];
+		if(!isArray(sortInfoArr)){
+			throw 'sort infomation not valid '+ (typeof sortInfoArr);
 		}
 
-		for(var i =0, len = sortInfoArr.length;i < len; i++){
-			var sortInfo = sortInfoArr[i];
-			this.setData(this._getSortList(sortInfo.key, sortInfo.sortType) ,'sort');
-		}
+		_$sorting.setSortInfo(this, sortInfoArr);
+
+		this.setData( _$sorting.getSortData(this, firstSortFlag), 'sort');
 	}
-	/**
-	 * @method _getSortList
-	 * @param  idx {Integer} item index
-	 * @param  sortType {String} 정렬 타입 ex(asc,desc)
-	 * @param  val {String,Integer} 정렬값
-	 * @description data sorting 처리.
-	 */
-	,_getSortList :function (key, sortType){
-		var _this = this
-			,tbi = _this.options.tbodyItem;
-
-		var _key = key;
-
-		if(isUndefined(_this.config.sort[_key])){
-			_this.config.sort[_key]= {sortType : sortType};
-		}else{
-			_this.config.sort[_key].sortType=sortType;
-		}
-
-		if(_this.config.sort.current != _key){
-			_this.config.sort.orginData = arrayCopy(tbi);
-		}
-
-		_this.config.sort.current = _key;
-		
-		if(sortType=='asc' || sortType=='desc'){  
-			var direction = (sortType=='asc') ? 1 : -1;
-			 
-			var nullsLast = this.options.sortOptions.nullsLast;
-
-			tbi.sort(function (a,b){
-				var v1 = a[_key]
-					,v2 = b[_key];
-
-				if(v1 === null ||  isUndefined(v1)){
-					return nullsLast ? 1 : direction * -1; 
-				}
-
-				if(v2 === null ||  isUndefined(v2)){
-					return nullsLast ? -1 : direction * 1; 
-				}
-				
-				if(v1 > v2 ) return direction*1;
-				if(v1 < v2 ) return direction*-1;		
-				
-				return 0;				
-			});
-
-			//tbi.forEach(item=>console.log(item));
-		}else{
-			_this.config.sort.current = '';
-			tbi = _this.config.sort.orginData;
-		}
-
-		return tbi;
-	}
+	
 	/**
 	 * @method _headerResize
 	 * @param  flag {Boolean} resize 여부
@@ -4402,7 +4329,7 @@ Plugin.prototype ={
 	,onGripDrag : function(e, _this) {
 		_this._setHeaderResize(e,_this, 'move');
 
-		return false
+		return false;
 	}
 	/**
 	 * @method onGripDragOver
@@ -4481,9 +4408,9 @@ Plugin.prototype ={
 		}
 
 		if(this.drag.isLeftContent){
-			this.config.gridWidth.left = this.config.gridWidth.left-this.config.tColItem[idx].width + w;
+			this.config.gridWidth.left = this.config.gridWidth.left - this.config.tColItem[idx].width + w;
 		}else{
-			this.config.gridWidth.main = this.config.gridWidth.main-this.config.tColItem[idx].width + w;
+			this.config.gridWidth.main = this.config.gridWidth.main - this.config.tColItem[idx].width + w;
 		}
 
 		//_this.config.container.width = drag.gridBodyW+w; // 2018-06-06 불필요 삭제 .
@@ -4962,7 +4889,7 @@ var _$template = {
 							strHtm.push('  <div class="pub-header-help-wrapper" title="'+_this.options.headerOptions.helpBtn.title+'"><svg class="pub-header-help" viewBox="0 0 100 100"><g><polygon class="pub-header-help-btn" points="0 0,0 100,100 0"></polygon></g></svg> </div>');
 						}
 						strHtm.push('  <div class="label-wrapper">');
-						strHtm.push('   <div class="pub-header-cont outer '+(ghItem.isSort===true?'sort-header':'')+'" col_idx="'+ghItem.resizeIdx+'"><div class="pub-inner"><div class="centered" '+(headerDragEnabled?' draggable="true" ':'')+'>'+ghItem.label+'</div></div>');
+						strHtm.push('   <div class="pub-header-cont '+(ghItem.isSort===true?'sort-header':'')+'" col_idx="'+ghItem.resizeIdx+'"><div class="pub-inner"><div class="centered" '+(headerDragEnabled?' draggable="true" ':'')+'>'+ghItem.label+'</div></div>');
 						if(ghItem.isSort ===true){
 							strHtm.push('<div class="pub-sort-icon pubGrid-sort-up">'+_this.options.icon.sortup+'</div><div class="pub-sort-icon pubGrid-sort-down">'+ _this.options.icon.sortdown+'</div>');
 						}
@@ -5065,6 +4992,16 @@ var _$util = {
 		}
 
 		return reArr;
+	}
+	// get operator type
+	,getOpType : function (gridCtx, item){
+		var type = item.type;
+
+		if(gridCtx.options.setting.util.isTypeNumber(item)) 'number';
+
+		type = (type||'').toLowerCase();
+
+		return hasProperty(gridCtx.config.settingConfig.operators, type) ? type : 'string';
 	}
 	,getCellInfo : function (ctx, cellEle){
 		var posInfo = this.getCellPosition(cellEle);
@@ -5612,7 +5549,6 @@ var gridOperators = {
 	]
 };
 
-
 var _$renderer = {
 	button : function (gridCtx, thiItem, rowItem, mode){
 		var renderer = thiItem.renderer;
@@ -5877,6 +5813,97 @@ var _$renderer = {
 	}
 }
 
+var _$sorting = {
+	/**
+	 * @method setSortInfo
+	 * @param  gridCtx {Object} grid context
+	 * @param  sortInfoArr {Array} 정렬 정보
+	 * @description data sorting 처리.
+	 */
+	 setSortInfo: function (gridCtx, sortInfoArr){
+
+		gridCtx.config.sort.sortMap.clear();
+
+		for(var i =0; i < sortInfoArr.length; i++){
+			var sortInfo = sortInfoArr[i];
+			gridCtx.config.sort.sortMap.set(sortInfo.key, sortInfo);
+		}
+	}	
+	,setSortIcon : function (gridCtx){
+		
+		var sortMap = gridCtx.config.sort.sortMap;
+
+		gridCtx.config.tColItem.forEach((item, idx)=>{
+			var labelWrapperEl = gridCtx.element.header.find('.pub-header-cont.sort-header[col_idx="'+idx+'"]').closest('.label-wrapper');
+
+			labelWrapperEl.removeClass('sortasc sortdesc');
+
+			var colKey = item.key; 
+			if(sortMap.has(colKey)){
+				labelWrapperEl.addClass('sort'+(sortMap.get(colKey).sortType == 1 ? 'asc' : 'desc'));
+			}			
+		});
+	}
+	/**
+	 * @method getSortData
+	 * @param  gridCtx {Object} grid context
+	 * @param  sortInfoArr {Array} 정렬 정보
+	 * @description data sorting 처리.
+	 */
+	, getSortData :function (gridCtx, firstSortFlag){
+		var tbi = gridCtx.options.tbodyItem;
+
+		this.setSortIcon(gridCtx);
+
+		var sortMap = gridCtx.config.sort.sortMap;
+
+
+		if(firstSortFlag){
+			gridCtx.config.sort.orginData = arrayCopy(tbi);
+		}
+
+		if(sortMap.size > 0){
+			var sortArr = Array.from(sortMap.values());
+			var sortArrLen = sortArr.length;
+
+			var nullsLast = gridCtx.options.sortOptions.nullsLast;
+	
+			tbi.sort(function (a,b){
+				var sortVal = 0;
+				for(var i =0; i < sortArrLen; i++){
+					var sortInfo = sortArr[i];
+					var key = sortInfo.key;
+					var direction = sortInfo.sortType;
+
+					var v1 = a[key]
+						,v2 = b[key];
+		
+					if(v1 === null ||  isUndefined(v1)){
+						sortVal = nullsLast ? 1 : direction * -1; 
+					}
+
+					if(v2 === null ||  isUndefined(v2)){
+						sortVal = nullsLast ? -1 : direction * 1; 
+					}
+
+					if(v1 > v2 ) sortVal = direction*1;
+					if(v1 < v2 ) sortVal = direction*-1;
+
+					if(sortVal ==1 )break;
+				}
+				return sortVal;	
+			});
+	
+			//tbi.forEach(item=>console.log(item));
+		}else{
+			tbi = gridCtx.config.sort.orginData;
+		}
+	
+		return tbi;
+	}
+	
+}
+	
 
 var _$setting = {
 	filterCheckboxIdx : 0
@@ -5903,14 +5930,10 @@ var _$setting = {
 		var settingAreaEle = $('#'+gridCtx.prefix+'_pubGridSettingArea')
 				
 		if(settingAreaEle.length < 1){
-			var template = '<div id="'+gridCtx.prefix+'_pubGridSettingArea" data-pubgrid-layer="'+gridCtx.prefix+'" data-pubgrid-close-btn="'+settingOpt.btnClose+'" class="pubGrid-preferences-wrapper pubGrid-noselect pubGrid-layer '+(settingOpt.mode =='full-center' ? 'full-center' : '')+'">'
-
-			if(settingOpt.mode =='full-center'){
-				template +='	<div class="full-setting-overlay"></div>';
-			}
-			template+='	<div class="pubGrid-setting-panel '+settingOpt.mode+'" style="width:'+settingOpt.width+'px;height:'+settingOpt.height+'px;">'
+			var template = '<div id="'+gridCtx.prefix+'_pubGridSettingArea" data-pubgrid-layer="'+gridCtx.prefix+'" data-pubgrid-close-btn="'+settingOpt.btnClose+'" class="pubGrid-preferences-wrapper pubGrid-noselect pubGrid-layer">'			
+			template+='	<div class="pubGrid-setting-panel '+settingOpt.mode+'" style="'+(settingOpt.width !='auto' ? ('width:'+settingOpt.width +'px;') : '')+(settingOpt.height !='auto' ? ('height:'+settingOpt.height +'px;') : '')+'">'
 			template+='	</div>';
-			template+=+'</div>';
+			template+='</div>';
 
 			pubGridLayoutElement.append(template);
 			settingAreaEle = $('#'+gridCtx.prefix+'_pubGridSettingArea')
@@ -5957,47 +5980,46 @@ var _$setting = {
 				settingAreaEle.addClass('open');
 
 				gridCtx.config.settingConfig.currentTColItems = arrayCopy(gridCtx.config.tColItem); // cancel 시 적용 하기 위해서 복사
+								
+				var evtPosVal = evtPos(e);					
 				
-				if(settingOpt.mode != 'full-center'){
-					var evtPosVal = evtPos(e);					
+				var height = settingAreaEle.find('.pubGrid-setting-panel').height()
+					,evtX = evtPosVal.x
+					,evtY = evtPosVal.y;
 					
-					var height = settingAreaEle.find('.pubGrid-setting-panel').height()
-						,evtX = evtPosVal.x
-						,evtY = evtPosVal.y;
-						
-					if(isUndefined(evtX)){  // ctrl + f 로 오픈시
-						var offsetVal = settingBtn.offset();
-						evtX = offsetVal.left + settingBtn.width();
-						evtY = offsetVal.top;
-					}
-					
-					if(settingAreaEle.hasClass("pub-grid-setting-move")){
-						var wScrollTop = _$win.scrollTop()
-							,wScrollLeft = _$win.scrollLeft();
-						
-						var pos = settingAreaEle.position();
-
-						if(wScrollTop > pos.top){
-							settingAreaEle.css({top : wScrollTop});
-						}
-
-						if(wScrollLeft > pos.left){
-							settingAreaEle.css({left : wScrollLeft});
-						}
-
-						return ;
-					}
-			
-					var bottom = _$win.scrollTop() + _$win.height();
-				
-					var offTop = evtY;
-				
-					offTop = ((offTop+height > bottom )? (bottom- (height)) : offTop);
-					offTop = offTop < 3 ? 3 : offTop;
-											
-					settingAreaEle.css({top : offTop, left : evtX+10});
+				if(isUndefined(evtX)){  // ctrl + f 로 오픈시
+					var offsetVal = settingBtn.offset();
+					evtX = offsetVal.left + settingBtn.width();
+					evtY = offsetVal.top;
 				}
+				
+				if(settingAreaEle.hasClass("pub-grid-setting-move")){
+					var wScrollTop = _$win.scrollTop()
+						,wScrollLeft = _$win.scrollLeft();
+					
+					var pos = settingAreaEle.position();
+
+					if(wScrollTop > pos.top){
+						settingAreaEle.css({top : wScrollTop});
+					}
+
+					if(wScrollLeft > pos.left){
+						settingAreaEle.css({left : wScrollLeft});
+					}
+
+					return ;
+				}
+		
+				var bottom = _$win.scrollTop() + _$win.height();
+			
+				var offTop = evtY;
+			
+				offTop = ((offTop+height > bottom )? (bottom- (height)) : offTop);
+				offTop = offTop < 3 ? 3 : offTop;
+										
+				settingAreaEle.css({top : offTop, left : evtX+10});
 			}
+			
 			
 			return true;
 		});
@@ -6137,9 +6159,14 @@ var _$setting = {
 				}
 			}else{
 				if(sEle.hasClass('on')){
+					settingAreaEle.find('[data-chk-idx="all"]').removeClass('on');
 					sEle.removeClass('on');
 				}else{
 					sEle.addClass('on');
+					
+					if(settingAreaEle.find('.tcol-all-list>li').length == settingAreaEle.find('.tcol-all-list>li .view-col-check.on').length) {
+						settingAreaEle.find('[data-chk-idx="all"]').addClass('on');
+					}
 				}
 			}
 		})
@@ -6173,8 +6200,6 @@ var _$setting = {
 					}
 				});
 
-				console.log(viewColumnKey);
-
 				if(viewColumnKey.length  < 1){
 					settingAreaEle.find('.setting-message').show();
 					return ; 
@@ -6184,7 +6209,7 @@ var _$setting = {
 
 				var newViewCols = [];
 				var headRedraw = gridCtx.options.tColItem.length == viewColumnKey.length ? false : true;
-				var changeWidthInfo={};
+				
 				viewColumnKey.forEach(function (itemKey, idx){
 					if(!headRedraw && itemKey != gridCtx.options.tColItem[idx].key){
 						headRedraw = true; 
@@ -6201,11 +6226,8 @@ var _$setting = {
 
 				if(headRedraw || gridCtx.options.colFixedIndex != fixedColIdx){
 					gridCtx._setSearchData('search', false); // search
-					gridCtx.setColFixedIndex(fixedColIdx, true);
+					gridCtx.setColFixedIndex(fixedColIdx, false);
 				}else{
-					for(var key in changeWidthInfo){	// 변경된 width 적용.
-						gridCtx.setColumnWidth(key, changeWidthInfo[key], null, false);
-					}
 					gridCtx._setSearchData('search'); // search
 				}
 
@@ -6226,7 +6248,7 @@ var _$setting = {
 				};
 				
 				gridCtx._setSearchData('search', false); 
-				gridCtx.setColFixedIndex(0, true);
+				gridCtx.setColFixedIndex(0, false);
 				return ; 
 			}else{	 // cancel
 				gridCtx.config.tColItem = gridCtx.config.settingConfig.currentTColItems;
@@ -6237,28 +6259,29 @@ var _$setting = {
 	
 		// add filter item
 		settingAreaEle.on('click.addop.item', '.add-op-btn', function (e){
-			settingAreaEle.find('.filter-item-list').append(_this.getReplaceCheckId(gridCtx.config.settingConfig.filterTemplate));
+			settingAreaEle.find('.filter-item-list').append(_this.replaceOpTemplateHtml(gridCtx, gridCtx.config.tColItem[0]));
 		});
 		// 기본값 추가
-		settingAreaEle.find('.filter-item-list').append(_this.getReplaceCheckId(gridCtx.config.settingConfig.filterTemplate));
+		settingAreaEle.find('.add-op-btn').trigger('click.addop.item');
 
 		// add filter item
 		settingAreaEle.on('change.filerkey', '[name="filter-key"]', function (e){
 			var sEle = $(this);
 
 			var item = gridCtx.config.dataInfo.orginTColIdxKeyMap[sEle.val()];
-			var opType = _this.getOpType(gridCtx, item.type);
+			var opType = item.$$opType;
+			
 			var liEl = sEle.closest('li');
 			var filterOPEl = liEl.find('[name="filter-op"]');
-			var currOpType = filterOPEl.attr('data-type');
+			var currOpType = filterOPEl.attr('data-optype');
 
 			if(opType == currOpType){
 				return ; 
 			}
+		
+			liEl.find('[name="filter-value"]').attr('data-optype', opType);
 
-			liEl.find('[name="filter-value"]').attr('data-type', opType);
-
-			filterOPEl.attr('data-type', opType);
+			filterOPEl.attr('data-optype', opType);
 			filterOPEl.empty().html(gridCtx.config.settingConfig.filterOperatorTemplate[opType]);
 		});
 		
@@ -6269,21 +6292,8 @@ var _$setting = {
 			filterItemEle.remove();		
 		})
 
-		// 숫자 필드 숫자만 들어가게 처리. 
-		settingAreaEle.on('keypress.number.field','input[type="number"]',function (e){
-			var sEle = $(this);
-			var maxlen = parseInt(sEle.attr('maxlength'),10);
-			var keyCode = e.keyCode; 
-
-			if((48 <= keyCode && keyCode <=57)  && sEle.val().length < maxlen){
-				return true; 
-			}else{
-				return false; 
-			}
-		})
-
 		// 숫자 컬럼 처리.
-		settingAreaEle.on('input.number.field','[data-type="number"]',function (e){
+		settingAreaEle.on('input.number.field','[data-optype="number"]',function (e){
 			var sEle = $(this);
 			var numVal = sEle.val();
 
@@ -6292,6 +6302,13 @@ var _$setting = {
 			}
 		})
 
+		// 넓이 수정값 반영.
+		settingAreaEle.on('blur.width.field','.view-col-width',function (e){
+			var sEle = $(this);
+			var colKey = sEle.closest('[data-key]').attr('data-key');
+			orginTColIdxKeyMap[colKey].width = sEle.val();
+		})
+		
 		// 전체 컬럼 검색
 		settingAreaEle.find('[name="allTcolSearch"]').on('input.allcol.field', function (e){
 			var schRegExp = _$util.getSearchRegExp($(this).val());
@@ -6325,21 +6342,18 @@ var _$setting = {
 				settingAreaEle.find('.pubGrid-btn[data-mode="apply"]').trigger('click.setting.btn');
 			};
 		})
-			
-		// column up down btn
-		settingAreaEle.find('.arrow-btn [data-arrow]').on('click', function (e){
-			var sEle =$(this); 
-			
-			var upFlag = sEle.attr('data-arrow')=='up';
-			
-			var liEle =sEle.closest('li');
-
-			if(upFlag){
-				liEle.prev().before(liEle);
-			}else{
-				liEle.next().after(liEle);
-			}
-		})
+		
+		if(settingOpt.mode =='full'){
+			try{
+				new Sortable(settingAreaEle.find('.tcol-all-list')[0], {
+					handle: '.view-col-label',
+					multiDrag: true, 
+					selectedClass: 'selected',
+					fallbackTolerance: 3, 
+					animation: 150
+				});
+			}catch(e){console.log(e)};
+		}
 	}
 	,initResizeEvent: function (gridCtx, settingOpt, settingAreaEle){
 		
@@ -6384,31 +6398,33 @@ var _$setting = {
 
 			var item = gridCtx.config.dataInfo.orginTColIdxKeyMap[filterKey]; 
 			var filterText = sEle.find('[name="filter-value"]').val(); 
+
+			if(filterText !=''){
 			
-			var viewType = _this.getOpType(gridCtx, item.type);
-			var opArr = gridCtx.config.settingConfig.operators[viewType];
-			
-			filterItem = {
-				op : sEle.find('[name="filter-op"]').val()
-				,text : filterText
-				,logicOp : sEle.find('[name="filter-op-logical"]').is(':checked')
+				var opArr = gridCtx.config.settingConfig.operators[item.$$opType];
+				
+				filterItem = {
+					op : sEle.find('[name="filter-op"]').val()
+					,text : filterText
+					,logicOp : sEle.find('[name="filter-op-logical"]').is(':checked')
+				}
+
+				if(filterChkFlag) chkLogicStr.push(( filterItem.logicOp ? defaultLogicalOp.getCode('and') : defaultLogicalOp.getCode('or')));
+
+				var opItem = opArr[filterItem.op];
+
+				allChkVal.push({
+					chkVal : filterItem.text
+					,chkRegExp : opItem.isRegExp?_$util.getSearchRegExp(filterItem.text, 'all') : false
+				});
+							
+				chkLogicStr.push(replaceMesasgeFormat(opItem.code , {
+					key : item.key
+					,idx : allChkVal.length -1
+				}));
+
+				filterChkFlag = true; 
 			}
-
-			if(filterChkFlag) chkLogicStr.push(( filterItem.logicOp ? defaultLogicalOp.getCode('and') : defaultLogicalOp.getCode('or')));
-
-			var opItem = opArr[filterItem.op];
-
-			allChkVal.push({
-				chkVal : filterItem.text
-				,chkRegExp : opItem.isRegExp?_$util.getSearchRegExp(filterItem.text, 'all') : false
-			});
-						
-			chkLogicStr.push(replaceMesasgeFormat(opItem.code , {
-				key : item.key
-				,idx : allChkVal.length -1
-			}));
-
-			filterChkFlag = true; 
 		})
 
 		if(filterChkFlag){
@@ -6422,13 +6438,13 @@ var _$setting = {
 			gridCtx.config.settingConfig.filterInfo = false; 
 		}
 	}
-	// get operator type
-	,getOpType : function (gridCtx, type){
-		type = (type||'').toLowerCase();
-		return hasProperty(gridCtx.config.settingConfig.operators, type) ? type : 'string';
-	}
-	,getReplaceCheckId : function (replaceStr){
-		return replaceStr.replace(/#checkboxid#/g, 'fc_'+ (++this.filterCheckboxIdx));
+	,replaceOpTemplateHtml : function (gridCtx, item){
+		var opType = item.$$opType; 
+		return replaceMesasgeFormat(gridCtx.config.settingConfig.filterTemplate, {
+			checkboxid : 'pubGridFilterCheck_'+ (++this.filterCheckboxIdx)
+			,opType : opType
+			,opTypeOption : gridCtx.config.settingConfig.filterOperatorTemplate[opType]
+        });
 	}
 	,initFilterItemTemplateHtml: function (gridCtx){
 
@@ -6445,18 +6461,18 @@ var _$setting = {
 
 		var templateHtm = [];
 		templateHtm.push('<li>');
-		templateHtm.push('<span class="filter-op-logical"><input type="checkbox" name="filter-op-logical" id="#checkboxid#"><label for="#checkboxid#"></label></span>');
+		templateHtm.push('<span class="filter-op-logical"><input type="checkbox" name="filter-op-logical" id="{{checkboxid}}"><label for="{{checkboxid}}"></label></span>');
 
 		templateHtm.push('<select name="filter-key" class="filter-key">');
 		gridCtx.config.dataInfo.orginTColItem.forEach(function (item, idx){
 			templateHtm.push('<option idx="'+idx+'"value="'+item.key+'">'+item.label+'</option>');
 		})
 		templateHtm.push('</select>');
-		templateHtm.push('<select name="filter-op" class="filter-op" data-type="string">');
-		templateHtm.push(gridCtx.config.settingConfig.filterOperatorTemplate.string);
+		templateHtm.push('<select name="filter-op" class="filter-op" data-optype="{{opType}}">');
+		templateHtm.push('{{opTypeOption}}');
 		templateHtm.push('</select>');
 
-		templateHtm.push('<input type="text" name="filter-value" class="filter-value" autocomplete="off" data-type="string">');
+		templateHtm.push('<input type="text" name="filter-value" class="filter-value" autocomplete="off" data-optype="{{opType}}">');
 		templateHtm.push('<button type="button" class="filter-row-remove">-</button>');
 		templateHtm.push('</li>');
 
@@ -6489,7 +6505,7 @@ var _$setting = {
 			strHtm.push('</div>');
 		}else{
 
-			gridCtx.config.settingConfig.operators = objectMerge(gridOperators, gridCtx.options.operators);
+			
 			this.initFilterItemTemplateHtml(gridCtx);
 
 			strHtm.push('	<div class="pubGrid-setting-header">All Search : <input class="input-sch" type="text" name="dataSearch" />');
@@ -6498,7 +6514,7 @@ var _$setting = {
 			strHtm.push('	<div class="pubGrid-setting-body">');
 			strHtm.push('		<div class="tcol all-item-panel">');
 			strHtm.push('			<div class="label">All Column</div>');
-			strHtm.push('			<span class="view-col-check" data-chk-idx="all"></span>');
+			strHtm.push('			<span class="view-col-check on" data-chk-idx="all"></span>');
 			strHtm.push('			<input class="input-sch" type="text" name="allTcolSearch" />');
 			strHtm.push('			<div class="item-list">');
 			strHtm.push('				<ul class="tcol-all-list"> ');
@@ -6506,9 +6522,8 @@ var _$setting = {
 			var allColItems = gridCtx.config.dataInfo.orginTColItem;
 			allColItems.forEach(function (item, idx){
 				strHtm.push('<li data-key="'+item.key+'">');
-				strHtm.push(' <span class="view-col-check" data-chk-idx="'+idx+'" data-key="'+item.key+'"></span>');
+				strHtm.push(' <span class="view-col-check on" data-key="'+item.key+'"></span>');
 				strHtm.push(' <span class="view-col-label">'+item.label+'</span>');
-				strHtm.push(' <span class="arrow-btn"><a href="javascript:;" data-arrow="up"></a><a href="javascript:;" data-arrow="down"></a></span>');
 				strHtm.push(' <input type="number" class="view-col-width" value="'+item.width+'">');
 				strHtm.push(' <span class="column-fix-icon" title="Column fixed"></span>');
 				strHtm.push('</li>');

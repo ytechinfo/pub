@@ -11,10 +11,10 @@
 <link href="../theme/default/css/pub.grid.css" rel="stylesheet">
 <link href="../theme/default/css/pub.context.css" rel="stylesheet">
 
-<link href="../plugins/css/jquery-ui.min.css" rel="stylesheet">
+
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
-<script src="../plugins/jquery-ui-1.12.1.min.js"></script>
+<script src="../plugins/Sortable.min.js"></script>
 
 <!-- excel 처리 -->
 <script src="../plugins/excel/exceljs.js"></script>
@@ -150,13 +150,6 @@ $(document).ready(function (){
 		});
 	})
 
-
-	$('.asdfasdfWrapper').resizable({
-		handles: 'e',
-		resize: function(){
-			//console.log(arguments)
-		}
-	});
 
 	$('.pdfdown').on('click', function (){
 		
@@ -407,7 +400,7 @@ function gridDraw(selector, aaa, colItem){
 			,displayLineNumber : true	 // 라인 넘버 보기.
 			,displayRowSelector : false	 // row selecotr checkbox 보기
 			,displayModifyInfo : false	 // 수정여부 보기
-			,isColSelectAll : true		 // 컬럼 세로 선택 여부.
+			,isColSelectAll : false		 // 컬럼 세로 선택 여부.
 			,resize:{
 				enabled : true
 				,update :  function (item){
@@ -479,8 +472,8 @@ function gridDraw(selector, aaa, colItem){
 			enabled : true
 			,click : false
 			,mode : 'full'
-			,width:800
-			,height:250
+			,width:700
+			,h1eight:250
 			,btnClose : true
 			,callback : function (data){
 				//console.log(data)
@@ -503,7 +496,7 @@ function gridDraw(selector, aaa, colItem){
 			]
 		]
 
-		,theadGroup2: [
+		,theadGroup: [
 			[
 				{label:'ccc',rowspan: 2 }
 				,{label:'ddd',rowspan: 2 }

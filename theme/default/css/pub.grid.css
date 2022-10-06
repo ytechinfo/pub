@@ -173,6 +173,7 @@
 
 .pubGrid-wrapper .pubGrid-header-container .pub-header-checkbox {
   text-align: center;
+  cursor: pointer;
 }
 
 .pubGrid-wrapper .pubGrid-header-container .pub-header-checkbox.pub-check-all {
@@ -1090,7 +1091,7 @@
   float: right;
 }
 
-.pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-search-area > select, .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-speed-area > select {
+.pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-search-area > select {
   width: 50px;
   height: 23px;
   margin: 0px 5px 0px 0px;
@@ -1099,8 +1100,8 @@
   -moz-appearance: menulist;
 }
 
-.pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-search-area > input, .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-speed-area > input {
-  width: 70px;
+.pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-search-area > input {
+  width: calc(100% - 120px);
   vertical-align: top;
   height: 23px;
   margin-right: 5px;
@@ -1223,10 +1224,21 @@
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-body .item-list ul > li {
   padding: 1px 2px;
   line-height: 20px;
+  margin-bottom: -1px;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-body .item-list ul > li > * {
   vertical-align: middle;
+}
+
+.pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-body .item-list ul > li.selected {
+  background: rgba(85, 241, 241, 0.295);
+  color: #fbf8f8;
+  border-top: 1px solid #d5d5d8;
+  border-bottom: 1px solid #d5d5d8;
+  z-index: 1 !important;
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-body .item-list ul .view-col-label {
@@ -1234,7 +1246,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: calc(100% - 118px);
+  width: calc(100% - 90px);
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-body .item-list ul .view-col-label:hover, .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-body .item-list ul .view-col-label.on {
@@ -1609,6 +1621,13 @@
 
 [pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-body .item-list {
   border: 1px solid #5f5f68;
+}
+
+[pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-body .item-list ul > li.selected {
+  background: #214163;
+  color: #fbf8f8;
+  border-top: 1px solid #6d6d75;
+  border-bottom: 1px solid #6d6d75;
 }
 
 [pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-body .item-list ul .view-col-label:hover, [pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-body .item-list ul .view-col-label.on {
