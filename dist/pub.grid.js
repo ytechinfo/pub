@@ -115,15 +115,7 @@ var _initialized = false
 			,fixColumnPosition : -1	// fixed col position
 		}
 		,util : {
-			searchFilter : function (item, key, schRegExp){ // 검색 필터
-				var itemVal = (item[key]||'')+'';
-
-				if(schRegExp.test(itemVal)){
-					return true;
-				}
-				return false;
-			}
-			,isTypeNumber : function (hederInfo){ // column type(string or number) check
+			isTypeNumber : function (hederInfo){ // column type(string or number) check
 				return hederInfo.type=='number' ? true : false;
 			}
 		}
@@ -536,7 +528,8 @@ Plugin.prototype ={
 				viewInitFlag :true
 				,filterTemplate : ''
 				,filterOperatorTemplate: {}	// filter html template
-				,filterInfo : false // filter info {checkFn, check condition}
+				,searchCheckItem : false  // 검색 정규식
+				,filterCheckItem : false // filter info {checkFn, check condition}
 			}
 		};
 
@@ -1146,34 +1139,38 @@ Plugin.prototype ={
 		if(settingOpt.enabled ===true){
 			var schArr = [];
 			var orginData = this.config.orginData;
-			var filterInfo = this.config.settingConfig.filterInfo; 
+			var filterCheckItem = this.config.settingConfig.filterCheckItem; 
 
 			var schField = settingOpt.configVal.search.field ||''
 				,schVal = settingOpt.configVal.search.val ||'';
 						
 			schVal = _$util.trim(schVal); 
 
-			if((schField != '' && schVal !='') || filterInfo !== false){
+			if((schField != '' && schVal !='') || filterCheckItem !== false){
 				var schArr =[];
 			
-				var chkFn =settingOpt.util.searchFilter;
+				var chkFn;
 
 				var schRegExp = true; 
 				if(schVal != ''){
-					if(schField == '$all'){
-						chkFn = new Function('item','searchField','chkRegExp', _$util.genAllColumnSearch(this));		
-					}
 					schRegExp = _$util.getSearchRegExp(schVal);
-				}			
+
+					if(schField == '$all'){
+						_$util.genColumnSearchLogic(this, schRegExp, this.options.tColItem);
+					}else{
+						_$util.genColumnSearchLogic(this, schRegExp, [this.config.dataInfo.orginTColIdxKeyMap[schField]]);		
+					}
+					chkFn = this.config.settingConfig.searchCheckItem.fn;
+				}
 
 				for(var i = 0, len = orginData.length; i < len; i++){
 					var tmpItem =orginData[i]; 
 
-					if(schRegExp ===true || chkFn(tmpItem, schField, schRegExp)){
-						if(filterInfo === false){
+					if(schRegExp ===true || chkFn(tmpItem, schRegExp)){
+						if(filterCheckItem === false){
 							schArr.push(tmpItem);
 						}else{
-							if(filterInfo.fn(tmpItem, filterInfo.chkOpts)){
+							if(filterCheckItem.fn(tmpItem, filterCheckItem.chkOpts)){
 								schArr.push(tmpItem);
 							}
 						}
@@ -1256,6 +1253,10 @@ Plugin.prototype ={
 				_$sorting.setSortInfo(this, opt.headerOptions.sort);
 				_this.options.tbodyItem = _$sorting.getSortData(this, true);
 			}
+		}else{
+			if(gridMode !='sort' && gridMode !='search'){
+				_$sorting.setSortInfo(this, []);
+			}
 		}
 
 		if(gridMode == 'search'){
@@ -1304,14 +1305,14 @@ Plugin.prototype ={
 			}
 
 			if(_this.config.scroll.viewIdx <= rowIdx && rowIdx < _this.config.scroll.viewIdx +_this.config.scroll.viewCount){
-				_this.drawGrid(mode,true);
+				_this.drawGrid(mode);
 			}else if(addOpt.focus===true){
 				_this.moveVerticalScroll({rowIdx : rowIdx});
 			}
 		}else if(subMode =='update'){
 			_this.drawGrid('vscroll');
 		}else{
-			_this.drawGrid(mode,true);
+			_this.drawGrid(mode);
 		}
 
 		if(_this.options.navigation.enablePaging === true) {
@@ -1640,7 +1641,7 @@ Plugin.prototype ={
 	 * @param  type {String} 그리드 타입.
 	 * @description foot 데이터 셋팅
 	 */
-	,drawGrid : function (pMode, unconditionallyFlag){
+	,drawGrid : function (pMode){
 		var _this = this
 			,tci = _this.config.tColItem
 			,tbi = _this.options.tbodyItem
@@ -1792,10 +1793,14 @@ Plugin.prototype ={
 
 		var colFixedIndex = this.options.colFixedIndex;
 
+		var filterCheckItem = this.config.settingConfig.filterCheckItem;
+		var searchCheckItem = this.config.settingConfig.searchCheckItem;
+
 		for(var i =0 ; i < viewCount; i++){
 			tbiItem = tbi[itemIdx];
-
+								
 			if(tbiItem){
+
 				if(_this.config.rowOpt.isAddStyle){
 					$pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-cont [rowinfo="'+i+'"]').setAttribute('style', (fnAddStyle.call(null,tbiItem)||''));
 				}
@@ -1817,6 +1822,14 @@ Plugin.prototype ={
 						addEle.textContent = 'V';
 					}
 				};
+
+				var searchHighlightItem = searchCheckItem != false ? searchCheckItem.highlight(tbiItem, searchCheckItem.regExp) :{};
+				var filterHighlightItem = filterCheckItem != false ? filterCheckItem.highlight(tbiItem, filterCheckItem.chkOpts) :{};
+
+				/*
+				highlight style 처리 할것. 
+				*/
+
 
 				if(drawMode != 'hscroll'){
 					for(var j=0; j < colFixedIndex ; j++){
@@ -2938,7 +2951,7 @@ Plugin.prototype ={
 				_this.config.sort.sortMap.set(sortKey, {key : sortKey, sortType : 1});
 			}
 
-			_this.setData( _$sorting.getSortData(_this, firstSortFlag) ,'sort');
+			_this.setSorting(Array.from(_this.config.sort.sortMap.values()), firstSortFlag);
 		});
 
 		if(headerOpt.contextMenu !== false){
@@ -4207,7 +4220,7 @@ Plugin.prototype ={
 	 * @param  sortInfoArr {Array} [{key : "STATUS", sortType : 1}]  sortType 1, -1
 	 * @description data sorting
 	 */
-	,setSorting : function (sortInfoArr){
+	,setSorting : function (sortInfoArr, firstSortFlag){
 
 		if(!isArray(sortInfoArr)){
 			throw 'sort infomation not valid '+ (typeof sortInfoArr);
@@ -4215,7 +4228,7 @@ Plugin.prototype ={
 
 		_$sorting.setSortInfo(this, sortInfoArr);
 
-		this.setData( _$sorting.getSortData(this, firstSortFlag), 'sort');
+		this.setData( _$sorting.getSortData(this, (isUndefined(firstSortFlag) ? false : firstSortFlag)), 'sort');
 	}
 	
 	/**
@@ -5028,32 +5041,49 @@ var _$util = {
 		return ctx.element.body.find('.pub-body-td[data-cell-position="'+r+','+c+'"]');
 	}
 	/**
-	 * @method genAllColumnSearch
+	 * @method genColumnSearchLogic
 	 * @param gridCtx {Object} - grid context
+	 * @param columns {Array} - logic column
 	 * @description all column search logic
 	 */	
-	,genAllColumnSearch : function (gridCtx){
-		var tcolItems = gridCtx.options.tColItem; 
+	,genColumnSearchLogic : function (gridCtx, schRegExp, columns){
+		var logicStr =[];
 
-		var logicStr =[]
+		var highlightCheckStr =[];
 
 		var searchLogic = defaultCondition['searchIndex'].code; 
 		
-		for(var i=0; i<tcolItems.length; i++){
-			var tcolItem = tcolItems[i];
+		for(var i=0; i<columns.length; i++){
+			var tcolItem = columns[i];
+
+			var logic = replaceMesasgeFormat(searchLogic , {key : tcolItem.key});
 			logicStr.push(i != 0 ? defaultLogicalOp.getCode('or') : '');
-			logicStr.push(replaceMesasgeFormat(searchLogic , {key : tcolItem.key}));
+			logicStr.push(logic);
+
+			highlightCheckStr.push('if('+logic+'){reval["'+tcolItem.key+'"]=true;}');
 		}
-		
-		return this.genSearchLogic(logicStr.join(''));
+
+		gridCtx.config.settingConfig.searchCheckItem = {
+			regExp: schRegExp
+			,fn: new Function('item','chkRegExp', this.genSearchLogic(logicStr.join('')))
+			,highlight: new Function('item','chkRegExp', this.genHightlightLogic(highlightCheckStr.join('')))
+		};
 	}
 	/**
 	 * @method genSearchLogic
-	 * @param checkLogicStr {String} - check login string
+	 * @param logicStr {String} - check login string
 	 * @description 검색 로직 만들기
 	 */	
-	,genSearchLogic : function (checkLogicStr){
-		return 'if(#logic#){return true;} return false;'.replace('#logic#', checkLogicStr);
+	,genSearchLogic : function (logicStr){
+		return 'if(#logic#){return true;} return false;'.replace('#logic#', logicStr);
+	}
+	/**
+	 * @method genHightlightLogic
+	 * @param logicStr {String} - logic
+	 * @description highlight logic
+	 */	
+	,genHightlightLogic : function (logicStr){
+		return 'var reval = {}; #logic# return reval;'.replace('#logic#', logicStr);
 	}
 	/**
 	 * @method getSearchRegExp
@@ -5828,6 +5858,8 @@ var _$sorting = {
 			var sortInfo = sortInfoArr[i];
 			gridCtx.config.sort.sortMap.set(sortInfo.key, sortInfo);
 		}
+
+		this.setSortIcon(gridCtx);
 	}	
 	,setSortIcon : function (gridCtx){
 		
@@ -5853,10 +5885,7 @@ var _$sorting = {
 	, getSortData :function (gridCtx, firstSortFlag){
 		var tbi = gridCtx.options.tbodyItem;
 
-		this.setSortIcon(gridCtx);
-
 		var sortMap = gridCtx.config.sort.sortMap;
-
 
 		if(firstSortFlag){
 			gridCtx.config.sort.orginData = arrayCopy(tbi);
@@ -6237,7 +6266,7 @@ var _$setting = {
 								
 			}else if(mode=='default'){
 				gridCtx.config.settingConfig.viewInitFlag = true; 
-				gridCtx.config.settingConfig.filterInfo = false; 
+				gridCtx.config.settingConfig.filterCheckItem = false; 
 				
 				gridCtx.options.tColItem = gridCtx.config.dataInfo.orginTColItem;
 				
@@ -6390,6 +6419,7 @@ var _$setting = {
 
 		var filterChkFlag = false; 
 		var chkLogicStr = [];
+		var highlightCheckStr =[];
 
 		var filterItem = {};
 		settingAreaEle.find('.filter-item-list').find('li').each(function (){
@@ -6417,25 +6447,28 @@ var _$setting = {
 					chkVal : filterItem.text
 					,chkRegExp : opItem.isRegExp?_$util.getSearchRegExp(filterItem.text, 'all') : false
 				});
-							
-				chkLogicStr.push(replaceMesasgeFormat(opItem.code , {
+				var logic = replaceMesasgeFormat(opItem.code , {
 					key : item.key
 					,idx : allChkVal.length -1
-				}));
+				}); 
+				chkLogicStr.push(logic);
+
+				highlightCheckStr.push('if('+logic+'){reval["'+item.key+'"]=true;}');
 
 				filterChkFlag = true; 
 			}
 		})
 
 		if(filterChkFlag){
-			var logicStr = _$util.genSearchLogic(chkLogicStr.join(''));
-
-			gridCtx.config.settingConfig.filterInfo = {
-				fn : new Function('item','chkOpts', logicStr)
+			gridCtx.config.settingConfig.filterCheckItem = {
+				fn : new Function('item','chkOpts', _$util.genSearchLogic(chkLogicStr.join('')))
 				,chkOpts : allChkVal
+				,highlight : new Function('item','chkOpts', _$util.genHightlightLogic(highlightCheckStr.join('')))
 			};
+
+			console.log(gridCtx.config.settingConfig.filterCheckItem);
 		}else{
-			gridCtx.config.settingConfig.filterInfo = false; 
+			gridCtx.config.settingConfig.filterCheckItem = false; 
 		}
 	}
 	,replaceOpTemplateHtml : function (gridCtx, item){
@@ -6461,7 +6494,7 @@ var _$setting = {
 
 		var templateHtm = [];
 		templateHtm.push('<li>');
-		templateHtm.push('<span class="filter-op-logical"><input type="checkbox" name="filter-op-logical" id="{{checkboxid}}"><label for="{{checkboxid}}"></label></span>');
+		templateHtm.push('<span class="filter-op-logical"><input type="checkbox" name="filter-op-logical" id="{{checkboxid}}" checked><label for="{{checkboxid}}"></label></span>');
 
 		templateHtm.push('<select name="filter-key" class="filter-key">');
 		gridCtx.config.dataInfo.orginTColItem.forEach(function (item, idx){
