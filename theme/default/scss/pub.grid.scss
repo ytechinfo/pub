@@ -251,12 +251,15 @@
 				}
 			}
 		}
+
+		tr{
+			height:25px !important;
+		}
 	
 		th {
 			position: relative;
 			margin: 0 !important;
 			padding: 0 !important;
-			height:25px !important;
 			vertical-align: middle;
 			border-right: 1px solid colorInfo($g_default_theme_name , "border_thick_color");
 			border-top:1px solid colorInfo($g_default_theme_name , "border_thick_color");
@@ -290,7 +293,7 @@
 		z-index: 0;
 		height: 100%;
 
-		tr.pub-body-tr{
+		.pub-body-tr{
 			&:nth-child(even) {
 				background: colorInfo($g_default_theme_name , "table_tr_even");
 			}
@@ -299,7 +302,7 @@
 			}
 		}
 		
-		&.even tr.pub-body-tr{
+		&.even .pub-body-tr{
 			&:nth-child(even) {
 				background: colorInfo($g_default_theme_name , "table_tr_odd");
 			}
@@ -307,6 +310,14 @@
 			&:nth-child(odd) {
 				background: colorInfo($g_default_theme_name , "table_tr_even");
 			}
+		}
+
+		.pub-body-td.search-highlight{
+			background-color: colorInfo($g_default_theme_name , "highlight_background_color");
+		}
+
+		.pub-body-td.filter-highlight{
+			background-color: colorInfo($g_default_theme_name , "highlight_background_color");
 		}
 	}
 	
@@ -435,8 +446,6 @@
 				z-index:1;
 			}
 		}
-
-		
 	}
 	
 	.pubGrid-body-aside-cont, .pubGrid-body-left-cont, .pubGrid-body-cont {
@@ -444,7 +453,7 @@
 		border:0px;
 	}
 	
-	.pubGrid-body-cont, .pubGrid-body-aside-cont{
+	.pubGrid-body-aside-cont, .pubGrid-body-left-cont, .pubGrid-body-cont{
 		.al{text-align:left;}
 		.ar{text-align:right;}
 		.ac{text-align:center;padding:0px;}
@@ -1393,7 +1402,7 @@
 			
 			.pubGrid-body-container-warpper{
 				
-				tr.pub-body-tr{
+				.pub-body-tr{
 					&:nth-child(even) {
 						background: colorInfo($pThemeName , "table_tr_even");
 					}
@@ -1402,7 +1411,7 @@
 					}
 				}
 				
-				&.even tr.pub-body-tr{
+				&.even .pub-body-tr{
 					&:nth-child(even) {
 						background: colorInfo($pThemeName , "table_tr_odd");
 					}
@@ -1410,6 +1419,14 @@
 					&:nth-child(odd) {
 						background: colorInfo($pThemeName , "table_tr_even");
 					}
+				}
+
+				.pub-body-td.search-highlight{
+					background-color: colorInfo($pThemeName , "highlight_background_color");
+				}
+		
+				.pub-body-td.filter-highlight{
+					background-color: colorInfo($pThemeName , "highlight_background_color");
 				}
 			}
 			

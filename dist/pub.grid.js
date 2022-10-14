@@ -24,7 +24,7 @@ var _initialized = false
 ,_defaults = {
 	blankSpaceWidth : 1		// 오른쪽 끝 공백 값
 	,copyMode : 'single'		// copy mode	single, multiple, none
-	,colFixedIndex : 0	// 고정 컬럼
+	,fixedHeaderIndex : 0	// 고정 컬럼
 	,widthFixed : false  // 넓이 고정 여부.
 	,useDefaultFormatter: true // 기본 포멧터 사용여부
 	,editable :false	// 편집 모드 활성화
@@ -101,6 +101,8 @@ var _initialized = false
 		,click : false				// 직접 처리 할경우. function 으로 처리.
 		,btnClose : false			// button 으로만 닫기 여부
 		,useRememberValue : false	// 검색어 local storage에 저장 여부
+		,searchHighlightStyleClass : 'search-highlight' // highlight style
+		,filterHighlightStyleClass : 'filter-highlight' // highlight style
 		,width:'auto'
 		,height:'auto'
 		,callback : function (item){
@@ -207,7 +209,6 @@ var _initialized = false
 	}
 	*/
 	,tColItem : [] //head item
-	,theadGroup : [] // head group
 	,tbodyItem : []  // body item
 	,tbodyGroup : [] // body group
 	,tfootItem : []  // foot item
@@ -508,7 +509,7 @@ Plugin.prototype ={
 			, select : {}
 			, template: {}
 			, orginData: []
-			, dataInfo : {colLen : 0, allColLen : 0, rowLen : 0, lastRowIdx : 0, orginTColItem:[], orginTColIdxKeyMap : {}}
+			, dataInfo : {colLen : 0, rowLen : 0, lastRowIdx : 0, orginLeafHeaders:[], orginLeafHeaderKeyMap : {}}
 			, rowOpt :{}
 			, sort : {orginData :[], sortMap: new Map()}
 			, pagingInfo : false
@@ -531,6 +532,7 @@ Plugin.prototype ={
 				,searchCheckItem : false  // 검색 정규식
 				,filterCheckItem : false // filter info {checkFn, check condition}
 			}
+			,fixedHeaderIndex : -1
 		};
 
 		this.eleCache = {};
@@ -539,13 +541,13 @@ Plugin.prototype ={
 
 		this.setOptions(options, true);
 
-
 		this.drag ={};
 		this.addStyleTag();
 
 		this._setSearchData('init');
 
-		this._setThead();
+		this.calcHeader();
+
 		this.setData(this.options.tbodyItem , 'init');
 
 		this.config.gridXScrollFlag = false;
@@ -598,19 +600,20 @@ Plugin.prototype ={
 		
 		options.setting.configVal = objectMerge({},_defaults.setting.configVal ,options.setting.configVal);
 
-		_this.options =objectMerge({}, _defaults, options)
+		_this.options =objectMerge({}, _defaults, options);
 		
 		_this.options.tbodyItem = isArray(options.tbodyItem) ? options.tbodyItem : (_this.options.tbodyItem ||[]);
 
 		_this.config.isValueFilter = isFunction(_this.options.valueFilter);
 
-		_this.config.dataInfo.orginTColItem = arrayCopy(_this.options.tColItem);
-
+		_this.config.fixedHeaderIndex = _this.options.fixedHeaderIndex;
 		_this.config.settingConfig.operators = objectMerge(gridOperators, _this.options.operators);
 
-		_this.config.dataInfo.orginTColItem.forEach(function (item, idx){
+		var columnGroupInfo = _$util._getHeaderGroupInfo(this);
+		_this.config.dataInfo.orginLeafHeaders = arrayCopy(columnGroupInfo.leaf);
+		_this.config.dataInfo.orginLeafHeaders.forEach(function (item, idx){
 			item['$$opType'] = _$util.getOpType(_this, item);
-			_this.config.dataInfo.orginTColIdxKeyMap[item.key] = item; 
+			_this.config.dataInfo.orginLeafHeaderKeyMap[item.key] = item; 
 		});
 		
 		_this.config.rowHeight = _this.options.rowOptions.height;
@@ -639,7 +642,7 @@ Plugin.prototype ={
 				_this.options.headerOptions.contextMenu.callback = function(key,sObj) {
 					var headerInfo = this.element.attr('data-header-info');
 					headerInfo = headerInfo.split(',');
-					var selHeaderInfo = _this.config.headerInfo[headerInfo[0]][headerInfo[1]];
+					var selHeaderInfo = _this.config.headerBodyGroup[headerInfo[0]][headerInfo[1]];
 					this.gridItem = selHeaderInfo;
 					_hcb.call(this,key,sObj);
 				}
@@ -650,11 +653,6 @@ Plugin.prototype ={
 
 		// space width
 		this.config.blankSpaceWidth = 2+(this.options.blankSpaceWidth>0?this.options.blankSpaceWidth :0);
-
-		// header element height
-		if(_this.options.headerOptions.view !== false){
-			this.config.header.height = _this.options.headerOptions.height * (this.options.theadGroup.length > 0 ?this.options.theadGroup.length+1 : 1)
-		}
 
 		var asideItem = [];
 
@@ -733,141 +731,28 @@ Plugin.prototype ={
 		styleTag = null;
 	}
 	/**
-	 * @method _setThead
-	 * @description 헤더 label 셋팅.
+	 * @method calcHeader
+	 * @description 헤더 정보 계산
 	 */
-	,_setThead : function (calcFlag){
+	,calcHeader : function (calcFlag){
 		var _this = this
 			,opt = _this.options;
 
-		var tci = opt.tColItem
-			,thg = opt.theadGroup
-			,fixedColIdx = opt.colFixedIndex
-			,cfg = _this.config
-			,gridElementWidth =cfg.container.width
-			,tciItem, headItem
-			,headGroupInfo = [] ,groupInfo = []
-			,leftHeaderGroupInfo = [] ,leftGroupInfo = [];
-
-		var gridTci = [];
-		for(var  i =0 ;i < tci.length;i++){
-			var tmpTci = tci[i];
-			if(tmpTci.visible !== false){
-				gridTci.push(tmpTci);
-			}
-		}
-
-		cfg.tColItem = gridTci;
-
-		tci = gridTci;
-
-		var thg = isUndefined(opt.theadGroup)? [] : arrayCopy(opt.theadGroup);
-		thg.push(tci);
+		var cfg = _this.config
+			,gridElementWidth = cfg.container.width
+			,tciItem;
 		
-		var theadGrpRow; 
-
-		var tciLen = tci.length
-			,thgLen = thg.length; 
-
-		var colSpanInfo = createArray(thgLen, tciLen)
-			,rowSpanInfo = createArray(thgLen, tciLen);
-		
-		for(var i=0; i <thgLen; i++){
-			theadGrpRow = thg[i];
-
-			groupInfo = [];
-			leftGroupInfo = [];
-
-			var colSpanArr = colSpanInfo[i];
-			var rowSpanArr = rowSpanInfo[i];
+		var columnGroupInfo = _$util._getHeaderGroupInfo(this);
 							
-			var tmpColIdx=0;
-			for(var j=0; j < theadGrpRow.length; j++){
-				var headItem = objectMerge({},theadGrpRow[j]);
+		cfg.headerLeftGroup = columnGroupInfo.left;
+		cfg.headerBodyGroup = columnGroupInfo.body;
 
-				var colspanNum = headItem['colspan']||1;
-				var rowspanNum = headItem['rowspan']||0;
-				
-				var k = tmpColIdx;
-				tmpColIdx += colspanNum;
-						
-				var continueFlag = false; 
-				for(; k < tmpColIdx; k++){
-					if(i != 0){
-						var beforeSpanRowNum = rowSpanInfo[i-1][k];
-						beforeSpanRowNum = beforeSpanRowNum > 1 ? beforeSpanRowNum-1 : 0;	
-
-						if(beforeSpanRowNum > 0){
-							rowSpanInfo[i][k] = beforeSpanRowNum;
-							colSpanInfo[i][k] = 0;
-							if(i+1 != thgLen){
-								j--;
-							}
-							
-							continueFlag = true; 
-							break;
-						}
-					}
-
-					if(rowspanNum > 0){ // rowspan 일때 아래 i+1의 row 값 추가
-						colSpanArr[k] = 0;
-						rowSpanArr[k] = rowspanNum;	
-					}else{
-						rowSpanArr[k] = 0;
-						if(colspanNum == 1){
-							colSpanArr[k] = 1;
-						}else{
-							colSpanArr[k] = 2;
-						}
-					}
-				}
-
-				if(continueFlag){
-					continue ; 
-				}
-
-				tciItem = tci[tmpColIdx-1] ||{};
-				
-				headItem['colspan'] = colspanNum;
-				headItem['rowspan'] = rowspanNum;
-				headItem['view'] = true;
-				headItem['sort'] = tciItem.sort===false ? false : opt.headerOptions.sort !== false;
-				headItem['colspanhtm'] = headItem.colspan > 1 ? ' scope="colgroup" colspan="'+headItem.colspan+'" ' :'scope="col"';
-				headItem['rowspanhtm'] = '';
-				headItem['resizeIdx'] =tmpColIdx-1;
-
-				if(headItem.rowspan > 1){
-					headItem['rowspanhtm'] = ' scope="col" rowspan="'+headItem.rowspan+'" style="height:'+(_this.options.headerOptions.height*headItem.rowspan)+'px" '; 
-				}
-							
-				if(i+rowspanNum >= thgLen || i+1 == thgLen){
-					headItem.isSort = (headItem.sort===true?true:false); 
-				}
-
-				if(tmpColIdx <= fixedColIdx){
-					leftGroupInfo.push(headItem);
-				}else if(tmpColIdx - colspanNum < fixedColIdx ){
-					headItem['colspan'] = (tmpColIdx - fixedColIdx);
-					headItem['colspanhtm'] = ' scope="colgroup" colspan="'+headItem['colspan']+'" ';
-					groupInfo.push(headItem);
-
-					var leftHeadItem = objectMerge({},headItem);
-					leftHeadItem['colspan'] = (fixedColIdx - (tmpColIdx - colspanNum))
-					leftHeadItem['resizeIdx'] = fixedColIdx;
-					leftHeadItem['colspanhtm'] = ' scope="colgroup" colspan="'+leftHeadItem['colspan']+'" ';
-					
-					leftGroupInfo.push(leftHeadItem);
-				}else{
-					groupInfo.push(headItem)
-				}
-			}
-
-			headGroupInfo.push(groupInfo);
-			leftHeaderGroupInfo.push(leftGroupInfo)
+		// header element height
+		if(_this.options.headerOptions.view !== false){
+			this.config.header.height = _this.options.headerOptions.height * columnGroupInfo.depth;
 		}
-
-		cfg.headerInfo = headGroupInfo;
-		cfg.headerLeftInfo = leftHeaderGroupInfo;
+		
+		var tci = cfg.currentHeaderItems = columnGroupInfo.leaf;
 
 		var colWidth = Math.floor((gridElementWidth)/tci.length);
 
@@ -879,6 +764,8 @@ Plugin.prototype ={
 		for(var j=0; j<tci.length; j++){
 			var tciItem = tci[j];
 			tciItem.maxWidth = -1;	// max width
+
+			tciItem.styleClass = isUndefined(tciItem.styleClass) ? false: tciItem.styleClass;
 
 			if(tciItem.visible===false) continue;
 
@@ -902,7 +789,7 @@ Plugin.prototype ={
 			tciItem.width = Math.max(tciItem.width, opt.headerOptions.resize.minWidth);
 
 			tciItem['_alignClass'] = tciItem.align=='right' ? 'ar' : (tciItem.align=='center'?'ac':'al');
-			cfg.tColItem[j] = tciItem;
+			cfg.currentHeaderItems[j] = tciItem;
 
 			if(_this._isFixedPostion(j)){
 				leftWidth +=tciItem.width;
@@ -910,23 +797,23 @@ Plugin.prototype ={
 				mainWidth +=tciItem.width;
 			}
 		}
+
 		cfg.gridWidth.left = leftWidth;
 		cfg.gridWidth.main = mainWidth;
 
 		cfg.dataInfo.colLen = viewColCount;
-		cfg.dataInfo.allColLen= tci.length;
 
 		if(calcFlag === false){
 			return ;
 		}
 
-		_this._calcElementWidth();
+		_this._calcContainerWidth();
 	}
 	/**
-	 * @method _calcElementWidth
+	 * @method _calcContainerWidth
 	 * @description width 계산.
 	 */
-	,_calcElementWidth : function (mode){
+	,_calcContainerWidth : function (){
 
 		if(this.options.widthFixed === true){
 			return ;
@@ -935,7 +822,7 @@ Plugin.prototype ={
 		var _this = this
 			,opt = _this.options
 			,_gw = _this.config.container.width
-			,tci = _this.config.tColItem
+			,tci = _this.config.currentHeaderItems
 			,tciLen = _this.config.dataInfo.colLen;
 
 		var verticalW = 0;
@@ -965,7 +852,7 @@ Plugin.prototype ={
 					mainGridWidth +=item.width;
 				}
 			}
-			_this.config.tColItem[tciLen-1].width +=lastSpaceW;
+			_this.config.currentHeaderItems[tciLen-1].width +=lastSpaceW;
 			_this.config.gridWidth.left = leftGridWidth
 			_this.config.gridWidth.main =mainGridWidth+lastSpaceW;
 		}
@@ -1137,6 +1024,8 @@ Plugin.prototype ={
 		}
 
 		if(settingOpt.enabled ===true){
+
+			
 			var schArr = [];
 			var orginData = this.config.orginData;
 			var filterCheckItem = this.config.settingConfig.filterCheckItem; 
@@ -1145,6 +1034,8 @@ Plugin.prototype ={
 				,schVal = settingOpt.configVal.search.val ||'';
 						
 			schVal = _$util.trim(schVal); 
+
+			this.config.settingConfig.searchCheckItem = false; 
 
 			if((schField != '' && schVal !='') || filterCheckItem !== false){
 				var schArr =[];
@@ -1156,9 +1047,9 @@ Plugin.prototype ={
 					schRegExp = _$util.getSearchRegExp(schVal);
 
 					if(schField == '$all'){
-						_$util.genColumnSearchLogic(this, schRegExp, this.options.tColItem);
+						_$util.genColumnSearchLogic(this, schRegExp, this.config.currentHeaderItems);
 					}else{
-						_$util.genColumnSearchLogic(this, schRegExp, [this.config.dataInfo.orginTColIdxKeyMap[schField]]);		
+						_$util.genColumnSearchLogic(this, schRegExp, [this.config.dataInfo.orginLeafHeaderKeyMap[schField]]);		
 					}
 					chkFn = this.config.settingConfig.searchCheckItem.fn;
 				}
@@ -1343,7 +1234,7 @@ Plugin.prototype ={
 		return val;
 	}
 	,_setHeaderInitInfo : function (){
-		var tci  = this.config.tColItem;
+		var tci  = this.config.currentHeaderItems;
 
 		for(var i =0 ;i <tci.length; i++){
 			tci[i].maxWidth = -1;
@@ -1420,7 +1311,7 @@ Plugin.prototype ={
 	,initStyle : function (){
 
 		var _this = this
-			,tci = _this.config.tColItem
+			,tci = _this.config.currentHeaderItems
 			,thiItem;
 
 		var strCss = [];
@@ -1591,50 +1482,68 @@ Plugin.prototype ={
 	}
 	/**
 	 * @method _setCellStyle
+	 * @param  gridCtx {Object} grid context
 	 * @param  cellEle {Elements} cell dom element
-	 * @param  _idx {Integer} header column index
-	 * @param  thiItem {Object} header item
+	 * @param  rowItemIdx {Integer} header column index
+	 * @param  colItem {Object} header item
 	 * @param  rowItem {Object} item
 	 * @description tbody 추가 , 삭제 .
 	 */
-	,_setCellStyle : function (cellEle, _idx, thiItem, rowItem){
-		// style 처리
-		var addClass ='';
+	,_setCellStyle : function (gridCtx, cellEle, rowItemIdx, colItem, rowItem, searchHighlightItem, filterHighlightItem){
 
-		if(isFunction(thiItem.styleClass)){
-			addClass = thiItem.styleClass.call(null,{idx : _idx, colInfo:thiItem, item: rowItem})
-		}else{
-			addClass=(thiItem.cellClass||'');
+		var addClass = '';
+
+		if(colItem.styleClass !== false){
+			if(isFunction(colItem.styleClass)){
+				addClass = colItem.styleClass.call(null,{rowItemIdx : rowItemIdx, colInfo:colItem, item: rowItem})
+			}else{
+				addClass = colItem.styleClass;
+			}
 		}
 
-		if(addClass != '') cellEle.setAttribute('class','pub-body-td '+addClass );
+		var colKey = colItem.key;
+		if(searchHighlightItem && hasProperty(searchHighlightItem, colKey)){
+			var searchHighlightStyleClass = gridCtx.options.setting.searchHighlightStyleClass;
+			addClass += searchHighlightStyleClass !='' ? ' '+searchHighlightStyleClass : addClass;
+		}
+
+		if(filterHighlightItem && hasProperty(filterHighlightItem, colKey)){
+			var filterHighlightStyleClass = gridCtx.options.setting.filterHighlightStyleClass;
+			addClass += filterHighlightStyleClass !='' ? ' '+filterHighlightStyleClass : addClass;
+		}
+
+		if(addClass===''){
+			cellEle.setAttribute('class','pub-body-td');
+		}else{
+			cellEle.setAttribute('class','pub-body-td '+addClass );
+		}
 	}
 	,_isFixedPostion : function (idx, position){
 		position = position || 'l';
 
-		return idx < this.options.colFixedIndex ? true : false ;
+		return idx < this.config.fixedHeaderIndex ? true : false ;
 	}
 	/**
-	 * @method setColFixedIndex
+	 * @method setFixedHeaderIndex
 	 * @param  idx {Number} header column index
 	 * @description 고정 컬럼
 	 */
-	,setColFixedIndex : function (idx, headRedrawFlag){
-		if(this.options.colFixedIndex > 0  && idx < 1){
+	,setFixedHeaderIndex : function (idx, headRedrawFlag){
+		if(this.config.fixedHeaderIndex > 0  && idx < 1){
 			this.element.container.removeClass('pubGrid-col-fixed');
-		}else if(this.options.colFixedIndex < 1  && idx > 0){
+		}else if(this.config.fixedHeaderIndex < 1  && idx > 0){
 			this.element.container.addClass('pubGrid-col-fixed')
 		}
-		this.options.colFixedIndex = idx;
-		this._setThead(headRedrawFlag===true?true :false);
+		this.config.fixedHeaderIndex = idx;
+		this.calcHeader(headRedrawFlag===true?true :false);
 		this.setData(this.options.tbodyItem, 'init_colfixed')
 	}
 	/**
-	 * @method getColFixedIndex
+	 * @method getFixedHeaderIndex
 	 * @description get column fixed index
 	 */
-	,getColFixedIndex : function (){
-		return this.options.colFixedIndex;
+	,getFixedHeaderIndex : function (){
+		return this.config.fixedHeaderIndex;
 	}
 	/**
 	 * @method drawGrid
@@ -1643,7 +1552,7 @@ Plugin.prototype ={
 	 */
 	,drawGrid : function (pMode){
 		var _this = this
-			,tci = _this.config.tColItem
+			,tci = _this.config.currentHeaderItems
 			,tbi = _this.options.tbodyItem
 			,headerOpt=_this.options.headerOptions;
 
@@ -1791,7 +1700,7 @@ Plugin.prototype ={
 		var tooltipFlag = _this.options.showTooltip===true?true:false;
 		var asideItem =_this.config.aside.items;
 
-		var colFixedIndex = this.options.colFixedIndex;
+		var fixedHeaderIndex = this.config.fixedHeaderIndex;
 
 		var filterCheckItem = this.config.settingConfig.filterCheckItem;
 		var searchCheckItem = this.config.settingConfig.searchCheckItem;
@@ -1806,7 +1715,7 @@ Plugin.prototype ={
 				}
 
 				var overRowFlag = (itemIdx >= this.config.dataInfo.orginRowLen);
-				var addEle ,tdEle;
+				var addEle ,cellEle;
 
 				for(var j =0 ; j < asideItem.length ;j++){
 					var tmpItem = asideItem[j];
@@ -1826,18 +1735,14 @@ Plugin.prototype ={
 				var searchHighlightItem = searchCheckItem != false ? searchCheckItem.highlight(tbiItem, searchCheckItem.regExp) :{};
 				var filterHighlightItem = filterCheckItem != false ? filterCheckItem.highlight(tbiItem, filterCheckItem.chkOpts) :{};
 
-				/*
-				highlight style 처리 할것. 
-				*/
-
-
 				if(drawMode != 'hscroll'){
-					for(var j=0; j < colFixedIndex ; j++){
-						tdEle =_this.element.leftContent.querySelector('[data-cell-position="'+(i+','+j)+'"]');
-						addEle =tdEle.querySelector('.pub-content');
+					for(var j=0; j < fixedHeaderIndex ; j++){
+						cellEle =_this.element.leftContent.querySelector('[data-cell-position="'+(i+','+j)+'"]');
+						addEle =cellEle.querySelector('.pub-content');
 
 						colItem = tci[j];
-						_this._setCellStyle(tdEle, i, colItem, tbiItem)
+						
+						_this._setCellStyle(_this, cellEle, itemIdx+i, colItem, tbiItem, searchHighlightItem, filterHighlightItem);
 
 						if(overRowFlag){
 							addEle.textContent='';
@@ -1849,26 +1754,26 @@ Plugin.prototype ={
 								if(colItem.afTooltipFormatter){
 									val = colItem.afTooltipFormatter({item : tbiItem ,r: i ,c: j , keyItem : colItem});
 								}
-								tdEle.title = val;
+								cellEle.title = val;
 							}
 						}
 
-						tdEle = null;
+						cellEle = null;
 						addEle = null;
 					}
 				}
 
 				for(var j=startCol ;j <= endCol; j++){
-					//var addEle = _this.element.tdEle[cellPosition] = $pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-tbody').querySelector('[data-cell-position="'+cellPosition+'"]>.pub-content')
+					//var addEle = _this.element.cellEle[cellPosition] = $pubSelector('#'+_this.prefix+'_bodyContainer .pubGrid-body-tbody').querySelector('[data-cell-position="'+cellPosition+'"]>.pub-content')
 
-					tdEle =_this.element.bodyContent.querySelector('[data-cell-position="'+(i+','+j)+'"]');
+					cellEle =_this.element.bodyContent.querySelector('[data-cell-position="'+(i+','+j)+'"]');
 
-					if(tdEle){
-						addEle =tdEle.querySelector('.pub-content');
+					if(cellEle){
+						addEle =cellEle.querySelector('.pub-content');
 
 						colItem = tci[j];
 
-						_this._setCellStyle(tdEle, i ,colItem , tbiItem)
+						_this._setCellStyle(_this, cellEle, itemIdx+i, colItem, tbiItem, searchHighlightItem, filterHighlightItem);
 
 						if(overRowFlag){
 							addEle.textContent='';
@@ -1881,12 +1786,12 @@ Plugin.prototype ={
 								if(colItem.afTooltipFormatter){
 									val = colItem.afTooltipFormatter({item : tbiItem ,r: i ,c: j , keyItem : colItem});
 								}
-								tdEle.title = val;
+								cellEle.title = val;
 
 							}
 						}
 					}
-					tdEle = null;
+					cellEle = null;
 					addEle = null;
 				}
 			}
@@ -1994,7 +1899,7 @@ Plugin.prototype ={
 				var _addW = 0;
 				var _totColWidth =0;
 
-				var colItems = cfg.tColItem;
+				var colItems = cfg.currentHeaderItems;
 
 				for(var i=0 ,colLen  = colItems.length; i<colLen; i++){
 					var colItem = colItems[i];
@@ -2025,7 +1930,7 @@ Plugin.prototype ={
 
 		//if(cfg.isResize !== true && !cfg.scroll.hUse && type == 'reDraw' && cfg.scroll.vUse != vScrollFlag){
 		if(cfg.isResize !== true && (type == 'reDraw'||type=='resize') && cfg.scroll.vUse != vScrollFlag){
-			var colItems = cfg.tColItem;
+			var colItems = cfg.currentHeaderItems;
 			var colLen = colItems.length;
 
 			var _w =0, lastSpaceW=0;
@@ -2131,7 +2036,7 @@ Plugin.prototype ={
 
 			cfg.scroll.hThumbWidth = barWidth;
 			cfg.scroll.hTrackWidth =hscrollW - barWidth;
-			cfg.scroll.oneColMove = gridContTotW/cfg.tColItem.length ; //gridContTotW/cfg.scroll.hTrackWidth;
+			cfg.scroll.oneColMove = gridContTotW/cfg.currentHeaderItems.length ; //gridContTotW/cfg.scroll.hTrackWidth;
 			leftVal = cfg.scroll.hTrackWidth* cfg.scroll.hBarPosition/100;
 			_this.element.hScrollBar.css('width',barWidth)
 		}else{
@@ -2532,7 +2437,7 @@ Plugin.prototype ={
 			if(isUndefined(moveObj.colIdx)){
 				leftVal =_this.config.scroll.left+((posVal=='L'?-1:1) * _this.config.scroll.oneColMove);
 			}else{
-				var lastHeaderIdx = _this.config.headerInfo.length-1;
+				var lastHeaderIdx = _this.config.headerBodyGroup.length-1;
 
 				var colIdxHeaderEle = _this.element.header.find('[data-header-info="'+lastHeaderIdx+','+moveObj.colIdx+'"]');
 				var headerPos = colIdxHeaderEle.position();
@@ -2608,13 +2513,13 @@ Plugin.prototype ={
 
 		var containerLeft  = this._getBodyContainerLeft(leftVal);
 
-		var tci = this.config.tColItem;
+		var tci = this.config.currentHeaderItems;
 		var gridW = containerLeft+this.config.gridWidth.mainInsideWidth;
 		var itemLeftVal=0;
 		var startCol = 0, endCol =tci.length-1;
 		var startFlag = true, inSideStartFlag = true;
 
-		for(var i = this.options.colFixedIndex ;i <tci.length ;i++){
+		for(var i = this.config.fixedHeaderIndex ;i <tci.length ;i++){
 
 			if(inSideStartFlag && itemLeftVal >= containerLeft){
 				this.config.scroll.insideStartCol = i;
@@ -2911,7 +2816,7 @@ Plugin.prototype ={
 					var selEle = $(this);
 					var headerInfo = selEle.closest('[data-header-info]').attr('data-header-info').split(',');
 
-					fnHelpClick.call(selEle, {item :_this.config.headerInfo[headerInfo[0]][headerInfo[1]], c :headerInfo[1] })
+					fnHelpClick.call(selEle, {item :_this.config.headerBodyGroup[headerInfo[0]][headerInfo[1]], c :headerInfo[1] })
 				});
 			}
 
@@ -2921,7 +2826,7 @@ Plugin.prototype ={
 					var selEle = $(this);
 					var headerInfo = selEle.closest('[data-header-info]').attr('data-header-info').split(',');
 
-					fnHelpDblclick.call(selEle, {item :_this.config.headerInfo[headerInfo[0]][headerInfo[1]], c :headerInfo[1] })
+					fnHelpDblclick.call(selEle, {item :_this.config.headerBodyGroup[headerInfo[0]][headerInfo[1]], c :headerInfo[1] })
 				});
 			}
 		}
@@ -2931,7 +2836,7 @@ Plugin.prototype ={
 			var selEle = $(this)
 				,col_idx = selEle.attr('col_idx')
 
-			var sortKey = _this.config.tColItem[col_idx].key;
+			var sortKey = _this.config.currentHeaderItems[col_idx].key;
 
 			if(!e.shiftKey){
 				if(_this.config.sort.sortMap.size > 1 || !_this.config.sort.sortMap.has(sortKey)){
@@ -2970,7 +2875,7 @@ Plugin.prototype ={
 				
 				var dt = e.originalEvent.dataTransfer;
 				dt.effectAllowed = 'copyMove';
-				dt.setData('text/plain',_this.config.tColItem[col_idx].label);
+				dt.setData('text/plain',_this.config.currentHeaderItems[col_idx].label);
 							
 			}).on('drag.pubGrid.dragitem', '.label-wrapper', function (e){
 					
@@ -3111,7 +3016,7 @@ Plugin.prototype ={
 						endCol = ctx.config.scroll.insideStartCol-1;
 					}
 
-					var reGridFlag = endCol < 0 || endCol >= cfg.tColItem.length ? true :false ;
+					var reGridFlag = endCol < 0 || endCol >= cfg.currentHeaderItems.length ? true :false ;
 
 					_$util.setSelectionRangeInfo(ctx, {
 						rangeInfo :  {endCol : endCol}
@@ -3377,19 +3282,19 @@ Plugin.prototype ={
 
 					var startCellInfo = _this.config.selection.startCell;
 
-					var tColItems = _this.config.tColItem
+					var headerItems = _this.config.currentHeaderItems
 						,tbodyItems = _this.options.tbodyItem;
 
 					var startIdx = startCellInfo.startIdx
 						,startCol = startCellInfo.startCol
-						,tColLen =tColItems.length
+						,headerItemsLength =headerItems.length
 						,tbodyLen =tbodyItems.length;
 
 					var maxCol=0
 						,iLen = contentArr.length;
 
 					if(startCellInfo.startIdx+iLen > tbodyLen){ // 붙여 넣기 데이터가 더 많으면 추가 row 생성.
-						tbodyItems = tbodyItems.concat(_$util.newItems(tColItems, startCellInfo.startIdx+iLen -tbodyLen));
+						tbodyItems = tbodyItems.concat(_$util.newItems(headerItems, startCellInfo.startIdx+iLen -tbodyLen));
 						tbodyLen =tbodyItems.length;
 					}
 
@@ -3412,9 +3317,9 @@ Plugin.prototype ={
 						for(var j =0; j <jLen; j++){
 							var addColIdx = startCol+j;
 
-							if(addColIdx < tColLen){
+							if(addColIdx < headerItemsLength){
 								maxCol = Math.max(maxCol,addColIdx);
-								rowItem[tColItems[addColIdx].key] = addContArr[j];
+								rowItem[headerItems[addColIdx].key] = addContArr[j];
 							}
 						}
 					}
@@ -3467,7 +3372,7 @@ Plugin.prototype ={
 							return ;
 						}
 
-						copyData = _this.options.tbodyItem[startCellInfo.startIdx][_this.config.tColItem[startCellInfo.startCol].key];
+						copyData = _this.options.tbodyItem[startCellInfo.startIdx][_this.config.currentHeaderItems[startCellInfo.startCol].key];
 					}else{
 						copyData = _this.selectionData();
 					}
@@ -3912,15 +3817,15 @@ Plugin.prototype ={
 		}else{
 
 			var tbodyItem = _this.options.tbodyItem;
-			var tColItem = _this.config.tColItem;
+			var headerItems = _this.config.currentHeaderItems;
 
 			var tbodyLen = tbodyItem.length
-				,tColLen = tColItem.length;
+				,headeritemLength = headerItems.length;
 
-			if(tbodyLen < 1 ) {
+			if(headeritemLength < 1 ) {
 				if(isDataTypeJson){
 					return {
-						header : tColItem
+						header : headerItems
 						,data : []
 					}
 				}else{
@@ -3935,8 +3840,8 @@ Plugin.prototype ={
 				var rowText = [];
 				var rowItem = {};
 
-				for(var j=0 ;j < tColLen; j++){
-					var colItem = tColItem[j];
+				for(var j=0 ;j < headeritemLength; j++){
+					var colItem = headerItems[j];
 					if(colItem.visible===false) continue;
 
 					var tmpKey = colItem.key;
@@ -3965,7 +3870,7 @@ Plugin.prototype ={
 
 			if(isDataTypeJson){
 				return {
-					header : tColItem
+					header : headerItems
 					,data : returnVal
 				}
 			}else{
@@ -3992,7 +3897,7 @@ Plugin.prototype ={
 
 		if(allSelectFlag){
 			sCol = 0;
-			eCol = _this.config.tColItem.length-1;
+			eCol = _this.config.currentHeaderItems.length-1;
 			sIdx = 0;
 			eIdx = _this.config.dataInfo.lastRowIdx;
 		}else{
@@ -4009,7 +3914,7 @@ Plugin.prototype ={
 		var returnVal = [];
 		var addRowFlag;
 
-		var tColItem = _this.config.tColItem;
+		var headerItems = _this.config.currentHeaderItems;
 
 		var keyInfo ={};
 		var tmpVal = '';
@@ -4021,7 +3926,7 @@ Plugin.prototype ={
 			addRowFlag = false;
 
 			for(var j=sCol ;j <= eCol; j++){
-				var colItem = tColItem[j];
+				var colItem = headerItems[j];
 
 				if(colItem.visible===false) continue;
 
@@ -4089,9 +3994,11 @@ Plugin.prototype ={
 
 		var allSelectFlag = this._isAllSelect();
 
+		var headerItems = this.config.currentHeaderItems;
+
 		if(allSelectFlag){
 			sCol = 0;
-			eCol = this.config.tColItem.length-1;
+			eCol = headerItems.length-1;
 			sIdx = 0;
 			eIdx = 1;
 		}else{
@@ -4105,13 +4012,11 @@ Plugin.prototype ={
 		if(sIdx < 0 || eIdx < 0)
 			return [];
 
-		var tColItem = this.config.tColItem;
-
 		var keyInfo ={};
 
 		for(var i=sIdx; i<=eIdx; i++){
 			for(var j=sCol; j<=eCol; j++){
-				var colItem = tColItem[j];
+				var colItem = headerItems[j];
 
 				if(colItem.visible===false) continue;
 
@@ -4173,7 +4078,7 @@ Plugin.prototype ={
 		}
 		var keyLen = itemKeys.length;
 
-		var hi = _this.config.headerInfo[_this.config.headerInfo.length-1];
+		var hi = _this.config.headerBodyGroup[_this.config.headerBodyGroup.length-1];
 		var itemKeysIdx = [] , tmpKeyIdx={};
 		for(var i = 0 ; i <hi.length ; i++){
 			tmpKeyIdx[hi[i].key] = i;
@@ -4265,7 +4170,7 @@ Plugin.prototype ={
 
 			_$util.colResize(_this, $(this));
 
-			var selColItem = cfg.tColItem[_this.drag.resizeIdx];
+			var selColItem = cfg.currentHeaderItems[_this.drag.resizeIdx];
 
 			var resizeW = selColItem.maxWidth || -1;
 
@@ -4421,13 +4326,13 @@ Plugin.prototype ={
 		}
 
 		if(this.drag.isLeftContent){
-			this.config.gridWidth.left = this.config.gridWidth.left - this.config.tColItem[idx].width + w;
+			this.config.gridWidth.left = this.config.gridWidth.left - this.config.currentHeaderItems[idx].width + w;
 		}else{
-			this.config.gridWidth.main = this.config.gridWidth.main - this.config.tColItem[idx].width + w;
+			this.config.gridWidth.main = this.config.gridWidth.main - this.config.currentHeaderItems[idx].width + w;
 		}
 
 		//_this.config.container.width = drag.gridBodyW+w; // 2018-06-06 불필요 삭제 .
-		this.config.tColItem[idx].width = w;
+		this.config.currentHeaderItems[idx].width = w;
 
 		if(colHeaderEle){
 			colHeaderEle.css('width',w+'px');
@@ -4447,7 +4352,7 @@ Plugin.prototype ={
 	 * @description 페이징 하기.
 	 */
 	,getHeaderWidth : function (idx){
-		return _this.config.tColItem[idx].width;
+		return _this.config.currentHeaderItems[idx].width;
 	}
 	/**
 	 * @method getHeaderItems
@@ -4455,7 +4360,7 @@ Plugin.prototype ={
 	 * @description header items
 	 */
 	,getHeaderItems : function (){
-		return this.config.tColItem;
+		return this.config.currentHeaderItems;
 	}
 	,getPageNo : function (){
 		return this.config.pageNo;
@@ -4695,6 +4600,95 @@ var _$scroll = {
 	}
 }
 
+var _$header = {
+	groupInfo : function(node, depth, columnGroupInfo, headerOptions){
+
+		if(node.visible===false){
+			node.$colspan = 0;
+			return node; 
+		}
+
+		node.$depth = depth+1;
+		node.$isLeaf = true;
+		node.$colspan = 1;
+		node.$rowspan = 1;
+		node.$childLength = 0;
+
+		columnGroupInfo.depth = Math.max(columnGroupInfo.depth, node.$depth);
+
+		var children = node.children; 
+		if(children){
+			var childrenLen = children.length;
+
+			if(childrenLen > 0){
+				node.$isLeaf = false; 
+				node.$childLength = childrenLen;
+				var colspan = 0;
+				for(var i =0; i< childrenLen; i++){
+					var childNode = children[i]; 
+					_$header.groupInfo(childNode, node.$depth, columnGroupInfo, headerOptions);
+					colspan += childNode.$colspan;                    
+				}
+
+				node.$colspan = colspan; 
+				node.$resizeIdx = columnGroupInfo.leaf.length-1;
+			}
+		}else{
+			node.$resizeIdx = columnGroupInfo.leaf.length;
+		}
+
+		var fixedIndex = headerOptions.fixedIndex-1;
+		
+		if(typeof columnGroupInfo.left[depth] ==='undefined'){
+			columnGroupInfo.left[depth] = [];
+		}
+		if(typeof columnGroupInfo.body[depth] ==='undefined'){
+			columnGroupInfo.body[depth] = [];
+		}
+
+
+
+		//컬럼 고정 일때 처리 할것. 
+
+
+		
+
+
+
+		if(fixedIndex > node.$resizeIdx - node.$colspan){  // 컬럼 고정 처리.
+			
+			if(node.$colspan == 1){	
+				columnGroupInfo.left[depth].push(node);
+			}else{
+				var leftNode = objectMerge({}, node);
+
+				console.log(leftNode, leftNode.label ,fixedIndex, node)
+
+				if(leftNode.$resizeIdx > fixedIndex){
+					leftNode.$colspan = (fixedIndex - (leftNode.$resizeIdx - leftNode.$colspan))
+					
+				}
+			
+				columnGroupInfo.left[depth].push(leftNode);
+				if(fixedIndex < node.$resizeIdx){
+					var bodyNode = objectMerge({}, node);
+					bodyNode.$colspan = node.$resizeIdx - fixedIndex;
+					columnGroupInfo.body[depth].push(bodyNode);
+				}
+			}
+		}else{
+			columnGroupInfo.body[depth].push(node);
+		}
+
+		if(node.$isLeaf){
+			node.isSort = (node.sort===false?false:true); 
+			columnGroupInfo.leaf.push(node);
+		}
+					
+		return node; 
+	}
+}
+
 var _$template = {
 	/**
 	 * @method bodyHtm
@@ -4703,7 +4697,7 @@ var _$template = {
 	bodyHtm : function(_this, mode, type){
 
 		var clickFlag = false
-			,tci = _this.config.tColItem
+			,tci = _this.config.currentHeaderItems
 			,thiItem;
 
 		var strHtm = [];
@@ -4715,9 +4709,9 @@ var _$template = {
 		var startCol=0, endCol=tci.length;
 
 		if(type=='left'){
-			endCol = _this.options.colFixedIndex;
+			endCol = _this.config.fixedHeaderIndex;
 		}else if(type=='cont'){
-			startCol = _this.options.colFixedIndex;
+			startCol = _this.config.fixedHeaderIndex;
 		}
 
 		for(var i =0 ; i < _this.config.scroll.maxViewCount; i++){
@@ -4768,7 +4762,7 @@ var _$template = {
 		var prefix =_this.prefix; 
 
 		var templateHtml =  '<div class="pubGrid-wrapper"><div id="'+prefix+'_pubGrid" class="pubGrid pubGrid-noselect" tabindex="-1"  style="outline:none !important;overflow:hidden;width:'+_this.config.container.width+'px;">'
-			+' 	<div id="'+prefix+'_container" class="pubGrid-container '+(_this.options.colFixedIndex >0 ? 'pubGrid-col-fixed':'')+'" style="overflow:hidden;">'
+			+' 	<div id="'+prefix+'_container" class="pubGrid-container '+(_this.config.fixedHeaderIndex >0 ? 'pubGrid-col-fixed':'')+'" style="overflow:hidden;">'
 			+'    <div class="pubGrid-setting-btn"><svg version="1.1" width="'+vArrowWidth+'px" height="'+vArrowWidth+'px" viewBox="0 0 54 54" style="enable-background:new 0 0 54 54;">	'
 			+'<g><path id="'+prefix+'_settingBtn" d="M51.22,21h-5.052c-0.812,0-1.481-0.447-1.792-1.197s-0.153-1.54,0.42-2.114l3.572-3.571	'
 			+'		c0.525-0.525,0.814-1.224,0.814-1.966c0-0.743-0.289-1.441-0.814-1.967l-4.553-4.553c-1.05-1.05-2.881-1.052-3.933,0l-3.571,3.571	'
@@ -4876,10 +4870,10 @@ var _$template = {
 
 		var strHtm = [];
 
-		var headerInfo = cfg.headerInfo;
+		var headerGroup = cfg.headerBodyGroup;
 
 		if(type=='left'){
-			headerInfo =  cfg.headerLeftInfo;
+			headerGroup =  cfg.headerLeftGroup;
 		}
 
 		var headerDragEnabled = headerOpt.drag.enabled;
@@ -4887,30 +4881,46 @@ var _$template = {
 		strHtm.push(_$template.getColGroup.call(_this, _this.prefix+'colHeader' , type));
 
 		strHtm.push('<thead>');
-		if(headerInfo.length > 0 && headerOpt.view){
+		var headerGroupLength = headerGroup.length; 
+		if(headerGroupLength > 0 && headerOpt.view){
 			var ghArr, ghItem;
 
-			for(var i =0, len=headerInfo.length ; i < len; i++){
-				ghArr = headerInfo[i];
+			for(var i =0, len=headerGroup.length ; i < len; i++){
+				ghArr = headerGroup[i];
 				
 				strHtm.push('<tr class="pub-header-tr">');
 				for(var j=0 ; j <ghArr.length; j++){
 					ghItem = ghArr[j];
-					if(ghItem.view){
-						strHtm.push(' <th '+ghItem.colspanhtm+' '+ghItem.rowspanhtm+' data-header-info="'+i+','+ghItem.resizeIdx+'" class="pubGrid-header-th" '+(ghItem.style?' style="'+ghItem.style+'" ':'')+'>');
-						if(_this.options.headerOptions.helpBtn.enabled === true){
-							strHtm.push('  <div class="pub-header-help-wrapper" title="'+_this.options.headerOptions.helpBtn.title+'"><svg class="pub-header-help" viewBox="0 0 100 100"><g><polygon class="pub-header-help-btn" points="0 0,0 100,100 0"></polygon></g></svg> </div>');
-						}
-						strHtm.push('  <div class="label-wrapper">');
-						strHtm.push('   <div class="pub-header-cont '+(ghItem.isSort===true?'sort-header':'')+'" col_idx="'+ghItem.resizeIdx+'"><div class="pub-inner"><div class="centered" '+(headerDragEnabled?' draggable="true" ':'')+'>'+ghItem.label+'</div></div>');
-						if(ghItem.isSort ===true){
-							strHtm.push('<div class="pub-sort-icon pubGrid-sort-up">'+_this.options.icon.sortup+'</div><div class="pub-sort-icon pubGrid-sort-down">'+ _this.options.icon.sortdown+'</div>');
-						}
-						strHtm.push('   </div>');
-						strHtm.push('  </div>');
-						strHtm.push('   <div class="pub-header-resizer" data-resize-idx="'+ghItem.resizeIdx+'"></div>');
-						strHtm.push(' </th>');
+
+					if(ghItem.$isLeaf && ghItem.$depth < headerGroupLength){
+                        ghItem.$rowspan = headerGroupLength - ghItem.$depth+1;
+                    }	
+					var	spanHtm = '';
+
+                    if(ghItem.$colspan > 1){
+                        spanHtm = ' scope="colgroup" colspan="'+ghItem.$colspan+'" '; 
+                    }
+
+                    if(ghItem.$rowspan > 1){
+                        spanHtm += ' rowspan="'+ghItem.$rowspan+'" '; 
+                    }
+
+					var resizeIdx = ghItem.$resizeIdx; 
+					
+					strHtm.push(' <th '+spanHtm+' data-header-info="'+i+','+j+'" class="pubGrid-header-th" '+(ghItem.style?' style="'+ghItem.style+'" ':'')+'>');
+					if(_this.options.headerOptions.helpBtn.enabled === true){
+						strHtm.push('  <div class="pub-header-help-wrapper" title="'+_this.options.headerOptions.helpBtn.title+'"><svg class="pub-header-help" viewBox="0 0 100 100"><g><polygon class="pub-header-help-btn" points="0 0,0 100,100 0"></polygon></g></svg> </div>');
 					}
+					strHtm.push('  <div class="label-wrapper">');
+					strHtm.push('   <div class="pub-header-cont '+(ghItem.isSort===true?'sort-header':'')+'" col_idx="'+resizeIdx+'"><div class="pub-inner"><div class="centered" '+(headerDragEnabled?' draggable="true" ':'')+'>'+ghItem.label+'</div></div>');
+					if(ghItem.isSort ===true){
+						strHtm.push('<div class="pub-sort-icon pubGrid-sort-up">'+_this.options.icon.sortup+'</div><div class="pub-sort-icon pubGrid-sort-down">'+ _this.options.icon.sortdown+'</div>');
+					}
+					strHtm.push('   </div>');
+					strHtm.push('  </div>');
+					strHtm.push('   <div class="pub-header-resizer" data-resize-idx="'+resizeIdx+'"></div>');
+					strHtm.push(' </th>');
+					
 				}
 				strHtm.push('</tr>');
 			}
@@ -4952,16 +4962,16 @@ var _$template = {
 	 ,getColGroup :function (id , type){
 		var _this = this
 			,opt = _this.options
-			,tci = _this.config.tColItem
+			,tci = _this.config.currentHeaderItems
 			,thiItem;
 		var strHtm = [];
 
 		var startCol =0, endCol = tci.length;
 
 		if(type=='left'){
-			endCol = _this.options.colFixedIndex;
+			endCol = _this.config.fixedHeaderIndex;
 		}else if(type=='cont'){
-			startCol = _this.options.colFixedIndex;
+			startCol = _this.config.fixedHeaderIndex;
 		}
 
 		strHtm.push('<colgroup>');
@@ -4988,8 +4998,8 @@ var _$util = {
 	 * @method newItems
 	 * @description get new item default object
 	 */
-	newItems : function (tColItems, newCount){
-		var len = tColItems.length;
+	newItems : function (headerItems, newCount){
+		var len = headerItems.length;
 
 		newCount=newCount||1;
 
@@ -4997,14 +5007,37 @@ var _$util = {
 		for(var i=0; i <newCount; i++){
 			var addItem = {'_pubCUD':'_C'};
 			for(var j= 0; j <len; j++){
-				var tColItem = tColItems[j];
-				addItem[tColItem.key]  = tColItem.defaultValue ||'';
+				var headerItem = headerItems[j];
+				addItem[headerItem.key] = headerItem.defaultValue ||'';
 			}
 
 			reArr.push(addItem);
 		}
 
 		return reArr;
+	}
+	/**
+	 * @method _getColumnGroupInfo
+	 * @description 헤더 그룹 정보
+	 */
+	 ,_getHeaderGroupInfo :function(gridCtx){
+		/*
+		header group 수정 할것. 
+		검색값 처리 할것. 
+		*/
+
+		var tci = gridCtx.options.tColItem;
+
+		var currentHeaderItems = gridCtx.config.currentHeaderItems;
+
+		var fixedHeaderIndex = gridCtx.config.fixedHeaderIndex;
+		var columnGroupInfo = {left: [], body: [], leaf: [], depth: 1};
+		
+		for(var i =0; i<tci.length; i++){
+			_$header.groupInfo(tci[i], 0, columnGroupInfo, {fixedIndex : fixedHeaderIndex});
+		}
+
+		return columnGroupInfo; 
 	}
 	// get operator type
 	,getOpType : function (gridCtx, item){
@@ -5024,7 +5057,7 @@ var _$util = {
 			,c : posInfo.c
 			,rowItemIdx : rowItemIdx
 			,rowItem : ctx.options.tbodyItem[rowItemIdx]
-			,colInfo : ctx.config.tColItem[posInfo.c] 
+			,colInfo : ctx.config.currentHeaderItems[posInfo.c] 
 		}
 	}
 	// grid position 
@@ -5054,13 +5087,13 @@ var _$util = {
 		var searchLogic = defaultCondition['searchIndex'].code; 
 		
 		for(var i=0; i<columns.length; i++){
-			var tcolItem = columns[i];
+			var headerItem = columns[i];
 
-			var logic = replaceMesasgeFormat(searchLogic , {key : tcolItem.key});
+			var logic = replaceMesasgeFormat(searchLogic , {key : headerItem.key});
 			logicStr.push(i != 0 ? defaultLogicalOp.getCode('or') : '');
 			logicStr.push(logic);
 
-			highlightCheckStr.push('if('+logic+'){reval["'+tcolItem.key+'"]=true;}');
+			highlightCheckStr.push('if('+logic+'){reval["'+headerItem.key+'"]=true;}');
 		}
 
 		gridCtx.config.settingConfig.searchCheckItem = {
@@ -5114,24 +5147,24 @@ var _$util = {
 	 * @description cell 선택
 	 */
 	,setSelectCell : function(gridObj,startCellInfo, row , col, addEle){
-		var tdEle = addEle.parentElement;
+		var cellEle = addEle.parentElement;
 		if(startCellInfo.startIdx == row  && startCellInfo.startCol == col ){
-			tdEle.classList.add('col-active');
-			tdEle.classList.add('selection-start-col');
+			cellEle.classList.add('col-active');
+			cellEle.classList.add('selection-start-col');
 			return ;
 		}
 
 		if(gridObj._isAllSelect()){
 			if(gridObj.isAllSelectUnSelectPosition(row , col)){
-				tdEle.classList.remove('col-active' );
+				cellEle.classList.remove('col-active' );
 			}else{
-				tdEle.classList.add('col-active' );
+				cellEle.classList.add('col-active' );
 			}
 		}else{
-			tdEle.classList.remove('col-active' );
+			cellEle.classList.remove('col-active' );
 
 			if(gridObj.isSelectPosition(row , col)){
-				tdEle.classList.add('col-active' );
+				cellEle.classList.add('col-active' );
 			}
 		}
 
@@ -5203,11 +5236,11 @@ var _$util = {
 			rowItem[colInfo.key] = newValue;
 
 			var editRowInfo = ctx.config.editRowInfo;
-			var tdEle = ctx.element.body.find('.pub-body-td[data-cell-position="'+editRowInfo.r+','+editRowInfo.c+'"]').get(0);
+			var cellEle = ctx.element.body.find('.pub-body-td[data-cell-position="'+editRowInfo.r+','+editRowInfo.c+'"]').get(0);
 
 			// 공통으로 처리. 
-			ctx._setCellStyle(tdEle, editRowInfo.rowItemIdx ,colInfo, rowItem);
-			ctx.getRenderValue(colInfo, rowItem, 'view', tdEle.querySelector('.pub-content'));
+			ctx._setCellStyle(ctx, cellEle, editRowInfo.rowItemIdx, colInfo, rowItem);
+			ctx.getRenderValue(colInfo, rowItem, 'view', cellEle.querySelector('.pub-content'));
 			
 		}else if(mode == 'remove'){
 			rowItem['_pubCUD'] = 'D';
@@ -5345,7 +5378,7 @@ var _$util = {
 			cfgSelect.maxCol = Math.max(cfgSelect.maxCol, currInfo.endCol, currInfo.startCol);
 
 			cfgSelect.minCol = cfgSelect.minCol < -1 ? 0 : cfgSelect.minCol;
-			cfgSelect.maxCol = cfgSelect.maxCol >= ctx.config.tColItem.length ? ctx.config.tColItem.length-1 : cfgSelect.maxCol;
+			cfgSelect.maxCol = cfgSelect.maxCol >= ctx.config.currentHeaderItems.length ? ctx.config.currentHeaderItems.length-1 : cfgSelect.maxCol;
 		}
 
 		if(isUndefined(rangeInfo)) return ;
@@ -5357,7 +5390,7 @@ var _$util = {
 
 		if(initFlag !==true){
 			currInfo.minCol = currInfo.minCol < -1 ? 0 : currInfo.minCol;
-			currInfo.maxCol = currInfo.maxCol >= ctx.config.tColItem.length ? ctx.config.tColItem.length-1 : currInfo.maxCol;
+			currInfo.maxCol = currInfo.maxCol >= ctx.config.currentHeaderItems.length ? ctx.config.currentHeaderItems.length-1 : currInfo.maxCol;
 
 			currInfo.minIdx = currInfo.minIdx < -1 ? 0 : currInfo.minIdx;
 			currInfo.maxIdx = currInfo.maxIdx >= ctx.config.dataInfo.lastRowIdx ? ctx.config.dataInfo.lastRowIdx : currInfo.maxIdx;
@@ -5474,7 +5507,7 @@ var _$util = {
 
 		_this.drag.totColW = _this.drag.colHeader.width();
 
-		_this.drag.colW = _this.config.tColItem[_this.drag.resizeIdx].width;
+		_this.drag.colW = _this.config.currentHeaderItems[_this.drag.resizeIdx].width;
 		if(_this.drag.isLeftContent){
 			_this.drag.gridW = _this.config.gridWidth.left - _this.drag.colW;
 		}else{
@@ -5865,7 +5898,7 @@ var _$sorting = {
 		
 		var sortMap = gridCtx.config.sort.sortMap;
 
-		gridCtx.config.tColItem.forEach((item, idx)=>{
+		gridCtx.config.currentHeaderItems.forEach((item, idx)=>{
 			var labelWrapperEl = gridCtx.element.header.find('.pub-header-cont.sort-header[col_idx="'+idx+'"]').closest('.label-wrapper');
 
 			labelWrapperEl.removeClass('sortasc sortdesc');
@@ -5932,7 +5965,6 @@ var _$sorting = {
 	}
 	
 }
-	
 
 var _$setting = {
 	filterCheckboxIdx : 0
@@ -5983,7 +6015,7 @@ var _$setting = {
 		this.initResizeEvent(gridCtx, settingOpt, settingAreaEle);
 
 		// 초기 값 셋팅
-		gridCtx.config.settingConfig.currentTColItems = arrayCopy(gridCtx.config.tColItem);
+		gridCtx.config.settingConfig.orginCurrentHeaderItems = arrayCopy(gridCtx.config.currentHeaderItems);
 					
 		if(gridCtx.config.settingConfig.viewInitFlag===true){
 			gridCtx.config.settingConfig.viewInitFlag = false; 
@@ -6008,7 +6040,7 @@ var _$setting = {
 				_this.closeOtherSettingLayer(gridCtx.prefix);
 				settingAreaEle.addClass('open');
 
-				gridCtx.config.settingConfig.currentTColItems = arrayCopy(gridCtx.config.tColItem); // cancel 시 적용 하기 위해서 복사
+				gridCtx.config.settingConfig.orginCurrentHeaderItems = arrayCopy(gridCtx.config.currentHeaderItems); // cancel 시 적용 하기 위해서 복사
 								
 				var evtPosVal = evtPos(e);					
 				
@@ -6048,8 +6080,7 @@ var _$setting = {
 										
 				settingAreaEle.css({top : offTop, left : evtX+10});
 			}
-			
-			
+						
 			return true;
 		});
 		
@@ -6104,7 +6135,7 @@ var _$setting = {
 			var sEle = $(this);
 			var sIndex = sEle.prop('selectedIndex');
 	
-			gridCtx.setColFixedIndex(sIndex);
+			gridCtx.setFixedHeaderIndex(sIndex);
 	
 			settingAreaEle.removeClass('open');
 		})
@@ -6121,7 +6152,7 @@ var _$setting = {
 	,initEvent : function (gridCtx, settingOpt, settingAreaEle){
 		var _this = this; 
 		
-		var orginTColIdxKeyMap = gridCtx.config.dataInfo.orginTColIdxKeyMap;
+		var orginLeafHeaderKeyMap = gridCtx.config.dataInfo.orginLeafHeaderKeyMap;
 		// data search 
 		var dataSearchFieldEle = settingAreaEle.find('[name="dataSearchField"]')
 			,dataSearchEle = settingAreaEle.find('[name="dataSearch"]')
@@ -6236,31 +6267,31 @@ var _$setting = {
 					settingAreaEle.find('.setting-message').hide();
 				}
 
-				var newViewCols = [];
-				var headRedraw = gridCtx.options.tColItem.length == viewColumnKey.length ? false : true;
+				var newHeaderItems = [];
+				var headRedraw = gridCtx.config.currentHeaderItems.length == viewColumnKey.length ? false : true;
 				
 				viewColumnKey.forEach(function (itemKey, idx){
-					if(!headRedraw && itemKey != gridCtx.options.tColItem[idx].key){
+					if(itemKey != (gridCtx.config.currentHeaderItems[idx]||{}).key){
 						headRedraw = true; 
 					}
 					
-					newViewCols.push(orginTColIdxKeyMap[itemKey]);
+					newHeaderItems.push(orginLeafHeaderKeyMap[itemKey]);
 				});
 
-				gridCtx.options.tColItem =newViewCols;
+				gridCtx.config.currentHeaderItems = newHeaderItems;
 
-				_this.getFilterCheckLogic(gridCtx, newViewCols, settingAreaEle);
+				_this.getFilterCheckLogic(gridCtx, settingAreaEle);
 
 				fixedColIdx = fixedColIdx+1;
 
-				if(headRedraw || gridCtx.options.colFixedIndex != fixedColIdx){
+				if(headRedraw || gridCtx.config.fixedHeaderIndex != fixedColIdx){
 					gridCtx._setSearchData('search', false); // search
-					gridCtx.setColFixedIndex(fixedColIdx, false);
+					gridCtx.setFixedHeaderIndex(fixedColIdx, false);
 				}else{
 					gridCtx._setSearchData('search'); // search
 				}
 
-				gridCtx.config.settingConfig.currentTColItems = arrayCopy(gridCtx.config.tColItem);
+				gridCtx.config.settingConfig.orginCurrentHeaderItems = arrayCopy(gridCtx.config.currentHeaderItems);
 				
 				if(mode =='apply')	return ; 
 								
@@ -6268,7 +6299,7 @@ var _$setting = {
 				gridCtx.config.settingConfig.viewInitFlag = true; 
 				gridCtx.config.settingConfig.filterCheckItem = false; 
 				
-				gridCtx.options.tColItem = gridCtx.config.dataInfo.orginTColItem;
+				gridCtx.config.currentHeaderItems = gridCtx.config.dataInfo.orginLeafHeaders;
 				
 				dataSearchEle.val('');
 				gridCtx.options.setting.configVal.search = {
@@ -6277,10 +6308,10 @@ var _$setting = {
 				};
 				
 				gridCtx._setSearchData('search', false); 
-				gridCtx.setColFixedIndex(0, false);
+				gridCtx.setFixedHeaderIndex(0, false);
 				return ; 
 			}else{	 // cancel
-				gridCtx.config.tColItem = gridCtx.config.settingConfig.currentTColItems;
+				gridCtx.config.currentHeaderItems = gridCtx.config.settingConfig.orginCurrentHeaderItems;
 			}
 	
 			settingAreaEle.removeClass('open');
@@ -6288,7 +6319,7 @@ var _$setting = {
 	
 		// add filter item
 		settingAreaEle.on('click.addop.item', '.add-op-btn', function (e){
-			settingAreaEle.find('.filter-item-list').append(_this.replaceOpTemplateHtml(gridCtx, gridCtx.config.tColItem[0]));
+			settingAreaEle.find('.filter-item-list').append(_this.replaceOpTemplateHtml(gridCtx, gridCtx.config.currentHeaderItems[0]));
 		});
 		// 기본값 추가
 		settingAreaEle.find('.add-op-btn').trigger('click.addop.item');
@@ -6297,7 +6328,7 @@ var _$setting = {
 		settingAreaEle.on('change.filerkey', '[name="filter-key"]', function (e){
 			var sEle = $(this);
 
-			var item = gridCtx.config.dataInfo.orginTColIdxKeyMap[sEle.val()];
+			var item = gridCtx.config.dataInfo.orginLeafHeaderKeyMap[sEle.val()];
 			var opType = item.$$opType;
 			
 			var liEl = sEle.closest('li');
@@ -6335,14 +6366,14 @@ var _$setting = {
 		settingAreaEle.on('blur.width.field','.view-col-width',function (e){
 			var sEle = $(this);
 			var colKey = sEle.closest('[data-key]').attr('data-key');
-			orginTColIdxKeyMap[colKey].width = sEle.val();
+			orginLeafHeaderKeyMap[colKey].width = sEle.val();
 		})
 		
 		// 전체 컬럼 검색
 		settingAreaEle.find('[name="allTcolSearch"]').on('input.allcol.field', function (e){
 			var schRegExp = _$util.getSearchRegExp($(this).val());
 			
-			gridCtx.config.dataInfo.orginTColItem.forEach(function (item){
+			gridCtx.config.dataInfo.orginLeafHeaders.forEach(function (item){
 				var liEle =settingAreaEle.find('.view-col-check[data-key="'+item.key+'"]').closest('li'); 
 
 				if(schRegExp.test(item.label)){
@@ -6413,7 +6444,7 @@ var _$setting = {
 		});
 	}
 	// filter check logic
-	,getFilterCheckLogic : function (gridCtx, tColItemArr, settingAreaEle){
+	,getFilterCheckLogic : function (gridCtx, settingAreaEle){
 		var allChkVal = [];
 		var _this = this; 		
 
@@ -6426,7 +6457,7 @@ var _$setting = {
 			var sEle = $(this);
 			var filterKey = sEle.find('[name="filter-key"]').val(); 
 
-			var item = gridCtx.config.dataInfo.orginTColIdxKeyMap[filterKey]; 
+			var item = gridCtx.config.dataInfo.orginLeafHeaderKeyMap[filterKey]; 
 			var filterText = sEle.find('[name="filter-value"]').val(); 
 
 			if(filterText !=''){
@@ -6465,8 +6496,6 @@ var _$setting = {
 				,chkOpts : allChkVal
 				,highlight : new Function('item','chkOpts', _$util.genHightlightLogic(highlightCheckStr.join('')))
 			};
-
-			console.log(gridCtx.config.settingConfig.filterCheckItem);
 		}else{
 			gridCtx.config.settingConfig.filterCheckItem = false; 
 		}
@@ -6497,7 +6526,7 @@ var _$setting = {
 		templateHtm.push('<span class="filter-op-logical"><input type="checkbox" name="filter-op-logical" id="{{checkboxid}}" checked><label for="{{checkboxid}}"></label></span>');
 
 		templateHtm.push('<select name="filter-key" class="filter-key">');
-		gridCtx.config.dataInfo.orginTColItem.forEach(function (item, idx){
+		gridCtx.config.dataInfo.orginLeafHeaders.forEach(function (item, idx){
 			templateHtm.push('<option idx="'+idx+'"value="'+item.key+'">'+item.label+'</option>');
 		})
 		templateHtm.push('</select>');
@@ -6517,7 +6546,7 @@ var _$setting = {
 		if(settingOpt.mode =='simple'){
 			var optHtm = [];
 
-			gridCtx.config.tColItem.forEach(function (item){
+			gridCtx.config.currentHeaderItems.forEach(function (item){
 				optHtm.push('<option value="'+item.key+'">'+item.label+'</option>');
 			})
 			var optHtmStr = optHtm.join('');
@@ -6552,7 +6581,7 @@ var _$setting = {
 			strHtm.push('			<div class="item-list">');
 			strHtm.push('				<ul class="tcol-all-list"> ');
 
-			var allColItems = gridCtx.config.dataInfo.orginTColItem;
+			var allColItems = gridCtx.config.dataInfo.orginLeafHeaders;
 			allColItems.forEach(function (item, idx){
 				strHtm.push('<li data-key="'+item.key+'">');
 				strHtm.push(' <span class="view-col-check on" data-key="'+item.key+'"></span>');

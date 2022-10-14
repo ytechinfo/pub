@@ -220,14 +220,21 @@ function getItem (type){
 			});
 		}
 		colItem = [
-			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
-			,{key :'b', label:'비', width:100,visible : true, colClick :function (idx,item){ console.log(idx, item)},styleClass : function (rowInfo){
-				if(rowInfo.idx %2 == 0){
-					return 'pub-bg-primary';
-				}else{
-					return 'pub-bg-success';
-				}
-			}}
+			{
+				label :'a+b',
+				children : [
+					{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
+					,{key :'b', label:'비', width:100,visible : true, colClick :function (idx,item){ console.log(idx, item)},styleClass : function (rowInfo){
+						if(rowInfo.rowItemIdx %3 == 0){
+							return 'pub-bg-primary';
+						}else if(rowInfo.rowItemIdx %3 == 1){
+							return 'pub-bg-success';
+						}else if(rowInfo.rowItemIdx %3 == 2){
+							return '';
+						}
+					}}
+				]
+			}
 			,{key :'c', label:'씨',width:100, align:'center', type : 'money', renderer:{
 				type : 'link'
 				//,url : 'http://localhost?aaa={{a}}'
@@ -371,8 +378,8 @@ function fn_init(){
 }
 function gridDraw(selector, aaa, colItem){
 	var gridObj = $.pubGrid(selector,{
-		colFixedIndex : 0
-		,editable : false
+		fixedHeaderIndex : 1
+		,editable : true
 		,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
 		,widthFixed : false
 		,showTooltip : true			// tooltip flag
@@ -481,29 +488,6 @@ function gridDraw(selector, aaa, colItem){
 			,configVal1 : {search : {field:'col1', val : '111'}}
 		}
 		,tColItem : colItem
-		,theadGroup2 :[ 
-			[
-			{label:'ac1<br/>asdf',rowspan: 3,  style:''}
-			,{label:'ac2<br/>asdf',rowspan: 2, style:''}
-			,{label:'rasdfc2',colspan:5 }
-			]
-			,[
-				{label :'col1_0'}
-				,{label :'col1_1'}
-				,{label :'col1_2'}
-				,{label :'col1_3'}
-				,{label :'col1_4'}
-			]
-		]
-
-		,theadGroup1: [
-			[
-				{label:'ccc',rowspan: 2 }
-				,{label:'ddd',rowspan: 2 }
-				,{label:'ddd',colspan:2 , style:''}
-				,{label:'bbbb',colspan:2 , style:''}
-			]
-		]
 		,bodyOptions : {
 			cellDblClick : function (itemInfo){
 				//console.log('cellDblClick', itemInfo)
