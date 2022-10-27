@@ -544,9 +544,9 @@ Plugin.prototype ={
 		this.drag ={};
 		this.addStyleTag();
 
-		this._setSearchData('init');
-
 		this.calcHeader();
+
+		this._setSearchData('init');
 
 		this.setData(this.options.tbodyItem , 'init');
 
@@ -4649,7 +4649,9 @@ var _$header = {
 
 
 		//컬럼 고정 일때 처리 할것. 
+		//클릭후 스크롤시 cell selection 되는 부분 수정 할것. 
 
+		
 
 		
 

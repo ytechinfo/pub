@@ -292,6 +292,13 @@
 		position : relative;
 		z-index: 0;
 		height: 100%;
+	}
+	
+	.pubGrid-body-container{
+		position: relative;
+		width:100%;
+		height: 100%;
+		display:table-row;
 
 		.pub-body-tr{
 			&:nth-child(even) {
@@ -311,21 +318,6 @@
 				background: colorInfo($g_default_theme_name , "table_tr_even");
 			}
 		}
-
-		.pub-body-td.search-highlight{
-			background-color: colorInfo($g_default_theme_name , "highlight_background_color");
-		}
-
-		.pub-body-td.filter-highlight{
-			background-color: colorInfo($g_default_theme_name , "highlight_background_color");
-		}
-	}
-	
-	.pubGrid-body-container{
-		position: relative;
-		width:100%;
-		height: 100%;
-		display:table-row;
 	
 		td{
 			padding: 0px 5px 0px 5px !important;
@@ -419,15 +411,25 @@
 				background-color :colorInfo($g_default_theme_name , "background_color");
 			}
 		}
+
+		.pub-body-td{
+			&.search-highlight{
+				background-color: colorInfo($g_default_theme_name , "highlight_background_color");
+			}
+			&.filter-highlight{
+				background-color: colorInfo($g_default_theme_name , "highlight_background_color");
+			}
+
+			&.col-active{
+				background: colorInfo($g_default_theme_name , "column_active_background");
+				color: colorInfo($g_default_theme_name , "column_active_color");
+			}
+			
+			&.selection-start-col{
+				@include grid_box_shadow($g_default_theme_name);
+			}
+		}
 	
-		.col-active{
-			background: colorInfo($g_default_theme_name , "column_active_background");
-			color: colorInfo($g_default_theme_name , "column_active_color");
-		}
-		
-		.selection-start-col{
-			@include grid_box_shadow($g_default_theme_name);
-		}
 				
 		.pubGrid-edit{
 			position: absolute;
@@ -1400,8 +1402,8 @@
 				border-bottom:1px solid colorInfo($pThemeName , "border_thick_color");
 			}
 			
-			.pubGrid-body-container-warpper{
-				
+			.pubGrid-body-container{
+
 				.pub-body-tr{
 					&:nth-child(even) {
 						background: colorInfo($pThemeName , "table_tr_even");
@@ -1421,16 +1423,6 @@
 					}
 				}
 
-				.pub-body-td.search-highlight{
-					background-color: colorInfo($pThemeName , "highlight_background_color");
-				}
-		
-				.pub-body-td.filter-highlight{
-					background-color: colorInfo($pThemeName , "highlight_background_color");
-				}
-			}
-			
-			.pubGrid-body-container{
 				td{
 					border-right : 1px solid colorInfo($pThemeName , "border_thin_color");
 					border-bottom : 1px solid colorInfo($pThemeName , "border_thin_color");
@@ -1452,14 +1444,23 @@
 						}
 					}
 				}
-			
-				.col-active{
-					background: colorInfo($pThemeName , "column_active_background");
-					color: colorInfo($pThemeName , "column_active_color");
-				}
 
-				.selection-start-col{
-					@include grid_box_shadow($pThemeName);
+				.pub-body-td{
+					&.search-highlight{
+						background-color: colorInfo($pThemeName , "highlight_background_color");
+					}
+					&.filter-highlight{
+						background-color: colorInfo($pThemeName , "highlight_background_color");
+					}
+
+					&.col-active{
+						background: colorInfo($pThemeName , "column_active_background");
+						color: colorInfo($pThemeName , "column_active_color");
+					}
+	
+					&.selection-start-col{
+						@include grid_box_shadow($pThemeName);
+					}
 				}
 			}
 			

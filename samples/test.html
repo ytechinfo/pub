@@ -37,6 +37,17 @@ _$utils.copy(testObj, {
     }
 })
 
+
+function getFileName (contentDisposition) {
+
+var filenameIdx = contentDisposition.indexOf('filename');
+
+return filenameIdx < 0 ? 'filename-empty' : contentDisposition.substring(fileIdx).replace(/filename[- ]?=[- ]?"/,'').replace(/[-"]?[- ]?;[- ]?$/,'')
+}
+
+console.log(getFileName('attachment; filename="mariadb-ja;;va-client-3.0.6.jar";'))
+console.log(getFileName('attachment; filename=mariadb-java-client-3.0.6.jar;'))
+
 </script>
 
 <style>
