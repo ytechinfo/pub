@@ -1,0 +1,45 @@
+{
+  "_from": "scss-compile",
+  "_id": "pub@0.0.1",
+  "_inBundle": false,
+  "_integrity": "sha1-P4En15wqbWNYJttCjFCBWrYBLn0=",
+  "_location": "/scss-compile",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "scss-compile",
+    "name": "scss-compile",
+    "escapedName": "scss-compile",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "ytkim"
+  ],
+  "_shasum": "3f8127d79c2a6d635826db428c50815ab6012e7d",
+  "_spec": "scss-compile",
+  "author": {
+    "name": "ytkim",
+    "email": "varsqlinfo@gmail.com",
+    "url": "https://varsql.moaview.com"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "npm-registry": "^0.1.13"
+  },
+  "deprecated": false,
+  "description": "pub",
+  "devDependencies": {},
+  "homepage": "https://varsql.moaview.com",
+  "license": "MIT",
+  "main": "index.js",
+  "name": "scss-compile",
+  "scripts": {
+    "scss-compile": "node-sass -rw theme/default/scss -o theme/default/css",
+    "test": "npm run scss-compile",
+    "watch": "npm run scss-compile"
+  },
+  "version": "0.0.1"
+}

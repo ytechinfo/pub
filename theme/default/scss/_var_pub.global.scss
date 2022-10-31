@@ -1,0 +1,281 @@
+
+@import '_variables.scss';
+
+$theme_size: (
+  'light' : (
+    'font' : 13px
+    ,'pre-font' : inherit
+    ,'process-tit-size' : 14px
+    ,'sql-edit' : 13px
+    
+   
+  )
+  ,'dark' : (
+    'font' : 13px
+    ,'pre-font' : inherit
+    ,'process-tit-size' : 14px
+    ,'sql-edit' : 13px
+  )
+);
+
+// theme color
+$theme_colors: (
+  'light': (
+    'font_color': #000000 			// font color
+    ,'font_color_primary' : #c2c2c2
+    ,'font_color_danger' : #bdabab
+    ,'font_color_warning' : #000000
+    ,'font_color_info' : #000000
+    ,'font_color_success' : #fffafa
+    ,'font_active': #5970f5
+    ,'font_warning_color': #ff3400 			// font color
+    ,'font_disable_color': #999999
+    ,'font_thin_color': #969494 			// font color
+    ,'font_size': 12px			// font size
+    ,'border_thin_color' : #d5d5d8
+    ,'border_thick_color' : #bcbcbd
+
+    ,'background-primary' :#286090
+    ,'background-danger' : #d9534f
+    ,'background-warning' :#f0ad4e
+    ,'background-info' :#5bc0de
+    ,'background-success' :#5cb85c
+    
+    ,'background_color' : #ffffff
+    ,'background_thick_color' : #dddddd
+    ,'background_gradident_first' :#ffffff
+    ,'background_gradident_last' :#f1f1f1
+    ,'text_shadow_color' : rgba(255, 255, 255, 0.5)
+    ,'box_shadow_color' : rgba(233, 227, 227, 0.2)
+    ,'layer_box_shadow_color' : rgba(0, 0, 0, 0.3)
+    // a tag color
+    ,'a_hover_font_color' : #000000
+    ,'a_hover_border_color' : #a4e3cf
+    ,'a_hover_border_thick_color' : #5970f5
+    ,'a_hover_background_color' : #75b1ff
+    ,'a_hover_color' : #a4e3cf
+    ,'a_hover_thick_color' : #5970f5
+
+    //table tr 
+    ,'table_tr_odd' : #fff
+    ,'table_tr_even' : #f3f6fa
+
+    ,'arrow_color' : #989494	// sub menu right arrow border color
+    ,'arrow_background_color' : #d4d3d3	
+    ,'arrow_active_color' : #716e6e	// sub menu right arrow active border color
+    ,'arrow_active_background_color' : #b8b8b8	
+
+    //scroll
+    ,'scroll_border_color' :  #cac3c3
+    ,'scroll_background_color' : #f1f1f1
+    ,'scrollbar_border_color' :  #aaaaaa
+    ,'scrollbar_background_color' : #c1c1c1
+    ,'scrollbar_active_color' : #a79f9f
+
+    ,'move_header_background' :  #82c5c0		// header resize 
+
+    //column color
+    ,'column_active_background' : rgba(85, 241, 241, 0.295)		//column select color
+    ,'column_active_color' : #fbf8f8
+    ,'highlight_background_color' : #ff7f7f
+  )
+  ,'dark' :(
+    'font_color': #c5c3c3 			// font color
+    ,'font_color_primary' : #c5c3c3
+    ,'font_color_danger' : #c5c3c3
+    ,'font_color_warning' : #c5c3c3
+    ,'font_color_info' : #c5c3c3
+    ,'font_color_success' : #c5c3c3
+    ,'font_active': #5970f5
+    ,'font_warning_color': #ff3400 			// font color
+    ,'font_disable_color': #999999
+    ,'font_thin_color': #969494 			// font color
+    ,'font_size': 12px			// font size
+    ,'border_thin_color' : #6d6d75
+    ,'border_thick_color' : #5f5f68
+    ,'background-primary' :#286090
+    ,'background-danger' : #d9534f
+    ,'background-warning' :#f0ad4e
+    ,'background-info' :#5bc0de
+    ,'background-success' :#5cb85c
+    ,'background_color' : #262729
+    ,'background_thick_color' : #000000
+    ,'background_gradident_first' : #191818
+    ,'background_gradident_last' : #4a4949
+    ,'text_shadow_color' : rgba(255, 255, 255, 0.5)
+    ,'box_shadow_color' : rgba(0, 0, 0, 0.2)
+    ,'layer_box_shadow_color' : rgba(255, 255, 255, 0.3)
+
+    // a tag color
+    ,'a_hover_font_color' : #ffffff
+    ,'a_hover_border_color' : #a4e3cf
+    ,'a_hover_border_thick_color' : #5970f5
+    ,'a_hover_background_color' : #262729
+    ,'a_hover_color' : #a4e3cf
+    ,'a_hover_thick_color' : #5970f5
+    
+    //table tr 
+    ,'table_tr_odd' : #1a1616
+    ,'table_tr_even' : #262729
+
+    ,'arrow_color' : #777474	// sub menu right arrow border color
+    ,'arrow_background_color' : #cec8c8	
+    ,'arrow_active_color' : #403d3d	// sub menu right arrow active border color
+    ,'arrow_active_background_color' : #dcdcdc	
+
+    // scroll 
+    ,'scroll_border_color' :  #6d6d75
+    ,'scroll_background_color' : #262729
+    ,'scrollbar_border_color' :  #6d6d75
+    ,'scrollbar_background_color' : #6b5b5b
+    ,'scrollbar_active_color' : #909090
+
+    ,'move_header_background' :  #6b7776		// header resize 
+
+    ,'column_active_background' : #214163		//column select color
+    ,'column_active_color' : #fbf8f8
+    ,'highlight_background_color' : #85442a
+  )
+);
+
+$line_height: 30p;			// line height
+$box_sizing_border: border-box;
+$box_sizing_content: content-box;
+
+@mixin box-sizing($boxtype) {
+  -webkit-box-sizing: $boxtype !important;
+  -moz-box-sizing: $boxtype !important;
+  box-sizing: $boxtype !important;
+}
+
+@mixin backgroundColor($themeName: 'light', $type: 'info' ) {
+    $backgroundColor : colorInfo($themeName , 'background-info');
+    $fontColor : colorInfo($themeName , 'font_color_info');
+
+    $map: map-get($theme_colors, $themeName);
+
+    @if $map != null{
+      $typeColor : colorInfo($themeName , 'background-'+$type);
+          
+      @if $typeColor != null{
+        $backgroundColor : colorInfo($themeName , 'background-'+$type);
+        $fontColor : colorInfo($themeName , 'font_color_'+$type);
+      } @else{
+        @error 'theme colorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+      }
+
+    } @else{
+      @error 'theme colorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    }
+   
+    
+    color: $fontColor;
+    background-color: $backgroundColor;
+
+}
+
+
+@mixin background_gradident($themeName: 'light'){
+  
+    $firstColor : colorInfo($themeName , 'background_gradident_first');
+    $lastColor : colorInfo($themeName , 'background_gradident_last');
+
+    background-image: -webkit-linear-gradient($firstColor,$lastColor );
+    background-image: -moz-linear-gradient($firstColor,$lastColor );
+    background-image: -ms-linear-gradient($firstColor,$lastColor );
+    background-image: -o-linear-gradient($firstColor,$lastColor );
+    background-image: linear-gradient($firstColor,$lastColor );
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='$firstColor', endColorstr='$lastColor', GradientType=0);
+}
+
+@mixin opacity_val($opacityNum: 0.7){
+  $perVal : $opacityNum*100; 
+  opacity: $opacityNum;
+	-moz-opacity: $opacityNum;
+	-khtml-opacity: $opacityNum;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=#{$perVal})";
+	filter: alpha(opacity=$perVal);
+}
+
+
+@mixin text_shadow($themeName: 'light'){
+  text-shadow: 0 1px 0 ;
+}
+
+@mixin box_shadow($themeName: 'light'){
+  $color : colorInfo($themeName , 'box_shadow_color');
+  -webkit-box-shadow: 0 5px 10px $color;
+	-moz-box-shadow: 0 5px 10px $color;
+  box-shadow: 0 5px 10px $color;
+}
+
+@mixin layer_box_shadow($themeName: 'light'){
+  $color : colorInfo($themeName , 'layer_box_shadow_color');
+  box-shadow: 3px 3px 3px $color ;
+  -webkit-box-shadow: 3px 3px 3px $color ;
+  -moz-box-shadow: 3px 3px 3px $color ;
+}
+
+
+@mixin hoverStyle($themeName: 'light'){
+  color : colorInfo($themeName , 'a_hover_font_color');
+  background-color : colorInfo($themeName , 'a_hover_background_color');
+}
+
+// function 
+@function colorInfo($themeName: 'light', $type: 'font_color') {
+  $map: map-get($theme_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme colorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}
+
+// get size info
+@function sizeInfo($themeName: 'light', $type: 'font') {
+  $map: map-get($theme_size, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme sizeInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'size not found';
+  }
+}
+
+
+@mixin keyframe ($animation_name) {
+  @keyframes #{$animation_name} {
+      @content;
+  }
+}
+
+
+@mixin animation ($name, $delay, $duration, $loop) {
+  animation-name: $name;
+  animation-delay: $delay;
+  
+  -webkit-animation-name: $name;
+  -webkit-animation-delay: $delay;
+  
+  -moz-animation-name: $name;
+  -moz-animation-delay: $delay;
+
+  @if $duration != null{
+    animation-duration: $duration;
+    -webkit-animation-duration: $duration;
+    -moz-animation-duration: $duration;
+  }
+  
+
+  @if $loop != null{
+    animation-iteration-count: $loop;
+    -webkit-animation-iteration-count: $loop;
+    -moz-animation-iteration-count: $loop;
+  };
+}

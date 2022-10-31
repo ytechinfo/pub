@@ -1,0 +1,120 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub context menu-예제</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../theme/default/pub.example.css" rel="stylesheet">
+<link href="../theme/default/css/pub.context.css" rel="stylesheet">
+
+<script src="../plugins/jquery-1.10.2.min.js"></script>
+<script src="../dist/pub.context.js"></script>
+
+<style>
+html , body {
+	height:100%;
+}
+.asdfasdfWrapper {
+    height: calc(100% - 20%) !important;
+}
+
+</style>
+</HEAD>
+<BODY>
+<div>
+	<i class="fa fa-address-book" aria-hidden="true"></i>
+	item generate count<div id="genCount"></div>
+	<button class="exceldown" type="button">excel download</button>
+	<button type="button" onclick="fn_init()">regrid</button>
+	<select id="itemCount">
+		<option value="3">3</option>
+		<option value="0">0</option>
+		<option value="10">10</option>
+		<option value="100" selected>100</option>
+		<option value="500">500</option>
+		<option value="1000">1000</option>
+		<option value="10000">10000</option>
+		<option value="100000">100000</option>
+	</select>
+</div>
+<div class="asdfasdfWrapper">
+	<div id="asdfasdf" style="height:100%; background:#dddddd;">
+		컨텍스트 메뉴 영역 <br>
+		context meneu area<br>
+	</div>
+</div>
+<div class="asdfasdfWrapper">
+	<div id="asdfasdf1" style="height:100%"></div>
+</div>
+</BODY>
+</HTML>
+<script>
+
+$(document).ready(function (){
+	var opt = {
+		beforeSelect :function (info){
+			console.log('11111', this, info);
+			$(this).trigger('click');
+			return false; 
+		}
+		,callback: function(key,sObj) {
+			console.log(this,key,sObj);
+
+			if(key =='copy'){
+				gridObj.copyData();
+			}
+		}
+		,disableItemKey : function (items){
+			return [
+				{key :'copy' , depth :0	}
+				,{key :'sql_create' , depth :0}	
+			]
+		}
+		,items: [
+			{header :'asdfasdf' , key:'title'}
+			,{key : "refresh" , "name": "새로고침" , disabled:true}
+			,{key : "copy" , "name": "복사", hotkey:'Ctrl+C'}
+			,{checkbox :true , name:'header' , key:'selectkey'}
+			
+			,{key : "sql_create", "name": "sql생성" 
+				,subMenu: [
+					{ key : "selectStar","name": "select *" , mode: "selectStar"}
+					,{ key : "select","name": "select column" ,mode:"select"}
+					,{ key : "insert","name": "insert" , mode:"insert"}
+					,{ key : "update","name": "update" ,mode:"update"}
+					,{ key : "delete","name": "delete" ,mode:"delete"}
+					,{ key : "drop","name": "drop" , mode:"drop"}
+				]
+			}
+			,{divider:true}
+			,{key : "create_ddl","name": "DDL 보기" ,hotkey:'Ctrl+shift+C', callback : function (){
+						console.log('create_ddl')
+					}
+				
+			}
+			,{divider:true}
+			,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
+				,subMenu : [
+					{checkbox : true , name:'selet data' , key:'sqlGridResultSelect'}
+					,{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
+					,{ key : "mybatis_update","name": "update" ,mode:"update" ,param_yn:'Y'}
+					,{ key : "mybatis_delete","name": "delete" ,mode:"delete",param_yn:'Y'}
+				]
+			}
+			,{key :'export', "name": "내보내기" 
+				,subMenu:[
+					{key : "export_data","name": "데이타 내보내기"}
+					,{key : "export_column1","name": "컬럼정보 내보내기1"}
+					,{key : "export_column2","name": "컬럼정보 내보내기2"}
+					,{key : "export_column3","name": "컬럼정보 내보내기3"}
+				]
+			}
+			,{divider:true}
+		]
+	}
+	
+
+	$.pubContextMenu('#asdfasdf',opt);
+});
+
+
+</script>

@@ -1,0 +1,330 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub GRID-예제</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../theme/default/pub.example.css" rel="stylesheet">
+
+<script src="../plugins/jquery-1.10.2.min.js"></script>
+<script src="../plugins/jquery-ui-1.12.1.min.js"></script>
+
+<style>
+html , body {
+	height:100%;
+}
+.asdfasdfWrapper {
+    height: calc(100% - 20%) !important;
+}
+table th{
+	border: 1px solid #ddd;
+}
+</style>
+</HEAD>
+<BODY>
+	<table id="viewTableArea" style="width: 100%;table-layout: fixed;"></table>
+</BODY>
+</HTML>
+<script>
+
+$(document).ready(function (){
+	//$.pubGrid('#asdfasdf').resizeDraw({});
+	fn_init();
+
+	$('.exceldown').on('click', function (){
+		$.pubGrid('#asdfasdf').excelExport({type:'download', fileName:'aaa.xls'});
+	})
+});
+
+function getItem (type){
+	var aaa = [];
+	var colItem = [];
+
+	if(type ==1){
+		for(var i =0 ;i <100000; i++){
+			aaa.push({
+				a:'aaasdfasdfasdfasdfasdfasdfa'+i
+				,b:'ddd_'+i+'asdf'
+				,c: (i*10000)
+				,d:'ddd_'+i
+				,e:'eee_'+i
+			});
+		}
+		colItem = [
+			{key :'a', label:'에이에이에이에이에이에이', width:100, sort : true}
+			,{key :'b', label:'비', width:100, colClick :function (idx,item){ console.log(idx, item)}}
+			,{key :'c', label:'씨',width:100, align:'center', type : 'money'}
+			,{key :'d', label:'디',width:100 ,type : 'number', formatter : function (rowInfo){
+				
+				var item  = rowInfo.item;
+				return rowInfo.formatter(item['c'],0);
+			}}
+			,{key :'e', label:'이',width:100}
+			//,{key :'d', label:'디', hidden:true}
+		]
+	}else{
+
+		for(var i =0 ;i <100; i++){
+			var tmpItem = {};
+
+			for(var j =0 ; j< 10 ;j++){
+				var colName = 'col'+j ; 
+				tmpItem[colName] =  ('cont'+i+" _ "+j) ;
+				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
+			}
+
+			aaa.push(tmpItem)
+		}
+		
+		colFirstItem = aaa[0];
+		
+		for(var key in colFirstItem){
+			colItem.push( {
+				key :key
+				,label:colFirstItem[key]
+				,width:100
+			})
+		}
+	}
+
+	return {
+		"aaa": aaa
+		,"colItem": colItem
+	}; 
+}
+
+
+function viewTableHtml(theadGroup){
+	var strHtm = [];
+	for(var i=0; i <theadGroup.length; i++){
+		var theadGrpRow = theadGroup[i];
+		strHtm.push('<tr>');
+		for(var j=0; j < theadGrpRow.length; j++){
+			var item = theadGrpRow[j];
+
+			strHtm.push('<th ');
+			if(item.rowspan > 0){
+				strHtm.push('rowspan="'+(item.rowspan||0)+'" colspan="'+(item.colspan||1)+'">'+(item.label||'값없음')+'</th>')
+			}else{
+				strHtm.push(' colspan="'+(item.colspan||1)+'">'+(item.label||'값없음')+'</th>')
+			}
+		}
+		strHtm.push('</tr>');
+	}
+
+	$('#viewTableArea').html(strHtm.join(''));
+}
+
+function fn_init(){
+	
+	var	item=getItem ( 2 );
+
+	var aaa =item.aaa
+		,colItem  = item.colItem;
+
+		console.log(colItem);
+
+	var opt = {
+		tColItem : colItem
+		,headerOptions :{}
+		,theadGroup :[ 
+			[
+				{label:'ac1<br/>asdf',rowspan: 3,  style:''}
+				,{label:'ac2<br/>asdf',rowspan: 2, style:''}
+				,{label:'rasdfc2',colspan:5 }
+			]
+			,[
+				{label :'col1_0'}
+				,{label :'col1_1'}
+				,{label :'col1_2'}
+				,{label :'col1_3'}
+				,{label :'col1_4'}
+			]
+		]	
+		,theadGroup1 :[ 
+			[
+			{label:'ac2<br/>asdf',colspan:8 , style:''}
+			]
+			,[
+				{label:'ccc',rowspan: 2 }
+				,{label:'ddd',colspan:2 , style:''}
+				,{label:'bbbb',colspan:2 , style:''}
+			]
+		]
+	}
+	
+	var headGroupInfo = [] ,groupInfo = []
+		,leftHeaderGroupInfo = [] ,leftGroupInfo = [];
+
+	var fixedColIdx = 3; 
+
+
+	var tci = opt.tColItem;
+	var thg = isUndefined(opt.theadGroup)? [] : arrayCopy(opt.theadGroup);
+	thg.push(tci);
+
+	viewTableHtml(thg);
+
+	var sortHeaderInfo = {};
+	var theadGrpRow; 
+
+	var tciLen = tci.length
+		,thgLen = thg.length; 
+
+	var colSpanInfo = createArray(thgLen, tciLen)
+		,rowSpanInfo = createArray(thgLen, tciLen);
+		
+
+	for(var i=0; i <thgLen; i++){
+		theadGrpRow = thg[i];
+
+		groupInfo = [];
+		leftGroupInfo = [];
+
+		var colSpanArr = colSpanInfo[i];
+		var rowSpanArr = rowSpanInfo[i];
+						
+		var tmpColIdx=0;
+		for(var j=0; j < theadGrpRow.length; j++){
+			var headItem = theadGrpRow[j];
+
+			var colspanNum = headItem['colspan']||1;
+			var rowspanNum = headItem['rowspan']||0;
+			
+			var k = tmpColIdx;
+			tmpColIdx += colspanNum;
+					
+			var continueFlag = false; 
+			for(; k < tmpColIdx; k++){
+				if(i != 0){
+					var beforeSpanRowNum = rowSpanInfo[i-1][k];
+					beforeSpanRowNum = beforeSpanRowNum > 1 ? beforeSpanRowNum-1 : 0;	
+
+					if(beforeSpanRowNum > 0){
+						rowSpanInfo[i][k] = beforeSpanRowNum;
+						colSpanInfo[i][k] = 0;
+						if(i+1 != thgLen){
+							j--;
+						}
+
+						continueFlag = true; 
+						break;
+					}
+				}
+				/*
+				colspan : 0 = rowspan 이 이루어지는 컬럼, 1 = colspan이 이루어지지 않는 컬럼, 2 = colspan이 이루어지는 컬럼 
+				rowSpan : 0 row span 이 이루어지지 않는 row, 0 보다 큰값 row span 값.
+				*/
+				if(rowspanNum > 0){ // rowspan 일때 아래 i+1의 row 값 추가					
+					colSpanArr[k] = 0;
+					rowSpanArr[k] = rowspanNum;
+				}else{
+					rowSpanArr[k] = 0; 
+					if(colspanNum == 1){
+						colSpanArr[k] = 1;
+					}else{
+						colSpanArr[k] = 2;
+					}
+				}
+			}
+
+			if(continueFlag){
+				continue ; 
+			}
+
+			tciItem = tci[tmpColIdx-1] ||{};
+			
+			headItem['colspan'] = colspanNum;
+			headItem['rowspan'] = rowspanNum;
+			headItem['view'] = true;
+			headItem['sort'] = tciItem.sort===false ? false : opt.headerOptions.sort !== false;
+			headItem['colspanhtm'] = headItem.colspan > 1 ? ' scope="colgroup" colspan="'+headItem.colspan+'" ' :'scope="col"';
+			headItem['rowspanhtm'] = '';
+			headItem['resizeIdx'] =tmpColIdx-1;
+
+			if(headItem.rowspan > 1){
+				headItem['rowspanhtm'] = ' scope="col" rowspan="'+headItem.rowspan+'" style="height:'+(opt.headerOptions.height*headItem.rowspan)+'px" '; 
+			}
+						
+			if(i+rowspanNum >= thgLen || i+1 == thgLen){
+				headItem.isSort = (headItem.sort===true?true:false); 
+			}
+
+			if(tmpColIdx <= fixedColIdx){
+				leftGroupInfo.push(objectMerge({},headItem));
+			}else if(tmpColIdx - colspanNum < fixedColIdx ){
+				var leftHeadItem = objectMerge({},headItem);
+
+				headItem['colspan'] = (tmpColIdx - fixedColIdx);
+				headItem['colspanhtm'] = ' scope="colgroup" colspan="'+headItem['colspan']+'" ';
+				groupInfo.push(headItem);
+
+				leftHeadItem['colspan'] = (fixedColIdx - (tmpColIdx - colspanNum))
+				leftHeadItem['resizeIdx'] = fixedColIdx;
+				leftHeadItem['colspanhtm'] = ' scope="colgroup" colspan="'+leftHeadItem['colspan']+'" ';
+				
+				leftGroupInfo.push(leftHeadItem);
+			}else{
+				groupInfo.push(headItem)
+			}
+		}
+
+		headGroupInfo.push(groupInfo);
+		leftHeaderGroupInfo.push(leftGroupInfo)
+	}
+
+	console.log(colSpanInfo, rowSpanInfo)
+}
+
+
+
+
+function arrayCopy(orginArray){
+	return $.isArray(orginArray) ? orginArray.slice():null;
+}
+
+function isUndefined(obj){
+	return typeof obj==='undefined';
+}
+
+
+function createArray(m,n,initial){
+	var reval = [];
+	for(var j=0; j < m; j++){
+		reval[j] =[];
+		for(var k =0 ; k < n; k++){
+			reval[j][k] = initial;
+		}
+	}
+
+	return reval; 
+}
+
+function objMergeRecursive(dst, src) {
+
+for (var p in src) {
+	if (!src.hasOwnProperty(p)) {continue;}
+
+	var srcItem = src[p] ;
+	if (srcItem=== undefined) {continue;}
+
+	if ( typeof srcItem!== 'object' || srcItem=== null) {
+		dst[p] = srcItem;
+	} else if (typeof dst[p]!=='object' || dst[p] === null) {
+		dst[p] = objMergeRecursive(srcItem.constructor===Array ? [] : {}, srcItem);
+	} else {
+		objMergeRecursive(dst[p], srcItem);
+	}
+}
+return dst;
+}
+
+function objectMerge() {
+var reval = arguments[0];
+if (typeof reval !== 'object' || reval === null) {	return reval;}
+for (var i = 1, il = arguments.length; i < il; i++) {
+	objMergeRecursive(reval, arguments[i]);
+}
+
+return reval;
+}
+</script>

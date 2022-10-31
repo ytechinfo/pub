@@ -1,0 +1,223 @@
+/*
+ * pub.context.css: 1.0.0
+ * ========================================================================
+ * Copyright 2016-2019 ytkim
+ * Licensed under MIT
+ * http://www.opensource.org/licenses/mit-license.php
+*/
+
+@import '_var_pub.contextmenu.scss';
+
+.pub-context-menu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+	display: none;
+	float: left;
+	min-width: 160px;
+	padding: 5px 0;
+	margin: 2px 0 0;
+	list-style: none;
+	color : colorInfo($g_default_theme_name , "font_color");
+	border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+	background-color: colorInfo($g_default_theme_name , "background_color");
+	text-align:left;	
+	-webkit-background-clip: padding-box;
+	-moz-background-clip: padding;
+	background-clip: padding-box;
+	@include box_shadow($g_default_theme_name);
+	
+	&.pull-right {
+		right: 0;
+		left: auto;
+	}
+	
+	.divider {
+		width: 100%;
+		height: 1px;
+		margin: 9px 1px;
+		margin: 3px 0px 3px;
+		overflow: hidden;
+		border-bottom: 1px solid colorInfo($g_default_theme_name , "border_thick_color");
+	}
+
+	a {
+		display: block;
+		cursor: default;
+		padding: 0px 20px 0px 14px;
+		clear: both;
+		font-weight: normal;
+		line-height: 20px;
+		color : colorInfo($g_default_theme_name , "font_color");
+		white-space: nowrap;
+		text-decoration: none;
+		border: 1px solid transparent;
+		outline: none;
+	}
+
+	li > a:hover, .pub-context-submenu:hover > a {
+		text-decoration: none;
+		color : colorInfo($g_default_theme_name , "a_hover_font_color");
+		background-color: colorInfo($g_default_theme_name , "a_hover_background_color");
+		border: 1px solid colorInfo($g_default_theme_name , "a_hover_border_color");
+		outline: none;
+	}
+
+	.disabled > a{
+		color: colorInfo($g_default_theme_name , "font_disable_color") !important;
+	}
+
+	label{
+		display: inline-block; 
+		max-width: 100%;
+		margin-bottom: 0px;
+		font-weight: bold;
+		width: 100%;
+	}
+
+	input[type=checkbox], input[type=radio] {
+		vertical-align: baseline;
+		position: relative;
+		width: 20px;
+		float: left;
+	}
+
+	.pub-context-header {
+		cursor: default;
+		color: contxtMenuColorInfo($g_default_theme_name , "context_menu_header_font_color");
+		padding: 3px 7px;
+		font-weight: bold;
+		line-height: 20px;
+	}
+}
+
+.pub-context-submenu {
+	position: relative;
+
+	> .pub-context-menu {
+		top: 0;
+		left: 100%;
+		margin-top: -6px;
+		margin-left: -1px;
+	}
+
+	> .pub-context-menu.drop-left{
+		left:-100%;
+	}
+
+	> a:after {
+		display: block;
+		float: right;
+		width: 0;
+		height: 0;
+		margin-top: -13px;
+		margin-right: -10px;
+		border-color: transparent;
+		border-left-color: colorInfo($g_default_theme_name , "arrow_color");
+		border-style: solid;
+		border-width: 5px 0 5px 5px;
+		content: " ";
+	}
+
+	&:hover > a:after {
+		border-left-color: colorInfo($g_default_theme_name , "arrow_active_color");
+	}
+
+	&.disabled > a:after {
+		border-left-color: colorInfo($g_default_theme_name , "arrow_color");
+	}
+}
+
+.pub-context-top {
+	.pub-context-submenu {
+		.pub-context-menu{
+			display: none;
+		}
+
+		&.on .pub-context-menu{
+			display: block;
+		}
+		
+		&.disabled .pub-context-menu{
+			display: none !important;
+		}
+
+		
+	}
+}
+
+.pub-context-item-title{
+	max-width:50%;
+	display:table-cell;
+}
+.pub-context-hotkey{
+	width:50%;
+	max-width:50%;
+    padding-left: 8px;
+	min-width:78px;
+	text-align: right;
+	display:table-cell;
+}
+
+.pub-context-hotkey-empty{
+	width:78px;
+	min-width:78px;
+	margin-left: 8px;
+	text-align: right;
+	display:table-cell;
+}
+
+
+@each $pThemeName in $g_theme_list_info {
+
+	#{fn_themeName($pThemeName)} {
+		.pub-context-menu {
+			color : colorInfo($pThemeName , "font_color");
+			border: 1px solid colorInfo($pThemeName , "border_thin_color");
+			background-color: colorInfo($pThemeName , "background_color");
+			@include box_shadow($pThemeName);
+
+			a {
+				color : colorInfo($pThemeName , "font_color");
+			}
+	
+			.divider {
+				border-bottom: 1px solid colorInfo($pThemeName , "border_thick_color");
+			}
+	
+			li > a:hover, .pub-context-submenu:hover > a {
+				color : colorInfo($pThemeName , "a_hover_font_color");
+				background-color: colorInfo($pThemeName , "a_hover_background_color");
+				border: 1px solid colorInfo($pThemeName , "a_hover_border_color");
+			}
+	
+			.disabled > a{
+				color: colorInfo($pThemeName , "font_disable_color") !important;
+			}
+	
+			.pub-context-header {
+				color: contxtMenuColorInfo($pThemeName , "context_menu_header_font_color");
+			}
+		}
+
+
+		.pub-context-submenu {
+
+			> a:after {
+				border-left-color: colorInfo($pThemeName , "arrow_color");
+			}
+	
+			&:hover > a:after {
+				border-left-color: colorInfo($pThemeName , "arrow_active_color");
+			}
+	
+			&.disabled > a:after {
+				border-left-color: colorInfo($pThemeName , "arrow_color");
+			}
+		}
+	}
+
+}
+
+ 

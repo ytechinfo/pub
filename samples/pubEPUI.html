@@ -9,7 +9,7 @@
 
 
 <script src="../plugins/jquery-1.10.2.min.js"></script>
-<script src="../plugins/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="../plugins/jquery-ui-1.12.1.min.js"></script>
 <script src="../plugins/jquery.toast.min.js"></script>
 <script src="../dist/pub.ep.js"></script>
 <script src="../dist/pub.ep.ui.js"></script>
@@ -87,7 +87,7 @@
 				<td>
 		<div class="code-runner text-right">
 			<a href="#" class="copy-btn">copy</a>
-			<a href="#" class="eval-js">demo dialog</a>
+			<a href="#" class="eval-js">demo toast</a>
 		<pre class="text-left"><code class="text-to-copy">PubEPUI.toast.view({
 						heading: 'Information'
 						,text: '테스트'
@@ -102,13 +102,126 @@
 				</td>
 			</tr>
 
+			<tr>
+				<td>
+		<div class="code-runner text-right">
+			<a href="#" class="copy-btn">copy</a>
+			<a href="#" class="eval-js">demo modal</a>
+		<pre class="text-left"><code class="text-to-copy">PubEPUI.modal.open({
+		message : '메시지'
+		,width:  '400px'
+		,height : '200px'
+		,okCallback :  function (){
+		alert('1')
+}
+		,okBtn : '확인'
+		
+	});</code></pre>
+		</div>
+				</td>
+				<td>
+		<code>
+		옵션은 jquery.toast 동일합니다.  
+		</code>
+				</td>
+			</tr>
+
+
 		</table>
 	</div>
 </div>
 
+<table style="width:600px;height:200px;">
+	<colgroup>
+		<col width="45%">
+		<col width="*">
+		<col width="45%">
+	</colgroup>
+	<tr>
+		<td>
+			<select name="sourceTab" id="sourceTab" class="box_properties"
+								multiple style="height: 195px; width: 100%;"></select>
+		</td>	
+		<td>
+			<a href="javascript:;" class="btn_m mb05 add-item">등록<span class="glyphicon glyphicon-chevron-right"></span></a><br/>
+										<a href="javascript:;" class="btn_m cancel-item"><span class="glyphicon glyphicon-chevron-left"></span>삭제</a> 
+		</td>
+		<td>
+			<select name="targetTab" id="targetTab" class="box_properties2"
+				style="height: 195px; width: 100%; margin-left: 0; !important"
+				multiple></select>
+			<div class="pull-right">
+				<a href="javascript:;" class="btn_m mb05 item-move" mode="up"><span class="glyphicon glyphicon-chevron-up"></span>위</a>
+				<a href="javascript:;" class="btn_m mb05 item-move" mode="down"><span class="glyphicon glyphicon-chevron-down"></span>아래</a>
+			</div>	
+		</td>
+	</tr>
+</table>
+
 <div id="copyArea" style="width:3px;height:3px;overflow:hidden;"></div>
 <script>
+var selectObj = null; 
 $(document).ready(function() {
+
+	var tmpSourceItem = [] , paramSourceItem=[]; 
+
+	var paramTargetItem = [];
+	for(var i = 0 ;i <20; i++){
+		paramSourceItem.push({LINK_ID :'0000'+i ,LINK_NAME:'name'+i});
+	}
+
+	for(var i = 0 ;i <20; i++){
+		tmpSourceItem.push({LINK_ID :'1000'+i ,LINK_NAME:'name'+i});
+	}
+	
+
+	var selectObj = PubEPUI.module.selectBoxMove('#sourceTab','#targetTab',{
+		addItemClass:'text_selected'
+		,firstItem : {
+			optVal : 'LINK_ID'
+			,optTxt : 'LINK_NAME'
+		}
+		,secondItem : {
+			optVal : 'LINK_ID'
+			,optTxt : 'LINK_NAME'
+		}
+		,beforeMove : function (type){
+			if(type=='first' && $('#code_id').val()==''){
+				alert('배너를 선택하고 이동하세요.');
+				return false; 
+			}
+			return ;
+		}
+		,secondItemClick : function (sObj){
+			var mappinginfo = sObj.item;
+			
+			$('#link_id').val(mappinginfo.LINK_ID)
+			$('#link_name').val(mappinginfo.LINK_NAME)
+			
+			if(mappinginfo.MODIFY_FLAG =='N'){
+				$('#open_type').val(mappinginfo.DEFAULT_OPEN_TYPE);
+				$('#open_option').val(mappinginfo.DEFAULT_OPEN_OPTION);
+				$('#img_src').val(mappinginfo.DEFAULT_IMG_SRC);
+			}else{
+				$('#open_type').val(mappinginfo.OPEN_TYPE);
+				$('#open_option').val(mappinginfo.OPEN_OPTION);
+				$('#img_src').val(mappinginfo.IMG_SRC);
+			}
+		}
+	});
+
+	selectObj.setItem('second', tmpSourceItem);
+
+
+	$('.item-move').on('click', function (){
+		selectObj.move($(this).attr('mode'))
+	})
+
+});
+
+
+$(document).ready(function() {
+
     $('.eval-js').on('click', function ( e ) {
         e.preventDefault();
 

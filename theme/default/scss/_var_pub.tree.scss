@@ -1,0 +1,27 @@
+@import '_var_pub.global.scss';
+
+$pubTree_colors: (
+  'light': (
+    'node_select_background':#beebff
+    ,'node_hover_background': #cdf0ff
+    ,'node_select_font_color': #000
+  )
+  ,'dark':(
+    'node_select_background':#056e9e
+    ,'node_hover_background': #05608a
+    ,'node_select_font_color': #ffffff
+  )
+);
+
+// function 
+@function treeColorInfo($themeName: 'light', $type: 'font_color') {
+  $map: map-get($pubTree_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme treeColorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}

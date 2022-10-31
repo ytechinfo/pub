@@ -1,7 +1,7 @@
 /**
  * pubCalendar v0.0.1
  * ========================================================================
- * Copyright 2016 ytkim
+ * Copyright 2016-2021 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
  * url : https://github.com/ytechinfo/pub
@@ -18,11 +18,11 @@ var _initialized = false
 ,_TIME_HALF_HEIGHT=21
 ,_defaultOption ={
 	viewMode : 'full-month'	// 달력 모드 (mini,full-month,full-week,full-day)
-	,viewDateFormat : 'YYYY-MM-DD HH:mm'
+	,viewDateFormat : 'YYYY-MM-DD HH:mm'	// 날짜 포멧
 	,customRangeDay : 20	// viewmode가 custom 일때 일자 범위 0 ~ 선택일까지
 	,useLunar : false		// 음력 기념일 사용여부.
 	,useYearInput : true //year 변경시 더블클릭하면 input 박스 나타날지 여부.
-	,todayDate : _$d.getFullYear() +'-' +(_$d.getMonth() + 1)+'-'+ _$d.getDate()
+	,todayDate : _$d.getFullYear() +'-' +(_$d.getMonth() + 1)+'-'+ _$d.getDate()	// 현재일 지정
 	,maxEventRow : 3
 	,useMemorialday : true // 기념일 보기 여부 
 	,width :'100%'		// 달력 넓이
@@ -51,7 +51,7 @@ var _initialized = false
 		yyyy:''
 		,mm:''
 	}
-	,lang : {
+	,lang : {	// 다국어 설정
 		mini : {	sun:'일',mon:'월',tue:'화',wed:'수',thu:'목',fri:'금',sat:'토'
 			,year :'년'	,month :'월'
 		}
@@ -665,14 +665,18 @@ Plugin.prototype ={
 				,days = parseInt(repeatInfo[colModel.days],10)
 				,tmpStartTime = repeatInfo[colModel.startTime]
 				,tmpEndTime = repeatInfo[colModel.endTime];
-				
 			
+			if(cycle==0){
+				return ; 
+			}
+
 			if(type=='year'){ // 년 반복일정 처리.
 				var startMMDD = startDt.format('MM-DD'); 
 				startDt = makeMoment((viewRangeLast.year()+(startDt.month()==11 && viewRangeLast.month()==0?-1:0))+'-'+startMMDD);
 			
 				addRepeatItem(eventInfoArr,exceptionInfo,item, startDt, startDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
 			}else{
+
 				var repeatStart , repeatFirst = first.clone().add((days*-1),'day')
 					,len =1, flag = true;
 
@@ -692,7 +696,7 @@ Plugin.prototype ={
 
 					len = last.clone().startOf(type).diff(repeatStart.startOf('month'),type);
 					len = Math.ceil(len/cycle)+1;
-															
+
 					for (var j=0; j < len ;j++){
 						var tmpStartDt = makeMoment(repeatStart.clone().add(j,'month').format('YYYY-MM')+'-'+startDD); 
 						if(tmpStartDt.isValid()){ 
@@ -702,64 +706,47 @@ Plugin.prototype ={
 							}
 						}
 					}
-					
-				}else if(type=='week'){ // 주 반복일정 처리.
 
+				}else if(type=='week'){ // 주 반복일정 처리.
+						
 					if(flag){
 						var num = repeatFirst.diff(startDt.clone().startOf('week') ,'week');
 						num += (num%cycle > 0 ? cycle -num%cycle : 0);
 						repeatStart = startDt.clone().startOf('week').add(num,'week');
 					}
-
+					
 					len = last.diff(repeatStart,'week');
 					len = Math.ceil(len/cycle)+1;
 					len = len  < 1 ? 1 :len;
-	
+
+					var repeat_day = repeatInfo.REPEAT_DAY||'';
+
+					var tmpRepeatDayArr= repeat_day.split(',')
+						,repeatDayArr = [];
+					for(var k =0 ;k <tmpRepeatDayArr.length;k++){
+						var repeatDayNum = tmpRepeatDayArr[k]
+						if(repeatDayNum!='' && !isNaN(repeatDayNum)){
+							repeatDayArr.push(parseInt(tmpRepeatDayArr[k],10));
+						}
+					}
+					
+					var tmpStartDt, weekDayNum, repeatDayLen = repeatDayArr.length;
 					for (var j=0;j <len ;j++){
-						var weekDayNum = repeatStart.weekday();
-
-						var tmpStartDt;
-						if(weekDayNum < 1 && repeatInfo.sun>0){
-							tmpStartDt = repeatStart;
-							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
-						}
+						weekDayNum = repeatStart.weekday();
 						
-						if(weekDayNum < 2 && repeatInfo.mon>0){
-							tmpStartDt = repeatStart.clone().add(1-weekDayNum,'day'); 
+						for(var k =0 ;k <repeatDayLen;k++){
+							tmpStartDt = repeatStart.clone().add(repeatDayArr[k]-weekDayNum,'day'); 
 							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
 						}
-
-						if(weekDayNum < 3 && repeatInfo.tue>0){
-							tmpStartDt = repeatStart.clone().add(2-weekDayNum,'day'); 
-							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
-						}
-
-						if(weekDayNum < 4 && repeatInfo.wed>0){
-							tmpStartDt = repeatStart.clone().add(3-weekDayNum,'day'); 
-							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
-						}
-
-						if(weekDayNum < 5 && repeatInfo.thu>0){
-							tmpStartDt = repeatStart.clone().add(4-weekDayNum,'day');
-							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
-						}
-
-						if(weekDayNum < 6 && repeatInfo.fri>0){
-							tmpStartDt = repeatStart.clone().add(5-weekDayNum,'day');
-							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
-						}
-						if(weekDayNum < 7 && repeatInfo.sat >0){
-							tmpStartDt = repeatStart.clone().add(6-weekDayNum,'day');
-							addRepeatItem(eventInfoArr,exceptionInfo,item, tmpStartDt, tmpStartDt.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
-						}
-
+												
 						if(weekDayNum != 0){
 							repeatStart.startOf('week');
 						}
 						repeatStart.add(cycle,'week');
 					}
-					
 				}else if(type=='day'){ // 일 반복일정 처리.
+
+
 					if(flag){
 						var num = repeatFirst.diff(startDt,type);
 						num += (num%cycle > 0 ? cycle -num%cycle : 0);
@@ -769,7 +756,7 @@ Plugin.prototype ={
 					len = last.clone().diff(repeatStart,type);
 					len = Math.ceil(len/cycle);
 										
-					for (var j=0; j < len ;j++){
+					for (var j=0; j <= len ;j++){
 						addRepeatItem(eventInfoArr,exceptionInfo,item, repeatStart, repeatStart.clone().add(days,'day'),viewFirstTime, viewEndTime ,tmpStartTime , tmpEndTime);
 						repeatStart.add(cycle,'day');
 					}
@@ -1931,7 +1918,7 @@ Plugin.prototype ={
 	,_layerActive: function (e){
 		e.stopPropagation();
 	}
-	,destory:function (){
+	,destroy:function (){
 		delete _datastore[this.selector];
 	}
 };
@@ -2451,7 +2438,7 @@ var _RenderHTML = {
 
 			calHTML.push('<div class="time-item pub_calendar_evt_item" pubc_key="'+evtItem.pubCID+','+_date+','+i+',t" style="z-index:'+evtItem.colIdx+';top:'+_top+'px;left:'+(evtItem.left)+'%;width:'+evtItem.width+'%;height:'+(_height-6)+'px;background-color:'+(esItem[colInfo.color]||bgColor)+';">');
 			calHTML.push(sdt.format('HH:mm')+'-'+edt.format('HH:mm')+' ');
-			calHTML.push(esItem[colInfo.title]);
+			calHTML.push('<div class="pubc-time-item-title">'+esItem[colInfo.title]+'</div><div class="pubc-resize-bar"></div>');
 			
 			calHTML.push('</div>');
 		}

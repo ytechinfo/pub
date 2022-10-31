@@ -1,36 +1,46 @@
 /**
- * pubContextMenu: v0.0.1
+ * pubContextMenu: v1.0.2
  * ========================================================================
- * Copyright 2016 ytkim
+ * Copyright 2016-2021 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
  * url : https://github.com/ytechinfo/pub
  * demo : http://pub.moaview.com/
 */
-;(function ($, window, document, undefined) {
+;(function ($) {
 
 var pluginName = "pubContextMenu"
+	,_pubContextUid = 0
 	,initialized = false
 	,_datastore = {}
 	,pubContextElement= false
-	,isContextView = false
-	,defaults = {
-		fadeSpeed: 100			
-		,filter: function ($obj) {
+	,_$win = $(window)
+	,_defaults = {
+		fadeSpeed: 100				// 숨김 속도
+		,filter: function ($obj) {		// 필터
 			// Modify $obj, Do not return
 		}
-		,bgiframe:true
-		,above: 'auto'
-		,preventDoubleContext: true
-		,compress: true
-		,selectCls : 'item_select'
-		,callback:function (key){
+		,theme : 'light'			// 테마  light , dark
+		,isStopPropagation: true	// 이벤트 전파 차단 여부
+		,selectCls : 'item_select'	// item select class
+		,callback:function (key){	// item click callback
 			alert(key)
 		}
-		,beforeSelect :function (item){
-			
+		,beforeSelect :function (item){	// 선택전 이벤트.
+
+		}
+		,isEnabled :function (){	// context menu 활성화 여부.
+			return true; 
 		}
 	};
+
+function isUndefined(obj){
+	return typeof obj==='undefined';
+}
+
+function getUid(){
+	return pluginName +'_'+ (++_pubContextUid);
+}
 
 function getHashCode (str){
     var hash = 0;
@@ -38,232 +48,383 @@ function getHashCode (str){
     for (var i = 0; i < str.length; i++) {
         var tmpChar = str.charCodeAt(i);
         hash = ((hash<<5)-hash)+tmpChar;
-        hash = hash & hash; 
+        hash = hash & hash;
     }
-    return ''+hash+'99';
+    return (hash+'').replace(/-/gi,'1_');
 }
-	
-function Plugin(element, options) {
-	this.selector = (typeof element=='object') ? element.selector : element;
-	this.contextId = 'dropdown-'+getHashCode(this.selector);
-	this.options = $.extend({}, defaults, options);
+
+function Plugin(selector, options , uuid) {
+	this.selector = selector;
+	this.contextId = 'dropdown-pubcontext-'+getHashCode(selector);
+	this.options = $.extend({}, _defaults, options);
 	this.contextData = {};
-	this.selectElement = $('');
+	this.selectElement;
+	this.targetInfo;
 
 	if(pubContextElement ===false){
 		$('body').append('<div id="pub-context-area"></div>');
 		pubContextElement = $('#pub-context-area');
 	}
-	
-	if(initialized===false){
-		this.initEvt(); 
-		initialized = true; 
-	}
-		
-	this.addContext();
-	this.context = $('#'+this.contextId);
 
-	return this; 
+	if(initialized===false){
+		this.initEvt();
+		initialized = true;
+	}
+
+	this.addContext();
+	this.contextElement = $('#'+this.contextId);
+
+	this.loadAfterEvt();
+
+	return this;
 }
+
+$(document).on('mousedown.pubcontext', 'html', function (e) {
+	if(e.which !==2 && $(e.target).closest('#pub-context-area').length < 1){
+		$('#pub-context-area .pub-context-top').css({display:''}).find('.pub-context-sub.drop-left').css('left','').removeClass('drop-left');
+	}
+});
 
 Plugin.prototype ={
 	init :function(){
 		var _this = this;
-		defaults = this.options;
-		id=_this.contextId;
 
-		if(defaults.preventDoubleContext){
-			$(document).on('contextmenu.pubcontext'+_this.contextId, '#'+id+'_wrap .pub-context', function (e) {
+	}
+	,initEvt : function (){
+		var _this = this;
+
+	}
+	,loadAfterEvt : function(){
+		var _this = this;
+		var _opt = this.options;
+		var id=_this.contextId;
+
+		if(_opt.isStopPropagation){
+			$('#'+id+'_wrap').on('contextmenu.pubcontext'+_this.contextId, '.pub-context-top', function (e) {
 				e.preventDefault();
+				e.stopPropagation();
 			});
 		}
 
-		$(document).on('mouseenter.pubcontext'+this.contextId, '#'+id+'_wrap .pub-context-submenu', function(){
-			var $sub = $(this).find('.pub-context-sub:first'),
-				subWidth = $sub.width(),
-				subLeft = $sub.offset().left,
-				collision = (subWidth+subLeft) > window.innerWidth;
+		// sub menu click
+		$('#'+id+'_wrap').on('mouseenter.pubcontext'+this.contextId, '.pub-context-submenu', function(e){
+			var sEle = $(this);
+
+			//sEle.closest('.pub-context-menu').find('.pub-context-submenu.on').removeClass('on');
+			sEle.addClass('on');
+
+			var $sub = sEle.find('.pub-context-sub:first')
+				, subWidth = $sub.width()
+				, subLeft = $sub.offset().left
+				, collision = (subWidth+subLeft) > _$win.width();
+
 			if(collision){
+				$sub.css('left' , '-'+(subWidth/sEle.width()*100)+'%');
 				$sub.addClass('drop-left');
 			}
+
+			var offTop = sEle.offset().top
+				, subHeight =$sub.height()
+				, screenBottom = (_$win.scrollTop() + _$win.height())
+
+			if(offTop + subHeight+10> screenBottom){
+				offTop = ((offTop + subHeight +10) -screenBottom);
+				offTop = offTop < 0 ? 0 : offTop;
+				$sub.css('top' ,'-'+ offTop+'px');
+			}else{
+				$sub.css('top' ,'');
+			}
+		}).on('mouseleave.pubcontext'+this.contextId, '.pub-context-submenu', function(e){
+			if(headerClickFlag){
+				headerClickFlag = false;
+				return ;
+			}
+			var sEle = $(this);
+			sEle.removeClass('on');
 		});
-	}
-	,initEvt : function (){
-		$(document).on('mousedown.pubcontext', 'html', function (e) {
-			if(e.which !==2 && $(e.target).closest('#pub-context-area').length < 1){
-				$('#pub-context-area .pub-context').fadeOut(defaults.fadeSpeed, function(){
-					$('#pub-context-area .pub-context').css({display:''}).find('.drop-left').removeClass('drop-left');
-				});
+
+		var headerClickFlag = false; // header click check flag
+		$('#'+id+'_wrap').on('click.item.'+_this.contextId ,'.pub-context-header',function (e){
+			headerClickFlag =true;
+			setTimeout(function(){ headerClickFlag = false}, 200)
+		});
+
+		// click event
+		$('#'+id+'_wrap').on('click.item.'+_this.contextId ,'.pub-context-item',function (e){
+			var clickEle=$(this);
+
+			if(clickEle.hasClass('disabled')){
+				return ;
+			}else if(clickEle.hasClass('pub-context-submenu')){
+				return ;
+			}else{
+				skey = clickEle.attr('context-key');
+
+				var contentItem = _this.contextData[skey]; 
+				var sobj = {
+					key : skey
+					,item : contentItem
+					,list : _this.contextData
+					,element : _this.selectElement
+					,evt : e
+				}
+
+				if(jQuery.isFunction(contentItem.callback)){
+					contentItem.callback.call(sobj, sobj.item.key, sobj.item , sobj.evt);
+				}else if(jQuery.isFunction(_opt.callback)){
+					_opt.callback.call(sobj, sobj.item.key, sobj.item , sobj.evt);
+				}else{
+					alert(skey);
+				}
+				
+				_this.closeContextMenu();
 			}
 		});
 	}
 	,updatedefaults:function (opts){
-		defaults = $.extend({}, defaults, opts);
+		_defaults = $.extend({}, _defaults, opts);
 	}
 	,buildMenu : function (data, id, subMenu, depth){
-		var _self = this; 
+		var _this = this;
 		var subClass = (subMenu) ? ' pub-context-sub' : ' pub-context-top',
-			compressed = defaults.compress ? ' compressed-context' : '',
 			$menuHtm = [];
-		
-		$menuHtm.push('<ul class="pub-context-menu pub-context' + subClass + compressed+'" id="' + id + '">');
- 
-		var item ,linkTarget = '',itemKey , styleClass;
-		for(var i = 0; i<data.length; i++) {
+
+		$menuHtm.push('<ul class="pub-context-menu ' + subClass +'" id="' + id + '">');
+
+		var dateLen =data.length,item ,linkTarget = '',itemKey , styleClass;
+		for(var i = 0; i< dateLen ; i++) {
 			item = data[i];
-			
-			styleClass = item.styleClass?item.styleClass:'';
-			
+
+			if(isUndefined(item)) continue ;
+
+			styleClass = (item.styleClass?item.styleClass:'') + (item.disabled===true ?' disabled' :'');
+
+			itemKey = depth+'_'+(item.key||'');
+
 			if (typeof item.divider !== 'undefined') {
 				$menuHtm.push('<li class="divider '+styleClass+'" context-key="divider"></li>');
 				continue;
 			}
-			
+
 			if (typeof item.header !== 'undefined') {
-				$menuHtm.push('<li class="pub-context-header '+styleClass+'" context-key="header">' + item.header + '</li>');
-				continue; 
+				$menuHtm.push('<li class="pub-context-header '+styleClass+'" context-key="'+itemKey+'_header">' + item.header + '</li>');
+				continue;
 			}
-			
-			itemKey = depth+'_'+item.key; 
-			_self.contextData[itemKey] = item;
-		
+
+			if(item.checkbox ===true){
+				$menuHtm.push('<li class="pub-context-header '+styleClass+'" context-key="checkbox"><label for="pubContext_'+item.key+'"><input type="checkbox" id="pubContext_'+item.key+'" /> <span>'+item.name+'</span></label></li>');
+				continue;
+			}
+
+			_this.contextData[itemKey] = item;
+
 			if (typeof item.target !== 'undefined') {
 				linkTarget = ' target="'+item.target+'"';
 			}
 
 			if (typeof item.subMenu !== 'undefined') {
-				$menuHtm.push('<li class="pub-context-submenu ui-context-item '+styleClass+'" context-key="'+itemKey+'"><a tabindex="-1">' + item.name + '</a>');
+				$menuHtm.push('<li class="pub-context-submenu '+styleClass+'" context-key="'+itemKey+'"><a tabindex="-1"><span class="pub-context-item-title">' + item.name +'</span><span class="pub-context-hotkey-empty"></span></a>');
 			} else {
-				$menuHtm.push('<li class="ui-context-item '+styleClass+'" context-key="'+itemKey+'"><a tabindex="-1">' + item.name + '</a>');
+				var hotkeyHtm = item.hotkey||'';
+				hotkeyHtm = hotkeyHtm !='' ?'<span class="pub-context-hotkey">'+ item.hotkey +'</span>':'';
+				$menuHtm.push('<li class="pub-context-item '+styleClass+'" context-key="'+itemKey+'"><a tabindex="-1"><span class="pub-context-item-title">' + item.name +'</span>'+hotkeyHtm+'</a>');
 			}
 
 			if (typeof item.subMenu != 'undefined') {
-				var subMenuData = _self.buildMenu(item.subMenu, id, true,depth+1);
+				var subMenuData = _this.buildMenu(item.subMenu, id, true,depth+1);
 				$menuHtm.push(subMenuData);
 			}
-			
+
 			$menuHtm.push('</li>');
 		}
 		$menuHtm.push('</ul>');
 
 		return $menuHtm.join('');
 	}
+	/**
+     * @method closeContextMenu
+     * @description close context menu
+     */
 	,closeContextMenu : function (){
 		$('#pub-context-area .pub-context-top').hide();
-		isContextView= false; 
 	}
 	/**
-	*
-	* 컨텍스트 메뉴 이벤트 처리. 
-	*/
+     * @method contextEvent
+     * @description context item event
+     */
 	,contextEvent : function (){
-		var _self = this,opt = _self.options;
-		
-		$('#'+_self.contextId+' .ui-context-item').off('click.'+this.contextId);
-		$('#'+_self.contextId+' .ui-context-item').on('click.'+this.contextId,function (){
-			var clickEle=$(this);
-			
-			if(clickEle.hasClass('pub-context-submenu')){
-				
-			}else{
-				skey = clickEle.attr('context-key');
-				var sobj = {
-					key : skey
-					,item : _self.contextData[skey]
-					,list : _self.contextData
-					,element : _self.selectElement
-				}
-			
-				if(jQuery.isFunction(opt.callback)){
-					opt.callback.call(sobj, sobj.item.key, sobj.item);
-				}else{
-					alert(skey);
-				}
-				_self.closeContextMenu();
-			}
-		});
+
 	}
+	/**
+     * @method disableItem
+     * @description disabled item
+     */
+	,disableItem : function (itemKey , depth){
+		this.contextElement.find('[context-key="'+depth+'_'+itemKey+'"]').addClass('disabled')
+	}
+	/**
+     * @method changeName
+     * @description change name
+     */
+	,changeName : function (itemKey ,depth, name){
+		this.contextElement.find('[context-key="'+depth+'_'+itemKey+'"] .pub-context-item-title').text(name);
+	}
+	/**
+     * @method changeHeader
+     * @description change header item name
+     */
+	,changeHeader : function (itemKey ,depth, name){
+		this.contextElement.find('[context-key="'+(depth+'_'+(itemKey||''))+'_header"]').text(name);
+	}
+	/**
+     * @method enableItem
+     * @description enabled item
+     */
+	,enableItem : function (itemKey , depth){
+		if(typeof itemKey !== 'undefined'){
+			this.contextElement.find('[context-key="'+depth+'_'+itemKey+'"]').removeClass('disabled');
+		}else{
+			this.contextElement.find("[context-key].disabled").removeClass('disabled');
+		}
+	}
+	/**
+     * @method setTheme
+     * @description set theme
+     */
+	,setTheme : function (themeName){
+		this.options.theme = themeName;
+		$('#'+this.contextId+'_wrap').attr('pub-theme', themeName);
+	}
+	/**
+     * @method getTheme
+     * @description get theme
+     */
+	,getTheme : function (){
+		return this.options.theme;
+	}
+	/**
+     * @method setTargetInfo
+     * @description set context target item info
+     */
+	,setTargetInfo : function (targetInfo){
+		this.targetInfo = targetInfo;
+	}
+	/**
+     * @method setTargetInfo
+     * @description get context target item info
+     */
+	,getTargetInfo : function (){
+		return this.targetInfo;
+	}
+	/**
+     * @method getCheckBoxId
+     * @description get checkbox id
+     */
+	,getCheckBoxId : function (chkid){
+		return 'pubContext_'+chkid;
+	}
+	/**
+     * @method addContext
+     * @description context menu 이벤트 처리.
+     */
 	,addContext : function (){
-		var _self = this; 
-		var id = _self.contextId
-			,opt = _self.options
-			,$menu =_self.buildMenu(opt.items, id, false, 0)
-			,selector = _self.selector;
-		
-		$menu = '<div id="'+id+'_wrap" onselectstart="return false" draggable="false">'+$menu+'</div>';
-		
-		var contextMenu  = $('#'+id+'_wrap'); 
+		var _this = this;
+		var id = _this.contextId
+			,opt = _this.options
+			,$menu =_this.buildMenu(opt.items, id, false, 0)
+			,selector = _this.selector;
+
+		$menu = '<div id="'+id+'_wrap" class="'+opt.theme+'" onselectstart="return false" draggable="false">'+$menu+'</div>';
+
+		var contextMenu  = $('#'+id+'_wrap');
 
 		if(contextMenu.length > 0){
 			contextMenu.remove();
 		}
-		
-		pubContextElement.append($menu);
-		
-		_self.contextEvent();
-		var $win = $(window);
 
-		$(document).off('contextmenu.pubcontext'+this.contextId, _self.selector);
-		$(document).on('contextmenu.pubcontext'+this.contextId, _self.selector, function (e) {
+		pubContextElement.append($menu);
+
+		_this.contextEvent();
+
+		var isDisableItemKeyFn = $.isFunction(opt.disableItemKey)
+			, isBeforeSelectFn = $.isFunction(opt.beforeSelect)
+			, isEnabledFn = $.isFunction(opt.isEnabled);
+	
+
+		$(document).off('contextmenu.pubcontext'+this.contextId, _this.selector);
+		$(document).on('contextmenu.pubcontext'+this.contextId, _this.selector, function (e) {
 			e.preventDefault();
 			e.stopPropagation();
-			
-			_self.closeContextMenu();
 
-			isContextView = true;
-			//  이전 선택한 클래스 삭제 . 
-			_self.selectElement.removeClass(opt.selectCls);
+			if(isEnabledFn && opt.isEnabled() === false){
+				return ; 
+			}
+
+			if(isDisableItemKeyFn){
+				var disableItem = opt.disableItemKey.call(this , opt.items);
+				_this.enableItem();
+
+				var disableItemLen = disableItem.length , tmpItem;
+				if(disableItemLen > 0){
+					for(var i =0 ; i < disableItemLen ;i++){
+						tmpItem = disableItem[i];
+						_this.disableItem(tmpItem.key , tmpItem.depth);
+					}
+				}
+			}
+
+			_this.closeContextMenu();
+
+			//  이전 선택한 클래스 삭제 .
+			if(_this.selectElement){
+				_this.selectElement.removeClass(opt.selectCls);
+			}
 
 			var clickObj = $(this); //$( e.target ).closest( e.data.selector );
 			clickObj.addClass(opt.selectCls);
-			_self.selectElement = clickObj; 
-			
+			_this.selectElement = clickObj;
+
 			var $dd = $('#'+ id);
-			
-			if(jQuery.isFunction(opt.beforeSelect))	{
-				opt.beforeSelect.call(this);
+
+			if(isBeforeSelectFn){
+				opt.beforeSelect.call(this, {evt : e, element : $(this)});
 			}
 
 			var eleH = $dd.height()
 				,eleW = $dd.width()
 				,evtX = e.pageX
 				,evtY=e.pageY;
-			
-			var bottom = $win.scrollTop() + $win.height(),
-				right = $win.scrollLeft() + $win.width(),
+
+			var bottom = _$win.scrollTop() + _$win.height(),
+				right = _$win.scrollLeft() + _$win.width(),
 				height =eleH,
 				width = eleW;
-			
-			var offset = {top : evtY , left: evtX};
-			if (offset.top + height > bottom) {
-				offset.top -= height;
-			}
 
-			if (offset.top < 0) {
-				offset.top = 0;
-			}
+			var offTop = evtY
+				,offLeft = evtX;
 
-			if (offset.left + width > right) {
-				offset.left -= width;
-			}
+			offTop = ((offTop + height +20 > bottom )? (bottom- (height+20)) : offTop);
+			offTop = offTop < 0 ? 0 : offTop;
 
-			if (offset.left < 0) {
-				offset.left = 0;
-			}
+			offLeft = (offLeft + width > right)? (offLeft-width) : offLeft;
+			offLeft = offLeft < 0 ? 0 : offLeft;
 
-			$dd.css(offset).fadeIn(defaults.fadeSpeed);
+			//var log  = {evtX : evtX, evtY : evtY, bottom : bottom, right : right, height : height, width : offTop, offTop : offTop,offLeft: offLeft}
+			//console.log(JSON.stringify(log))
+
+			$dd.css({top : offTop , left: offLeft}).fadeIn(opt.fadeSpeed);
 		});
 	}
-	,destory:function (){
-		
+	,destroy:function (){
+
 		$('#'+this.contextId+'_wrap').find('*').off();
-		
-		var contextMenu  = $('#'+this.contextId+'_wrap'); 
+
+		var contextMenu  = $('#'+this.contextId+'_wrap');
 
 		if(contextMenu.length > 0){
 			contextMenu.remove();
 		}
-		
+
 		$(document).off('mousedown.'+this.contextId).off('mouseenter.pubcontext'+this.contextId);
 		$(document).off('contextmenu.pubcontext'+this.contextId, this.element).off('click.'+this.contextId, '.context-event');
 
@@ -272,42 +433,40 @@ Plugin.prototype ={
 	}
 };
 
+
 $[ pluginName ] = function (selector,options) {
+	var _cacheObject = _datastore[selector];
 
-	if(!selector){
-		return ; 
-	}
-	var jSelctor = (typeof selector=='object') ? selector.selector : selector;
+	if(isUndefined(_cacheObject)){
 
-	var _cacheObject = _datastore[jSelctor];
-		
-	if(typeof options === 'undefined'){
-		return _cacheObject||{}; 
-	}
-	
-	if(typeof _cacheObject === 'undefined'){
 		_cacheObject = new Plugin(selector, options);
-		_datastore[jSelctor] = _cacheObject;
-		return _cacheObject; 
+		_datastore[selector] = _cacheObject;
+
+		return _cacheObject;
 	}else if(typeof options==='object'){
-		_cacheObject.destory();
+
+		_cacheObject.destroy();
 		_cacheObject = new Plugin(selector, options);
-		_datastore[jSelctor] = _cacheObject;
-		return _cacheObject; 
+		_datastore[selector] = _cacheObject;
+		return _cacheObject;
 	}
 
 	if(typeof options === 'string'){
-		var callObj =_cacheObject[options]; 
-		if(typeof callObj ==='undefined'){
+		var callObj =_cacheObject[options];
+		if(isUndefined(callObj)){
 			return options+' not found';
 		}else if(typeof callObj==='function'){
 			return _cacheObject[options].apply(_cacheObject,args);
 		}else {
-			return typeof callObj==='function'; 
+			return typeof callObj==='function';
 		}
 	}
 
-	return _cacheObject;	
+	return _cacheObject;
 };
 
-})(jQuery, window, document);
+$[ pluginName ].setDefaults = function (defaultValue){
+	_defaults = objectMerge(_defaults, defaultValue);
+}
+
+})(jQuery);

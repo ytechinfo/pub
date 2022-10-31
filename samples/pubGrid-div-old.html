@@ -1,0 +1,232 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub GRID-예제</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../theme/default/pub.example.css" rel="stylesheet">
+<link href="../theme/default/pub.grid.css" rel="stylesheet">
+
+<script src="../plugins/jquery-1.10.2.min.js"></script>
+<script src="../dist/pub.context.js"></script>
+<script src="../dist/pub.grid-old.js"></script>
+<style>
+html , body {
+	height:100%;
+}
+.asdfasdfWrapper {
+    height: calc(100% - 20%) !important;
+}
+
+.pubGrid-body .pub-body-tr > td .pub-content-ellipsis, .pubGrid-body .pub-body-tr > td .pub-content-ellipsis >* {
+	white-space: inherit;
+	overflow: auto;
+    text-overflow: ellipsis;
+	word-break: break-word;
+    padding: 0px;
+    margin: 0px;
+    text-align: left;
+}
+
+</style>
+</HEAD>
+<BODY>
+<div>
+	item generate count<div id="genCount"></div>
+	<button class="exceldown" type="button">excel download</button>
+</div>
+<div class="asdfasdfWrapper">
+	<div id="asdfasdf" style="height:100%"></div>
+</div>
+</BODY>
+</HTML>
+<script>
+
+$(document).ready(function (){
+	//$.pubGrid('#asdfasdf').resizeDraw({});
+	fn_init();
+
+	$('.exceldown').on('click', function (){
+		$.pubGrid('#asdfasdf').excelExport({type:'download', fileName:'aaa.xls'});
+	})
+});
+
+function getItem (type){
+	var aaa = [];
+	var colItem = [];
+
+
+		for(var i =0 ;i <1000; i++){
+			var tmpItem = {};
+
+			for(var j =0 ; j< 1;j++){
+				var colName = 'col'+j ; 
+				tmpItem[colName] =  ('contcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontconcontcontcontcontcontcontcontcon<br/>tcontcontcontcontcontcont<br/>contcontcontcontcontcontcontcontcontcont'+i+" _ "+j) ;
+				//tmpItem[colName] = j< 30 ? ('cont'+i+" _ "+j) :'';
+			}
+
+			aaa.push(tmpItem)
+		}
+		
+		colFirstItem = aaa[0];
+		
+		for(var key in colFirstItem){
+			colItem.push( {
+				key :key
+				,label:key
+				,width:100
+			})
+		}
+	
+
+	return {
+		"aaa": aaa
+		,"colItem": colItem
+	}; 
+}
+
+
+function fn_init(){
+	
+	var	item=getItem ( 2 );
+
+	var aaa =item.aaa
+		,colItem  = item.colItem;
+
+	var gridObj = $.pubGrid('#asdfasdf',{
+		headerOptions:{
+			view : true
+			,sort : true
+			,resize:{
+				enabled : true
+			}
+		}
+		,height : 'auto'
+		,height1 : 200
+		,scroll :{
+			lazyLoad : false // scroll 실시간으로 로드할지 여부 (속도에 영향으줌. )
+			,lazyLoadTime : 0 // scroll 로드 타임. 
+		}
+		,autoResize : {
+			enabled:true
+			,responsive:true
+		}
+		//,bigData :false
+		,bigData : {
+			enabled : true 
+			,gridCount : 20		// 화면에 한꺼번에 그리드 할 데이타 gridcount * 3 이 한꺼번에 그려진다. 
+			,spaceUnitHeight : 100000	// 그리드 공백 높이 지정
+			,horizontalEnableCount : 50
+		}
+		,page :{
+			totalCount :1000
+			, currPage :1
+			, countPerPage :10
+			, unitPage :10
+			,position : 'left'
+			,callback : function (no){
+				
+			}
+		}
+		,tColItem : colItem
+		
+		,theadGroup1 :[ 
+			[
+			{key :'a',label:'ac2<br/>asdf',colspan:4 , style:''}
+			,{key :'c',label:'rc2',rowspan: 3 }
+			]
+			,[
+				{label:'aaaa',colspan:2 , style:''}
+				,{label:'bbbb',colspan:2 , style:''}
+			]
+			,[
+				{key :'a'}
+				,{key :'b'}
+				,{key :'c'}
+				,{key :'d'}
+				,{label :'aaa'}
+			]
+		]
+		,tbodyItem :aaa
+		,tfootItem :['asdf']
+		,rowOptions :{
+			height:30
+			,click : function (idx, item){
+				console.log(idx, item);
+			}
+			,contextMenu :{
+				beforeSelect :function (){
+					$(this).trigger('click');
+				}
+				,callback: function(key,sObj) {
+					console.log(this,key,sObj);
+				}
+				,items: [
+					{key : "refresh" , "name": "새로고침"}
+					,{key : "sql_create", "name": "sql생성" 
+						,subMenu: [
+							{ key : "selectStar","name": "select *" , mode: "selectStar"}
+							,{ key : "select","name": "select column" ,mode:"select"}
+							,{ key : "insert","name": "insert" , mode:"insert"}
+							,{ key : "update","name": "update" ,mode:"update"}
+							,{ key : "delete","name": "delete" ,mode:"delete"}
+							,{ key : "drop","name": "drop" , mode:"drop"}
+						]
+					}
+					,{key : "create_ddl","name": "DDL 보기" 
+						
+					}
+					,{key : "mybatis-sql_create","name": "mybatis Sql생성" 
+						,subMenu : [
+							{ key : "mybatis_insert","name": "insert" ,mode:"insert" ,param_yn:'Y'}
+							,{ key : "mybatis_update","name": "update" ,mode:"update" ,param_yn:'Y'}
+							,{ key : "mybatis_delete","name": "delete" ,mode:"delete",param_yn:'Y'}
+						]
+					}
+					,{key :'export', "name": "내보내기" 
+						,subMenu:[
+							{key : "export_data","name": "데이타 내보내기"}
+							,{key : "export_column","name": "컬럼정보 내보내기"}
+						]
+					}
+				]
+			}
+		}
+	});
+}
+
+(function($) {
+
+var _evt = $.event,
+	_special,
+	resizeTimeout;
+
+_special = _evt.special.pubgridResize = {
+	setup: function() {
+		$( this ).on( "resize", _special.handler );
+	},
+	teardown: function() {
+		$( this ).off( "resize", _special.handler );
+	},
+	handler: function( event, execAsap ) {
+		// Save the context
+		var context = this,
+			args = arguments,
+			dispatch = function() {
+				// set correct event type
+				event.type = "pubgridResize";
+				_evt.dispatch.apply( context, args );
+			};
+
+		if ( resizeTimeout ) {
+			clearTimeout( resizeTimeout );
+		}
+
+		execAsap ?
+			dispatch() :
+			resizeTimeout = setTimeout( dispatch, $special.threshold );
+	},
+	threshold: 150
+};
+
+})(jQuery);
+</script>

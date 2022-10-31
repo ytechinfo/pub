@@ -1,7 +1,7 @@
 /**
- * pub.ep.js v0.0.1
+ * pub.ep.js v1.0.3
  * ========================================================================
- * Copyright 2016 ytkim
+ * Copyright 2016-2022 ytkim
  * Licensed under MIT
  * http://www.opensource.org/licenses/mit-license.php
  * url : https://github.com/ytechinfo/pub
@@ -31,15 +31,7 @@ _defaultOption ={
 	method :'post'
 	,cache: false
 	,dataType: "json"
-	,beforeSend : function( xhr ) {
-		if(loadDiv)	$(loadDiv).centerLoadingClose();
-	}
-	,error : function (data, status, err){
-			
-	}
-	,complete: function (data, status, err){
-			
-	}	
+	,header:{}
 }
 ,globalOption ={
 	httpMethod :{
@@ -50,8 +42,11 @@ _defaultOption ={
 		'iframe':'iframe'
 		,'popup':'popup'
 		,'location':'location'
+		,'1':'popup'
+		,'2':'iframe'
+		,'3':'location'
 	}
-	,loadSelect : '.pub-loading-area'
+	,loadSelector : '.pub-loading-area'
 	,defaultPopupMethod:'get'
 	,useReplaceParam : true
 	,useLinkReplace : true
@@ -60,16 +55,19 @@ _defaultOption ={
 	,log :{
 		url : '/epplt/api/logWrite'
 		,param :{
-			
+
 		}
 		,logWriteKey : 'all'
 		,enabled : false
+		,isBlankAllow :false
 		/*
 		,logWriteKey:[
 		     'all'
       	]
       */
-	} 
+	}
+	// page.view 하기 전에 호출 체크.
+	,beforePageView : false //function (callback){callback(true);}
 	,defaultPopupPosition : {
 		align : 'top'
 		,topMargin : 10
@@ -91,49 +89,93 @@ _defaultOption ={
 		,maxImageSize : 10*1024*1024
 		,maxTotalImageSize : 50*1024*1024
 	}
+	,speicalChar :{
+		'|' : '[|]'
+		,'+' : '[+]'
+		,'$' : '[$]'
+		,'*' : '[*]'
+		,'(' : '\\('
+		,')' : '\\)'
+		,'{' : '\\{'
+		,'}' : '\\}'
+		,'[' : '\\['
+		,']' : '\\]'
+		,'\\' : '\\\\\\\\'
+	}
 };
 
 /**
  * @method init
  * @description 설정 초기화.
- */	
-_$base.init = function (option){
-	$.extend(globalOption,option);
-	return _$base; 
+ */
+_$base.init = function (gOption , ajaxOpt){
+	globalOption=_$base.util.objectMerge(globalOption,gOption);
+	_defaultAjaxOption=_$base.util.objectMerge(_defaultAjaxOption,ajaxOpt);
 }
 /**
  * @method getOption
  * @description 설정 보기.
- */	
+ */
 _$base.getOption = function (option){
-	return globalOption; 
+	return globalOption;
 }
 
 /**
  * @method PubEP.getPojectName
  * @description contextpath 가져오기.
- */	
+ */
 _$base.getContextPath = function (uri){
-	return uri?_defaultOption.contextPath+uri:_defaultOption.contextPath; 
+	return uri?_defaultOption.contextPath+uri:_defaultOption.contextPath;
 }
 
 /**
  * @method PubEP.getPojectName
  * @description 프로젝트 이름 가져오기.
- */	
+ */
 _$base.getPojectName=function (){
 	return _defaultOption.projectNm;
 }
 
 /**
+ * @method PubEP.isUndefined
+ * @description undefined check
+ */
+_$base.isUndefined =function(obj){
+	return typeof obj==='undefined';
+}
+
+/**
+ * @method PubEP.isFunction
+ * @description function check
+ */
+_$base.isFunction =function(obj){
+	return typeof obj==='function';
+}
+
+/**
+ * @method PubEP.isEmpty
+ * @description function check
+ */
+_$base.isEmpty =function(v){
+	if (v === null) return true;
+    if (typeof v === 'undefined') return true;
+    if (typeof v === 'string' && v === '') return true;
+    if (Array.isArray(v) && v.length < 1) return true;
+    if (typeof v === 'object' && v.constructor.name === 'Object' && Object.keys(v).length < 1 && Object.getOwnPropertyNames(v) < 1) return true;
+    if (typeof v === 'object' && v.constructor.name === 'String' && Object.keys(v).length < 1) return true ;
+
+	return false
+}
+
+/**
  * @method PubEP.cookie
- * @param name 
- * @param val 
- * @param options 
+ * @param name
+ * @param val
+ * @param options
  * @description cookie 처리를 위한 메소드
  */
 _$base.cookie = function(name, val, options) {
-	if (typeof val != 'undefined') { 
+	if (typeof val != 'undefined') {
 		options = options || {};
 		if (val === null) {
 			val = '';
@@ -172,60 +214,83 @@ _$base.cookie = function(name, val, options) {
 };
 /**
  * @method PubEP.req
- * @description request 처리를 위한 모듈 
+ * @description request 처리를 위한 모듈
  */
 _$base.req ={
 	/**
 	 * @method PubEP.req.ajax
-	 * @param option 
-	 * @description ajax request 
-	 */		
+	 * @param option
+	 * @description ajax request
+	 */
 	ajax:function (option){
-		
-		var loadSelector = option.loadSelector ?option.loadSelector : globalOption.loadSelect; 
-		
+		var loadSelector = option.loadSelector ?option.loadSelector : globalOption.loadSelector;
+
 		if(option.dataType == 'jsonp'){
 			option.timeout = option.timeout || 10000;
 		}
-		
-		$.ajax($.extend({}, {
-			type :'get'
-			,cache: false
-			,dataType: "json"
-			,beforeSend : function( xhr ) {
-				if($(loadSelector.loadSelect).length > 0){
-					$(loadSelector).centerLoading({
-						contentClear:false 
-					});
+		var ajaxOpt =_$base.util.objectMerge({}, _defaultAjaxOption,option);
+
+		ajaxOpt.beforeSend = function (xhr){
+
+			var optHeader = ajaxOpt.header;
+			if(optHeader){
+				for(var key in optHeader){
+					xhr.setRequestHeader(key, optHeader[key]);
 				}
 			}
-			,error : function (data, status, err){
-				if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
+
+			if($(loadSelector).length > 0){
+				$(loadSelector).centerLoading({
+					contentClear:false
+				});
 			}
-			,complete: function (data, status, err){
-				if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
-			}	
-		},option));
+
+			if($.isFunction(option.beforeSend)){
+				option.beforeSend(xhr);
+			}
+		}
+
+		ajaxOpt.success =  function (data, status, jqXHR) {
+
+			if($.isFunction(_defaultAjaxOption.beforeSuccess)){
+				if(_defaultAjaxOption.beforeSuccess(data, status, jqXHR) === false){
+					return ;
+				}
+			}
+
+			try{
+				option.success.call(this, data, status, jqXHR);
+			}catch(e){
+				$(loadSelector).centerLoadingClose();
+				console.log(e);
+			}
+		}
+
+		$.ajax(ajaxOpt).done(function (xhr){
+			if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
+		}).fail(function (xhr){
+			if($(loadSelector).length > 0) $(loadSelector).centerLoadingClose();
+		});
 	}
 	/**
 	 * @method PubEP.resultMessage
-	 * @param resData 
-	 * @param errorMsgView 
-	 * @description request 에대한 result 에러 내용 보기. 
+	 * @param resData
+	 * @param errorMsgView
+	 * @description request 에대한 result 에러 내용 보기.
 	 */
 	,resultMessage :function (resData, errorMsgView){
 		if(resData.result_code=='500'){
 			if(errorMsgView != false){
 				alert(resData.message);
 			}
-			return false; 
+			return false;
 		}
-		return true; 
+		return true;
 	}
 	/**
 	 * @method PubEP.getParam
 	 * @param type {String} call 하는 타입
-	 * @description default 파라미터 
+	 * @description default 파라미터
 	 */
 	,getParam : function (type){
 		return {};
@@ -240,16 +305,15 @@ _$base.req ={
 	}
 };
 
+
 jQuery.fn.centerLoading = function(options) {
+	
 	this.config = {
-		closeAutoYn: 'N' ,	
+		closeAutoYn: 'N' ,
 		timeOut:1000,
 		action: 'slide',
 		height: 0,
 		width: 0,
-		position:'absolute',
-		opacity : '0.3',
-		zIndex : 10,
 		padding:'0',
 		margin :'0',
 		top :'0',
@@ -258,45 +322,80 @@ jQuery.fn.centerLoading = function(options) {
 		bgColor : globalOption.loadingBgColor,
 		loadingImg : globalOption.loadingImg,
 		cursor:	'wait',
-		content :'',
-		contentClear : false
+		contentClear : false,
+		enableLoadSelectorBtn :false,
+		callback : false
 	}
-	
-	var id,w,h,opacity;
-		
-	var config = $.extend({},this.config, options);
+
+	var id,w,h;
+
+	var config = $.extend({}, this.config, options);
 	id = this.attr('id');
 
 	w = config.width==0?this.width():config.width;
 	h = config.height==0?this.height():config.height;
-	opacity = config.opacity;
-	
+
 	if($(this).parent().attr('prevspan') =='Y')	config.contentClear = false;
-	
-	var strHtm = [];
-	strHtm.push('<div class="pub-center-loading" style="z-index:'+config.zIndex+';position:'+config.position+';top: 0;left: 0;width:'+w+'px;height:'+h+'px;cursor:'+config.cursor+';">');
-	strHtm.push('<div class="pub-center-loading-bg"" style="background:'+config.bgColor+';opacity:'+opacity+';filter: alpha(opacity='+(parseFloat('0.4')*100)+');-moz-opacity:'+opacity+';-khtml-opacity: '+opacity+';'+(!config.contentClear?"position:absolute;":"")+'width:'+w+'px; height:'+h+'px;"></div>');
-	strHtm.push('<table style="position:absolute;z-index:3;width:100%;height:100%;"><tr><td style="vertical-align:middle;text-align:center;">')
-	strHtm.push('<div><div><img src="'+config.loadingImg+'"></div><div class="center-loading-content" style="color:#ffffff;"></div></div></td></tr></table>')
-	strHtm.push('</div>');
+
+	var loadStr = '<div class="centerLoading" style="cursor:'+config.cursor+';top:0px;left:0px;z-index:100;position:absolute;width:100%; height:100%;">';
+
+	loadStr +='<div style="position:absolute;background: '+config.bgColor+';opacity: 0.5; width:100%; height:100%;z-index:1;"></div>';
+	if(config.content){
+		if(config.centerYn=='Y'){
+			loadStr +='<div style="z-index:10; text-align:center; margin: 0; position: absolute; top: 40%;left: 50%; transform: translate(-50%, -50%);">'+ config.content+'</div>';
+		}else{
+			loadStr += config.content;
+		}
+	}else{
+		loadStr +=' <div style="z-index:10; text-align: center; position: absolute; top: 40%;left: 50%; transform: translate(-50%, -50%);"><img src="'+config.loadingImg+'"/> ';
+		
+		if(config.enableLoadSelectorBtn===true){
+			loadStr +='<div style="height: 35px;line-height: 35px;"><a href="javascript:;" class="center-loading-btn _loadSelectorCancelBtn">Cancel</a></div>';
+		}
+		
+		loadStr +='</div>';
+	}
+	loadStr +='</div>';
 	
 	if(!config.contentClear){
-		this.prepend(strHtm.join(''));
+		this.prepend(loadStr);
 	}else{
-		this.html(strHtm.join(''));
+		this.empty().html(loadStr);
+	}
+	
+	if(config.enableLoadSelectorBtn===true){
+		var centerLoadingEle = $(this); 
+		this.find('._loadSelectorCancelBtn').on('click', function (e){
+			if(_$base.isFunction(config.callback)){
+				config.callback();
+			}else{
+				centerLoadingEle.find('.centerLoading').remove();
+			}
+		})
 	}
 
-	if(config.content){
-		$(this.find('.center-loading-content')).html(config.content);
+	var cssPosition = this.css('position');
+
+	if (cssPosition != 'fixed' && cssPosition != 'relative' &&  cssPosition != 'absolute') {
+		this.css('position','relative');
+		var heightVal = this.css('height') ||'';
+		heightVal = heightVal.replace('px','');
+		var addCssKey = 'relative';
+		this.attr('var-css-key',addCssKey);
 	}
-	
 	config.action == 'slide'?jQuery(this).slideDown('slow') : config.action == 'fade'?jQuery(this).fadeIn('slow'):jQuery(this).show();
-	
+
 	return this;
 };
 
 jQuery.fn.centerLoadingClose= function(options) {
-	this.find('.pub-center-loading').remove();
+
+	this.find('.centerLoading').remove();
+	var posVal = (this.attr('var-css-key')||'');
+	if(posVal.indexOf('relative') > -1){
+		this.css('position','');
+		this.removeAttr('var-css-key');
+	}
 };
 
 _$base.log=function (){
@@ -306,19 +405,36 @@ _$base.log=function (){
 /**
 * url open 메소드
 * view 필수 항복  url, type , options{gubun:'menu , portlet, sso 등등', gubunkey:'구분키 값'}
-* ex : 
+* options :{
+	gubun :''	// 로그 남길때 gubun 값
+	, gubunkey : '' 	// 로그 남길때 gubun keyr값.
+	,viewOption :''  팝업일때 창 옵션.
+	,name :  '' 팝업창 이름
+	,beforeCheck : false or true // beforePageView 가 있을 경우 체크 할지 여부를 등록.
+	,orginUrlView : false 직접 볼려면 true
+ }
+* ex :
 * popup ex : _$base.page.view("http://dev.pub.com/",'popup',{gubun:'menu', gubunkey:'menu_pub',name:'popup name', method:'get or post',viewOption:'toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400'});
 * location ex : _$base.page.view("http://dev.pub.com/",'location',{gubun:'menu', gubunkey:'menu_location'});
-* 
+*
 */
 _$base.logWrite = function (url, type, options){
-	var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {replaceParam:{userid:''}} : pubEPortalConfig); 
 	
-	if(options.logWriteFlag !==false && (globalOption.log.logWriteKey =='all' || $.inArray(options.gubun, globalOption.log.logWriteKey) > -1 ) ){
+	if(globalOption.log.enabled===true && options.logWriteFlag !==false && (globalOption.log.logWriteKey =='all' || $.inArray(options.gubun, globalOption.log.logWriteKey) > -1 ) ){
+
+		var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {replaceParam:{userid:''}} : pubEPortalConfig);
+		
+		options.gubun = options.gubun ||'';
+		options.gubunkey = options.gubunkey ||'';
+
+		if(globalOption.log.isBlankAllow===false && (options.gubun == '' || options.gubunkey == '')){
+			return false;
+		}
+
 		$.ajax({
 			url : globalOption.log.url
 			,dataType : "text"
-			,data : {
+			,data : _$base.util.objectMerge({
 				gubun : options.gubun
 				,gubunkey : options.gubunkey
 				,url : url
@@ -328,30 +444,32 @@ _$base.logWrite = function (url, type, options){
 				,ip : ''
 				,loginfo : tmpInfo.replaceParam.userid
 				,userid : tmpInfo.replaceParam.userid
-			}
+				},globalOption.log.param)
 			,success : function(resdata) {}
 			,error : function() {}
 		});
 	}
-	
-	return false; 
+
+	return false;
 }
 
 _$base.page ={
-	popupPostMsg : ''	
-	,view : function(url, type, options){
-    
+	popupPostMsg : ''
+	,view : function(url, pType, options){
+
 		if(typeof url ==='undefined') throw 'PubEP.page.view url undefined : ['+url+']';
-		
-		if(typeof globalOption.openType[type]==='undefined') throw 'PubEP.page.view ['+type+'] Type mismatch view url:'+url;
-		
-		var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {link : {}, replaceParam :{}} : pubEPortalConfig); 
-		
+
+		var type = globalOption.openType[pType];
+
+		if(typeof type==='undefined') throw 'PubEP.page.view ['+pType+'] Type mismatch view url:'+url;
+
+		var tmpInfo = (typeof pubEPortalConfig === 'undefined' ? {link : {}, replaceParam :{}} : pubEPortalConfig);
+
 		options = $.extend(true, options||{},{useLinkReplace : globalOption.useLinkReplace, useReplaceParam : globalOption.useReplaceParam});
-		
+
 		if(options.useLinkReplace===true && tmpInfo.link){
 			var matchArr = url.match(/({[a-zA-Z0-9]+)}/gi);
-			
+
 			if(matchArr){
 				for(var i= 0 ; i < matchArr.length; i ++){
 					var matchStr = matchArr[i];
@@ -359,15 +477,33 @@ _$base.page ={
 				}
 			}
 		}
-		
+
+		if($.isFunction (globalOption.beforePageView)  &&  options.beforeCheck !==false){
+			try{
+				globalOption.beforePageView.call(null, function (reval){
+					if(reval===true){
+						_$base.page._viewPage(url, type, tmpInfo, options);
+					}else if(reval== 'return'){
+						return {'url' : url, 'type': type, 'tmpInfo':tmpInfo, 'options':options };
+					}
+				})
+			}catch(e){
+				_$base.page._viewPage(url, type, tmpInfo, options);
+			}
+		}else{
+			_$base.page._viewPage(url, type, tmpInfo, options);
+		}
+	}
+	,_viewPage : function (url, type, tmpInfo, options){
+
 		if(options.useReplaceParam ===true && tmpInfo.replaceParam){
 			url=_$base.util.replaceUrl(url,tmpInfo.replaceParam);
 		}
-		
-		if(globalOption.log.enabled ===true && options.logwrite !== false){
+
+		if(options.logwrite !== false){
 			_$base.logWrite(url, type, options);
 		}
-		
+
 		if(globalOption.openType.iframe== type){
 			this._iframe(url, options);
 		}else if(globalOption.openType.popup== type){
@@ -381,13 +517,18 @@ _$base.page ={
 		}
 	}
 	,_location:function (url, options){
-		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
-		var tmpParam=getParameter(url , {});
-		tmpParam=paramToArray(tmpParam);
-		
-		if(tmpParam.length > 0) url =openUrl+'?'+tmpParam.join('&');
-		
+
+
+		var tmpParam = options.param?options.param:{}
+		var openUrl;
+
+		if(options.orginUrlView===true){
+			openUrl = url;
+		}else{
+			openUrl = this._getUrl(url);
+			tmpParam=getParameter(url , tmpParam);
+		}
+
 		if(options){
 			if(options.method=='post'){
 				var inputStr = [];
@@ -398,41 +539,68 @@ _$base.page ={
 					inputStr.push('</form>');
 					$('body').append(inputStr.join(''));
 				}
-				
-				document.pubepLocationHrefForm.action = url; 
+
+				document.pubepLocationHrefForm.action = url;
 				document.pubepLocationHrefForm.submit();
 			}else{
+				openUrl = this._addParamGetUrl(openUrl , tmpParam);
 				location.href=url;
 			}
 		}else{
 			location.href=url;
 		}
 	}
+	,_getUrl : function (url){
+		var urlIdx = url.indexOf('?');
+
+		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
+
+		return openUrl;
+	}
+	,_addParamGetUrl : function (openUrl, tmpParam){
+		tmpParam =tmpParam || {};
+		tmpParam=paramToArray(tmpParam);
+
+		if(tmpParam.length > 0)	{
+			if(openUrl.indexOf('?') > -1){
+				openUrl =openUrl+'&'+tmpParam.join('&');
+			}else {
+				openUrl =openUrl+'?'+tmpParam.join('&');
+			}
+		}
+		return openUrl;
+	}
 	,_popup:function (url, options){
-		var _this = this; 
+		var _this = this;
 		var targetId = 'PubEP_'+_$base.util.generateUUID().replace(/-/g,'')
 			, tmpParam = options.param?options.param:{}
 			, tmpMethod = options.method?options.method:globalOption.defaultPopupMethod
 			, tmpPopOption = options.viewOption?options.viewOption:''
 			, tmpPosition = $.extend({},globalOption.defaultPopupPosition,( $.isPlainObject(options.position)?options.position:{align:options.position} ))
 			, tmpName ='PubEP_'+(options.name?( escape(options.name).replace(/[ \{\}\[\]\/?.,;:|\)*~`!^\-+┼<>@\#$%&\'\"\\(\=]/gi,'') ):targetId.replace(/-/g,''));
-			
-		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > -1 ?url.substring(0,urlIdx):url;
-		
+
+		var openUrl;
+
+		if(options.orginUrlView===true){
+			openUrl = url;
+		}else{
+			openUrl = _this._getUrl(url);
+			tmpParam=getParameter(url , tmpParam);
+		}
+
 		tmpPopOption = tmpPopOption.replace(/\s/gi,'');
-		
+
 		if(tmpPopOption != ''){
-		
+
 			var popupOptArr = tmpPopOption.split(',');
-			var tmpItem ,_t=0 , _l=0 ,_w=1050, _h=0, addFlag ,tmpOpt='',addScrollbarOpt = true, addStatusOpt=false, addResizeableOpt=true; 
-				
+			var tmpItem ,_t=-1 , _l=-1 ,_w=1050, _h=0, addFlag ,tmpOpt='',addScrollbarOpt = true, addStatusOpt=false, addResizeableOpt=true;
+
 			for(var i = 0 ;i < popupOptArr.length; i++){
 				tmpItem = popupOptArr[i];
-				addFlag = true; 
+				addFlag = true;
 				if(tmpItem.toLowerCase().indexOf('width=')==0){
 					_w= tmpItem.replace(/[^0-9]/g,'');
-					addFlag = false; 
+					addFlag = false;
 				}
 				if(tmpItem.toLowerCase().indexOf('height=')==0){
 					_h= tmpItem.replace(/[^0-9]/g,'');
@@ -445,18 +613,18 @@ _$base.page ={
 				if(tmpItem.toLowerCase().indexOf('left=')==0){
 					_l= tmpItem.replace(/[^0-9]/g,'');
 					addFlag = false;
-				} 
+				}
 				if(tmpItem.toLowerCase().indexOf('scrollbars=')==0){
-					addScrollbarOpt= false; 
+					addScrollbarOpt= false;
 				}
-				
+
 				if(tmpItem.toLowerCase().indexOf('resizable=')==0){
-					addResizeableOpt= false; 
+					addResizeableOpt= false;
 				}
-				
+
 				if(tmpItem.toLowerCase().indexOf('status=') > -1 && tmpItem.toLowerCase()=='status=1' &&  tmpPosition.browser[$.browser.name] == 40){
 					addStatusOpt= true;
-				} 
+				}
 				//console.log("111:"+tmpPosition.browser[$.browser.name]);
 				tmpOpt += (addFlag ? ( (tmpOpt==''?'':',') + tmpItem ) : '');
 			}
@@ -472,58 +640,39 @@ _$base.page ={
 
 			var heightMargin = tmpPosition.browser[$.browser.name]||tmpPosition.browser['default'];
 			_h= ( _h==0 ? (screen.availHeight-heightMargin- tmpTopMargin) :_h);
-						
+
 			_h =addStatusOpt?_h-23:_h; // status바 체크.
 			//console.log(addStatusOpt, _h)
 			//console.log('111height : '+_h,'topMargin : '+ heightMargin,'heightMargin : '+heightMargin,'availHeight : '+ screen.availHeight);
-			var _viewPosition = {};
+
+			var _viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpPosition.ieDualCenter);
+
 			if(tmpPosition.align=='top'){
-				
-				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
-								
-				var _top = 0 , _left = 0;
-				
 				if($.browser.name=='msie'){
-					if(_t!=0){
-						_viewPosition.top = _t;
-					}else{
-						_viewPosition.top = tmpTopMargin;
-					}
+					_viewPosition.top = tmpTopMargin;
 				}else{
 					_viewPosition.top = typeof screen['availTop']!=='undefined' ?screen['availTop'] : (window.screenTop || screen.top);
-					if(_t!=0){
-						_viewPosition.top = (_viewPosition.top > 0? _viewPosition.top- _t : _viewPosition.top+_t); 
-					}else{
-						_viewPosition.top = (_viewPosition.top > 0? _viewPosition.top- tmpTopMargin : _viewPosition.top+tmpTopMargin); 
-					}
+					_viewPosition.top = (_viewPosition.top > 0? _viewPosition.top- tmpTopMargin : _viewPosition.top+tmpTopMargin);
 				}
 			}else if(tmpPosition.align=='left'){
-				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
 				_viewPosition.left =0;
 			}else if(tmpPosition.align=='right'){
-				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter);
 				_viewPosition.left = window.screen.availWidth-_w;
 			}else if(tmpPosition.align=='bottom'){
-				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter);
 				_viewPosition.top = window.screen.availHeight-_h;
-			}else{
-				_viewPosition = _$base.util.popupPosition(_w,_h, tmpPosition.top, tmpPosition.left, tmpName , tmpPosition.ieDualCenter); 
 			}
-			
-			_viewPosition.top = isNaN(tmpTopMargin)?_viewPosition.top:_viewPosition.top+tmpTopMargin;
-			_viewPosition.left = isNaN(tmpLeftMargin)?_viewPosition.left:_viewPosition.left+tmpLeftMargin
+
+			_viewPosition.top = _t != -1 ? _t : (isNaN(tmpTopMargin)?_viewPosition.top:_viewPosition.top+tmpTopMargin);
+			_viewPosition.left = _l != -1 ? _l : (isNaN(tmpLeftMargin)?_viewPosition.left:_viewPosition.left+tmpLeftMargin);
 
 			tmpPopOption = tmpOpt+', width=' + _w + 'px, height=' + _h + 'px, top=' + _viewPosition.top + 'px, left=' + _viewPosition.left+'px';
 		}
-		tmpParam=getParameter(url , tmpParam);
-		
+
 		// get method
 		if(globalOption.httpMethod.get ==tmpMethod){
-			
-			tmpParam=paramToArray(tmpParam);
-			
-			if(tmpParam.length > 0)	openUrl =openUrl+'?'+tmpParam.join('&');
-			
+
+			openUrl = _this._addParamGetUrl(openUrl , tmpParam);
+
 			try{
 				var myWindow=window.open(openUrl,tmpName, tmpPopOption);
 				myWindow.focus();
@@ -533,11 +682,11 @@ _$base.page ={
 			inputStr.push('<!doctype html><head>');
 			inputStr.push('<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta charset="UTF-8" /></head>');
 			inputStr.push('<form action="'+openUrl+'" method="post" id="'+targetId+'" name="'+targetId+'">');
-			
+
 			var tmpVal;
 			for(var key in tmpParam){
 				tmpVal = tmpParam[key];
-				
+
 				if(key == "sendMailAsDistribute_tContent"){
 					inputStr.push('<input type="hidden" name="'+key+'" value=\"'+((typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal))+'\"/>');
 				}else{
@@ -546,17 +695,22 @@ _$base.page ={
 			}
 			inputStr.push('</form>');
 			inputStr.push('<script type="text/javascript">try{document.charset="utf-8";}catch(e){}document.'+targetId+'.submit();</'+'script>');
-			
+
 			var tmpPopupObj=window.open('about:blank', tmpName, tmpPopOption);
-			
+
 			try{
+				try{tmpPopupObj.document.open();}catch(e){console.log(e)}
 				tmpPopupObj.document.write(inputStr.join(''));
 				tmpPopupObj.focus();
+				try{tmpPopupObj.document.close();}catch(e){console.log(e)}
+
 			}catch(e){
 				tmpPopupObj=window.open('about:blank', tmpName+targetId, tmpPopOption);
 				try{
+					try{tmpPopupObj.document.open();}catch(e){console.log(e)}
 					tmpPopupObj.document.write(inputStr.join(''));
 					tmpPopupObj.focus();
+					try{tmpPopupObj.document.close();}catch(e){console.log(e)}
 				}catch(e1){
 					console.log(e1);
 				}
@@ -566,31 +720,38 @@ _$base.page ={
 	,_iframe:function (url,options){
 		if(!options.target) throw SyntaxError('iframe id empty');
 		var tmpiframe =$(options.target);
-		
+
 		if(url==''){
 			try{
 				tmpiframe.attr('src','').on('load.pubep.evt', function() {
-					tmpiframe.get(0).contentWindow.document.write('<div>gubun : '+options.gubun+'</div><div>gubunkey : '+options.gubunkey+'</div><div><h2>Check iframe url : ['+url+']</h2></div>');
+					var tmpFrameObj = tmpiframe.get(0).contentWindow;
+					try{tmpFrameObj.document.open();}catch(e){console.log(e)}
+					tmpFrameObj.document.write('<div>gubun : '+options.gubun+'</div><div>gubunkey : '+options.gubunkey+'</div><div><h2>Check iframe url : ['+url+']</h2></div>');
+					try{tmpFrameObj.document.close();}catch(e){console.log(e)}
+
 					tmpiframe.off('load.pubep.evt');
 				});
 			}catch(e){console.log(e)}
 
-			return false; 
+			return false;
 		}
-		
-		if(tmpiframe.length < 1) throw SyntaxError(options.target+ ' iframe element emtpy');
-				
-		var tmpParam = options.param?options.param:{};
-		tmpParam=getParameter(url , tmpParam);
-		
-		var urlIdx = url.indexOf('?');
-		var openUrl = urlIdx > -1 ? url.substring(0,urlIdx) : url;
 
-		//if(url== tmpiframe.attr('_view_url') && options.refresh != true) return ; 
-		
+		if(tmpiframe.length < 1) throw SyntaxError(options.target+ ' iframe element emtpy');
+
+		var tmpParam = options.param?options.param:{};
+
+		var openUrl;
+
+		if(options.orginUrlView===true){
+			openUrl = url;
+		}else{
+			openUrl = this._getUrl(url);
+			tmpParam=getParameter(url , tmpParam);
+		}
+
 		tmpiframe.attr('_view_url', url);
 
-		if(options.method == "post"){
+		if(options.method == globalOption.httpMethod.post){
 			var tmpForm = $("<form></form>");
 			var strHtm = [];
 			var tmpVal;
@@ -602,37 +763,85 @@ _$base.page ={
 			tmpForm.attr("method", "post");
 			tmpForm.attr("action", openUrl);
 			tmpForm.append(strHtm.join(""));
-			
+
 			$("#hiddenFormIframe").remove();
 			$("body").append("<div id='hiddenFormIframe'></div>");
 			$("#hiddenFormIframe").append(tmpForm);
 			tmpForm.submit();
 		}else{
-			tmpParam=paramToArray(tmpParam);
-			
-			if(tmpParam.length > 0)	openUrl =openUrl+'?'+tmpParam.join('&');
-			
-			tmpiframe.off("load");
-			tmpiframe.on("load", function(){
-				tmpiframe.off("load");
+			openUrl = this._addParamGetUrl(openUrl , tmpParam);
+
+			if(options.onlySrc){
 				tmpiframe.attr('src', openUrl);
-				tmpiframe.show();
-			})
-			tmpiframe.attr('src', '');
-			tmpiframe.hide();
+			}else{
+				tmpiframe.off("load");
+				tmpiframe.on("load", function(){
+					tmpiframe.off("load");
+					tmpiframe.attr('src', openUrl);
+					tmpiframe.show();
+				})
+				tmpiframe.attr('src', '');
+				tmpiframe.hide();
+			}
 		}
-		
+
 		var cstyle=tmpiframe.attr('style');
-		
+
 		var tmpStyle = options.viewOption?options.viewOption:'';
-		
-		var styleArr = tmpStyle.split(';'),cssArr ; 
-		
+
+		var styleArr = tmpStyle.split(';'),cssArr ;
+
 		for(var i = 0 ; i <styleArr.length; i ++){
 			cssArr = styleArr[i].split(':');
 			if(cssArr.length > 1) tmpiframe.css($.trim(cssArr[0]),cssArr[1]);
 		}
 	}
+}
+
+_$base.download= function (opt){
+
+	var inputStr = [];
+	var tmpParam = opt.param;
+
+	var downloadForm = $('#pub_hidden_download_form');
+	if(downloadForm.length < 1){
+		var inputStr = [];
+		inputStr.push('<form action="" method="post" id="pub_hidden_download_form" name="hidden_download_form" style="width:0;height:0px;display:none;">');
+		inputStr.push('</form>');
+		inputStr.push('<iframe id="pub_hidden_download_frame" name="pub_hidden_download_frame_name" style="width:0;height:0px;display:none;"></iframe>');
+
+		$('body').append(inputStr.join(''));
+		downloadForm = $('#pub_hidden_download_form');
+	}
+	
+	for(var key in tmpParam){
+		var tmpVal = tmpParam[key];
+		var inputField = $('<input type="hidden"/>');
+		inputField.attr({
+			'name' : key
+			,'value' : (typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal)
+		});
+
+		downloadForm.append(inputField);
+	}
+	var targetUUID ='pubDownload_'+ _$base.util.generateUUID().replace(/-/g,''); 
+	
+	downloadForm.attr('action',opt.url);
+	downloadForm.attr('method',opt.method=='get'?'get':'post');
+
+	if(opt.target == 'popup'){
+		if(!_$base.isUndefined(opt.targetOption)){
+			window.open("", targetUUID, opt.targetOption) ;
+		}else{
+			downloadForm.attr('target','_blank');
+		}
+	}else{
+		//$('#pub_hidden_download_frame').prop('name',targetUUID);	
+		downloadForm.attr('target','pub_hidden_download_frame_name');
+	}
+	
+	downloadForm.trigger('submit');
+	downloadForm.empty();
 }
 
 
@@ -644,9 +853,9 @@ _$base.util = {
 	 * @description 날짜 계산
 	 */
 	calcDate:function (date,num,type) {
-		
+
 		if(isNaN(num)) return (function (){return this.value;});
-		
+
 		var a = new Date(date);
 		var format = "yyyy-mm-dd";
 		if(type=='m'){
@@ -659,11 +868,11 @@ _$base.util = {
 	}
 	/**
 	 * @method convertCamel
-	 * @param camelStr 
+	 * @param camelStr
 	 * @description char camel case 로 변경. user_name -> userName
-	 */	
+	 */
 	,convertCamel : function (camelStr){
-		
+
 	    if(camelStr == '') {
 	        return camelStr;
 	    }
@@ -673,18 +882,18 @@ _$base.util = {
 	        return word.toUpperCase();
 	    });
 	    returnStr = returnStr.replace(/_/g, "");
-	    
-	    return returnStr; 
+
+	    return returnStr;
 	}
 	/**
 	 * @method charFill
-	 * @param num 
-	 * @param width 
-	 * @param fillchar 
+	 * @param num
+	 * @param width
+	 * @param fillchar
 	 * @description 문자 채우기
-	 */	
+	 */
 	,charFill :function(num, width, fillChar) {
-		fillChar = typeof fillChar !=='undefined' ? fillChar :'0'; 
+		fillChar = typeof fillChar !=='undefined' ? fillChar :'0';
 		var str = String((new Array(width+1)).join(fillChar) + num).slice(-width)
 		return str
 	}
@@ -692,20 +901,33 @@ _$base.util = {
 	 * @method domain
 	 * @param mode
 	 * @description current domain
-	 */	
-	,domain : function (mode){
+	 */
+	,domain : function (mode, prefix, protocalFlag){
 		if(typeof mode==='undefined'){
 			if(window.location.origin){
-				return window.location.origin; 
+				return window.location.origin;
 			}else{
 				return window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
 			}
 		}else {
-			if(mode=='domain'){
-				return window.location.hostname; 
-			}else{
-				return window.location.hostname;
+			var hostName = window.location.hostname;
+
+			var i=0,domain=document.domain,p=domain.split('.'),s='_g_d'+(new Date()).getTime();
+			while(i<(p.length-1) && document.cookie.indexOf(s+'='+s)==-1){
+				domain = p.slice(-1-(++i)).join('.');
+				document.cookie = s+"="+s+";domain="+domain+";";
 			}
+			document.cookie = s+"=;expires=Thu, 01 Jan 1970 00:00:01 GMT;domain="+domain+";";
+
+			if(mode=='main'){
+				prefix = (prefix ||'');
+				var protocal = protocalFlag ===true ?  window.location.protocol + "//" :'';
+				return protocal+prefix+domain;
+			}else if (mode=='sub'){
+				var tmpsub = hostName.replace(domain,'').replace('.','');
+				return tmpsub=='www'?'':tmpsub;
+			}
+			throw 'mode not valid '+ domain
 		}
 	}
 	/**
@@ -713,25 +935,34 @@ _$base.util = {
 	 * @param target
 	 * @param source
 	 * @description object merge
-	 */	
+	 */
 	,objectMerge : function () {
-		var dst = {},src ,p ,args = [].splice.call(arguments, 0);
-		
-		while (args.length > 0) {
-			src = args.splice(0, 1)[0];
-			if (Object.prototype.toString.call(src) == '[object Object]') {
-				for (p in src) {
-					if (src.hasOwnProperty(p)) {
-						if (Object.prototype.toString.call(src[p]) == '[object Object]') {
-							dst[p] = _$base.util.objectMerge(dst[p] || {}, src[p]);
-						} else {
-							dst[p] = src[p];
-						}
-					}
+
+		var objMergeRecursive = function (dst, src) {
+
+			for (var p in src) {
+				if (!src.hasOwnProperty(p)) {continue;}
+
+				var srcItem = src[p] ;
+				if (srcItem=== undefined) {continue;}
+
+				if ( typeof srcItem!== 'object' || srcItem=== null) {
+					dst[p] = srcItem;
+				} else if (typeof dst[p]!=='object' || dst[p] === null) {
+					dst[p] = objMergeRecursive(srcItem.constructor===Array ? [] : {}, srcItem);
+				} else {
+					objMergeRecursive(dst[p], srcItem);
 				}
 			}
+			return dst;
 		}
-		return dst;
+
+		var reval = arguments[0];
+		if (typeof reval !== 'object' || reval === null) {	return reval;}
+		for (var i = 1, il = arguments.length; i < il; i++) {
+			objMergeRecursive(reval, arguments[i]);
+		}
+		return reval;
 	}
 	/**
 	 * @method PubEP.util.dateFormat
@@ -767,22 +998,22 @@ _$base.util = {
      * @description 날자 범위 지정하기
      */
 	,setRangeDate :function(sdtObj, edtObj, cdt, rangeNum, type, returnFormat){
-		
+
 		if(isNaN(rangeNum)) return false;
-		
-		var _self = this; 
+
+		var _self = this;
 		var flag = rangeNum >0 ?true:false;
 
 		returnFormat = returnFormat ?returnFormat : 'yyyy-mm-dd';
-		
+
 		var sdtEle = $(sdtObj);
 		var	edtEle = $(edtObj);
 
-		if(!(sdtEle.length > 0 && edtEle.length > 0)) throw 'selector not defined first ['+sdtObj+'] or second ['+edtObj+'] '; 
+		if(!(sdtEle.length > 0 && edtEle.length > 0)) throw 'selector not defined first ['+sdtObj+'] or second ['+edtObj+'] ';
 
 		var cdtVal = _self.removeSpecial(cdt);
 		var cdt = cdtVal.substring(0,4)+'-'+cdtVal.substring(4,6)+'-'+cdtVal.substring(6,8);
-		
+
 		var tmped = _self.calcDate(cdt,rangeNum, type);
 
 		if(flag){
@@ -797,7 +1028,7 @@ _$base.util = {
      * @method PubEP.util.functionCall
      * @param fnInfo {Strinb, Object {name :'functionName' , context : 'call object ex)window, PubEP'}}
      * @param arguments
-     * @description 문자열 function 호출. 
+     * @description 문자열 function 호출.
      */
 	,functionCall : function(fnInfo) {
 
@@ -807,9 +1038,9 @@ _$base.util = {
 			};
 		}
 
-		if(typeof fnInfo.name ==='undefined') throw 'function name undefined : '+ fnInfo; 
+		if(typeof fnInfo.name ==='undefined') throw 'function name undefined : '+ fnInfo;
 
-		var name =  fnInfo.name 
+		var name =  fnInfo.name
 			,context = fnInfo['context'] ? fnInfo['context']:window
 			,args = Array.prototype.slice.call(arguments, 1);
 
@@ -818,13 +1049,13 @@ _$base.util = {
 		normalizedName = name.replace(/[\]'"]/g, '').replace(/\[/g, '.');
 		ns = normalizedName.split(".");
 		func = context;
-		
+
 		for (i = j = 0, len = ns.length; j < len; i = ++j) {
 			n = ns[i];
 			func = func[n];
 		}
 		ns.pop();
-		
+
 		for (i = k = 0, len1 = ns.length; k < len1; i = ++k) {
 			n = ns[i];
 			context = context[n];
@@ -844,27 +1075,27 @@ _$base.util = {
 		});
 		return uuid;
 	}
-	,popupPosition : function (_w,_h , tr , lr, tmpName ,ieDualCenter){
+	,popupPosition : function (_w,_h , tr , lr, ieDualCenter){
 		_h=  parseInt(_h,10);
 		_w = parseInt(_w,10);
 		tr = parseInt(tr,10);
 		lr = parseInt(lr,10);
 		tr =tr? tr :2;
 		lr =lr? lr :2;
-		
+
 		var dualScreenLeft = window.screenX || window.screenLeft || screen.left
 			,dualScreenTop = window.screenY || window.screenTop || screen.top
 			, width = window.innerWidth || document.documentElement.clientWidth || screen.width
 			, height = window.innerHeight || document.documentElement.clientHeight || screen.height;
-		
-		var ua = window.navigator.userAgent; 
+
+		var ua = window.navigator.userAgent;
 		var old_ie= ua.indexOf('MSIE');
 		var new_ie= ua.indexOf('Trident/');
-		var _top = 0 , _left = 0 ; 
-		
+		var _top = 0 , _left = 0 ;
+
 		if(old_ie >-1 || new_ie >-1){
 			if(ieDualCenter){
-				
+
 				var dualScreenLeft = window.screenLeft || screen.left
 					,dualScreenTop = window.screenTop || screen.top
 					,width = window.innerWidth || document.documentElement.clientWidth || screen.width
@@ -875,9 +1106,9 @@ _$base.util = {
 			}else{
 				width=window.screen.availWidth;
 				height=window.screen.availHeight;
-				dualScreenTop= 0 ; 
-				dualScreenLeft =0 ; 
-				_top = ((height / tr) - (_h / tr))+ dualScreenTop; 
+				dualScreenTop= 0 ;
+				dualScreenLeft =0 ;
+				_top = ((height / tr) - (_h / tr))+ dualScreenTop;
 				_top = _top < 0 ? 0 :_top;
 				_left = ((width / lr) - (_w / lr)) + dualScreenLeft;
 			}
@@ -887,7 +1118,7 @@ _$base.util = {
 			_top = ((height / tr) - (_h / tr))+ window.screen.availTop;
 			_left = ((width / lr) - (_w / lr))+window.screen.availLeft;
 		}
-		
+
 		return {
 			top : _top
 			,left :  _left
@@ -895,13 +1126,13 @@ _$base.util = {
 	}
 	,replaceUrl : function (url, param){
 		var urlArr = url.match(/(#[_a-zA-Z0-9]+)#/gi);
-		
+
 		if(urlArr){
 			for(var i= 0 ; i < urlArr.length; i ++){
 				url = url.replace(urlArr[i], param[urlArr[i].replace(/#/g,'')]);
 			}
 		}
-		return url ; 
+		return url ;
 	}
 	/**
 	 * @method PubEP.util.replaceParamUrl
@@ -910,24 +1141,24 @@ _$base.util = {
 	 * @description url 파라미터 셋팅.
 	 */
 	,replaceParamUrl : function (url , param){
-		var _this = this; 
+		var _this = this;
 		if(!url) return '';
-		
+
 		var queryStr = [];
-		
-		var urlArr = url.split('?'); 
+
+		var urlArr = url.split('?');
 		if(urlArr.length > 1){
 			queryStr.push(urlArr[0]+'?');
 			url = urlArr.splice(1).join('?');
 		}
 		var parameters = url.split('&');
-		
+
 		var sParam, sParamArr;
 		for(var i = 0 ; i < parameters.length ; i++){
 			sParam = parameters[i];
-			
+
 			if(i!=0) queryStr.push('&');
-			
+
 			queryStr.push(_this.replaceParam(sParam,param));
 		}
 		return queryStr.join('');
@@ -935,20 +1166,37 @@ _$base.util = {
 	/**
 	 * @method PubEP.util.replageParam
 	 * @param str replace string
-	 * @param replaceParam 변경함 파라미터 
+	 * @param replaceParam 변경함 파라미터
 	 * @description get all attirbute
 	 */
 	,replaceParam : function (str , replaceParam){
 		var matchObj = str.match(/#.*?#/g);
-		
+
 		if(matchObj != null){
-			var _paramVal = str,tmpKey={},matchKey; 
-			for(var j=0 ;j <matchObj.length; j++){
-				matchKey = matchObj[j];
-				if(typeof replaceParam==='object'){
-					if(!tmpKey[matchKey]){
-						_paramVal =_paramVal.replace(new RegExp(matchKey,'g'), (replaceParam[matchKey.replace(/#/g,'')]||'') );
-						tmpKey[matchKey] = matchKey;
+			var _paramVal = str,tmpKey={},matchKey,orginKey, paramObjFlag = (typeof replaceParam==='object');
+
+			for(var j=0 , matchLen =matchObj.length;j <matchLen; j++){
+				orginKey = matchObj[j];
+				var matchKey = orginKey;
+
+				var keyMatch = matchKey.match(/[*+$|^(){}\[\]]/gi);
+
+				if(keyMatch != null){
+					var tmpReplaceKey = {}
+					for(var z=0, matchKeyLen =keyMatch.length ;z <matchKeyLen; z++){
+						var specCh = keyMatch[z];
+
+						if(!tmpReplaceKey[specCh]){
+							matchKey = matchKey.replace(new RegExp(globalOption.speicalChar[specCh],'g'), globalOption.speicalChar[specCh]);
+							tmpReplaceKey[specCh] = specCh;
+						}
+					}
+				}
+
+				if(paramObjFlag){
+					if(!tmpKey[orginKey]){
+						_paramVal =_paramVal.replace(new RegExp(matchKey,'g'), (replaceParam[orginKey.replace(/#/g,'')]||'') );
+						tmpKey[orginKey] = orginKey;
 					}
 				}else{
 					_paramVal =_paramVal.replace(new RegExp(matchKey,'g'), replaceParam );
@@ -962,7 +1210,7 @@ _$base.util = {
 	/**
 	 * @method PubEP.util.allAttr
 	 * @param attrObj jquery object
-	 * @param type 대소문자 
+	 * @param type 대소문자
 	 * @description get all attirbute
 	 */
 	,allAttr : function (attrObj,type){
@@ -977,7 +1225,7 @@ _$base.util = {
 				sItemAttr[attrib.name] = attrib.value;
 			}
 		})
-		return sItemAttr; 
+		return sItemAttr;
 	}
 	/**
 	 * @method PubEP.util.allAttrNameLower
@@ -985,7 +1233,7 @@ _$base.util = {
 	 * @description attribute 소문자 이름으로 리턴
 	 */
 	,allAttrNameLower : function (attrObj){
-		return this.allAttr(attrObj ,'lower'); 
+		return this.allAttr(attrObj ,'lower');
 	}
 	/**
 	 * @method PubEP.util.allAttrNameUpper
@@ -993,7 +1241,7 @@ _$base.util = {
 	 * @description attribute 대문자 이름으로 리턴
 	 */
 	,allAttrNameUpper : function (attrObj){
-		return this.allAttr(attrObj ,'upper'); 
+		return this.allAttr(attrObj ,'upper');
 	}
 	/**
 	 * @method PubEP.util.getParameter
@@ -1002,7 +1250,7 @@ _$base.util = {
 	 * @description url 파라미터를 object로 처리.
 	 */
 	,getParameter : function (url, param){
-		return getParameter(url, param); 
+		return getParameter(url, param);
 	}
 	/**
 	 * @method PubEP.util.getQueryParameter
@@ -1028,15 +1276,15 @@ _$base.util = {
 	 */
 	,getTreeModel : function (treeArray,keyObj){
 		var treeItem = {};
-		
+
 		var keyInfo = $.extend({},{node_id:'menu_id',pnode_id :'parent_menu_id',node_nm:'title'} ,keyObj);
 
 		var depthObj = {};
-		var maxDepth=0 ,tmpDepth=0; 
-		
+		var maxDepth=0 ,tmpDepth=0;
+
 		if(keyInfo.first_node_id){
 			var tmpRootNode = {};
-			
+
 			tmpRootNode._depth = 0;
 			tmpRootNode[keyInfo.node_id] = keyInfo.first_node_id;
 			tmpRootNode[keyInfo.pnode_id] = '_root';
@@ -1044,20 +1292,20 @@ _$base.util = {
 			tmpRootNode._children=[];
 			treeItem[keyInfo.first_node_id]=tmpRootNode;
 			treeArray.unshift(tmpRootNode);
-			
+
 		}
-		
+
 		for(var i =0 ;i <treeArray.length; i++){
 			var o = treeArray[i];
 
 			var pid=o[keyInfo.pnode_id];
 			var id=o[keyInfo.node_id];
-			
+
 			var tNode ={};
 			for(var key in o){
 				if(o[key]!==undefined) tNode[key]= o[key];
 			}
-			
+
 			if(treeItem[pid]){
 				tNode._depth= treeItem[pid]._depth+1;
 				tNode.treePath = treeItem[pid].treePath+' > '+tNode[keyInfo.node_nm];
@@ -1065,19 +1313,19 @@ _$base.util = {
 				tNode.treePath = tNode[keyInfo.node_nm];
 				tNode._depth=0;
 			}
-			
+
 			tNode._children=[];
 
 			tmpDepth=tNode._depth;
 			maxDepth = maxDepth <tmpDepth ? tmpDepth: maxDepth;
-					
-			if(depthObj[tmpDepth]){		
+
+			if(depthObj[tmpDepth]){
 				depthObj[tmpDepth].push(id);
 			}else{
 				depthObj[tmpDepth] = [];
 				depthObj[tmpDepth].push(id);
 			}
-			
+
 			treeItem[id] = tNode;
 		}
 
@@ -1087,7 +1335,7 @@ _$base.util = {
 		for (var i=maxDepth; i > 0; i-- ){
 			depthArr=depthObj[i];
 			depthArrLen=depthArr.length;
-			
+
 			for (var j=0; j< depthArrLen; j++ ){
 				tmpId = depthArr[j];
 				tmpNode=treeItem[tmpId];
@@ -1097,12 +1345,12 @@ _$base.util = {
 			}
 		}
 
-		return treeItem; 
+		return treeItem;
 	}
 }
 
 /**
- * 숫자 계산  
+ * 숫자 계산
  */
 _$base.math = {
 	/**
@@ -1114,14 +1362,14 @@ _$base.math = {
      * @description 숫자 계산
      */
 	cal :function(a, b , calType, fixNum) {
-		
+
 		a = isNaN(a) ? 0 : a;
 		b = isNaN(b) ? 0 : b;
-		
+
 		if((a == 0 || b == 0) && '*%/'.indexOf(calType) > -1){
 			return 0;
 		}
-		
+
 		var reval =0.0;
 		if(calType=='+'){
 			reval= a+b;
@@ -1134,25 +1382,25 @@ _$base.math = {
 		}else if(calType=='*'){
 			reval= a*b;
 		}
-		
+
 		if(fixNum){
 			return reval.toFixed(fixNum);
 		}else{
-			var dotIdxA =(a+'').split('.')[1]; 
+			var dotIdxA =(a+'').split('.')[1];
 			dotIdxA = dotIdxA?dotIdxA.length : 0;
-			
-			var dotIdxB =(b+'').split('.')[1]; 
+
+			var dotIdxB =(b+'').split('.')[1];
 			dotIdxB = dotIdxB?dotIdxB.length : 0;
-			
+
 			fixNum= dotIdxA >dotIdxB?dotIdxA : dotIdxB;
-			
+
 			if(fixNum < 1){
 				var revalDot =(reval+'').split('.')[1];
 				revalDot = revalDot?revalDot.length : 0;
 				fixNum= fixNum >revalDot?fixNum : revalDot;
 			}
 		}
-		
+
 		return fixNum > 0 ? reval.toFixed(fixNum) : reval;
 	}
 	/**
@@ -1172,27 +1420,27 @@ _$base.math = {
 	 */
 	,arraySum :function(array, key) {
 		if(array.length < 1) return 0;
-		
-		var _self = this; 
-		
+
+		var _self = this;
+
 		var result =0.0, tmpVal= 0.0, maxFixed=0,dotIdx
-			,flag = key ? true :false; 
-		
+			,flag = key ? true :false;
+
 		$.each(array, function(){
 			tmpVal = flag?this[key]:this;
-			
+
 			if(isNaN(tmpVal)){
 				tmpVal = (tmpVal+'').replace(/[$,]+/g,'');
 				tmpVal = isNaN(tmpVal)?0:tmpVal;
 			}
-			
-			dotIdx =(tmpVal+'').split('.')[1]; 
+
+			dotIdx =(tmpVal+'').split('.')[1];
 			dotIdx = dotIdx?dotIdx.length : maxFixed;
 			maxFixed = maxFixed > dotIdx?maxFixed :dotIdx;
-			
-			result = (_self.sum(parseFloat(result) , parseFloat(tmpVal))).toFixed(maxFixed); 
+
+			result = (_self.sum(parseFloat(result) , parseFloat(tmpVal))).toFixed(maxFixed);
 		});
-		
+
 		return result;
 	}
 	/**
@@ -1204,10 +1452,10 @@ _$base.math = {
 	,average : function (array, key) {
 		if(array.length < 1) return 0;
 		var tmpSum = this.arraySum(array,key);
-		
-		var dotIdx =(tmpSum+'').split('.')[1]; 
+
+		var dotIdx =(tmpSum+'').split('.')[1];
 		dotIdx = dotIdx?dotIdx.length : 0;
-		
+
 		return (tmpSum / array.length).toFixed(dotIdx);
 	}
 }
@@ -1226,15 +1474,22 @@ var dateFormat = function () {
 	// Regexes and supporting functions are cached through closure
 	return function (date, mask, utc,i18n) {
 		var dF = dateFormat;
-
+		var orginDate  = date;
 		// You can't provide utc if you skip other args (use the "UTC:" mask prefix)
 		if (arguments.length == 1 && Object.prototype.toString.call(date) == "[object String]" && !/\d/.test(date)) {
 			mask = date;
 			date = undefined;
 		}
+
 		// Passing date through Date applies Date.parse, if necessary
 		date = date ? new Date(date) : new Date;
-		if (isNaN(date)) throw SyntaxError("invalid date");
+		if (isNaN(date) && typeof orginDate ==='string'){
+			date = Date.parse(orginDate.replace(/-/g,'\/'));
+			if(isNaN(date)){
+				throw SyntaxError("invalid date");
+			}
+			date = new Date(date);
+		}
 
 		mask = String(dF.masks[mask] || mask || dF.masks["default"]);
 
@@ -1333,7 +1588,8 @@ function contains(arr , element) {
 }
 
 function getParameterVal(name){
-	var results = new RegExp('[\?&]'+name+'=([^&#]*)').exec(window.location.href);
+	var regExp = new RegExp('[\?&]'+name+'=([^&#]*)');
+	var results = document.URL.match(regExp);
 	if(results==null){
 		return '';
 	}else{
@@ -1343,17 +1599,17 @@ function getParameterVal(name){
 
 function getParameter(url, param){
 	if(!url) return {};
-	
+
 	var paramSplit  = url.split('?');
 	var paramLen = paramSplit.length;
-	
+
 	var rtnval = param ? param : {};
-	var addStyleFlag = true; 
+	var addStyleFlag = true;
 
 	if(paramLen < 2) return rtnval;
-	
+
 	var parameters = paramSplit[1].split('&');
-	
+
 	var tmpKey='',firstIdx, tmpParam;
 	for(var i = 0 ; i < parameters.length ; i++){
 		tmpParam = parameters[i];
@@ -1364,7 +1620,8 @@ function getParameter(url, param){
 			if(!(tmpKey=='StyleName' && addStyleFlag==false)){
 				rtnval[tmpKey]=tmpParam.substring(firstIdx+1);
 			}
-				
+		}else{
+			rtnval[tmpParam]='pub.ep.empty';
 		}
 	}
 
@@ -1375,17 +1632,17 @@ function getParameter(url, param){
 		}
 		rtnval[''] = rtnval[tmpKey]+lastParam
 	}
-	
-	return rtnval; 
+
+	return rtnval;
 }
 
 function getQueryParameter(url, duplFlag) {
-	
+
 	var queryString = typeof url === 'string' ? (url.indexOf('?') > -1 ? url.split('?')[1] : url): '';
 	var params = {};
 
 	if (!queryString) {
-		 return params ; 
+		 return params ;
 	}
 	queryString = queryString.split('#')[0];
 
@@ -1407,7 +1664,7 @@ function getQueryParameter(url, duplFlag) {
 		paramValue = paramValue;
 
 		if (duplFlag ===true && params[paramName]) {
-			
+
 			if (typeof params[paramName] === 'string') {
 				params[paramName] = [ params[paramName] ];
 			}
@@ -1430,7 +1687,7 @@ function setQueryParameter(uri, addParam){
 
 	var addParamArr = [];
 	for(var paramKey in addParam){
-		
+
 		if(uriParam[paramKey]){
 			var re = new RegExp("([?&])("+ paramKey + "=)[^&#]*", "g");
 			uri = uri.replace(re, '$1$2' + addParam[paramKey]);
@@ -1438,7 +1695,7 @@ function setQueryParameter(uri, addParam){
 			addParamArr.push(paramKey +'='+addParam[paramKey]);
 		}
 	}
-	
+
 	// need to add parameter to URI
 	var paramString = (uri.indexOf('?') < 0 ? "?" : "&")+ addParamArr.join('&');
 	var hashIndex = uri.indexOf('#');
@@ -1453,14 +1710,18 @@ function setQueryParameter(uri, addParam){
 // array으로 변환
 function paramToArray(param){
 	var tmpArr = new Array();
-	var tmpVal;	
+	var tmpVal;
 	for(var key in param) {
 		if(key) {
 			tmpVal = param[key];
-			tmpArr.push( key+'='+ ( (typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal) ) );
+			if(tmpVal=='pub.ep.empty'){
+				tmpArr.push( key);
+			}else{
+				tmpArr.push( key+'='+ ( (typeof tmpVal==='string')?tmpVal:JSON.stringify(tmpVal) ) );
+			}
 		}
 	}
-	return tmpArr; 
+	return tmpArr;
 }
 
 window.PubEP = _$base;

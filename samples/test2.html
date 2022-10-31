@@ -1,0 +1,403 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub test-예제</TITLE>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    
+
+    <script>
+        var global_page_context_path = "";
+        
+        var $vaiConfig = {
+            context : ''
+            ,logoutUrl : '/logout'
+            ,userId : '000001'
+            ,file : {
+                maxUploadSize : 1000
+                ,sizePerFile : 1000
+            }
+            ,language : 'ko'
+        }
+        var VAILANG = {"vai.0002":"추가할 항목을 선택해주세요.","cancel":"취소","vai.0003":"삭제할 항목을 선택해주세요.","vai.0001":"저장되었습니다.","vai.0006":"삭제 하시겠습니까?","shipment.date":"선적일","vai.0007":"삭제 되었습니다","upload":"업로드","vai.0004":"항목을 선택해주세요.","vai.0005":"[{itemText}] 삭제하시겠습니까?","commcode.confirm.y":"승인","vai.0008":"이미 추가된 항목 입니다","vai.0009":"저장 하시겠습니까?","commcode.confirm.c":"요청취소","password":"비밀번호","sellerrefno":"Seller Ref no.","poNo":"PO 번호","commcode.confirm.n":"반려","add.folder":"폴더추가","vai.0013":"설정 정보가 잘못되었습니다\\n 설정 정보를 확인해주세요.","vai.0014":"유효 하지 않은 설정입니다.","zfidsdt":"수입통관일","vai.0011":"비밀번호를 입력해 주세요.","vai.0012":"저장 하시겠습니까?\\n저장후 페이지 Reload 후에 반영됩니다.","vai.0017":"폴더는 {level} 레벨까지 추가 가능합니다.","vai.0018":"메뉴 정보가 없습니다.","edit":"편집","vai.0015":"복사 되었습니다","vai.0016":"내용을 입력해주세요.","report.yyyy":"신고년도","vai.0019":"즐겨찾기를 추가해주세요.","customerName":"공급처","fold":"접기","msg.save.success":"저장 되었습니다","error.message404":"등록되지 않은 페이지 입니다.","current.password":"현재 비밀번호","btn.add":"추가","monthly.shipment.mgmt":"월별 선적량관리","msg.empty.data":"데이터가 존재하지 않습니다.","supple":"필증보완","vai.0010":"적용 하시겠습니까?","allDownload":"일괄다운","gc.lanestatus.c06":"입고물량","gc.lanestatus.c05":"선적물량","msg.password.empty":"패스워드를 입력하세요","gc.lanestatus.c04":"도착(예정일)","gc.lanestatus.c03":"선적","gc.lanestatus.c07":"BL도착","gc.lanestatus.c02":"선적(예정일)","addRow":"차수 생성","gc.lanestatus.c01":"QP월","gc.shipmgmt.c04":"Container물량","gc.shipmgmt.c05":"B/L물량","gc.shipmgmt.c06":"확정차선 물량","msg.email.empty":"이메일을 입력하세요","search":"검색","gc.calcstate.c09":"정산완료일","submenuview":"하위메뉴보기","admin.home.title":"관리자","gc.calcstate.c05":"정산대상금액","gc.calcstate.c06":"정산요청일","gc.calcstate.c07":"정산희망일","gc.calcstate.c08":"정산예정일","attach":"첨부","admin.menu.codemgmt":"공통 코드 관리","gc.calcstate.c01":"정산대상","gc.shipmgmt.c01":"계약선적월","gc.calcstate.c02":"계약선적월","close":"닫기","gc.shipmgmt.c02":"Seller 계약번호","gc.calcstate.c03":"입고일","email":"이메일","transport.today":"Today 운송","gc.shipmgmt.c03":"선적물량","gc.calcstate.c04":"기정산금액","containerno":"Container no.","decision":"확정","calc.request":"정산요청","refresh":"새로고침","addRowUp":"위에 행 추가","admin.menu.templatemgmt":"템플릿 관리","confirm":"확인","msg.password.differrent":"패스워드가 같지 않습니다","join.form.uid":"아이디","arrival.date":"도착일","join.form.dept":"소속","contract.dmt":"계약물량","admin.menu.schedulemgmt":"배치 관리","open":"열기","change.history":"변경이력","contract.yyyymm":"계약선적월","join.form.title":"회원가입","delivery.date":"입고일","zfidrNo":"수입신고 번호","commcode.trans.y":"확정","join.form.name":"이름","provicalc.date.chk.msg":"이전 날짜로 정산을 요청할 수 없습니다.","commcode.trans.n":"미확정","add":"추가","admin.menu.usermgmt":"사용자 관리","commcode.confirm.empty":"변경요청","count":"건","join.form.desc":"설명","screen.user":"사용자","deleteRow":"차수 삭제","change.request":"변경요청","success":"성공","name":"이름","monthly.shipment.mgmt.msg01":"계약물량과 선적예정물량이 다릅니다.","input.date":"입고일","home.title":"LPL Link","change.confirm":"변경/확정","msg.saveandclose.confirm":"저장하고 닫으시겠습니까?","update":"서류수신","msg.save.fail":"저장을 실패 하였습니다","confirm.password":"확인 비밀번호","company":"회사","btn.delete":"삭제","userinfo":"사용자 정보","approval":"승인","modify":"수정","seller.contract.no":"Seller's 계약번호","material":"원재료","screen.admin":"관리자","msg.close.confirm":"닫으시겠습니까?","btn.main":"메인으로","join.form.locale":"언어선택","documentWait":"서류수신대기","vai.0088":"처리검토","msg.nodata":"데이타가 없습니다.","vai.0089":"Sampling 예정","select":"선택","admin.menu.linkmgmt":"링크 관리","gc.provicalc.c05":"정산요청일","gc.provicalc.c04":"지급률","shipment.yyyymm":"선적예정월","logout":"로그아웃","gc.provicalc.c06":"정산희망일","gc.provicalc.c01":"계약선적월","admin.menu.menumgmt":"메뉴 관리","msg.refresh.confirm":"새로고침 하시겠습니까?","gc.provicalc.c03":"선적일","gc.provicalc.c02":"B/L도착","vai.0082":"데이터를 초기화하시겠습니까?\n※저장되지 않은 데이터만 초기화가 가능합니다.","vai.0083":"요청가능 상태만 정산요청 가능합니다.","vai.0080":"수입신고번호가 있는 경우 업로드 가능합니다.","vai.0081":"확정신고일이 있는 경우 업로드 가능합니다.","id":"아이디","vai.0086":"정산예정","vai.0087":"입금대기","vai.0084":"기준일이 존재 하지 않습니다. 담당자에게 요청해주세요.","vai.0085":"합의필요","password.change":"비밀번호 변경","msg.userinfo.empty":"사용자 정보가 존재 하지 않습니다.","confirmation":"확정","loading":"로딩중 입니다.","decision.cancel":"확정취소","fail":"실패","vai.0090":"분석진행","carno":"Car no.","shipNo":"차선번호","btn.save":"저장","btn.new":"신규","vai.0093":"Ship-back 대기","vai.0094":"요청보완","vai.0091":"분석완료","updateCancel":"서류수신 취소","vai.0092":"완료확인","vai.0097":"Today 운송","vai.0098":"발행월과 정산월이 차이납니다. 확인해주세요.","vai.0095":"요청가능","vai.0096":"Paid-back 정산","status":"상태","vai.0068":"차선No. 필드는 반드시 값을 입력해야 합니다.","vai.0069":"상세 데이터가 없습니다.","vai.0066":"저장할 데이터를 선택해주세요.","vai.0067":"확정된 정보는 확정취소 후 저장 가능합니다.","msg.password.change.mail":"비밀번호 변경 메일 확인후 변경 해주세요.","request.cancel":"요청취소","contract.yyyymmdd":"계약선적일","allowNo":"허가번호","dataInit":"데이터초기화","save":"저장","input.dmt":"입고량","login":"로그인","createWeightCertificate":"Create Weight Certificate","wastepermit.yyyy":"선적년도","file":"파일","vai.0060":"B/L, IV 파일 업로드 후 확정 가능합니다","calc.hope.day":"정산희망일","vai.0061":"B/L 이 있어야 요청 가능합니다.","msg.password.length.check":"패스워드는 6자리 이상되어야 합니다","contract.yyyy":"계약선적년","copy":"복사","transport.nextday":"Next 운송","vai.0064":"저장상태의 데이터만 삭제가 가능합니다.","vai.0065":"기존 데이터를 삭제하시겠습니까?\n※삭제하실 경우, 복구되지 않습니다.","vai.0062":"B/L 과 BL 도착일이 있어야 요청 가능합니다.","vai.0063":"저장되지 않은 데이터만 초기화가 가능합니다.","msg.data.select":"데이터를 선택하시오.","calc.target":"정산대상","vai.0079":"이미지가 없습니다.","vai.0077":"저장된 데이터에만 문서 업로드 가능합니다.","vai.0078":"저장상태의 문서만 제거 가능합니다.","change":"변경","screen.manager":"매니저","admin.menu.boardmgmt":"게시판 관리","layer.finalcalc.title":"Final payment 요청","msg.save.confirm":"저장 하시겠습니까?","rename":"이름변경","vai.0071":"상태값이 저장인 경우 확정 가능합니다.","gc.msm.c02":"변경승인일","vai.0072":"상태값이 확정인 경우 취소 가능합니다.","gc.msm.c03":"처리사유","vai.0070":"확정상태가 아닌 경우 저장 가능합니다.","vai.0075":"O.F, B.A.F, C.A.F, CIC, LSS 중 하나 이상의 값이 0보다 큰 경우 업로드 가능합니다.","vai.0076":"확정상태의 데이터는 수정할 수 없습니다.","deung":"등","vai.0073":"차선번호가 있는 경우 업로드 가능합니다.","layer.provicalc.title":"Provisional payment 요청","vai.0074":"OIL DAMAGE가 0보다 큰 경우 업로드 가능합니다.","gc.msm.c01":"변경요청일","etaPeriod":"ETA 기간","vai.0046":"BL번호 저장후 업로드 가능합니다.","vai.0047":"B/L No 변경시 첨부된 파일을 모두 삭제 후 변경 가능합니다.","vai.0044":"변경/확정요청 되었습니다.","vai.0045":"목록에 있는 항목만 입력 가능합니다.","blNo":"B/L 번호","vai.0048":"확정된 정보는 확정취소 후 저장 가능합니다.","vai.0049":"이미 확정된 정보입니다.","msg.success":"성공","screen":"화면","gc.shipmgmt.d03":"선적국","download":"다운로드","commcode.lanestatus.1":"진행","commcode.lanestatus.2":"완료","join.form.email":"이메일","vai.0042":"월별선적량 관리","vai.0043":"변경 요청 되었습니다.","vai.0040":"변경요청현황이 승인/반려/취소인 경우만 변경 가능합니다.","gc.shipmgmt.d01":"확정","vai.0041":"더블클릭해서 변경이력을 조회할수 있습니다.","gc.shipmgmt.d02":"선사","vai.0057":"숫자만 가능합니다.","all":"전체","vai.0058":"과적입니다. 담당자에게 직접 연락해주세요.","new":"신규","vai.0055":"선택한 항목중에 업로드된 파일이 존재 합니다. 삭제후 업로드 가능합니다.","zfidexdt":"확정신고기한","vai.0056":"{shipNo}의 G/W 가 N/W 보다 작습니다.","vai.0059":"{shipNo}의 ETA 가 ETD 보다 빠를수 없습니다.","change.decision.request":"변경/확정 요청","msg.file.empty":"파일이 존재하지 않습니다.","targetMonth":"정산월","gc.msm.d01":"변경요청현황","vai.0050":"현재일 이후로 입력 가능합니다.","gc.msm.d02":"요청내역","vai.0053":"정산대기 상태만 취소 가능합니다.","vai.0054":"요청 하시겠습니까?","send":"보내기","vai.0051":"요청가능 상태만 정산요청 가능합니다.","vai.0052":"기준일이 존재 하지 않습니다. 관리자에게 요청해주세요.","vai.0024":"처리가 완료되었습니다","reset.password":"패스워드 초기화","report.history.upload":"월별신고내역","vai.0025":"취소 되었습니다","vai.0022":"선 출고 후 가격 확정 정산","vai.0023":"승인하시겠습니까?","msg.title.empty":"제목을 입력하세요","company.select":"회사를 선택해주세요.","vai.0028":"업로드에 실패하였습니다. 잠시후에 다시 시도해주세요.","vai.0029":"{count} 건","arrival":"도착","vai.0026":"변경 되었습니다","msg.search.placeholder":"검색어를 입력하시오.","vai.0027":"확정 되었습니다","create.folder":"폴더추가","remark":"비고","delete":"삭제","msg.fileupload.success":"업로드 되었습니다","cancel.request":"취소요청","back.page":"뒤로","reportWait":"신고대기","calc.completion.date":"정산완료일","transport.ea":"단위(대)","vai.0020":"변경하시면 현재 열려있는 메뉴가 모두 닫기 됩니다.\n변경하시겠습니까?","ok":"Ok","vai.0021":"다운로드 항목이 존재 하지 않습니다.","transportPeriod":"운송 기간","vai.0035":"엑셀형식에 맞지 않는 파일입니다. 확인하고 다시 올려주세요.","addRowDown":"아래에 행 추가","vai.0036":"패스워드가 일치 하지 않습니다.","gc.msm.m01":"Seller's 계약번호","vai.0033":"확정 하시겠습니까?","gc.msm.m02":"계약선적 FROM","gc.finalcalc.c03":"정산희망일","vai.0034":"이미 확정된 오퍼가 존재 합니다.","gc.msm.m03":"계약선적 TO","gc.finalcalc.c02":"정산요청일","vai.0039":"요청취소는 변경요청인 경우만 가능합니다.","vai.0037":"변경 되었습니다\\n다시로그인 해주세요.","vai.0038":"변경후 다시 로그인 하셔야 합니다.\n변경 하시겠습니까?","msg.name.empty":"이름을 입력하세요","admin.menu.authMgmt":"권한 관리","msg.login.fail":"아이디 또는 비밀번호를 잘못 입력하셨습니다","gc.msm.m04":"계약물량","gc.msm.m05":"확정현황","main.page":"메인 페이지","vai.0031":"요청취소 하시겠습니까?","gc.finalcalc.c01":"기정산금액","qp.yyyymm":"QP월","vai.0032":"이미 확정되었습니다.","msg.delete.confirm":"삭제  하시겠습니까?","vai.0030":"취소 하시겠습니까?","unfold":"펼치기"}
+        </script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/jquery-3.3.1.min.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/jquery-ui.min.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/plugins/toast/jquery.toast.min.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/plugins/datepicker/bootstrap-datepicker.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/plugins/datepicker/locales/bootstrap-datepicker.kr.js"></script>
+
+
+<script src="http://lpltest.lsmnm.com/webstatic/js/plugins/fuse/fuse.min.js"></script>
+
+<script src="http://lpltest.lsmnm.com/webstatic/js/plugins/filesaver/FileSaver.min.js"></script>
+
+<!-- grid  js -->
+<script src="http://lpltest.lsmnm.com/webstatic/AUIGrid/AUIGridLicense.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/AUIGrid/AUIGrid.js"></script>
+
+<!-- PDF Save js -->
+<script src="http://lpltest.lsmnm.com/webstatic/pdfkit/AUIGrid.pdfkit.js"></script>
+
+<!-- local download js -->
+<script src="http://lpltest.lsmnm.com/webstatic/pdfkit/FileSaver.min.js"></script>
+
+<!-- grid custom render  js -->
+<script src="http://lpltest.lsmnm.com/webstatic/js/vai-grid-custom-renderer.js?v=10438.0"></script>
+
+<script src="http://lpltest.lsmnm.com/webstatic/js/plugins/axios/axios.min.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/pub.ep.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/pub.ep.ui.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/pub.tab.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/pub.context.js"></script>
+
+<script src="http://lpltest.lsmnm.com/webstatic/js/vue.min.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/plugins/vue/vee-validate.min.js"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/vue.vai.js?v=10438.0"></script>
+
+<script src="http://lpltest.lsmnm.com/webstatic/js/vai.js?v=10438.0"></script>
+<script src="http://lpltest.lsmnm.com/webstatic/js/vai-grid.js?v=10438.0"></script>
+<style>
+.tbl{
+    width:100%;
+    height: 100%;
+}
+
+.tbl th{
+    border: 1px solid #eee;
+}
+</style>
+ </HEAD>
+
+ <BODY>
+        <table>
+            <tr>
+                <td><table id="leftTableView" class="tbl"></table></td>
+                <td><table id="tableView" class="tbl"></table></td>
+            </tr>
+        </table>
+    
+ </BODY>
+</HTML>
+<script>
+    var columnArr = [{
+        dataField: "region",
+        headerText: "지역",
+        headerTooltip: { // 헤더 툴팁 표시 HTML 양식
+            show: true,
+            tooltipHtml: "그룹형 헤더 일 때 툴팁 예제"
+        },
+        width: 120
+    }, {
+        headerText: "2015",
+        children: [{
+            headerText: "1분기",
+            headerTooltip: { // 헤더 툴팁 표시 HTML 양식
+                show: true,
+                tooltipHtml: '<div style="width:180px;"><p>Just an incredibly simple <span style="color:#F29661;">AUIGrid</span></p><p>Faucibus sed lobortis aliquam lorem blandit. Lorem eu nunc metus col. Commodo id in arcu ante lorem ipsum sed accumsan erat praesent faucibus commodo ac mi lacus. Adipiscing mi ac commodo. </p></div>'
+            },
+            children: [{
+                dataField: "p1201",
+                headerText: "1월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1202",
+                headerText: "2월",
+                dataType: "numeric",
+                headerTooltip: { // 헤더 툴팁 표시 HTML 양식
+                    show: true,
+                    tooltipHtml: '<div><p>Just an incredibly simple <span style="color:#F29661;">AUIGrid</span></p></div>'
+                }
+            }, {
+                dataField: "p1203",
+                headerText: "3월",
+                dataType: "numeric"
+            }]
+            // end of 1분기 children
+        }, {
+            headerText: "2분기", 
+            children: [{
+                dataField: "p1204",
+                headerText: "4월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1205",
+                headerText: "5월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1206",
+                headerText: "6월",
+                dataType: "numeric"
+            }]
+            // end of 2분기 children
+        }, {
+            headerText: "3분기",
+            children: [{
+                dataField: "p1207",
+                headerText: "7월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1208",
+                headerText: "8월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1209",
+                headerText: "9월",
+                dataType: "numeric"
+            }]
+            // end of 3분기 children
+        }, {
+            headerText: "4분기", 
+            children: [{
+                dataField: "p1210",
+                headerText: "10월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1211",
+                headerText: "11월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1212",
+                headerText: "12월",
+                dataType: "numeric"
+            }]
+            // end of 4분기 children
+        }] // end of 2015 children
+    }, {
+        headerText: "2016",
+        children: [{
+            headerText: "1분기",
+            children: [{
+                dataField: "p1301",
+                headerText: "1월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1302",
+                headerText: "2월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1303",
+                headerText: "3월",
+                dataType: "numeric"
+            }]
+            // end of 1분기 children
+        }, {
+            headerText: "2분기",
+            children: [{
+                dataField: "p1304",
+                headerText: "4월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1305",
+                headerText: "5월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1306",
+                headerText: "6월",
+                dataType: "numeric"
+            }]
+            // end of 2분기 children
+        }, {
+            headerText: "3분기",
+            children: [{
+                dataField: "p1307",
+                headerText: "7월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1308",
+                headerText: "8월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1309",
+                headerText: "9월",
+                dataType: "numeric"
+            }]
+            // end of 3분기 children
+        }, {
+            headerText: "4분기",
+            children: [{
+                dataField: "p1310",
+                headerText: "10월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1311",
+                headerText: "11월",
+                dataType: "numeric"
+            }, {
+                dataField: "p1312",
+                headerText: "12월",
+                dataType: "numeric"
+            }]
+            // end of 4분기 children
+        }] // end of 2016 children
+    }]
+
+
+function objMergeRecursive(dst, src) {
+
+    for (var p in src) {
+    if (!src.hasOwnProperty(p)) {continue;}
+
+    var srcItem = src[p] ;
+    if (srcItem=== undefined) {continue;}
+
+    if ( typeof srcItem!== 'object' || srcItem=== null) {
+        dst[p] = srcItem;
+    } else if (typeof dst[p]!=='object' || dst[p] === null) {
+        dst[p] = objMergeRecursive(srcItem.constructor===Array ? [] : {}, srcItem);
+    } else {
+        objMergeRecursive(dst[p], srcItem);
+    }
+    }
+    return dst;
+}
+
+function objectMerge() {
+    var reval = arguments[0];
+    if (typeof reval !== 'object' || reval === null) {	return reval;}
+    for (var i = 1, il = arguments.length; i < il; i++) {
+    objMergeRecursive(reval, arguments[i]);
+    }
+
+    return reval;
+}
+    
+    function nodeInfo(node, depth, columnGroupInfo, headerOptions){
+
+        if(node.visible===false){
+            node.$colspan = 0;
+            return node; 
+        }
+
+        node.$depth = depth+1;
+        node.$isLeaf = true;
+        node.$colspan = 1;
+        node.$rowspan = 1;
+        node.$childLength = 0;
+
+        var children = node.children; 
+        if(children){
+            var childrenLen = children.length;
+    
+            if(childrenLen > 0){
+                node.$isLeaf = false; 
+                node.$childLength = childrenLen;
+                var colspan = 0;
+                for(var i =0; i< childrenLen; i++){
+                    var childNode = children[i]; 
+                    nodeInfo(childNode, node.$depth, columnGroupInfo, headerOptions);
+                    colspan += childNode.$colspan;                    
+                }
+
+                node.$colspan = colspan; 
+            }
+        }
+
+        if(node.$isLeaf){
+            columnGroupInfo.leaf.push(node);
+        }
+
+        node.$resizeIdx = columnGroupInfo.leaf.length;
+
+        var fixedIndex = headerOptions.fixedIndex;
+        
+        if(typeof columnGroupInfo.left[depth] ==='undefined'){
+            columnGroupInfo.left[depth] = [];
+        }
+        if(typeof columnGroupInfo.body[depth] ==='undefined'){
+            columnGroupInfo.body[depth] = [];
+        }
+
+        console.log(node);
+        
+
+        if(fixedIndex > node.$resizeIdx - node.$colspan){  // merge 했을때 처리. 
+
+            
+            
+            if(node.$colspan == 1){
+                columnGroupInfo.left[depth].push(node);
+            }else{
+                
+                var leftNode = objectMerge({}, node);
+
+                leftNode.$resizeIdx = fixedIndex;
+                leftNode.$colspan = (fixedIndex - (leftNode.$resizeIdx - leftNode.$colspan))
+                columnGroupInfo.left[depth].push(leftNode);
+
+
+                if(fixedIndex < node.$resizeIdx){
+                    var bodyNode = objectMerge({}, node);
+                    bodyNode.$colspan = node.$resizeIdx - fixedIndex;
+                    columnGroupInfo.body[depth].push(bodyNode);
+                }
+            }
+        }else{
+            columnGroupInfo.body[depth].push(node);
+        }
+                    
+        return node; 
+    }
+    
+    var columnGroupInfo = {
+        left: []
+        ,body : []
+        ,leaf : []
+    };
+    
+    var headerOptions = {
+        fixedIndex : 5
+    };
+            
+    for(var i =0; i<columnArr.length; i++){
+        var col = nodeInfo(columnArr[i], 0, columnGroupInfo, headerOptions);
+    }
+    /**
+     * fix column check 해서 처리 할것. 
+     */
+    
+     function tableDraw(tblId, columnGroups){
+        var maxDepth = columnGroups.length;
+        
+        var strHtm = [];
+        for(var i =0; i<maxDepth; i++){
+            var columnGroup = columnGroups[i];
+            
+            
+            var columnGroupLength = columnGroup.length; 
+            if(columnGroupLength > 0){
+                strHtm.push('<tr>'); 
+                for(var j =0; j<columnGroup.length; j++){
+                    var column = columnGroup[j];
+                    strHtm.push('<th scope="col"'); 
+                    if(column.$isLeaf && column.$depth < maxDepth){
+                        column.$rowspan = maxDepth - column.$depth+1;
+                    }
+
+                    if(column.$colspan > 1){
+                        strHtm.push(' scope="colgroup" colspan="'+column.$colspan+'" '); 
+                    }
+
+                    if(column.$rowspan > 1){
+                        strHtm.push(' rowspan="'+column.$rowspan+'" '); 
+                    }
+
+                    strHtm.push('>'+column.headerText+'</th>'); 
+                }
+            
+                strHtm.push('</tr>'); 
+            }
+        }
+
+        document.getElementById(tblId).innerHTML = strHtm.join('');
+    }
+    
+    tableDraw('leftTableView',columnGroupInfo.left);
+    tableDraw('tableView',columnGroupInfo.body);
+
+
+    
+
+    console.log(columnGroupInfo);
+    
+    </script>

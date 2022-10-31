@@ -1,0 +1,24 @@
+{
+    "liveSassCompile.settings.formats":[
+        // This is Default.
+        {
+            "format": "expanded",
+            "extensionName": ".css",
+            "savePath": "~/../css/"
+        },
+        // More Complex
+        {
+            "format": "compressed",
+            "extensionName": ".min.css",
+            "savePath": "~/../css/"
+        }
+    ]
+    ,
+    "liveSassCompile.settings.generateMap": false,
+    "git.enableSmartCommit": true,
+     // exclude file 
+    "liveSassCompile.settings.excludeList": [ 
+        "**/variables.scss" 
+    ],
+    "liveServer.settings.port": 5503
+}

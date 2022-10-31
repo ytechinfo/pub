@@ -1,0 +1,361 @@
+/*
+ * pub.tab.css: 0.0.1
+ * ========================================================================
+ * Copyright 2018-2019 ytkim
+ * Licensed under MIT
+ * http://www.opensource.org/licenses/mit-license.php
+*/
+
+@import "_var_pub.tab.scss";
+
+.pubTab-wrapper{
+	background: inherit;//colorInfo($g_default_theme_name , "background_color");
+	height: 100%;
+	width:100%;
+	position: relative;
+	color:colorInfo($g_default_theme_name , "font_color");
+	
+	.pubTab{
+		position:relative;
+		width:100%;
+		margin-bottom: -1px;
+		
+		*{
+			@include box-sizing($box_sizing_content);
+		}
+		
+		.pubTab-icon-area{
+			display:table-cell;
+			visibility: visible;
+			padding-right: 3px;
+			margin-top: 0px;
+			vertical-align: middle;
+
+			&.visible-hide{
+				display: none;	
+			}
+
+			.pubTab-icon{
+				cursor:pointer;
+			}
+
+			.pubTab-icon:hover{
+				color:colorInfo($g_default_theme_name , "a_hover_thick_color");
+			}
+		}
+		.pubTab-item-overlay{
+			width: 100%;
+			height: 100%;
+			z-index: -1;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			/* background: transparent; */
+			opacity: 1;
+		}
+		
+		.drag-on .pubTab-item-overlay{
+			z-index: 10;
+		}
+	}
+	
+	.pubTab-scroll{
+		overflow:hidden;
+		padding: 2px 0px 0px 0px;
+		width: 100%;
+	}
+		
+	.pubTab-more-button {
+		z-index:1;
+		position:absolute;
+		right:0px;
+		bottom: 0px;
+		min-width:20px;
+		height: 22px;
+		padding: 0px;
+		text-align: center;
+		color: colorInfo($g_default_theme_name , "arrow_color");
+		font-family: arial, sans-serif !important;
+		cursor: pointer;
+		@include opacity_val(0.9);
+		background: colorInfo($g_default_theme_name , "arrow_background_color");
+
+		&:before {
+			content:'\25BC';
+			vertical-align: -25%;
+		}
+
+		&:hover{
+			@include opacity_val(1);
+			background: colorInfo($g_default_theme_name , "arrow_active_background_color");
+			&:before {
+				color: colorInfo($g_default_theme_name , "arrow_active_color");
+			}
+		}
+	}
+
+	.pubTab-dropdown-wrapper{
+		display: none;
+		position: absolute;
+		top: 23px;
+		right: 0;
+		left: auto;
+		max-height: calc(100% - 25px);
+		overflow-y: hidden;
+		overflow-x: hidden;
+		z-index: 1000;
+		-webkit-background-clip: padding-box;
+		background-clip: padding-box;
+		box-sizing: border-box;
+		background-color: colorInfo($g_default_theme_name , "background_color");
+		border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+
+		input{
+			background-color: colorInfo($g_default_theme_name , "background_color");
+			border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+			color: colorInfo($g_default_theme_name , "color");
+		}
+	
+		&.pubTab-open{
+			display:block;
+		}
+
+		.pubTab-dropdown-search{
+			padding: 4px;
+
+			.pubTab-dropdown-search-text{
+				padding: 4px;
+				width: 100%;
+				box-sizing: border-box;
+			}
+		}
+		
+		.pubTab-dropdown-area{
+			margin: 0px 0 0 0;
+			padding:0px;
+			text-align: left;
+			overflow-y: auto;
+			list-style: none;
+	
+			>li{
+				padding: 2px 5px 2px 5px;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				word-wrap: normal;
+				overflow: hidden;
+
+				cursor:pointer;
+				white-space: nowrap;
+		
+				&:hover {
+					background-color: colorInfo($g_default_theme_name , "background_thick_color");
+				}
+			}
+		}
+	}
+		
+	.pubTab-prev ,.pubTab-next{
+		cursor : pointer; 
+	}
+	
+	.pubTab-container{	
+		list-style: none;
+		position: relative;
+		left:0px;
+		padding: 0px;
+		margin: 0px;
+		display: flex;
+		padding: 0px 2px 0px 2px;
+	}
+
+	.pubTab-item{
+		vertical-align: baseline;
+		margin: 0px 5px 0px 0px;
+		position: relative;
+		@include opacity_val(0.5);
+	
+		&.drag-over{
+			.pubTab-item-cont-wrapper{
+				background-color: tabColorInfo($g_default_theme_name , "tab_drag_over_background");
+				*{
+					color: tabColorInfo($g_default_theme_name , "tab_drag_over_color");
+				}
+			}
+		}
+		
+		.pubTab-item-title{
+			display:inline-block;
+			padding: 0px 5px;
+			cursor:pointer;
+			white-space: nowrap;
+			display:table-cell;
+
+			&.pub-title-ellipsis {
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				word-wrap: normal;
+				overflow: hidden;
+			}
+		}
+
+		.pubTab-item-cont-wrapper{
+			border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+			background: tabColorInfo($g_default_theme_name,"tab_background");
+			color: colorInfo($g_default_theme_name , "font_color");
+			border-top-left-radius: 3px;
+			border-top-right-radius: 3px;
+			overflow: hidden;
+	
+			&:hover, &:focus{
+				@include opacity_val(0.8);
+				color:colorInfo($g_default_theme_name , "a_hover_font_color");
+				background: colorInfo($g_default_theme_name,"a_hover_background_color");
+			}
+		}
+	
+		.pubTab-item-cont{
+			line-height: 21px;
+			padding :0px 3px 0px 3px;
+			
+		}
+			
+		&.active{
+			@include opacity_val(1);
+
+			.pubTab-item-cont-wrapper{
+				background: tabColorInfo($g_default_theme_name,"tab_active_background");
+				color:colorInfo($g_default_theme_name , "tab_active_color");
+			}
+	
+			.pubTab-item-cont{
+				.pubTab-icon-area{
+					visibility: visible;
+					display:table-cell;
+				}
+			}
+		}
+		
+		&.last {
+			padding: 0px 0px;
+		}
+	}
+			
+	.pubTab-hide{
+		display:none;
+	}
+
+	/* for MS계열 브라우저 */
+	@include keyframe (blinkframe) {
+		0% { opacity: 1.0; }
+		50% { opacity: 0.5; }
+		100% { opacity: 1.0; } 
+	}
+	
+	.blinkcss {
+		*{
+			color : tabColorInfo($g_default_theme_name,"tab_blink_color");
+		}
+		@include animation (blinkframe, 0s, 2s, infinite);
+		animation-timing-function: linear;
+		background-color: tabColorInfo($g_default_theme_name,"tab_blink_background") !important;
+	}
+
+	.pubTab-content-container{
+		height: 100%;
+		width: 100%;
+
+		.pubTab-content{
+			height: 100%;
+			width: 100%;
+			display: none;
+			position: relative;
+
+			&.active{
+				display: block;
+			}
+		}
+	}
+}
+
+@each $pThemeName in $g_theme_list_info {
+
+	#{fn_themeName($pThemeName)} .pubTab-wrapper{
+		background: inherit;
+		color:colorInfo($pThemeName , "font_color");
+
+		.pubTab{
+			.pubTab-icon-area{
+				.pubTab-icon:hover{
+					color:colorInfo($pThemeName , "a_hover_thick_color");
+				}
+			}
+		}
+
+		.pubTab-dropdown-wrapper{
+			background-color: colorInfo($pThemeName , "background_color");
+			input{
+				background-color: colorInfo($pThemeName , "background_color");
+				border: 1px solid colorInfo($pThemeName , "border_thin_color");
+				color: colorInfo($pThemeName , "font_color");
+			}
+		
+			.pubTab-dropdown-area{
+				>li{
+					&:hover {
+						background-color: colorInfo($pThemeName , "background_thick_color");
+					}
+				}
+			}
+		}
+		
+		.pubTab-more-button {
+			color: colorInfo($g_default_theme_name , "arrow_color");
+			background: colorInfo($g_default_theme_name , "arrow_background_color");
+	
+			&:hover{
+				background: colorInfo($g_default_theme_name , "arrow_active_background_color");
+				&:before {
+					color: colorInfo($g_default_theme_name , "arrow_active_color");
+				}
+			}
+		}
+
+		.pubTab-item{
+			.pubTab-item-cont-wrapper{
+				border: 1px solid colorInfo($pThemeName , "border_thin_color");
+				background: tabColorInfo($pThemeName,"tab_background");
+				color: colorInfo($pThemeName , "font_color");
+				
+				&:hover, &:focus{
+					color:colorInfo($pThemeName , "a_hover_font_color");
+					background: colorInfo($pThemeName,"a_hover_background_color");
+				}
+			}
+
+			&.drag-over{
+				.pubTab-item-cont-wrapper{
+					background-color: tabColorInfo($pThemeName , "tab_drag_over_background");
+					*{
+						color: tabColorInfo($pThemeName , "tab_drag_over_color");
+					}
+				}
+			}
+		}
+		
+		&.active{
+			.pubTab-item-cont-wrapper{
+				background: tabColorInfo($pThemeName,"tab_active_background");
+				color:colorInfo($pThemeName , "tab_active_color");
+			}
+		}
+		
+		.blinkcss {
+			*{
+				color : tabColorInfo($pThemeName,"tab_blink_color");
+			}
+			background-color: tabColorInfo($pThemeName,"tab_blink_background") !important;
+		}
+
+
+	}
+}

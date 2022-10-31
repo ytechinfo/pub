@@ -1,0 +1,25 @@
+
+@import '_var_pub.global.scss';
+
+$pubcontentmenu_colors: (
+  'light': (
+    'context_menu_header_font_color': #444040 // header color
+  )
+  ,'dark': (
+    'context_menu_header_font_color': #e4e4e4 // header color
+  )
+);
+
+// function 
+@function contxtMenuColorInfo($themeName: 'light', $type: 'font_color') {
+  $map: map-get($pubcontentmenu_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme contxtMenuColorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}
+

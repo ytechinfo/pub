@@ -1,0 +1,137 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<TITLE>pub Multi select -예제</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="../theme/default/pub.example.css" rel="stylesheet">
+<link href="../theme/default/pub.ep.css" rel="stylesheet">
+
+<script src="../plugins/jquery-1.10.2.min.js"></script>
+<script src="../plugins/jquery-ui-1.12.1.min.js"></script>
+<script src="../dist/pub.ep.js"></script>
+<script src="../dist/pub.ep.ui.js"></script>
+
+</HEAD>
+<BODY>
+
+
+<div class="pub-main">
+	<h2 class="page-header">다중선택</h2>
+	<div>
+		<table width="100%" border="0" class="exampleTbl" >
+			<colgroup>
+				<col width="200px">
+				<col width="50px">
+				<col width="200px">
+			</colgroup>
+			<tr>
+				<th>
+					<div class="top-select mbottom-10 fb tl mRight-20" style="width:265px;">source</div>
+				</th>
+				<th></th>
+				<th>
+					<div class="top-select mbottom-10 fb tl mRight-20" style="width:265px;">target</div>
+					
+				</th>
+			</tr>
+			<tr>
+				<td>
+		<div>
+
+		
+
+			<select name="sourceTab" id="sourceTab" class="box_properties"
+									multiple style="height: 195px; width: 100%;"></select>
+		</div>
+				</td>
+				<td>
+					<a href="javascript:;" class="add-item">>></a>
+					<br/>
+					<a href="javascript:;" class="cancel-item"><<</a>
+				</td>
+				<td>
+			<select name="targetTab" id="targetTab" class="box_properties2"
+									style="height: 195px; width: 100%; margin-left: 0; !important"
+									multiple></select>
+				</td>
+				<td>
+				<div id="page_area"></div>
+				</td>
+			</tr>
+
+			<tr>
+				<td colspan="3" align="right">
+					<a href="javascript:;" class="item-move" mode="up">위</a>
+					<span style="padding-left:10px;"></span>
+					<a href="javascript:;" class="item-move" mode="down">아래</a>
+					<span style="padding-right:10px;"></span>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	
+</div>
+</BODY>
+</HTML>
+
+
+<script>
+var selectObj;
+var tmpSourceItem = [] , paramSourceItem=[]; 
+$(document).ready(function (){
+	var paramTargetItem = [];
+	for(var i = 0 ;i <20; i++){
+		paramSourceItem.push({LINK_ID :'0000'+i ,LINK_NAME:'name'+i});
+	}
+
+	for(var i = 0 ;i <5; i++){
+		tmpSourceItem.push({LINK_ID :'0000'+i ,LINK_NAME:'name'+i});
+	}
+	
+
+	for(var i = 0 ;i <10; i++){
+		var pageNum = 0; 
+		if(i > 5){
+			pageNum =4;
+		}
+		paramTargetItem.push({LINK_ID :'0000'+i ,LINK_NAME:'name'+i,pageNo:pageNum});
+	}
+
+	selectObj = PubEPUI.module.selectBoxMove('#sourceTab','#targetTab',{
+		addItemClass:'text_selected'
+		,dbclick :true
+		,firstItem : {
+			optVal : 'LINK_ID'
+			,optTxt : 'LINK_NAME'
+		}
+		,secondItem : {
+			optVal : 'LINK_ID'
+			,optTxt : 'LINK_NAME'
+		}
+		
+	});
+
+	selectObj.setItem('first',paramTargetItem);
+
+
+	selectObj.setItem('second',tmpSourceItem);
+
+
+	//추가
+	$('.add-item').on('click',function (){
+		selectObj.firstMove();
+	});
+	//취소
+	$('.cancel-item').on('click',function (){
+		selectObj.secondMove();
+	});
+
+	//아래위 이동
+	$('.item-move').on('click',function (){
+		selectObj.move($(this).attr('mode'));
+	});
+
+
+})
+</script>

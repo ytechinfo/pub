@@ -1,0 +1,32 @@
+@import '_var_pub.global.scss';
+
+$pubmultiselect_colors: (
+  'light': (
+    'row_selection' :#d6f0f7
+  )
+  ,'dark' : (
+    'row_selection' :#4078c1
+  )
+);
+
+// function 
+@function pluginColorInfo($themeName: 'light', $type: 'font_color') {
+  $map: map-get($pubmultiselect_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme pluginColorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}
+
+// grid selection border
+@mixin grid_box_shadow($themeName: 'light'){
+  $color : gridColorInfo($themeName , "cell_selection");
+  //border-right: 1px solid $color ;
+  -webkit-box-shadow:  inset inset 0.1px 0px 0px 1px $color;
+	-moz-box-shadow:  inset 0.1px 0px 0px 1px $color;
+  box-shadow:  inset 0.1px 0px 0px 1px $color;
+}

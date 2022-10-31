@@ -1774,10 +1774,10 @@ Plugin.prototype ={
 		}
 	}
 	/**
-     * @method destory
+     * @method destroy
      * @description 해제.
      */
-	,destory:function (){
+	,destroy:function (){
 		$(window).off(this.prefix+"pubgridResize")
 		delete _datastore[this.selector];
 		$(this.selector).empty(); 
@@ -1809,7 +1809,7 @@ $.pubGrid = function (selector,options, args) {
 			,reDrawFlag = typeof headerOpt.redraw==='boolean' ? headerOpt.redraw : _cacheObject.options.headerOptions.redraw; 
 
 		if(reDrawFlag===true){
-			_cacheObject.destory();
+			_cacheObject.destroy();
 			_cacheObject = new Plugin(selector, options);
 			_datastore[selector] = _cacheObject;
 		}else{

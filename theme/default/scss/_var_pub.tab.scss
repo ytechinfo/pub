@@ -1,0 +1,38 @@
+@import '_var_pub.global.scss';
+
+$pubtab_colors: (
+  'light': (
+    'tab_background':#f5f5f5
+    ,'tab_active_background':#ffffff
+    ,'tab_active_color': #1a1818
+    ,'tab_dim_background' :#d8d8d8
+    ,'tab_blink_background' :#252525
+    ,'tab_blink_color' :#ffffff
+    ,'tab_drag_over_color' : #1a1818
+    ,'tab_drag_over_background' : #cecece
+
+  )
+  ,'dark':(
+    'tab_background':#423f3f
+    ,'tab_active_background':#1b1b1b
+    ,'tab_active_color': #fbf8f8
+    ,'tab_dim_background' :#5a5656
+    ,'tab_blink_background' :#dcdcdc
+    ,'tab_blink_color' :#000000
+    ,'tab_drag_over_color' : #1b1b1b
+    ,'tab_drag_over_background' : #cecece
+  )
+);
+
+// function 
+@function tabColorInfo($themeName: 'light', $type: 'font_color') {
+  $map: map-get($pubtab_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme tabColorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}

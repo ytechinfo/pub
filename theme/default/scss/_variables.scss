@@ -1,0 +1,16 @@
+// variables.scss: 0.1
+// pub css variable
+
+// theme list
+$g_theme_list_info : dark;
+
+// default theme name
+$g_default_theme_name : light;
+
+// theme prefix
+$css_theme_prefix : "pub-theme";
+
+// css theme name get function
+@function fn_themeName($themeName: 'light') {
+    @return '['+$css_theme_prefix+'="'+ $themeName+'"]';
+}

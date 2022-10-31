@@ -1,0 +1,46 @@
+@import '_var_pub.global.scss';
+
+$pubgrid_colors: (
+  'light': (
+    'border_colfixed_color' : #848486 // column fixed border
+    ,'navigation_font_color' :  #000000
+    ,'cell_selection' :#5266f7
+    ,'help_btn' : #9bb5ff
+    ,'help_btn_hover' : #8cdef3
+    ,'td_background_hover' : #e8ecef
+    ,'td_inside_button_hover' : #d3d5d6
+    // scroll 
+    
+  )
+  ,dark : (
+    'border_colfixed_color' : #ececf7 // column fixed border
+    ,'navigation_font_color' :  #c5c3c3 
+    ,'cell_selection' :#a5ffdd
+    ,'help_btn' : #d8d1d1
+    ,'help_btn_hover' : #d8d1d1
+    ,'td_background_hover' : #4e5050
+    ,'td_inside_button_hover' : #232424
+  )
+);
+
+// function 
+@function gridColorInfo($themeName: 'light', $type: 'font_color') {
+  $map: map-get($pubgrid_colors, $themeName);
+
+  @if $map != null{
+    @return map-get($map, $type);
+  } @else{
+  
+    @error 'theme gridColorInfo name ['+$themeName+'] key ['+ $type+'] not found';
+    @return 'style not found';
+  }
+}
+
+// grid selection border
+@mixin grid_box_shadow($themeName: 'light'){
+  $color : gridColorInfo($themeName , "cell_selection");
+  //border-right: 1px solid $color ;
+  -webkit-box-shadow:  inset inset 0.1px 0px 0px 1px $color;
+	-moz-box-shadow:  inset 0.1px 0px 0px 1px $color;
+  box-shadow:  inset 0.1px 0px 0px 1px $color;
+}
