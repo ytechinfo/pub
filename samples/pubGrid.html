@@ -378,7 +378,7 @@ function fn_init(){
 }
 function gridDraw(selector, aaa, colItem){
 	var gridObj = $.pubGrid(selector,{
-		fixedHeaderIndex : 1
+		fixedHeaderIndex : 0
 		,editable : true
 		,selectionMode : 'multiple-cell'	// row , cell , multiple-row , multiple-cell	// 선택 방법. 
 		,widthFixed : false
@@ -407,7 +407,7 @@ function gridDraw(selector, aaa, colItem){
 			,displayLineNumber : true	 // 라인 넘버 보기.
 			,displayRowSelector : false	 // row selecotr checkbox 보기
 			,displayModifyInfo : false	 // 수정여부 보기
-			,isColSelectAll : false		 // 컬럼 세로 선택 여부.
+			,isColSelectAll : true		 // 컬럼 세로 선택 여부.
 			,resize:{
 				enabled : true
 				,update :  function (item){
@@ -478,7 +478,7 @@ function gridDraw(selector, aaa, colItem){
 		,setting : {
 			enabled : true
 			,click : false
-			,mode : 'simple'
+			,mode : 'full'
 			,width:700
 			,h1eight:250
 			,btnClose : true
