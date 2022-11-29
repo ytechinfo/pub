@@ -5498,10 +5498,9 @@ var _$util = {
 $(document).on('mousedown.pubgrid.background', function (e){
 	if(e.which !==2){
 		var targetEle = $(e.target);
-		var pubGridLayterEle = targetEle.closest('.pubGrid-layer');
-		if(pubGridLayterEle.length < 1 ){
+		var pubGridLayerEle = targetEle.closest('.pubGrid-layer');
+		if(pubGridLayerEle.length < 1 ){
 			
-
 			$('.pubGrid-layer.open').each(function (){
 				var sEle = $(this); 
 				if(!sEle.data('pubgrid-close-btn')){
@@ -5532,7 +5531,7 @@ $(document).on('mousedown.pubgrid.background', function (e){
 				}, 300);
 			})
 		}else{
-			var layerid = pubGridLayterEle.data('pubgrid-layer');
+			var layerid = pubGridLayerEle.data('pubgrid-layer');
 			$('.pubGrid-layer.open').each(function (){
 				var sEle = $(this);
 
