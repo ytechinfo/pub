@@ -922,7 +922,7 @@ Plugin.prototype ={
 	 * @param rowItem {Object} - update item
 	 * @description 데이터 그리기
 	 */
-	,updateRow : function (idx ,rowItem, clickFlag){
+	,updateRow : function (idx, rowItem, clickFlag){
 
 		var updItem = this.options.tbodyItem[idx];
 
@@ -1115,7 +1115,7 @@ Plugin.prototype ={
 					}
 				}
 			}else{
-				if(gridMode != 'init' && subMode !='keepCheck'){
+				if(gridMode != 'init' && subMode !='keepCheck' &&  subMode !='update'){
 					_this.setCheckItems('all', false, false);
 				}
 
@@ -5685,6 +5685,10 @@ var _$renderer = {
 	 * @description edit form
 	 */
 	,editCell : function (gridCtx, cellInfo, e){
+
+		if(cellInfo.colInfo.editable===false){
+			return ;
+		}
 
 		if(gridCtx.config.isCellEdit){
 			_$renderer.editAreaClose(gridCtx, false); // 이전 에디트창 닫기
