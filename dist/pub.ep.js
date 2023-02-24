@@ -1195,7 +1195,9 @@ _$base.util = {
 
 				if(paramObjFlag){
 					if(!tmpKey[orginKey]){
-						_paramVal =_paramVal.replace(new RegExp(matchKey,'g'), (replaceParam[orginKey.replace(/#/g,'')]||'') );
+						var replaceValue = replaceParam[orginKey.replace(/#/g,'')]; 
+						replaceValue = typeof replaceValue ==='undefined' ? '':replaceValue;
+						_paramVal =_paramVal.replace(new RegExp(matchKey,'g'), replaceValue);
 						tmpKey[orginKey] = orginKey;
 					}
 				}else{
