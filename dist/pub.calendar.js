@@ -1712,7 +1712,7 @@ Plugin.prototype ={
 				lunYear++;
 				lunMonth = 1;
 				lunDay = 1;
-				lunMonthDay = getLunMonthDay(lunYear, lunMonth);
+				lunMonthDay = getLunMonthEndDay(lunYear, lunMonth);
 			}else if (lunDay == lunMonthDay){
 				if (lunarMonthTable[lunYear][lunMonth - 1] >= 3&& lunLeapMonth == 0){
 					lunDay = 1;
@@ -1723,7 +1723,7 @@ Plugin.prototype ={
 					lunLeapMonth = 0;
 				}
 
-				lunMonthDay = getLunMonthDay(lunYear, lunMonth, lunLeapMonth);
+				lunMonthDay = getLunMonthEndDay(lunYear, lunMonth, lunLeapMonth);
 			}else{
 				lunDay++;
 			}
@@ -1807,7 +1807,7 @@ Plugin.prototype ={
 				lunYear++;
 				lunMonth = 1;
 				
-				lunMonthDay = getLunMonthDay(lunYear, lunMonth);
+				lunMonthDay = getLunMonthEndDay(lunYear, lunMonth);
 			}else{
 				if (lunarMonthTable[lunYear][lunMonth - 1] >= 3&& lunLeapMonth == 0){
 					lunLeapMonth = 1;
@@ -1816,7 +1816,7 @@ Plugin.prototype ={
 					lunLeapMonth = 0;
 				}
 
-				lunMonthDay = getLunMonthDay(lunYear, lunMonth, lunLeapMonth)
+				lunMonthDay = getLunMonthEndDay(lunYear, lunMonth, lunLeapMonth)
 			}
 
 			if((result+lunMonthDay) <= _solElapseDay){
@@ -1874,11 +1874,11 @@ Plugin.prototype ={
 			,mdi = _this.options.memorialDayInfo;
 		
 		//양력일 기념일 추출	
-		tmpMdi = mdi[day2(dayInfo.month)+''+day2(dayInfo.day)];
+		var tmpMdi = mdi[day2(dayInfo.month)+''+day2(dayInfo.day)];
 		if(tmpMdi &&  tmpMdi.holiday===true) return tmpMdi;
 		
 		// 년도 포함 기념일 추출
-		var tmpMdi = mdi[dayInfo.year+''+day2(dayInfo.month)+''+day2(dayInfo.day)];
+		tmpMdi = mdi[dayInfo.year+''+day2(dayInfo.month)+''+day2(dayInfo.day)];
 		if(tmpMdi &&  tmpMdi.holiday===true) return tmpMdi;
 
 		//음력일 기념일 추출
@@ -2735,7 +2735,7 @@ function getMonthLastDayArr(year){
 }
 
 // 음력 월에 마지막날 구하기.
-function getLunMonthDay(lunYear, lunMonth, lunLeapMonth){
+function getLunMonthEndDay(lunYear, lunMonth, lunLeapMonth){
 	if (lunarMonthTable[lunYear][lunMonth - 1] == 1) return  29;
 	else if (lunarMonthTable[lunYear][lunMonth - 1] == 2) return  30;
 	else if (lunarMonthTable[lunYear][lunMonth - 1] == 3) return  29;
@@ -3143,7 +3143,7 @@ var yearLunarInfo = {
 	,2019 :  {lunYear:2018, lunMonth:11, lunDay:26, lunMonthDay:30, solMonthDay:28}
 	,2020 :  {lunYear:2019, lunMonth:12, lunDay:7, lunMonthDay:30, solMonthDay:29}
 	,2021 :  {lunYear:2020, lunMonth:11, lunDay:18, lunMonthDay:29, solMonthDay:28}
-	,2022 :  {lunYear:2021, lunMonth:11, lunDay:29, lunMonthDay:30, solMonthDay:28}
+	,2022 :  {lunYear:2021, lunMonth:11, lunDay:29, lunMonthDay:29, solMonthDay:28}
 	,2023 :  {lunYear:2022, lunMonth:12, lunDay:10, lunMonthDay:30, solMonthDay:28}
 	,2024 :  {lunYear:2023, lunMonth:11, lunDay:20, lunMonthDay:29, solMonthDay:29}
 	,2025 :  {lunYear:2024, lunMonth:12, lunDay:2, lunMonthDay:29, solMonthDay:28}
