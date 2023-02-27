@@ -1002,7 +1002,7 @@
   min-height: auto;
   height: auto;
   width: auto;
-  min-width: 200px;
+  min-width: 300px;
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-resize-handler {
@@ -1080,9 +1080,8 @@
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body > div {
-  margin-top: 5px;
-  border: 1px solid #d5d5d8;
-  padding: 3px;
+  margin-top: 3px;
+  padding: 2px;
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body select {
@@ -1112,7 +1111,7 @@
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-search-area > input {
-  width: calc(100% - 120px);
+  width: calc(100% - 115px);
   vertical-align: top;
   height: 23px;
   margin-right: 5px;
@@ -1614,10 +1613,6 @@
 
 [pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-footer {
   border-top: 1px solid #5f5f68;
-}
-
-[pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-simple-body > div {
-  border: 1px solid #6d6d75;
 }
 
 [pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-simple-body .pubgrid-btn {
