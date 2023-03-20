@@ -210,7 +210,7 @@ function getItem (type){
 				,b:'ddd_'+i+'asdf'
 				,c: (i*10000)
 				,d: i==0 ? 'KOREA' : 'ddd_'+i
-				,e:'eee_'+i
+				,e: i%3==0 ? null : 'null아님_'+i
 				,f:'ffff'+i
 				,g:'ggggg'+i
 				,h:i
@@ -479,7 +479,7 @@ function gridDraw(selector, aaa, colItem){
 			enabled : true
 			,enableColumnFix : true
 			,click : false
-			,mode : 'simple'
+			,mode : 'full'
 			,width:700
 			,h1eight:250
 			,btnClose : true
