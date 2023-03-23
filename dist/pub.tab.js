@@ -544,6 +544,10 @@ Plugin.prototype ={
 
 		var tabWidthItem =_this.config.tabWidth[dataIdx];
 
+		if(typeof tabWidthItem === 'undefined'){
+			return ; 
+		}
+
 		var itemEndPoint = tabWidthItem.leftLast+_this.config.moveAreaWidth;
 
 		var schLeft = _this.element.tabScrollElement.scrollLeft();
