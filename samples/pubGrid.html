@@ -120,6 +120,7 @@ $(document).ready(function (){
 
 	$('#themeInfo').on('change', function (){
 		$.pubGrid('#asdfasdf').setTheme($(this).val());
+		$('body').attr('pub-theme',$(this).val());
 	});
 	var toggleFlag = false; 
 	$('.set-data').on('click', function (){
@@ -487,6 +488,57 @@ function gridDraw(selector, aaa, colItem){
 				//console.log(data)
 			}
 			,configVal1 : {search : {field:'col1', val : '111'}}
+		}
+		,toolbar:{
+			enabled : true
+			
+			,items:[
+				{
+					search :true,
+					callback : (keyword)=>{
+
+					}
+				}
+				
+				,{
+					divider :true
+				}
+				,{
+					key:'test'
+					,renderType: 'dropdown'
+					,style:{
+						valueWidth:'200px'
+					}
+					,listItem:{
+						list : [
+							{label:'asdf',value:1}
+							,{label:'asdf2',value:2}
+							,{label:'asdf3',value:3}
+						]
+					}
+					,change:(aa)=>{
+						console.log(aa);
+					}
+				}
+				,{
+					key:'test22'
+					,renderType: 'text'
+					,style:{
+						valueWidth:'150px'
+					}
+					,change:(aa)=>{
+						console.log(aa);
+					}
+				}
+				,{
+					label:'button'
+					,renderType: 'button'
+					,click:(aa)=>{
+						console.log(aa);
+					}
+				}
+				
+			]
 		}
 		,tColItem : colItem
 		,bodyOptions : {

@@ -25,6 +25,40 @@
 		@include box-sizing($box_sizing_border)
 	}
 
+	background: transparent;
+	@include box-sizing($box_sizing_border);
+	
+	input,select,button{
+		background: colorInfo($g_default_theme_name , "background_color");
+		border: 1px solid colorInfo($g_default_theme_name , "border_thick_color");
+	}
+	
+	button{
+		cursor: pointer;
+		&:hover{
+			background: colorInfo($g_default_theme_name , "background_thick_color");
+		}
+	}
+
+	.input-text{
+		width:150px;
+		vertical-align: top;
+		height:23px;
+		margin-right:5px;
+	}
+
+	.text-a{
+		&l{
+			text-align: left;	
+		}
+		&c{
+			text-align: center;	
+		}
+		&r{
+			text-align: right;	
+		}
+	}
+
 	.pubGrid-disoff{
 		display: none;
 		visibility: hidden;
@@ -32,16 +66,44 @@
 		overflow: hidden;
 	}
 
+	.pubGrid-btn{
+		cursor: pointer;
+		color:colorInfo($g_default_theme_name , "font_color");
+		border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
+		height: 23px;
+	}
+
+	.pubGrid-toolbar{
+		padding: 3px 0 ;
+		background: colorInfo($g_default_theme_name , "background_color");
+		>div{
+			padding:3px;
+		}
+
+		.toolbar-divider{
+			border-left: 1px solid #898989dd;
+    		margin: 5px;
+		}
+
+		select {
+			height:23px;
+			margin:0 5px;
+		}
+
+		.pubGrid-search-area{
+			>select{
+				width:60px;
+				height:23px;
+				margin:0px 5px 0px 0px;
+				padding:0px;
+			}
+		}
+	}
+
 	.pubGrid {
 		position: relative;
 		border : 1px solid colorInfo($g_default_theme_name , "border_thick_color");
-		background: transparent;
-		@include box-sizing($box_sizing_border);
 		
-		input,select,button{
-			background: colorInfo($g_default_theme_name , "background_color");
-		}
-
 		.pubGrid-setting-area{
 			background: colorInfo($g_default_theme_name , "background_color");
 		}
@@ -1034,6 +1096,8 @@
 				select {
 					height:23px;
 					margin:0 5px;
+					margin:0px 5px 0px 0px;
+					padding:0px;
 				}
 	
 				.pubGrid-colfixed-area{
@@ -1041,28 +1105,14 @@
 						max-width: 122px;
 					}
 				}
-		
-				.pubgrid-btn{
-					cursor: pointer;
-					color:colorInfo($g_default_theme_name , "font_color");
-					border: 1px solid colorInfo($g_default_theme_name , "border_thin_color");
-					height: 22px;
-					float:right;
-				}
-				
-			
+					
 				.pubGrid-search-area{
 					>select{
-						width:50px;
-						height:23px;
-						margin:0px 5px 0px 0px;
-						padding:0px;
-						-webkit-appearance: menulist;
-						-moz-appearance: menulist;
+						width:50px;	
 					}
 				
 					>input{
-						width:calc(100% - 115px);
+						width:calc(100% - 122px);
 						vertical-align: top;
 						height:23px;
 						margin-right:5px;
@@ -1336,19 +1386,30 @@
 @each $pThemeName in $g_theme_list_info {
 
 	#{fn_themeName($pThemeName)} {
-			.pubGrid-wrapper{
+		.pubGrid-wrapper{
 			* {
 				color:colorInfo($pThemeName , "font_color") !important;
+			}
+
+			input,select,button{
+				background: colorInfo($pThemeName , "background_color");
+				border: 1px solid colorInfo($pThemeName , "border_thick_color");
+			}
+
+			button{
+				&:hover{
+					background: colorInfo($pThemeName , "background_thick_color");
+				}
+			}
+
+			.pubGrid-toolbar{
+				background: colorInfo($pThemeName , "background_color");
 			}
 
 			.pubGrid {
 				border : 1px solid colorInfo($pThemeName , "border_thick_color");
 				background: colorInfo($pThemeName , "background_color");
-								
-				input,select,button{
-					background: colorInfo($pThemeName , "background_color");
-				}
-
+				
 				.pubGrid-setting-area{
 					background: colorInfo($pThemeName , "background_color");
 				}
@@ -1618,13 +1679,6 @@
 
 				.pubGrid-setting-footer{
 					border-top: 1px solid colorInfo($pThemeName , "border_thick_color");
-				}
-
-				.pubGrid-setting-simple-body{
-					.pubgrid-btn{
-						color:colorInfo($pThemeName , "font_color");
-						border: 1px solid colorInfo($pThemeName , "border_thin_color");
-					}
 				}
 
 				.pubGrid-setting-body{

@@ -14,6 +14,12 @@
   user-select: none;
 }
 
+.pubGrid-wrapper {
+  background: transparent;
+  -webkit-box-sizing: border-box !important;
+  box-sizing: border-box !important;
+}
+
 .pubGrid-wrapper * {
   border-spacing: 0;
   border-collapse: separate;
@@ -23,6 +29,38 @@
   box-sizing: border-box !important;
 }
 
+.pubGrid-wrapper input, .pubGrid-wrapper select, .pubGrid-wrapper button {
+  background: #ffffff;
+  border: 1px solid #bcbcbd;
+}
+
+.pubGrid-wrapper button {
+  cursor: pointer;
+}
+
+.pubGrid-wrapper button:hover {
+  background: #dddddd;
+}
+
+.pubGrid-wrapper .input-text {
+  width: 150px;
+  vertical-align: top;
+  height: 23px;
+  margin-right: 5px;
+}
+
+.pubGrid-wrapper .text-al {
+  text-align: left;
+}
+
+.pubGrid-wrapper .text-ac {
+  text-align: center;
+}
+
+.pubGrid-wrapper .text-ar {
+  text-align: right;
+}
+
 .pubGrid-wrapper .pubGrid-disoff {
   display: none;
   visibility: hidden;
@@ -30,16 +68,42 @@
   overflow: hidden;
 }
 
+.pubGrid-wrapper .pubGrid-btn {
+  cursor: pointer;
+  color: #000000;
+  border: 1px solid #d5d5d8;
+  height: 23px;
+}
+
+.pubGrid-wrapper .pubGrid-toolbar {
+  padding: 3px 0;
+  background: #ffffff;
+}
+
+.pubGrid-wrapper .pubGrid-toolbar > div {
+  padding: 3px;
+}
+
+.pubGrid-wrapper .pubGrid-toolbar .toolbar-divider {
+  border-left: 1px solid #898989dd;
+  margin: 5px;
+}
+
+.pubGrid-wrapper .pubGrid-toolbar select {
+  height: 23px;
+  margin: 0 5px;
+}
+
+.pubGrid-wrapper .pubGrid-toolbar .pubGrid-search-area > select {
+  width: 60px;
+  height: 23px;
+  margin: 0px 5px 0px 0px;
+  padding: 0px;
+}
+
 .pubGrid-wrapper .pubGrid {
   position: relative;
   border: 1px solid #bcbcbd;
-  background: transparent;
-  -webkit-box-sizing: border-box !important;
-  box-sizing: border-box !important;
-}
-
-.pubGrid-wrapper .pubGrid input, .pubGrid-wrapper .pubGrid select, .pubGrid-wrapper .pubGrid button {
-  background: #ffffff;
 }
 
 .pubGrid-wrapper .pubGrid .pubGrid-setting-area {
@@ -1087,31 +1151,20 @@
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body select {
   height: 23px;
   margin: 0 5px;
+  margin: 0px 5px 0px 0px;
+  padding: 0px;
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-colfixed-area select {
   max-width: 122px;
 }
 
-.pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubgrid-btn {
-  cursor: pointer;
-  color: #000000;
-  border: 1px solid #d5d5d8;
-  height: 22px;
-  float: right;
-}
-
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-search-area > select {
   width: 50px;
-  height: 23px;
-  margin: 0px 5px 0px 0px;
-  padding: 0px;
-  -webkit-appearance: menulist;
-  -moz-appearance: menulist;
 }
 
 .pubGrid-body-hidden-area .pubGrid-preferences-wrapper .pubGrid-setting-panel .pubGrid-setting-simple-body .pubGrid-search-area > input {
-  width: calc(100% - 115px);
+  width: calc(100% - 122px);
   vertical-align: top;
   height: 23px;
   margin-right: 5px;
@@ -1374,12 +1427,21 @@
   color: #c5c3c3 !important;
 }
 
-[pub-theme="dark"] .pubGrid-wrapper .pubGrid {
+[pub-theme="dark"] .pubGrid-wrapper input, [pub-theme="dark"] .pubGrid-wrapper select, [pub-theme="dark"] .pubGrid-wrapper button {
+  background: #262729;
   border: 1px solid #5f5f68;
+}
+
+[pub-theme="dark"] .pubGrid-wrapper button:hover {
+  background: #000000;
+}
+
+[pub-theme="dark"] .pubGrid-wrapper .pubGrid-toolbar {
   background: #262729;
 }
 
-[pub-theme="dark"] .pubGrid-wrapper .pubGrid input, [pub-theme="dark"] .pubGrid-wrapper .pubGrid select, [pub-theme="dark"] .pubGrid-wrapper .pubGrid button {
+[pub-theme="dark"] .pubGrid-wrapper .pubGrid {
+  border: 1px solid #5f5f68;
   background: #262729;
 }
 
@@ -1613,11 +1675,6 @@
 
 [pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-footer {
   border-top: 1px solid #5f5f68;
-}
-
-[pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-simple-body .pubgrid-btn {
-  color: #c5c3c3;
-  border: 1px solid #6d6d75;
 }
 
 [pub-theme="dark"] .pubGrid-body-hidden-area .pubGrid-setting-panel .pubGrid-setting-body > div.tcol {
